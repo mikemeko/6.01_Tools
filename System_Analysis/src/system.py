@@ -1,5 +1,5 @@
 """
-TODO(mikemeko)
+Representation for DT LTI systems.
 """
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
@@ -9,66 +9,80 @@ from poly import R_Polynomial
 
 class Component:
   """
-  TODO(mikemeko)
+  Representation for a component in a DT LTI system: gain, delay, or adder.
   """
-  def __init__(self, inp, out):
-    self.inp = inp
-    self.out = out
-    self.new_out = None
-  def update(self):
-    # TODO(mikemeko)
-    pass
+  def __init__(self, inp_vars, out_var):
+    """
+    |imp_vars|: a list of the names of the input variables to this component.
+    |out_var|: the name of the output variable of this component.
+    """
+    self.inp_vars = inp_vars
+    self.out_var = out_var
+    self.updated_out = None
+  @property
+  def update(self, inp_polys):
+    """
+    This updates the the |updated_out| attribute. It is called once all the
+    input variables are described as polynomials only in X and Y.
+    """
+    raise NotImplementedError('subclasses should implement this')
+  def updated(self):
+    """
+    Returns True if the |updated_out| has been updated, False otherwise.
+    """
+    return self.updated_out is not None
 
 class Gain(Component):
   """
-  TODO(mikemeko)
+  Representation for a gain.
   """
-  def __init__(self, inp, out, K):
-    Component.__init__(self, [inp], out)
+  def __init__(self, inp_var, out_var, K):
+    Component.__init__(self, [inp_var], out_var)
     self.K = K
-  def update(self, inp_bound):
-    self.new_out = inp_bound[0].scalar_mult(self.K)
+  def update(self, inp_polys):
+    self.updated_out = inp_polys[0].scalar_mult(self.K)
 
 class Delay(Component):
   """
-  TODO(mikemeko)
+  Representation for a delay.
   """
-  def __init__(self, inp, out):
-    Component.__init__(self, [inp], out)
+  def __init__(self, inp_var, out_var):
+    Component.__init__(self, [inp_var], out_var)
   def update(self, inp_bound):
-    self.new_out = inp_bound[0].shift()
+    self.updated_out = inp_bound[0].shift()
 
 class Adder(Component):
   """
-  TODO(mikemeko)
+  Representation for an adder.
   """
   def update(self, inp_bound):
-    self.new_out = reduce(lambda p_1, p_2: p_1 + p_2, inp_bound)
+    self.updated_out = reduce(Polynomial.__add__, inp_bound)
 
-def solve_system(components):
+class System:
   """
-  TODO(mikemeko)
+  Representation for a DT LTI system.
   """
-  last_comp = None
-  for c in components:
-    if c.out is 'Y':
-      last_comp = c
-      break
-  assert last_comp is not None, 'a component that outputs Y is required'
-  covered_variables = {'X':Polynomial({'X':R_Polynomial([1])}),
-      'Y':Polynomial({'Y':R_Polynomial([1])})}
-  while last_comp.new_out is None:
-    for c in components:
-      if c.new_out is None and all(i in covered_variables for i in c.inp):
-        c.update([covered_variables[i] for i in c.inp])
-        covered_variables[c.out] = c.new_out
+  def __init__(self, components):
+    """
+    |components|: a list of the instances of Component in this System.
+    """
+    self.components = components
+  def solve(self):
+    """
+    Solves the system for an equivalent description of Y. A system function
+    can be obtained from this.
+    """
+    last_comp = None # the component that outputs Y
+    for c in self.components:
+      if c.out_var is 'Y':
+        last_comp = c
         break
-  return covered_variables['Y']
-
-if __name__ == '__main__':
-  comp_1 = Adder(['X', 'D'], 'A')
-  comp_2 = Gain('A', 'B', 10)
-  comp_3 = Adder(['B', 'Y'], 'C')
-  comp_4 = Delay('C', 'Y')
-  comp_5 = Delay('Y', 'D')
-  print solve_system([comp_1, comp_2, comp_3, comp_4, comp_5])
+    assert last_comp is not None, 'a component that outputs Y is required'
+    covered_variables = {'X':Polynomial({'X':R_Polynomial([1])}),
+        'Y':Polynomial({'Y':R_Polynomial([1])})}
+    while not last_comp.updated():
+      for c in self.components:
+        if not c.updated() and all(i in covered_variables for i in c.inp_vars):
+          c.update([covered_variables[i] for i in c.inp_vars])
+          covered_variables[c.out_var] = c.updated_out
+    return covered_variables['Y']
