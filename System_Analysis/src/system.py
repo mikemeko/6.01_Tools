@@ -45,11 +45,16 @@ class Adder(Component):
   def update(self, inp_bound):
     self.new_out = reduce(lambda p_1, p_2: p_1 + p_2, inp_bound)
 
-def solve_system(components, last_comp):
+def solve_system(components):
   """
   TODO(mikemeko)
   """
-  # TODO(mikemeko): last_comp can be automatically identified
+  last_comp = None
+  for c in components:
+    if c.out is 'Y':
+      last_comp = c
+      break
+  assert last_comp is not None, 'a component that outputs Y is required'
   covered_variables = {'X':Polynomial({'X':R_Polynomial([1])}),
       'Y':Polynomial({'Y':R_Polynomial([1])})}
   while last_comp.new_out is None:
@@ -66,5 +71,4 @@ if __name__ == '__main__':
   comp_3 = Adder(['B', 'Y'], 'C')
   comp_4 = Delay('C', 'Y')
   comp_5 = Delay('Y', 'D')
-  components = [comp_1, comp_2, comp_3, comp_4, comp_5]
-  print solve_system(components, comp_4)
+  print solve_system([comp_1, comp_2, comp_3, comp_4, comp_5])
