@@ -70,6 +70,11 @@ class Polynomial:
       assert isinstance(var, str), 'signal variable names must be strings'
       assert isinstance(data[var], R_Polynomial), 'coeff must be R_Polynomials'
     self.data = data
+  def variables(self):
+    """
+    Returns the variables in this polynomial.
+    """
+    return set(self.data.keys())
   def coeff(self, var):
     """
     Returns the coefficient for the given variable.
