@@ -14,26 +14,27 @@ class R_Polynomial:
         For example, 2R**2 + 1 has coefficients [1, 0, 2].
     """
     self.coeffs = coeffs
-  def degree(self):
-    """
-    Returns the degree of this polynomial.
-    """
-    return len(self.coeffs) - 1
+    self.degree = len(coeffs) - 1
   def coeff(self, exp):
     """
     Returns the coefficient of the R**exp term.
     """
-    return self.coeffs[exp] if exp <= self.degree() else 0
+    return self.coeffs[exp] if exp <= self.degree else 0
   def scalar_mult(self, const):
     """
     Returns a new scaled polynomial.
     """
     return R_Polynomial([const * self.coeff(exp)
-        for exp in xrange(self.degree() + 1)])
+        for exp in xrange(self.degree + 1)])
+  def shift(self):
+    """
+    Returns R times this polynomial.
+    """
+    return R_Polynomial([0] + self.coeffs)
   def __add__(self, other):
     assert isinstance(other, R_Polynomial), 'other must be an R_Polynomial'
     sum_coeffs = []
-    for exp in xrange(max(self.degree(), other.degree()) + 1):
+    for exp in xrange(max(self.degree, other.degree) + 1):
       sum_coeffs.append(self.coeff(exp) + other.coeff(exp))
     return R_Polynomial(sum_coeffs)
   def _prettify(self, coeff, exp):
@@ -45,7 +46,7 @@ class R_Polynomial:
       return '%dR**%d' % (coeff, exp)
   def __str__(self):
     return ' + '.join(self._prettify(self.coeff(exp), exp)
-        for exp in xrange(self.degree() + 1) if self.coeff(exp) is not 0)
+        for exp in xrange(self.degree + 1) if self.coeff(exp) is not 0)
 
 class Polynomial:
   """
@@ -74,6 +75,14 @@ class Polynomial:
     new_data = {}
     for var in self.data:
       new_data[var] = self.data[var].scalar_mult(const)
+    return Polynomial(new_data)
+  def shift(self):
+    """
+    Returns this polynomial multiplied by R.
+    """
+    new_data = {}
+    for var in self.data:
+      new_data[var] = self.data[var].shift()
     return Polynomial(new_data)
   def __add__(self, other):
     assert isinstance(other, Polynomial), 'other must be a Polynomial'
@@ -105,3 +114,4 @@ if __name__ == '__main__':
   print poly_1 + poly_2
   print poly_1.scalar_mult(2)
   print poly_1 - poly_2
+  print poly_2.shift()
