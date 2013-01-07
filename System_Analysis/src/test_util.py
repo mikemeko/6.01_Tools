@@ -6,6 +6,7 @@ __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
 from poly import Polynomial
 from poly import R_Polynomial
+from system import System_Function
 
 def assert_r_polys_equal(r_poly_1, r_poly_2):
   """
@@ -26,3 +27,12 @@ def assert_polys_equal(poly_1, poly_2):
   assert poly_1.variables() == poly_2.variables()
   for var in poly_1.variables():
     assert_r_polys_equal(poly_1.coeff(var), poly_2.coeff(var))
+
+def assert_system_functions_equal(sf_1, sf_2):
+  """
+  Checks that two system functions are equal.
+  """
+  assert isinstance(sf_1, System_Function)
+  assert isinstance(sf_2, System_Function)
+  assert_r_polys_equal(sf_1.numerator, sf_2.numerator)
+  assert_r_polys_equal(sf_1.denominator, sf_2.denominator)
