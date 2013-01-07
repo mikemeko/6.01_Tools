@@ -39,6 +39,9 @@ class R_Polynomial:
     for exp in xrange(max(self.degree, other.degree) + 1):
       new_coeffs.append(self.coeff(exp) + other.coeff(exp))
     return R_Polynomial(new_coeffs)
+  def __sub__(self, other):
+    assert isinstance(other, R_Polynomial), 'other must be an R_Polynomial'
+    return self + other.scalar_mult(-1)
   def _prettify(self, coeff, exp):
     """
     Returns a prettified version of |coeff|*R**|exp|.
@@ -79,8 +82,7 @@ class Polynomial:
     """
     Returns the coefficient for the given variable.
     """
-    assert var in self.data, 'var must be in this polynomial'
-    return self.data[var]
+    return self.data.get(var, R_Polynomial([0]))
   def scalar_mult(self, const):
     """
     Returns |const| times this polynomial.

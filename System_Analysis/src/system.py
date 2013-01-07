@@ -4,6 +4,7 @@ Representation for DT LTI systems.
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
+from numpy import roots
 from poly import Polynomial
 from poly import R_Polynomial
 
@@ -67,10 +68,11 @@ class System:
     |components|: a list of the instances of Component in this System.
     """
     self.components = components
-  def solve(self):
+    self.sf = None
+    self._solve_sf()
+  def _solve_sf(self):
     """
-    Solves the system for an equivalent description of Y. A system function
-    can be obtained from this.
+    Solves for the system function of this system.
     """
     last_comp = None # the component that outputs Y
     for c in self.components:
@@ -85,4 +87,48 @@ class System:
         if not c.updated() and all(i in covered_variables for i in c.inp_vars):
           c.update([covered_variables[i] for i in c.inp_vars])
           covered_variables[c.out_var] = c.updated_out
-    return covered_variables['Y']
+    self.sf = System_Function(covered_variables['Y'].coeff('X'),
+        R_Polynomial([1]) - covered_variables['Y'].coeff('Y'))
+  def get_poles(self):
+    """
+    Returns the poles of this system (may include hidden poles).
+    """
+    return self.sf.poles()
+  def get_zeros(self):
+    """
+    Returns the zeros of this system (may include hidden zeros).
+    """
+    return self.sf.zeros()
+
+class System_Function:
+  """
+  Representation for a system function.
+  """
+  def __init__(self, numerator, denominator):
+    assert isinstance(numerator, R_Polynomial), 'numerator must be a poly'
+    assert isinstance(denominator, R_Polynomial), 'denominator must be a poly'
+    self.numerator = numerator
+    self.denominator = denominator
+    self._pad_coeffs()
+  def _pad_coeffs(self):
+    """
+    Pad the numerator and denominator with 0s so that poles and zeros are
+    computed correctly.
+    """
+    diff = abs(self.numerator.degree - self.denominator.degree)
+    if self.numerator.degree < self.denominator.degree:
+      self.numerator.coeffs = self.numerator.coeffs + [0] * diff
+    elif self.numerator.degree > self.denominator.degree:
+      self.denominator.coeffs = self.denominator.coeffs + [0] * diff
+  def poles(self):
+    """
+    Returns the poles of this system (may include hidden poles).
+    """
+    return set(roots(self.denominator.coeffs))
+  def zeros(self):
+    """
+    Returns the zeros of this system (may include hidden zeros).
+    """
+    return set(roots(self.numerator.coeffs))
+  def __str__(self):
+    return '(%s)/(%s)' % (str(self.numerator), str(self.denominator))
