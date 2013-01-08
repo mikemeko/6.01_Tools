@@ -31,11 +31,11 @@ class System_Function:
     """
     Returns the poles of this system (may include hidden poles).
     """
-    return set(roots(self.denominator.coeffs))
+    return list(roots(self.denominator.coeffs))
   def zeros(self):
     """
     Returns the zeros of this system (may include hidden zeros).
     """
-    return set(roots(self.numerator.coeffs))
+    return list(roots(self.numerator.coeffs))
   def __str__(self):
     return '(%s)/(%s)' % (str(self.numerator), str(self.denominator))

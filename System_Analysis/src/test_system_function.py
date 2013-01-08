@@ -20,15 +20,15 @@ class Test_System_Function(TestCase):
     self.sf3 = System_Function(R_Polynomial([1]), R_Polynomial([1, -0.5]))
     self.sf4 = System_Function(R_Polynomial([1,1]), R_Polynomial([1,-3,2]))
   def test_poles(self):
-    assert self.sf1.poles() == set([])
-    assert self.sf2.poles() == set([0])
-    assert self.sf3.poles() == set([0.5])
-    assert self.sf4.poles() == set([1,2])
+    assert self.sf1.poles() == []
+    assert self.sf2.poles() == [0, 0]
+    assert self.sf3.poles() == [0.5]
+    assert sorted(self.sf4.poles()) == [1,2]
   def test_zeros(self):
-    assert self.sf1.zeros() == set([])
-    assert self.sf2.zeros() == set([])
-    assert self.sf3.zeros() == set([0])
-    assert self.sf4.zeros() == set([-1,0])
+    assert self.sf1.zeros() == []
+    assert self.sf2.zeros() == []
+    assert self.sf3.zeros() == [0]
+    assert sorted(self.sf4.zeros()) == [-1,0]
 
 if __name__ == '__main__':
   main()
