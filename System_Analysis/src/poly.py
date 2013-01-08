@@ -54,7 +54,7 @@ class R_Polynomial:
     if exp == 1:
       return '%sR' % coeff_str
     else:
-      return '%sR**%d' % (coeff_str, exp)
+      return '%sR^%d' % (coeff_str, exp)
   def __str__(self):
     return ' + '.join(self._prettify(self.coeff(exp), exp)
         for exp in xrange(self.degree + 1) if self.coeff(exp) is not 0)
