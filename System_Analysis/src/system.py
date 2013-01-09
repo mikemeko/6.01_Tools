@@ -21,17 +21,23 @@ class Component:
     self.out_var = out_var
     self.updated_out = None
   @property
-  def update(self, inp_polys):
+  def sf_update(self, inp_polys):
     """
     This updates the the |updated_out| attribute. It is called once all the
     input variables are described as polynomials only in X and Y.
     """
     raise NotImplementedError('subclasses should implement this')
-  def updated(self):
+  def sf_updated(self):
     """
     Returns True if the |updated_out| has been updated, False otherwise.
     """
     return self.updated_out is not None
+  @property
+  def response_update(self, signals):
+    """
+    TODO(mikemeko)
+    """
+    raise NotImplementedError('subclasses should implement this')
 
 class Gain(Component):
   """
@@ -41,8 +47,12 @@ class Gain(Component):
     assert isinstance(K, (float, int, long)), 'K must be a number'
     Component.__init__(self, [inp_var], out_var)
     self.K = K
-  def update(self, inp_polys):
+  def sf_update(self, inp_polys):
     self.updated_out = inp_polys[0].scalar_mult(self.K)
+  def response_update(self, signals):
+    i = len(signals[self.out_var])
+    if len(signals[self.inp_vars[0]]) > i:
+      signals[self.out_var].append(self.K * signals[self.inp_vars[0]][i])
 
 class Delay(Component):
   """
@@ -50,15 +60,25 @@ class Delay(Component):
   """
   def __init__(self, inp_var, out_var):
     Component.__init__(self, [inp_var], out_var)
-  def update(self, inp_bound):
+  def sf_update(self, inp_bound):
     self.updated_out = inp_bound[0].shift()
+  def response_update(self, signals):
+    i = len(signals[self.out_var])
+    if i == 0:
+      signals[self.out_var].append(0)
+    elif len(signals[self.inp_vars[0]]) > i - 1:
+      signals[self.out_var].append(signals[self.inp_vars[0]][i - 1])
 
 class Adder(Component):
   """
   Representation for an adder.
   """
-  def update(self, inp_bound):
+  def sf_update(self, inp_bound):
     self.updated_out = reduce(Polynomial.__add__, inp_bound)
+  def response_update(self, signals):
+    i = len(signals[self.out_var])
+    if all(len(signals[v]) > i for v in self.inp_vars):
+      signals[self.out_var].append(sum(signals[v][i] for v in self.inp_vars))
 
 class System:
   """
@@ -80,17 +100,17 @@ class System:
       if c.out_var is 'Y':
         last_comp = c
         break
-    assert last_comp is not None, 'a component that outputs Y is required'
+    assert last_comp is not None, 'a component that outputs "Y" is required'
     covered_variables = {'X':Polynomial({'X':R_Polynomial([1])}),
         'Y':Polynomial({'Y':R_Polynomial([1])})}
-    while not last_comp.updated():
+    while not last_comp.sf_updated():
       for c in self.components:
-        if not c.updated() and all(i in covered_variables for i in c.inp_vars):
-          c.update([covered_variables[i] for i in c.inp_vars])
+        if not c.sf_updated() and all(i in covered_variables for i in c.inp_vars):
+          c.sf_update([covered_variables[i] for i in c.inp_vars])
           covered_variables[c.out_var] = c.updated_out
     self.sf = System_Function(covered_variables['Y'].coeff('X'),
         R_Polynomial([1]) - covered_variables['Y'].coeff('Y'))
-  def get_unit_sample_response(self):
+  def variables(self):
     """
     TODO(mikemeko)
     """
@@ -99,25 +119,19 @@ class System:
       for v in c.inp_vars:
         variables.add(v)
       variables.add(c.out_var)
-    signals = dict(zip(variables, [[] for v in variables]))
+    return variables
+  def get_unit_sample_response(self, N=50):
+    """
+    TODO(mikemeko)
+    """
+    signals = {}
+    for v in self.variables():
+      signals[v] = []
     # unit sample signal (approximation)
-    signals['X'] = [1] + [0] * 99
-    while len(signals['Y']) < len(signals['X']):
+    signals['X'] = [1] + [0] * (N - 1)
+    while len(signals['Y']) < N:
       for c in self.components:
-        inp = c.inp_vars
-        out = c.out_var
-        i = len(signals[out])
-        if isinstance(c, Gain):
-          if len(signals[inp[0]]) > i:
-            signals[out].append(c.K * signals[inp[0]][i])
-        elif isinstance(c, Delay):
-          if i == 0:
-            signals[out].append(0)
-          elif len(signals[inp[0]]) > i - 1:
-            signals[out].append(signals[inp[0]][i - 1])
-        elif isinstance(c, Adder):
-          if all(len(signals[v]) > i for v in inp):
-            signals[out].append(sum(signals[v][i] for v in inp))
+        c.response_update(signals)
     return signals['Y']
   def get_poles(self):
     """

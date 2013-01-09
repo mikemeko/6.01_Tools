@@ -113,6 +113,7 @@ class Pole_Zero_Diagram(Frame):
     self.pack()
 
 if __name__ == '__main__':
+  # TODO: remove when have main.py
   sys = System([Adder(['X', 'E'], 'A'), Gain('D', 'E', -1),
       Gain('A', 'B', 0.1), Adder(['B', 'Y'], 'C'), Delay('C', 'Y'),
       Delay('Y', 'D')])

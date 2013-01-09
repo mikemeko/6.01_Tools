@@ -26,6 +26,6 @@ def show_pole_zero_diagram(sys):
 
 if __name__ == '__main__':
   sys = System([Adder(['X', 'E'], 'A'), Gain('D', 'E', -1),
-      Gain('A', 'B', 0.1), Adder(['B', 'Y'], 'C'), Delay('C', 'Y'),
+      Gain('A', 'B', 1), Adder(['B', 'Y'], 'C'), Delay('C', 'Y'),
       Delay('Y', 'D')])
   show_pole_zero_diagram(sys)
