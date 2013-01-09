@@ -4,7 +4,9 @@ Pole-zero diagram.
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
-from poly import R_Polynomial
+from system import Adder
+from system import Delay
+from system import Gain
 from system import System
 from system_function import System_Function
 from Tkinter import Canvas
@@ -111,8 +113,10 @@ class Pole_Zero_Diagram(Frame):
     self.pack()
 
 if __name__ == '__main__':
+  sys = System([Adder(['X', 'E'], 'A'), Gain('D', 'E', -1),
+      Gain('A', 'B', 0.1), Adder(['B', 'Y'], 'C'), Delay('C', 'Y'),
+      Delay('Y', 'D')])
   root = Tk()
   root.resizable(0, 0)
-  pz = Pole_Zero_Diagram(root, System_Function(R_Polynomial([1,1]),
-      R_Polynomial([1,1,1])))
+  pz = Pole_Zero_Diagram(root, sys)
   root.mainloop()

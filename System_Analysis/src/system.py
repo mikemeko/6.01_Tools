@@ -38,6 +38,7 @@ class Gain(Component):
   Representation for a gain.
   """
   def __init__(self, inp_var, out_var, K):
+    assert isinstance(K, (float, int, long)), 'K must be a number'
     Component.__init__(self, [inp_var], out_var)
     self.K = K
   def update(self, inp_polys):
@@ -89,6 +90,35 @@ class System:
           covered_variables[c.out_var] = c.updated_out
     self.sf = System_Function(covered_variables['Y'].coeff('X'),
         R_Polynomial([1]) - covered_variables['Y'].coeff('Y'))
+  def get_unit_sample_response(self):
+    """
+    TODO(mikemeko)
+    """
+    variables = set()
+    for c in self.components:
+      for v in c.inp_vars:
+        variables.add(v)
+      variables.add(c.out_var)
+    signals = dict(zip(variables, [[] for v in variables]))
+    # unit sample signal (approximation)
+    signals['X'] = [1] + [0] * 99
+    while len(signals['Y']) < len(signals['X']):
+      for c in self.components:
+        inp = c.inp_vars
+        out = c.out_var
+        i = len(signals[out])
+        if isinstance(c, Gain):
+          if len(signals[inp[0]]) > i:
+            signals[out].append(c.K * signals[inp[0]][i])
+        elif isinstance(c, Delay):
+          if i == 0:
+            signals[out].append(0)
+          elif len(signals[inp[0]]) > i - 1:
+            signals[out].append(signals[inp[0]][i - 1])
+        elif isinstance(c, Adder):
+          if all(len(signals[v]) > i for v in inp):
+            signals[out].append(sum(signals[v][i] for v in inp))
+    return signals['Y']
   def get_poles(self):
     """
     Returns the poles of this system (may include hidden poles).
