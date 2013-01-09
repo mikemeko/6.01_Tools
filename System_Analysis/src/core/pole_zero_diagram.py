@@ -4,9 +4,6 @@ Pole-zero diagram.
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
-from system import Adder
-from system import Delay
-from system import Gain
 from system import System
 from system_function import System_Function
 from Tkinter import Canvas
@@ -111,13 +108,16 @@ class Pole_Zero_Diagram(Frame):
     canvas.pack()
     self.configure(background=BACKGROUND_COLOR)
     self.pack()
+  def show(self):
+    """
+    Displays the pole-zero diagram.
+    """
+    self.mainloop()
 
-if __name__ == '__main__':
-  # TODO: remove when have main.py
-  sys = System([Adder(['X', 'E'], 'A'), Gain('D', 'E', -1),
-      Gain('A', 'B', 0.1), Adder(['B', 'Y'], 'C'), Delay('C', 'Y'),
-      Delay('Y', 'D')])
+def plot_pole_zero_diagram(sys):
+  """
+  Plots the pole-zero diagram of the given system.
+  """
   root = Tk()
   root.resizable(0, 0)
-  pz = Pole_Zero_Diagram(root, sys)
-  root.mainloop()
+  Pole_Zero_Diagram(root, sys).show()
