@@ -24,7 +24,8 @@ class Component:
   def sf_update(self, inp_polys):
     """
     This updates the the |updated_out| attribute. It is called once all the
-    input variables are described as polynomials only in X and Y.
+        input variables to this component are described as polynomials only in
+        terms of X and Y, given in |inp_polys|.
     """
     raise NotImplementedError('subclasses should implement this')
   def sf_updated(self):
@@ -35,9 +36,15 @@ class Component:
   @property
   def response_update(self, signals):
     """
-    TODO(mikemeko)
+    |signals| is a dictionary mapping variables to lists. This appends, if
+        possible, the next sample of the output signal of this component.
     """
     raise NotImplementedError('subclasses should implement this')
+  def is_last_component(self):
+    """
+    Returns True if this is the last Component of a system (i.e. outputs "Y").
+    """
+    return self.out_var is 'Y'
 
 class Gain(Component):
   """
@@ -91,28 +98,30 @@ class System:
     self.components = components
     self.sf = None
     self._solve_sf()
+  def last_component(self):
+    """
+    Returns the last Component of this system.
+    """
+    for c in self.components:
+      if c.is_last_component():
+        return c
   def _solve_sf(self):
     """
     Solves for the system function of this system.
     """
-    last_comp = None # the component that outputs Y
-    for c in self.components:
-      if c.out_var is 'Y':
-        last_comp = c
-        break
-    assert last_comp is not None, 'a component that outputs "Y" is required'
-    covered_variables = {'X':Polynomial({'X':R_Polynomial([1])}),
+    last_comp = self.last_component()
+    var_reps = {'X':Polynomial({'X':R_Polynomial([1])}),
         'Y':Polynomial({'Y':R_Polynomial([1])})}
     while not last_comp.sf_updated():
       for c in self.components:
-        if not c.sf_updated() and all(i in covered_variables for i in c.inp_vars):
-          c.sf_update([covered_variables[i] for i in c.inp_vars])
-          covered_variables[c.out_var] = c.updated_out
-    self.sf = System_Function(covered_variables['Y'].coeff('X'),
-        R_Polynomial([1]) - covered_variables['Y'].coeff('Y'))
+        if not c.sf_updated() and all(i in var_reps for i in c.inp_vars):
+          c.sf_update([var_reps[i] for i in c.inp_vars])
+          var_reps[c.out_var] = c.updated_out
+    self.sf = System_Function(var_reps['Y'].coeff('X'),
+        R_Polynomial([1]) - var_reps['Y'].coeff('Y'))
   def variables(self):
     """
-    TODO(mikemeko)
+    Returns a set of the variables in this System.
     """
     variables = set()
     for c in self.components:
@@ -120,25 +129,26 @@ class System:
         variables.add(v)
       variables.add(c.out_var)
     return variables
-  def get_unit_sample_response(self, N=50):
+  def unit_sample_response(self, N=50):
     """
-    TODO(mikemeko)
+    Returns the first |N| samples of the unit sample response of this System,
+        starting at n=0.
     """
     signals = {}
     for v in self.variables():
       signals[v] = []
-    # unit sample signal (approximation)
+    # input is unit sample signal
     signals['X'] = [1] + [0] * (N - 1)
     while len(signals['Y']) < N:
       for c in self.components:
         c.response_update(signals)
     return signals['Y']
-  def get_poles(self):
+  def poles(self):
     """
     Returns the poles of this system (may include hidden poles).
     """
     return self.sf.poles()
-  def get_zeros(self):
+  def zeros(self):
     """
     Returns the zeros of this system (may include hidden zeros).
     """

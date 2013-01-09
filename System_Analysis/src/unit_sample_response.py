@@ -13,19 +13,20 @@ from system import Delay
 from system import Gain
 from system import System
 
-def show_pole_zero_diagram(sys):
+def plot_unit_sample_response(sys):
   """
-  TODO(mikemeko)
+  Plots the unit sample response of the given system.
   """
   assert isinstance(sys, System), 'sys must be a System'
-  h = sys.get_unit_sample_response()
+  h = sys.unit_sample_response()
   stem(range(len(h)), h)
   xlabel('n')
   ylabel('h[n]')
   show()
 
 if __name__ == '__main__':
+  # TODO: remove when have main.py
   sys = System([Adder(['X', 'E'], 'A'), Gain('D', 'E', -1),
-      Gain('A', 'B', 1), Adder(['B', 'Y'], 'C'), Delay('C', 'Y'),
+      Gain('A', 'B', 2), Adder(['B', 'Y'], 'C'), Delay('C', 'Y'),
       Delay('Y', 'D')])
-  show_pole_zero_diagram(sys)
+  plot_unit_sample_response(sys)
