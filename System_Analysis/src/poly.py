@@ -56,7 +56,7 @@ class R_Polynomial:
     else:
       return '%sR^%d' % (coeff_str, exp)
   def __str__(self):
-    return ' + '.join(self._prettify(self.coeff(exp), exp)
+    return '+'.join(self._prettify(self.coeff(exp), exp)
         for exp in xrange(self.degree + 1) if self.coeff(exp) is not 0)
 
 class Polynomial:
@@ -112,5 +112,5 @@ class Polynomial:
         new_data[var] = other.coeff(var)
     return Polynomial(new_data)
   def __str__(self):
-    return ' + '.join('(%s)%s' % tuple(map(str, reversed(item)))
+    return '+'.join('(%s)%s' % tuple(map(str, reversed(item)))
         for item in self.data.items())
