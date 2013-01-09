@@ -4,9 +4,9 @@ Utilities for testing.
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
-from poly import Polynomial
-from poly import R_Polynomial
-from system import System_Function
+from core.poly import Polynomial
+from core.poly import R_Polynomial
+from core.system import System_Function
 
 def assert_r_polys_equal(r_poly_1, r_poly_2):
   """

@@ -4,12 +4,12 @@ Unittests for system.py.
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
-from poly import R_Polynomial
-from system import Adder
-from system import Delay
-from system import Gain
-from system import System
-from system import System_Function
+from core.poly import R_Polynomial
+from core.system import Adder
+from core.system import Delay
+from core.system import Gain
+from core.system import System
+from core.system import System_Function
 from test_util import assert_system_functions_equal
 from unittest import main
 from unittest import TestCase

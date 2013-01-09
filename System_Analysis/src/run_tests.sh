@@ -1,5 +1,5 @@
 # Script to run tests.
-python test_poly.py
-python test_system.py
-python test_system_function.py
+python -m tests.test_poly
+python -m tests.test_system
+python -m tests.test_system_function
 

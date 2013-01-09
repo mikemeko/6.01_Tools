@@ -5,8 +5,8 @@ Unittests for system_function.py.
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
-from poly import R_Polynomial
-from system_function import System_Function
+from core.poly import R_Polynomial
+from core.system_function import System_Function
 from unittest import main
 from unittest import TestCase
 
