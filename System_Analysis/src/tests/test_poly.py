@@ -4,8 +4,8 @@ Unittests for poly.py.
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
-from constants import X
-from constants import Y
+from core.constants import X
+from core.constants import Y
 from core.poly import Polynomial
 from core.poly import R_Polynomial
 from test_util import assert_polys_equal

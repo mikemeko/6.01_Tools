@@ -4,8 +4,8 @@ Unittests for system.py.
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
-from constants import X
-from constants import Y
+from core.constants import X
+from core.constants import Y
 from core.poly import R_Polynomial
 from core.system import Adder
 from core.system import Delay
