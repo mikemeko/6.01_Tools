@@ -9,6 +9,7 @@ from constants import BACKGROUND_COLOR
 from constants import DEFAULT_WINDOW_SIZE
 from constants import POLE_COLOR
 from constants import POLE_ZERO_RADIUS
+from constants import TEXT_OFFSET
 from constants import UNIT_CIRCLE_SPACE
 from constants import ZERO_COLOR
 from system import System
@@ -36,7 +37,7 @@ class Pole_Zero_Diagram(Frame):
     else:
       raise Exception('sys must be a System or System_Function')
     Frame.__init__(self, parent)
-    parent.title(str(self.sf))
+    parent.title('H(R) = %s' % str(self.sf))
     self.window_size = window_size
     self._draw_poles_and_zeros()
   def _visible_poles(self):
@@ -57,7 +58,7 @@ class Pole_Zero_Diagram(Frame):
       if pole in visible_zeros:
         visible_zeros.remove(pole)
     return map(complex, visible_zeros)
-  def _draw_circle(self, canvas, center, radius, fill=''):
+  def _draw_circle(self, canvas, center, radius, fill='', text=''):
     """
     Draws the circle centered at |center| and of the given |radius| on the
         given |canvas|. A fill color may be specified, no fill by default.
@@ -68,6 +69,7 @@ class Pole_Zero_Diagram(Frame):
     cx, cy = center
     canvas.create_oval(cx - radius, cy - radius, cx + radius, cy + radius,
         fill=fill)
+    canvas.create_text((cx, cy - TEXT_OFFSET), text=text)
   def _draw_items(self, canvas, unit_radius, items, color):
     """
     Draws the given |items| (poles or zeros) on the diagram.
@@ -77,7 +79,7 @@ class Pole_Zero_Diagram(Frame):
     for c in items:
       self._draw_circle(canvas, (self.window_size / 2 + c.real * unit_radius,
           self.window_size / 2 + c.imag * unit_radius),
-          POLE_ZERO_RADIUS * counts[c], color)
+          POLE_ZERO_RADIUS * counts[c], color, str(c))
       counts[c] -= 1
   def _draw_poles_and_zeros(self):
     """

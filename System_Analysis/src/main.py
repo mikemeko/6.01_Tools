@@ -16,8 +16,6 @@ from threading import Thread
 
 if __name__ == '__main__':
   # sample system
-  sys = System([Adder([X, 'E'], 'A'), Gain('D', 'E', -1),
-      Gain('A', 'B', 0.5), Adder(['B', Y], 'C'), Delay('C', Y),
-      Delay(Y, 'D')])
+  sys = System([Adder([X, 'B'], Y), Delay(Y, 'A'), Gain('A', 'B', 0.5)])
   Thread(target=plot_pole_zero_diagram, args=(sys,)).start()
   Thread(target=plot_unit_sample_response, args=(sys,)).start()
