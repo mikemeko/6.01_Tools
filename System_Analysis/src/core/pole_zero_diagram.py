@@ -16,6 +16,7 @@ from system_function import System_Function
 from Tkinter import Canvas
 from Tkinter import Frame
 from Tkinter import Tk
+from util import empty
 from util import in_bounds
 
 class Pole_Zero_Diagram(Frame):
@@ -85,7 +86,10 @@ class Pole_Zero_Diagram(Frame):
     poles = self._visible_poles()
     zeros = self._visible_zeros()
     # maximum pole / zero magnitude, clipped from below at 1
-    max_magnitude = max(abs(max(poles + zeros, key=lambda c: abs(c))), 1)
+    if empty(poles) and empty(zeros):
+      max_magnitude = 1
+    else:
+      max_magnitude = max(abs(max(poles + zeros, key=lambda c: abs(c))), 1)
     # radius of unit circle
     unit_radius = (self.window_size / 2 * UNIT_CIRCLE_SPACE) / max_magnitude
     canvas = Canvas(self, width=self.window_size, height=self.window_size)
