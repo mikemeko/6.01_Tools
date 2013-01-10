@@ -4,6 +4,10 @@ Constants.
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
+# system input and output variables
+X = 'X'
+Y = 'Y'
+
 # pole-zero diagram constants
 AXES_COLOR = 'grey'
 BACKGROUND_COLOR = 'white'

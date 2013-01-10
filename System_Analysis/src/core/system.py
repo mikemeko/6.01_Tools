@@ -4,6 +4,8 @@ Representation for DT LTI systems.
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
+from constants import X
+from constants import Y
 from constants import DEFAULT_NUM_SAMPLES
 from poly import Polynomial
 from poly import R_Polynomial
@@ -45,7 +47,7 @@ class Component:
     """
     Returns True if this is the last Component of a system (i.e. outputs "Y").
     """
-    return self.out_var is 'Y'
+    return self.out_var is Y
 
 class Gain(Component):
   """
@@ -111,15 +113,15 @@ class System:
     Solves for the system function of this system.
     """
     last_comp = self.last_component()
-    var_reps = {'X':Polynomial({'X':R_Polynomial([1])}),
-        'Y':Polynomial({'Y':R_Polynomial([1])})}
+    var_reps = {X:Polynomial({X:R_Polynomial([1])}),
+        Y:Polynomial({Y:R_Polynomial([1])})}
     while not last_comp.sf_updated():
       for c in self.components:
         if not c.sf_updated() and all(i in var_reps for i in c.inp_vars):
           c.sf_update([var_reps[i] for i in c.inp_vars])
           var_reps[c.out_var] = c.updated_out
-    self.sf = System_Function(var_reps['Y'].coeff('X'),
-        R_Polynomial([1]) - var_reps['Y'].coeff('Y'))
+    self.sf = System_Function(var_reps[Y].coeff(X),
+        R_Polynomial([1]) - var_reps[Y].coeff(Y))
   def variables(self):
     """
     Returns a set of the variables in this System.
@@ -139,11 +141,11 @@ class System:
     for v in self.variables():
       signals[v] = []
     # input is unit sample signal
-    signals['X'] = [1] + [0] * (num_samples - 1)
-    while len(signals['Y']) < num_samples:
+    signals[X] = [1] + [0] * (num_samples - 1)
+    while len(signals[Y]) < num_samples:
       for c in self.components:
         c.response_update(signals)
-    return signals['Y']
+    return signals[Y]
   def poles(self):
     """
     Returns the poles of this system (may include hidden poles).

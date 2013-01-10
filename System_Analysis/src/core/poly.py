@@ -66,8 +66,8 @@ class Polynomial:
   def __init__(self, data):
     """
     |data|: a dictionary mapping variable names to their coefficients. For
-        example, RX + 2Y is represented by {'X':R_Polynomial([0, 1]),
-        'Y':R_Polynomial([2])}.
+        example, RX + 2Y is represented by {X:R_Polynomial([0, 1]),
+        Y:R_Polynomial([2])}.
     """
     for var in data:
       assert isinstance(var, str), 'signal variable names must be strings'
