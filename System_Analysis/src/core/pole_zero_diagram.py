@@ -4,21 +4,19 @@ Pole-zero diagram.
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
+from constants import AXES_COLOR
+from constants import BACKGROUND_COLOR
+from constants import DEFAULT_WINDOW_SIZE
+from constants import POLE_COLOR
+from constants import POLE_ZERO_RADIUS
+from constants import UNIT_CIRCLE_SPACE
+from constants import ZERO_COLOR
 from system import System
 from system_function import System_Function
 from Tkinter import Canvas
 from Tkinter import Frame
 from Tkinter import Tk
 from util import in_bounds
-
-# constants
-AXES_COLOR = 'grey'
-BACKGROUND_COLOR = 'white'
-DEFAULT_WINDOW_SIZE = 400
-POLE_COLOR = 'red'
-POLE_ZERO_RADIUS = 4
-UNIT_CIRCLE_SPACE = 0.8
-ZERO_COLOR = 'cyan'
 
 class Pole_Zero_Diagram(Frame):
   """

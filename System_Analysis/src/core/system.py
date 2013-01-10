@@ -4,6 +4,7 @@ Representation for DT LTI systems.
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
+from constants import DEFAULT_NUM_SAMPLES
 from poly import Polynomial
 from poly import R_Polynomial
 from system_function import System_Function
@@ -129,7 +130,7 @@ class System:
         variables.add(v)
       variables.add(c.out_var)
     return variables
-  def unit_sample_response(self, N=50):
+  def unit_sample_response(self, num_samples=DEFAULT_NUM_SAMPLES):
     """
     Returns the first |N| samples of the unit sample response of this System,
         starting at n=0.
@@ -138,8 +139,8 @@ class System:
     for v in self.variables():
       signals[v] = []
     # input is unit sample signal
-    signals['X'] = [1] + [0] * (N - 1)
-    while len(signals['Y']) < N:
+    signals['X'] = [1] + [0] * (num_samples - 1)
+    while len(signals['Y']) < num_samples:
       for c in self.components:
         c.response_update(signals)
     return signals['Y']
