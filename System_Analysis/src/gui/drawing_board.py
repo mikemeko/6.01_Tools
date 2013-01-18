@@ -11,6 +11,7 @@ from constants import CONNECTOR_RADIUS
 from constants import CONNECTOR_RIGHT
 from constants import CONNECTOR_TAG
 from constants import CONNECTOR_TOP
+from constants import DELETE_TAG
 from constants import DRAG_TAG
 from constants import DRAWING_BOARD_BACKGROUND_COLOR
 from constants import DRAWING_BOARD_HEIGHT
@@ -18,6 +19,8 @@ from constants import DRAWING_BOARD_MARKER_COLOR
 from constants import DRAWING_BOARD_MARKER_SEPARATION
 from constants import DRAWING_BOARD_MARKER_RADIUS
 from constants import DRAWING_BOARD_WIDHT
+from constants import LINE_COLOR
+from constants import LINE_WIDTH
 from Tkinter import Canvas
 from Tkinter import Frame
 from Tkinter import Tk
@@ -62,6 +65,15 @@ class Drawing_Board(Frame):
     self.canvas.tag_bind(DRAG_TAG, '<B1-Motion>', self._drag_move)
     self.canvas.tag_bind(DRAG_TAG, '<ButtonRelease-1>', self._drag_release)
     # TODO(mikemeko)
+    self._wire_id = None
+    self._wire_start = None
+    self._wire_end = None
+    self.canvas.tag_bind(CONNECTOR_TAG, '<ButtonPress-1>', self._wire_press)
+    self.canvas.tag_bind(CONNECTOR_TAG, '<B1-Motion>', self._wire_move)
+    self.canvas.tag_bind(CONNECTOR_TAG, '<ButtonRelease-1>',
+        self._wire_release)
+    self.canvas.tag_bind(DELETE_TAG, '<ButtonPress-3>', self._delete)
+    # TODO(mikemeko)
     self.canvas_id_to_drawable = {}
   def _setup_drawing_board(self):
     """
@@ -75,6 +87,12 @@ class Drawing_Board(Frame):
     self.canvas.pack()
     self.configure(background=DRAWING_BOARD_BACKGROUND_COLOR)
     self.pack()
+  def _snap(self, coord):
+    """
+    TODO(mikemeko)
+    """
+    return (((coord + DRAWING_BOARD_MARKER_SEPARATION / 2) //
+        DRAWING_BOARD_MARKER_SEPARATION) * DRAWING_BOARD_MARKER_SEPARATION)
   def _drag_press(self, event):
     """
     TODO(mikemeko)
@@ -82,12 +100,6 @@ class Drawing_Board(Frame):
     assert self._drag_data is None, 'already dragging an item'
     x, y = event.x, event.y
     self._drag_data = (x, y, self.canvas.find_closest(x, y)[0])
-  def _snap(self, coord):
-    """
-    TODO(mikemeko)
-    """
-    return (((coord + DRAWING_BOARD_MARKER_SEPARATION / 2) //
-        DRAWING_BOARD_MARKER_SEPARATION) * DRAWING_BOARD_MARKER_SEPARATION)
   def _drag_move(self, event):
     """
     TODO(mikemeko)
@@ -106,20 +118,62 @@ class Drawing_Board(Frame):
     """
     assert self._drag_data is not None, 'not dragging an item'
     self._drag_data = None
+  def _draw_current_wire(self):
+    """
+    TODO(mikemeko)
+    """
+    if self._wire_id is not None:
+      self.canvas.delete(self._wire_id)
+    x1, y1 = self._wire_start
+    x2, y2 = self._wire_end
+    self._wire_id = self.canvas.create_line(x1, y1, x2, y2, fill=LINE_COLOR,
+        width=LINE_WIDTH, tags=DELETE_TAG)
+  def _wire_press(self, event):
+    """
+    TODO(mikemeko)
+    """
+    self._wire_start = (self._snap(event.x), self._snap(event.y))
+  def _wire_move(self, event):
+    """
+    TODO(mikemeko)
+    """
+    new_wire_end = (self._snap(event.x), self._snap(event.y))
+    if self._wire_end != new_wire_end:
+      self._wire_end = new_wire_end
+      self._draw_current_wire()
+  def _wire_release(self, event):
+    """
+    TODO(mikemeko)
+    """
+    self._wire_id = None
+    self._wire_start = None
+    self._wire_end = None
+  def _delete(self, event):
+    """
+    TODO(mikemeko)
+    """
+    canvas_id = self.canvas.find_closest(event.x, event.y)[0]
+    self.canvas.delete(canvas_id)
+    if canvas_id in self.canvas_id_to_drawable:
+      for connector_id in self.canvas_id_to_drawable[canvas_id].connector_ids:
+        self.canvas.delete(connector_id)
+      del self.canvas_id_to_drawable[canvas_id]
   def _draw_connector(self, drawable, x, y):
     """
     TODO(mikemeko)
     """
     assert isinstance(drawable, Drawable), 'drawable must be a Drawable'
     drawable.connector_ids.append(create_circle(self.canvas, x, y,
-        CONNECTOR_RADIUS, fill=CONNECTOR_COLOR, tags=CONNECTOR_TAG))
+        CONNECTOR_RADIUS, fill=CONNECTOR_COLOR, activewidth=2,
+        tags=CONNECTOR_TAG))
   def add_drawable(self, drawable):
     """
     TODO(mikemeko)
     """
     assert isinstance(drawable, Drawable), 'drawable must be a Drawable'
-    drawable.draw_on(self.canvas)
-    self.canvas_id_to_drawable[self.canvas.find_all()[-1]] = drawable
+    canvas_id = drawable.draw_on(self.canvas)
+    self.canvas_id_to_drawable[canvas_id] = drawable
+    self.canvas.itemconfig(canvas_id, tags=(DELETE_TAG, DRAG_TAG))
     # draw connectors
     x1, y1, x2, y2 = drawable.bounding_box
     if drawable.connector_flags & CONNECTOR_BOTTOM:
@@ -144,7 +198,7 @@ class Circle(Drawable):
     self.fill = fill
   def draw_on(self, canvas):
     x1, y1, x2, y2 = self.bounding_box
-    canvas.create_oval(x1, y1, x2, y2, fill=self.fill, tags=DRAG_TAG)
+    return canvas.create_oval(x1, y1, x2, y2, fill=self.fill)
 
 if __name__ == '__main__':
   root = Tk()
@@ -152,5 +206,6 @@ if __name__ == '__main__':
   board = Drawing_Board(root)
   board.add_drawable(Circle(100, 100, 10, CONNECTOR_BOTTOM | CONNECTOR_LEFT |
       CONNECTOR_RIGHT, 'yellow'))
-  board.add_drawable(Circle(200, 200, 20, CONNECTOR_LEFT | CONNECTOR_RIGHT, 'red'))
+  board.add_drawable(Circle(200, 200, 20, CONNECTOR_LEFT | CONNECTOR_RIGHT,
+      'red'))
   board.mainloop()
