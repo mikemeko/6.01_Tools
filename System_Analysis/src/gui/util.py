@@ -4,6 +4,7 @@ Utility methods.
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
+from math import sqrt
 from Tkinter import Canvas
 
 def create_circle(canvas, x, y, r, *args, **kwargs):
@@ -16,3 +17,26 @@ def create_circle(canvas, x, y, r, *args, **kwargs):
   assert isinstance(y, (float, int, long)), 'y must be a number'
   assert isinstance(r, (float, int, long)), 'r must be a number'
   return canvas.create_oval(x - r, y - r, x + r, y + r, *args, **kwargs)
+
+def point_inside_bbox(point, bbox):
+  """
+  TODO(mikemeko)
+  """
+  x, y = point
+  x1, y1, x2, y2 = bbox
+  return x1 <= x <= x2 and y1 <= y <= y2
+
+def dist(point1, point2):
+  """
+  TODO(mikemeko)
+  """
+  x1, y1 = point1
+  x2, y2 = point2
+  return sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
+
+def point_inside_circle(point, circle):
+  """
+  TODO(mikemeko)
+  """
+  cx, cy, r = circle
+  return dist(point, (cx, cy)) <= r
