@@ -4,7 +4,7 @@ The things that may exist on a board: drawable items, connectors, and wires.
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
-from util import draw_wire
+from util import create_wire
 
 class Drawable:
   """
@@ -142,4 +142,4 @@ class Wire:
     canvas.delete(self.canvas_id)
     x1, y1 = self.start_connector.center
     x2, y2 = self.end_connector.center
-    self.canvas_id = draw_wire(canvas, x1, y1, x2, y2)
+    self.canvas_id = create_wire(canvas, x1, y1, x2, y2)
