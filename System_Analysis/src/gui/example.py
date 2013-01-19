@@ -97,4 +97,4 @@ if __name__ == '__main__':
       CONNECTOR_LEFT | CONNECTOR_RIGHT, 'yellow', 'red', 'orange', 'cyan'))
   board.add_drawable(Rectangle(10, 10, 70, 70, CONNECTOR_TOP |
       CONNECTOR_BOTTOM, 'blue'))
-  board.mainloop()
+  root.mainloop()

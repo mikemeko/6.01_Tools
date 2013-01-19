@@ -17,13 +17,13 @@ def create_circle(canvas, x, y, r, *args, **kwargs):
   assert isinstance(canvas, Canvas), 'canvas must be a Canvas'
   return canvas.create_oval(x - r, y - r, x + r, y + r, *args, **kwargs)
 
-def create_wire(canvas, x1, y1, x2, y2):
+def create_wire(canvas, x1, y1, x2, y2, fill=WIRE_COLOR):
   """
   Draws a wire on the |canvas| from (|x1|, |y1|) to (|x2|, |y2|).
   Returns the canvas id of the wire.
   """
   assert isinstance(canvas, Canvas), 'canvas must be a Canvas'
-  return canvas.create_line(x1, y1, x2, y2, fill=WIRE_COLOR, width=WIRE_WIDTH)
+  return canvas.create_line(x1, y1, x2, y2, fill=fill, width=WIRE_WIDTH)
 
 def point_inside_bbox(point, bbox):
   """
