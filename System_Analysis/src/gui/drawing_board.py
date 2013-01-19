@@ -19,6 +19,7 @@ from constants import DRAWING_BOARD_MARKER_SEPARATION
 from constants import DRAWING_BOARD_MARKER_RADIUS
 from constants import DRAWING_BOARD_WIDHT
 from constants import LINE_COLOR
+from constants import LINE_ILLEGAL_COLOR
 from constants import LINE_WIDTH
 from Tkinter import ALL
 from Tkinter import Canvas
@@ -70,9 +71,9 @@ class Connector:
     self.end_wires = []
   def delete_from(self, canvas):
     canvas.delete(self.canvas_id)
-    for wire in self.start_wires:
+    for wire in self.start_wires[:]:
       wire.delete_from(canvas)
-    for wire in self.end_wires:
+    for wire in self.end_wires[:]:
       wire.delete_from(canvas)
   def redraw_wires(self, canvas):
     for wire in self.start_wires:
@@ -91,11 +92,11 @@ class Connector:
     for wire in self.start_wires:
       if wire.canvas_id == canvas_id:
         self.start_wires.remove(wire)
-        break
+        return
     for wire in self.end_wires:
       if wire.canvas_id == canvas_id:
         self.end_wires.remove(wire)
-        break
+        return
 
 class Wire:
   def __init__(self, canvas_id, start_connector, end_connector):
@@ -170,7 +171,9 @@ class Drawing_Board(Frame):
       self.canvas.delete(self._wire_id)
     x1, y1 = self._wire_start
     x2, y2 = self._wire_end
-    self._wire_id = self.canvas.create_line(x1, y1, x2, y2, fill=LINE_COLOR,
+    fill = (LINE_COLOR if self._connector_at(self._wire_end) is not None else
+        LINE_ILLEGAL_COLOR)
+    self._wire_id = self.canvas.create_line(x1, y1, x2, y2, fill=fill,
         width=LINE_WIDTH)
   def _wire_press(self, event):
     self._wire_start = (self._snap(event.x), self._snap(event.y))
