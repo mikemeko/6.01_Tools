@@ -4,6 +4,8 @@ Utility methods.
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
+from constants import WIRE_COLOR
+from constants import WIRE_WIDTH
 from math import sqrt
 from Tkinter import Canvas
 
@@ -40,3 +42,10 @@ def point_inside_circle(point, circle):
   """
   cx, cy, r = circle
   return dist(point, (cx, cy)) <= r
+
+def draw_wire(canvas, x1, y1, x2, y2):
+  """
+  Draws a wire on the |canvas| from (|x1|, |y1|) to (|x2|, |y2|).
+  Returns the canvas id of the wire.
+  """
+  return canvas.create_line(x1, y1, x2, y2, fill=WIRE_COLOR, width=WIRE_WIDTH)

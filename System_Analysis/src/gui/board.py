@@ -78,6 +78,16 @@ class Board(Frame):
         if point_inside_circle((x, y), (cx, cy, CONNECTOR_RADIUS)):
           return connector
     return None
+  def _wire_with_id(self, canvas_id):
+    for drawable in self.drawables:
+      for connector in drawable.connectors:
+        for wire in connector.start_wires:
+          if wire.canvas_id == canvas_id:
+            return wire
+        for wire in connector.end_wires:
+          if wire.canvas_id == canvas_id:
+            return wire
+    return None
   def _drag_press(self, event):
     drawable_to_move = self._drawable_at((event.x, event.y))
     if drawable_to_move is not None:
@@ -113,8 +123,8 @@ class Board(Frame):
         self.canvas.delete(self._wire_id)
       else:
         wire = Wire(self._wire_id, start_connector, end_connector)
-        start_connector.start_wires.append(wire)
-        end_connector.end_wires.append(wire)
+        start_connector.start_wires.add(wire)
+        end_connector.end_wires.add(wire)
     self._wire_id = None
     self._wire_start = None
     self._wire_end = None
@@ -128,14 +138,14 @@ class Board(Frame):
       connector_to_delete.drawable.delete_from(self.canvas)
       return
     canvas_id = self.canvas.find_closest(event.x, event.y)[0]
-    self.canvas.delete(canvas_id)
-    for drawable in self.drawables:
-      drawable.remove_wire(canvas_id)
+    wire_to_delete = self._wire_with_id(canvas_id)
+    if wire_to_delete is not None:
+      wire_to_delete.delete_from(self.canvas)
   def _draw_connector(self, drawable, x, y):
     canvas_id = create_circle(self.canvas, x, y, CONNECTOR_RADIUS,
         fill=CONNECTOR_COLOR, activewidth=2, tags=CONNECTOR_TAG)
     connector = Connector(canvas_id, (x, y), drawable)
-    drawable.connectors.append(connector)
+    drawable.connectors.add(connector)
   def add_drawable(self, drawable):
     self.drawables.append(drawable)
     drawable.draw_on(self.canvas)
