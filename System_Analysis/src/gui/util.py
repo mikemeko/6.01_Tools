@@ -4,6 +4,7 @@ Utility methods.
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
+from constants import BOARD_MARKER_SEPARATION
 from constants import WIRE_COLOR
 from constants import WIRE_WIDTH
 from math import sqrt
@@ -53,3 +54,10 @@ def point_inside_circle(point, circle):
   """
   cx, cy, r = circle
   return dist(point, (cx, cy)) <= r
+
+def snap(coord):
+  """
+  Returns |coord| snapped to the closest board marker location.
+  """
+  return (((coord + BOARD_MARKER_SEPARATION / 2) // BOARD_MARKER_SEPARATION)
+      * BOARD_MARKER_SEPARATION)

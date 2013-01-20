@@ -6,7 +6,6 @@ GUI tool on which several items may be drawn. Supports dragging the items
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
-from components import Connector
 from components import Drawable
 from components import Wire
 from constants import BOARD_BACKGROUND_COLOR
@@ -15,13 +14,8 @@ from constants import BOARD_MARKER_COLOR
 from constants import BOARD_MARKER_SEPARATION
 from constants import BOARD_MARKER_RADIUS
 from constants import BOARD_WIDHT
-from constants import CONNECTOR_BOTTOM
-from constants import CONNECTOR_COLOR
-from constants import CONNECTOR_LEFT
 from constants import CONNECTOR_RADIUS
-from constants import CONNECTOR_RIGHT
 from constants import CONNECTOR_TAG
-from constants import CONNECTOR_TOP
 from constants import DRAG_TAG
 from constants import WIRE_COLOR
 from constants import WIRE_ILLEGAL_COLOR
@@ -32,6 +26,7 @@ from util import create_circle
 from util import create_wire
 from util import point_inside_bbox
 from util import point_inside_circle
+from util import snap
 
 class Board(Frame):
   """
@@ -83,12 +78,6 @@ class Board(Frame):
         self._wire_release)
     # delete binding
     self.canvas.tag_bind(ALL, '<ButtonPress-3>', self._delete)
-  def _snap(self, coord):
-    """
-    Returns |coord| snapped to the closest board marker location.
-    """
-    return (((coord + BOARD_MARKER_SEPARATION / 2) // BOARD_MARKER_SEPARATION)
-        * BOARD_MARKER_SEPARATION)
   def _drawable_at(self, point):
     """
     |point|: a tuple of the form (x, y) indicating a location on the canvas.
@@ -138,8 +127,8 @@ class Board(Frame):
     Callback for when a drawable item is being moved. Updates drag state.
     """
     if self._drag_item is not None:
-      dx = self._snap(event.x - self._drag_last_x)
-      dy = self._snap(event.y - self._drag_last_y)
+      dx = snap(event.x - self._drag_last_x)
+      dy = snap(event.y - self._drag_last_y)
       self._drag_item.move(self.canvas, dx, dy)
       self._drag_last_x += dx
       self._drag_last_y += dy
@@ -169,12 +158,12 @@ class Board(Frame):
     Callback for when a connector is pressed to start creating a wire. Updates
         wire data.
     """
-    self._wire_start = (self._snap(event.x), self._snap(event.y))
+    self._wire_start = (snap(event.x), snap(event.y))
   def _wire_move(self, event):
     """
     Callback for when a wire is changed while being created. Updates wire data.
     """
-    new_wire_end = (self._snap(event.x), self._snap(event.y))
+    new_wire_end = (snap(event.x), snap(event.y))
     if self._wire_end != new_wire_end:
       # update wire end and redraw
       self._wire_end = new_wire_end
@@ -216,18 +205,6 @@ class Board(Frame):
     wire_to_delete = self._wire_with_id(canvas_id)
     if wire_to_delete is not None:
       wire_to_delete.delete_from(self.canvas)
-  def _draw_connector(self, drawable, point):
-    """
-    |drawable|: a Drawable item.
-    |point|: a tuple of the form (x, y) indicating where the connecter should
-        be drawn.
-    Draws a connector for the given |drawable| at the indicated |point|.
-    """
-    assert isinstance(drawable, Drawable), 'drawable must be a Drawable'
-    x, y = map(self._snap, point)
-    canvas_id = create_circle(self.canvas, x, y, CONNECTOR_RADIUS,
-        fill=CONNECTOR_COLOR, activewidth=2, tags=CONNECTOR_TAG)
-    drawable.connectors.add(Connector(canvas_id, (x, y), drawable))
   def add_drawable(self, drawable):
     """
     Adds the given |drawable| to this board.
@@ -241,12 +218,4 @@ class Board(Frame):
     for part in drawable.parts:
       self.canvas.itemconfig(part, tags=DRAG_TAG)
     # draw its connectors
-    x1, y1, x2, y2 = drawable.bounding_box
-    if drawable.connector_flags & CONNECTOR_BOTTOM:
-      self._draw_connector(drawable, ((x1 + x2) / 2, y2))
-    if drawable.connector_flags & CONNECTOR_LEFT:
-      self._draw_connector(drawable, (x1, (y1 + y2) / 2))
-    if drawable.connector_flags & CONNECTOR_RIGHT:
-      self._draw_connector(drawable, (x2, (y1 + y2) / 2))
-    if drawable.connector_flags & CONNECTOR_TOP:
-      self._draw_connector(drawable, ((x1 + x2) / 2, y1))
+    drawable.draw_connectors(self.canvas)

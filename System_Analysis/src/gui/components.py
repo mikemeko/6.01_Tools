@@ -4,7 +4,16 @@ The things that may exist on a board: drawable items, connectors, and wires.
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
+from constants import CONNECTOR_BOTTOM
+from constants import CONNECTOR_COLOR
+from constants import CONNECTOR_LEFT
+from constants import CONNECTOR_RADIUS
+from constants import CONNECTOR_RIGHT
+from constants import CONNECTOR_TAG
+from constants import CONNECTOR_TOP
+from util import create_circle
 from util import create_wire
+from util import snap
 
 class Drawable:
   """
@@ -32,6 +41,29 @@ class Drawable:
     All subclasses should implement this.
     """
     raise NotImplementedError('subclasses should implement this')
+  def _draw_connector(self, canvas, point):
+    """
+    |point|: a tuple of the form (x, y) indicating where the connecter should
+        be drawn.
+    Draws a connector for this Drawable at the indicated |point|.
+    """
+    x, y = map(snap, point)
+    canvas_id = create_circle(canvas, x, y, CONNECTOR_RADIUS,
+        fill=CONNECTOR_COLOR, activewidth=2, tags=CONNECTOR_TAG)
+    self.connectors.add(Connector(canvas_id, (x, y), self))
+  def draw_connectors(self, canvas):
+    """
+    Draws the connectors for this Drawable on the given |canvas|.
+    """
+    x1, y1, x2, y2 = self.bounding_box
+    if self.connector_flags & CONNECTOR_BOTTOM:
+      self._draw_connector(canvas, ((x1 + x2) / 2, y2))
+    if self.connector_flags & CONNECTOR_LEFT:
+      self._draw_connector(canvas, (x1, (y1 + y2) / 2))
+    if self.connector_flags & CONNECTOR_RIGHT:
+      self._draw_connector(canvas, (x2, (y1 + y2) / 2))
+    if self.connector_flags & CONNECTOR_TOP:
+      self._draw_connector(canvas, ((x1 + x2) / 2, y1))
   def delete_from(self, canvas):
     """
     Deletes this item from the |canvas|.
