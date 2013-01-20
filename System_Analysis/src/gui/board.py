@@ -224,7 +224,7 @@ class Board(Frame):
     Draws a connector for the given |drawable| at the indicated |point|.
     """
     assert isinstance(drawable, Drawable), 'drawable must be a Drawable'
-    x, y = point
+    x, y = map(self._snap, point)
     canvas_id = create_circle(self.canvas, x, y, CONNECTOR_RADIUS,
         fill=CONNECTOR_COLOR, activewidth=2, tags=CONNECTOR_TAG)
     drawable.connectors.add(Connector(canvas_id, (x, y), drawable))
