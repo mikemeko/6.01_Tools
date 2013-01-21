@@ -13,7 +13,7 @@ from constants import BOARD_HEIGHT
 from constants import BOARD_MARKER_COLOR
 from constants import BOARD_MARKER_SEPARATION
 from constants import BOARD_MARKER_RADIUS
-from constants import BOARD_WIDHT
+from constants import BOARD_WIDTH
 from constants import CONNECTOR_RADIUS
 from constants import CONNECTOR_TAG
 from constants import DRAG_TAG
@@ -32,14 +32,16 @@ class Board(Frame):
   """
   Tkinter Frame that supports drawing and manipulating various items.
   """
-  def __init__(self, parent, width=BOARD_WIDHT, height=BOARD_HEIGHT):
+  def __init__(self, parent, width=BOARD_WIDTH, height=BOARD_HEIGHT):
     Frame.__init__(self, parent)
     self.width = width
     self.height = height
     # canvas on which items are drawn
-    self.canvas = Canvas(self, width=width, height=height)
+    self.canvas = Canvas(self, width=width, height=height,
+        highlightthickness=0)
     # the drawables on this board
     self.drawables = set()
+    self.drawable_offsets = dict()
     # state for dragging
     self._drag_item = None
     self._drag_last_x = None
@@ -85,7 +87,8 @@ class Board(Frame):
         item exists.
     """
     for drawable in self.drawables:
-      if point_inside_bbox(point, drawable.bounding_box):
+      if point_inside_bbox(point, drawable.bounding_box(
+          self.drawable_offsets[drawable])):
         return drawable
     return None
   def _connector_at(self, point):
@@ -129,9 +132,14 @@ class Board(Frame):
     if self._drag_item is not None:
       dx = snap(event.x - self._drag_last_x)
       dy = snap(event.y - self._drag_last_y)
+      # move the item being dragged
       self._drag_item.move(self.canvas, dx, dy)
+      # update drag state
       self._drag_last_x += dx
       self._drag_last_y += dy
+      # update offset of item being dragged
+      x, y = self.drawable_offsets[self._drag_item]
+      self.drawable_offsets[self._drag_item] = x + dx, y + dy
   def _drag_release(self, event):
     """
     Callback for when a drawable item is released. Updates drag state.
@@ -205,17 +213,29 @@ class Board(Frame):
     wire_to_delete = self._wire_with_id(canvas_id)
     if wire_to_delete is not None:
       wire_to_delete.delete_from(self.canvas)
-  def add_drawable(self, drawable):
+  def is_duplicate(self, drawable, offset=(0, 0)):
+    """
+    TODO(mikemeko)
+    """
+    assert isinstance(drawable, Drawable), 'drawable must be a Drawable'
+    bbox = drawable.bounding_box(offset)
+    for other in self.drawables:
+      if bbox == other.bounding_box(self.drawable_offsets[other]):
+        return True
+    return False
+  def add_drawable(self, drawable, offset=(0, 0)):
     """
     Adds the given |drawable| to this board.
+    TODO(mikemeko)
     """
     assert isinstance(drawable, Drawable), 'drawable must be a Drawable'
     # add it to the list of drawables on this board
     self.drawables.add(drawable)
+    self.drawable_offsets[drawable] = offset
     # draw it
-    drawable.draw_on(self.canvas)
+    drawable.draw_on(self.canvas, offset)
     # attach drag tag
     for part in drawable.parts:
       self.canvas.itemconfig(part, tags=DRAG_TAG)
     # draw its connectors
-    drawable.draw_connectors(self.canvas)
+    drawable.draw_connectors(self.canvas, offset)

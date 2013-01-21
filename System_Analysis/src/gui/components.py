@@ -20,27 +20,36 @@ class Drawable:
   An abstract class to represent an item that is drawn on the board. All
       subclasses should impement the draw_on(canvas) method.
   """
-  def __init__(self, bounding_box, connector_flags=0):
+  def __init__(self, width, height, connector_flags=0):
     """
-    |bounding_box|: a tuple of the form (x1, y1, x2, y2) indicating the
-        bounding box of this item.
+    |width|: the width of this item.
+    |height|: the height of this item.
     |connector_flags|: an indicator for the places where this item should have
         connectors. For example: CONNECTOR_TOP | CONNECTOR_RIGHT.
     """
-    self.bounding_box = bounding_box
+    self.width = width
+    self.height = height
     self.connector_flags = connector_flags
     # canvas ids for the parts on this item, updated by draw_on(canvas)
     self.parts = set()
     # connectors on this item, updated by board
     self.connectors = set()
   @property
-  def draw_on(self, canvas):
+  def draw_on(self, canvas, offset=(0, 0)):
     """
     Draws the parts of this item on the |canvas|. Should add the canvas ids of
         all drawn objects to self.parts.
     All subclasses should implement this.
+    TODO(mikemeko)
     """
     raise NotImplementedError('subclasses should implement this')
+  def bounding_box(self, offset=(0, 0)):
+    """
+    TODO(mikemeko)
+    """
+    x1, y1 = offset
+    x2, y2 = x1 + self.width, y1 + self.height
+    return x1, y1, x2, y2
   def _draw_connector(self, canvas, point):
     """
     |point|: a tuple of the form (x, y) indicating where the connecter should
@@ -51,11 +60,11 @@ class Drawable:
     canvas_id = create_circle(canvas, x, y, CONNECTOR_RADIUS,
         fill=CONNECTOR_COLOR, activewidth=2, tags=CONNECTOR_TAG)
     self.connectors.add(Connector(canvas_id, (x, y), self))
-  def draw_connectors(self, canvas):
+  def draw_connectors(self, canvas, offset=(0, 0)):
     """
     Draws the connectors for this Drawable on the given |canvas|.
     """
-    x1, y1, x2, y2 = self.bounding_box
+    x1, y1, x2, y2 = self.bounding_box(offset)
     if self.connector_flags & CONNECTOR_BOTTOM:
       self._draw_connector(canvas, ((x1 + x2) / 2, y2))
     if self.connector_flags & CONNECTOR_LEFT:
@@ -79,9 +88,6 @@ class Drawable:
     Moves this item by |dx| in the x direction and |dy| in the y direction.
     """
     if dx != 0 or dy != 0:
-      # update bounding box
-      x1, y1, x2, y2 = self.bounding_box
-      self.bounding_box = (x1 + dx, y1 + dy, x2 + dx, y2 + dy)
       # move all parts of this item
       for part in self.parts:
         canvas.move(part, dx, dy)
