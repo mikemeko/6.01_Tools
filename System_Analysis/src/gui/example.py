@@ -51,18 +51,17 @@ class Circle(Drawable):
     """
     Draws this colorful circle on the |canvas| at the given |offset|.
     """
-    r = self.r
     x, y = offset
-    x, y = x + r, y + r
+    d = 2 * self.r
     # this demonstrates multiple drawn parts for one drawable item
-    self.parts.add(canvas.create_arc(x - r, y - r, x + r, y + r,
-        start=0, fill=self.color1))
-    self.parts.add(canvas.create_arc(x - r, y - r, x + r, y + r,
-        start=90, fill=self.color2))
-    self.parts.add(canvas.create_arc(x - r, y - r, x + r, y + r,
-        start=180, fill=self.color3))
-    self.parts.add(canvas.create_arc(x - r, y - r, x + r, y + r,
-        start=270, fill=self.color4))
+    self.parts.add(canvas.create_arc(x, y, x + d, y + d, start=0,
+        fill=self.color1))
+    self.parts.add(canvas.create_arc(x, y, x + d, y + d, start=90,
+        fill=self.color2))
+    self.parts.add(canvas.create_arc(x, y, x + d, y + d, start=180,
+        fill=self.color3))
+    self.parts.add(canvas.create_arc(x, y, x + d, y + d, start=270,
+        fill=self.color4))
 
 class Triangle(Drawable):
   """
