@@ -13,14 +13,32 @@ from constants import CONNECTOR_TOP
 from palette import Palette
 from Tkinter import Tk
 
+class Rectangle(Drawable):
+  """
+  Rectangle.
+  """
+  def __init__(self, width, height, connectors, fill):
+    """
+    |width|: the width of the rectangle.
+    |height|: the height of the rectangle.
+    |fill|: fill color for the rectangle.
+    """
+    Drawable.__init__(self, width, height, connectors)
+    self.fill = fill
+  def draw_on(self, canvas, offset=(0, 0)):
+    """
+    Draws this rectangle on the |canvas|.
+    """
+    self.parts.add(canvas.create_rectangle(self.bounding_box(offset),
+        fill=self.fill))
+
 class Circle(Drawable):
   """
   Colorful circle.
   """
   def __init__(self, r, connectors, color1, color2, color3, color4):
     """
-    TODO(mikemeko)
-    |x|, |y|, |r|: center and radius for the circle.
+    |r|: radius of the circle.
     |color1|, |color2|, |color3|, |color4|: colors to display on the circle.
     """
     Drawable.__init__(self, 2 * r, 2 * r, connectors)
@@ -31,11 +49,12 @@ class Circle(Drawable):
     self.color4 = color4
   def draw_on(self, canvas, offset=(0, 0)):
     """
-    Draws this colorful circle on the |canvas|.
+    Draws this colorful circle on the |canvas| at the given |offset|.
     """
     r = self.r
     x, y = offset
     x, y = x + r, y + r
+    # this demonstrates multiple drawn parts for one drawable item
     self.parts.add(canvas.create_arc(x - r, y - r, x + r, y + r,
         start=0, fill=self.color1))
     self.parts.add(canvas.create_arc(x - r, y - r, x + r, y + r,
@@ -52,10 +71,9 @@ class Triangle(Drawable):
   def __init__(self, x2, y2, x3, y3, connectors, fill,
       outline='black'):
     """
-    |x1|, |y1|, |x2|, |y2|, |x3|, |y3|: vertices of the triangle.
+    (|x2|, |y2|), (|x3|, |y3|): vertices of the triangle, other than (0, 0).
     |fill|: fill color for the triangle.
     |outline|: outline color for the triangle.
-    TODO(mikemeko)
     """
     min_x, max_x = [f(0, x2, x3) for f in min, max]
     min_y, max_y = [f(0, y2, y3) for f in min, max]
@@ -67,44 +85,26 @@ class Triangle(Drawable):
     self.outline = outline
   def draw_on(self, canvas, offset=(0, 0)):
     """
-    Draws this triangle on the |canvas|.
+    Draws this triangle on the |canvas| at the given |offset|.
     """
     ox, oy = offset
     self.parts.add(canvas.create_polygon(self.x1 + ox, self.y1 + oy,
         self.x2 + ox, self.y2 + oy, self.x3 + ox, self.y3 + oy,
         fill=self.fill, outline=self.outline))
 
-class Rectangle(Drawable):
-  """
-  Rectangle.
-  """
-  def __init__(self, x2, y2, connectors, fill):
-    """
-    |x1|, |y1|, |x2|, |y2|: bounding box for the rectangle.
-    |fill|: fill color for the rectangle.
-    TODO(mikemeko)
-    """
-    Drawable.__init__(self, x2, y2, connectors)
-    self.fill = fill
-  def draw_on(self, canvas, offset=(0, 0)):
-    """
-    Draws this rectangle on the |canvas|.
-    """
-    self.parts.add(canvas.create_rectangle(self.bounding_box(offset),
-        fill=self.fill))
-
 if __name__ == '__main__':
   root = Tk()
   root.resizable(0, 0)
   # create board
   board = Board(root)
-  # add items to the board
-  # TODO(mikemeko)
+  # create palette
   palette = Palette(root, board)
-  palette.add_drawable(Circle, 20, CONNECTOR_TOP | CONNECTOR_BOTTOM |
+  # add displays to the palette
+  palette.add_drawable_type(Circle, 20, CONNECTOR_TOP | CONNECTOR_BOTTOM |
       CONNECTOR_LEFT | CONNECTOR_RIGHT, 'red', 'yellow', 'cyan', 'orange')
-  palette.add_drawable(Triangle, 0, 40, 30, 20, CONNECTOR_LEFT |
+  palette.add_drawable_type(Triangle, 0, 40, 30, 20, CONNECTOR_LEFT |
       CONNECTOR_RIGHT, 'green')
-  palette.add_drawable(Rectangle, 40, 40, CONNECTOR_LEFT | CONNECTOR_RIGHT,
-      'blue')
+  palette.add_drawable_type(Rectangle, 40, 40, CONNECTOR_LEFT |
+      CONNECTOR_RIGHT, 'blue')
+  # run main loop
   root.mainloop()

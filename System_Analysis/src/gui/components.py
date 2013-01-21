@@ -37,15 +37,15 @@ class Drawable:
   @property
   def draw_on(self, canvas, offset=(0, 0)):
     """
-    Draws the parts of this item on the |canvas|. Should add the canvas ids of
-        all drawn objects to self.parts.
+    Draws the parts of this item on the |canvas| at the given |offset|. Should
+        add the canvas ids of all drawn objects to self.parts.
     All subclasses should implement this.
-    TODO(mikemeko)
     """
     raise NotImplementedError('subclasses should implement this')
   def bounding_box(self, offset=(0, 0)):
     """
-    TODO(mikemeko)
+    Returns the bounding box of this Drawable, when drawn with the given
+        |offset|.
     """
     x1, y1 = offset
     x2, y2 = x1 + self.width, y1 + self.height
@@ -62,7 +62,8 @@ class Drawable:
     self.connectors.add(Connector(canvas_id, (x, y), self))
   def draw_connectors(self, canvas, offset=(0, 0)):
     """
-    Draws the connectors for this Drawable on the given |canvas|.
+    Draws the connectors for this Drawable on the given |canvas|, with the
+        Drawable drawn with the given |offset|.
     """
     x1, y1, x2, y2 = self.bounding_box(offset)
     if self.connector_flags & CONNECTOR_BOTTOM:

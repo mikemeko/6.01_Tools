@@ -33,12 +33,16 @@ class Board(Frame):
   Tkinter Frame that supports drawing and manipulating various items.
   """
   def __init__(self, parent, width=BOARD_WIDTH, height=BOARD_HEIGHT):
-    Frame.__init__(self, parent)
+    """
+    |width|: the width of this board.
+    |height|: the height of this board.
+    """
+    Frame.__init__(self, parent, background=BOARD_BACKGROUND_COLOR)
     self.width = width
     self.height = height
     # canvas on which items are drawn
     self.canvas = Canvas(self, width=width, height=height,
-        highlightthickness=0)
+        highlightthickness=0, background=BOARD_BACKGROUND_COLOR)
     # the drawables on this board
     self.drawables = set()
     self.drawable_offsets = dict()
@@ -61,9 +65,7 @@ class Board(Frame):
       for y in xrange(0, self.height, BOARD_MARKER_SEPARATION):
         create_circle(self.canvas, x, y, BOARD_MARKER_RADIUS, fill=
             BOARD_MARKER_COLOR, outline=BOARD_MARKER_COLOR)
-    self.canvas.configure(background=BOARD_BACKGROUND_COLOR)
     self.canvas.pack()
-    self.configure(background=BOARD_BACKGROUND_COLOR)
     self.pack()
   def _setup_bindings(self):
     """
@@ -182,6 +184,7 @@ class Board(Frame):
     """
     if self._wire_id is not None:
       end_connector = self._connector_at(self._wire_end)
+      # only draw wire if mouse released at a connector
       if end_connector is None:
         self.canvas.delete(self._wire_id)
       else:
@@ -215,18 +218,19 @@ class Board(Frame):
       wire_to_delete.delete_from(self.canvas)
   def is_duplicate(self, drawable, offset=(0, 0)):
     """
-    TODO(mikemeko)
+    Returns True if the exact |drawable| at the given |offset| is already on
+        the board, False otherwise.
     """
     assert isinstance(drawable, Drawable), 'drawable must be a Drawable'
     bbox = drawable.bounding_box(offset)
     for other in self.drawables:
-      if bbox == other.bounding_box(self.drawable_offsets[other]):
+      if (drawable.__class__ == other.__class__ and
+          bbox == other.bounding_box(self.drawable_offsets[other])):
         return True
     return False
   def add_drawable(self, drawable, offset=(0, 0)):
     """
-    Adds the given |drawable| to this board.
-    TODO(mikemeko)
+    Adds the given |drawable| to this board at the given |offset|.
     """
     assert isinstance(drawable, Drawable), 'drawable must be a Drawable'
     # add it to the list of drawables on this board
@@ -234,8 +238,8 @@ class Board(Frame):
     self.drawable_offsets[drawable] = offset
     # draw it
     drawable.draw_on(self.canvas, offset)
+    # draw its connectors
+    drawable.draw_connectors(self.canvas, offset)
     # attach drag tag
     for part in drawable.parts:
       self.canvas.itemconfig(part, tags=DRAG_TAG)
-    # draw its connectors
-    drawable.draw_connectors(self.canvas, offset)

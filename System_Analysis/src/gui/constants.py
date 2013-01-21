@@ -4,8 +4,6 @@ Constants.
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
-# TODO(mikemeko): alphabetize
-
 # colors
 BOARD_BACKGROUND_COLOR = 'white'
 BOARD_MARKER_COLOR = 'grey'
@@ -23,8 +21,8 @@ CONNECTOR_TOP =    2**3
 # size constants
 BOARD_WIDTH = 600
 BOARD_HEIGHT = 400
-BOARD_MARKER_SEPARATION = 10
 BOARD_MARKER_RADIUS = 1
+BOARD_MARKER_SEPARATION = 10
 CONNECTOR_RADIUS = 2
 PALETTE_WIDTH = 600
 PALETTE_HEIGHT = 60
