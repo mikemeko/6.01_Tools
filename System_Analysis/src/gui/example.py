@@ -1,5 +1,5 @@
 """
-Board example.
+GUI example.
 """
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
