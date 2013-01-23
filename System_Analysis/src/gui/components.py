@@ -35,7 +35,7 @@ class Drawable:
     # connectors on this item, updated by board
     self.connectors = set()
   @property
-  def draw_on(self, canvas, offset=(0, 0)):
+  def draw_on(self, canvas, offset):
     """
     Draws the parts of this item on the |canvas| at the given |offset|. Should
         add the canvas ids of all drawn objects to self.parts.
