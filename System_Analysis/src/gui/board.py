@@ -10,9 +10,8 @@ from components import Drawable
 from components import Wire
 from constants import BOARD_BACKGROUND_COLOR
 from constants import BOARD_HEIGHT
-from constants import BOARD_MARKER_COLOR
-from constants import BOARD_MARKER_SEPARATION
-from constants import BOARD_MARKER_RADIUS
+from constants import BOARD_MARKER_LINE_COLOR
+from constants import BOARD_MARKER_LINE_SEPARATION
 from constants import BOARD_WIDTH
 from constants import CONNECTOR_RADIUS
 from constants import CONNECTOR_TAG
@@ -22,7 +21,6 @@ from constants import WIRE_ILLEGAL_COLOR
 from Tkinter import ALL
 from Tkinter import Canvas
 from Tkinter import Frame
-from util import create_circle
 from util import create_wire
 from util import point_inside_bbox
 from util import point_inside_circle
@@ -61,10 +59,11 @@ class Board(Frame):
     """
     Draws guide markings on the board.
     """
-    for x in xrange(0, self.width, BOARD_MARKER_SEPARATION):
-      for y in xrange(0, self.height, BOARD_MARKER_SEPARATION):
-        create_circle(self.canvas, x, y, BOARD_MARKER_RADIUS, fill=
-            BOARD_MARKER_COLOR, outline=BOARD_MARKER_COLOR)
+    for dim in xrange(0, self.width, BOARD_MARKER_LINE_SEPARATION):
+      self.canvas.create_line((0, dim, self.width, dim),
+          fill=BOARD_MARKER_LINE_COLOR)
+      self.canvas.create_line((dim, 0, dim, self.height),
+          fill=BOARD_MARKER_LINE_COLOR)
     self.canvas.pack()
     self.pack()
   def _setup_bindings(self):
