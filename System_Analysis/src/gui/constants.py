@@ -1,5 +1,5 @@
 """
-Constants.
+GUI constants.
 """
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'

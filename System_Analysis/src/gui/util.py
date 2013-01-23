@@ -9,6 +9,49 @@ from constants import WIRE_COLOR
 from constants import WIRE_WIDTH
 from math import sqrt
 from Tkinter import Canvas
+from Tkinter import CURRENT
+from Tkinter import END
+from Tkinter import INSERT
+from Tkinter import SEL_FIRST
+from Tkinter import SEL_LAST
+
+def create_editable_text(canvas, x, y, text='?'):
+  """
+  TODO(mikemeko)
+  don't forget to give credit to http://effbot.org/zone/editing-canvas-text-items.htm
+  """
+  text_box = canvas.create_text(x, y, text=text)
+  def set_focus(event):
+    canvas.focus_set()
+    canvas.focus(text_box)
+    canvas.select_from(CURRENT, 0)
+    canvas.select_to(CURRENT, END)
+  canvas.tag_bind(text_box, '<Double-Button-1>', set_focus)
+  def handle_key(event):
+    insert = canvas.index(text_box, INSERT)
+    if event.char >= ' ':
+      if canvas.select_item():
+        canvas.dchars(text_box, SEL_FIRST, SEL_LAST)
+        canvas.select_clear()
+      canvas.insert(text_box, 'insert', event.char)
+    elif event.keysym == 'BackSpace':
+      if canvas.select_item():
+        canvas.dchars(text_box, SEL_FIRST, SEL_LAST)
+        canvas.select_clear()
+      else:
+        if insert > 0:
+          canvas.dchars(text_box, insert - 1, insert)
+    elif event.keysym == 'Right':
+      canvas.icursor(text_box, insert + 1)
+      canvas.select_clear()
+    elif event.keysym == 'Left':
+      canvas.icursor(text_box, insert - 1)
+      canvas.select_clear()
+  canvas.tag_bind(text_box, '<Key>', handle_key)
+  def release_focus(event):
+    canvas.focus('')
+  canvas.tag_bind(text_box, '<Return>', release_focus)
+  return text_box
 
 def create_circle(canvas, x, y, r, *args, **kwargs):
   """

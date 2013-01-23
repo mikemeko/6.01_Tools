@@ -42,6 +42,12 @@ class Drawable:
     All subclasses should implement this.
     """
     raise NotImplementedError('subclasses should implement this')
+  def draw_on_palette(self, canvas):
+    """
+    TODO(mikemeko)
+    """
+    # TODO(mikemeko)
+    self.draw_on(canvas)
   def bounding_box(self, offset=(0, 0)):
     """
     Returns the bounding box of this Drawable, when drawn with the given

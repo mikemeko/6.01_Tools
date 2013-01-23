@@ -67,8 +67,7 @@ class Triangle(Drawable):
   """
   Triangle.
   """
-  def __init__(self, x2, y2, x3, y3, connectors, fill,
-      outline='black'):
+  def __init__(self, x2, y2, x3, y3, connectors, fill, outline='black'):
     """
     (|x2|, |y2|), (|x3|, |y3|): vertices of the triangle, other than (0, 0).
     |fill|: fill color for the triangle.
