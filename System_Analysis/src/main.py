@@ -17,15 +17,16 @@ from constants import DELAY_TEXT
 from constants import GAIN_CONNECTORS
 from constants import GAIN_FILL
 from constants import GAIN_OUTLINE
-from constants import GAIN_VERTICES
+from constants import GAIN_LEFT_VERTICES
+from constants import GAIN_RIGHT_VERTICES
 from constants import IO_BBOX
 from constants import IO_FILL
 from constants import IO_OUTLINE
 from constants import IO_PADDING
+from constants import WIRE_CONNECTOR_BBOX
 from constants import WIRE_CONNECTOR_CONNECTORS
 from constants import WIRE_CONNECTOR_FILL
 from constants import WIRE_CONNECTOR_OUTLINE
-from constants import WIRE_CONNECTOR_RADIUS
 from constants import X_CONNECTORS
 from constants import Y_CONNECTORS
 from core.constants import X
@@ -46,12 +47,12 @@ from gui.palette import Palette
 from gui.util import create_editable_text
 from Tkinter import Tk
 
-class Gain_Drawable(Drawable):
+class Gain_Right_Drawable(Drawable):
   """
   TODO(mikemeko)
   """
   def __init__(self):
-    x1, y1, x2, y2, x3, y3 = GAIN_VERTICES
+    x1, y1, x2, y2, x3, y3 = GAIN_RIGHT_VERTICES
     min_x, max_x = [f(x1, x2, x3) for f in min, max]
     min_y, max_y = [f(y1, y2, y3) for f in min, max]
     Drawable.__init__(self, max_x - min_x, max_y - min_y, GAIN_CONNECTORS)
@@ -59,12 +60,33 @@ class Gain_Drawable(Drawable):
     """
     TODO(mikemeko)
     """
-    x1, y1, x2, y2, x3, y3 = GAIN_VERTICES
+    x1, y1, x2, y2, x3, y3 = GAIN_RIGHT_VERTICES
     ox, oy = offset
     self.parts.add(canvas.create_polygon(x1 + ox, y1 + oy, x2 + ox, y2 + oy,
         x3 + ox, y3 + oy, fill=GAIN_FILL, outline=GAIN_OUTLINE))
     self.gain_text = create_editable_text(canvas,
         (ox + x1 + ox + x2 + ox + x3) / 3, oy + y3)
+    self.parts.add(self.gain_text)
+
+class Gain_Left_Drawable(Drawable):
+  """
+  TODO(mikemeko)
+  """
+  def __init__(self):
+    x1, y1, x2, y2, x3, y3 = GAIN_LEFT_VERTICES
+    min_x, max_x = [f(x1, x2, x3) for f in min, max]
+    min_y, max_y = [f(y1, y2, y3) for f in min, max]
+    Drawable.__init__(self, max_x - min_x, max_y - min_y, GAIN_CONNECTORS)
+  def draw_on(self, canvas, offset=(0, 0)):
+    """
+    TODO(mikemeko)
+    """
+    x1, y1, x2, y2, x3, y3 = GAIN_LEFT_VERTICES
+    ox, oy = offset
+    self.parts.add(canvas.create_polygon(x1 + ox, y1 + oy, x2 + ox, y2 + oy,
+        x3 + ox, y3 + oy, fill=GAIN_FILL, outline=GAIN_OUTLINE))
+    self.gain_text = create_editable_text(canvas,
+        (ox + x1 + ox + x2 + ox + x3) / 3, oy + y1)
     self.parts.add(self.gain_text)
 
 class Delay_Drawable(Drawable):
@@ -108,16 +130,16 @@ class Wire_Connector_Drawable(Drawable):
   TODO(mikemeko)
   """
   def __init__(self):
-    d = 2 * WIRE_CONNECTOR_RADIUS
-    Drawable.__init__(self, d, d, WIRE_CONNECTOR_CONNECTORS)
+    x1, y1, x2, y2 = WIRE_CONNECTOR_BBOX
+    Drawable.__init__(self, x2 - x1, y2 - y1, WIRE_CONNECTOR_CONNECTORS)
   def draw_on(self, canvas, offset=(0, 0)):
     """
     TODO(mikemeko)
     """
-    d = 2 * WIRE_CONNECTOR_RADIUS
+    x1, y1, x2, y2 = WIRE_CONNECTOR_BBOX
     ox, oy = offset
-    self.parts.add(canvas.create_oval(ox, oy, ox + d, oy + d,
-        fill=WIRE_CONNECTOR_FILL, outline=WIRE_CONNECTOR_OUTLINE))
+    self.parts.add(canvas.create_rectangle((x1 + ox, y1 + oy, x2 + ox,
+        y2 + oy), fill=WIRE_CONNECTOR_FILL, outline=WIRE_CONNECTOR_OUTLINE))
 
 class IO_Drawable(Drawable):
   """
@@ -157,7 +179,8 @@ if __name__ == '__main__':
   out_offset_y = inp_offset_y
   board.add_drawable(out, (out_offset_x, out_offset_y))
   # TODO(mikemeko)
-  palette.add_drawable_type(Gain_Drawable)
+  palette.add_drawable_type(Gain_Right_Drawable)
+  palette.add_drawable_type(Gain_Left_Drawable)
   palette.add_drawable_type(Delay_Drawable)
   palette.add_drawable_type(Adder_Drawable)
   palette.add_drawable_type(Wire_Connector_Drawable)
