@@ -9,7 +9,7 @@ from core.system_function import System_Function
 from unittest import main
 from unittest import TestCase
 
-class Test_System_Function(TestCase):
+class System_Function_Test(TestCase):
   """
   Tests for System_Function.
   """

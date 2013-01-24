@@ -13,7 +13,7 @@ from util import assert_r_polys_equal
 from unittest import main
 from unittest import TestCase
 
-class Test_R_Polynomial(TestCase):
+class R_Polynomial_Test(TestCase):
   """
   Tests for R_Polynomial.
   """
@@ -35,7 +35,7 @@ class Test_R_Polynomial(TestCase):
   def test_add(self):
     assert_r_polys_equal(self.r_poly_1 + self.r_poly_2, R_Polynomial([3,1,2]))
 
-class Test_Polynomial(TestCase):
+class Polynomial_Test(TestCase):
   """
   Tests for Polynomial.
   """

@@ -16,7 +16,7 @@ from util import assert_system_functions_equal
 from unittest import main
 from unittest import TestCase
 
-class Test_System(TestCase):
+class System_Test(TestCase):
   """
   Tests for System.
   """
