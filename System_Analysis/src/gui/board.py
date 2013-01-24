@@ -12,7 +12,7 @@ from components import Wire_Connector_Drawable
 from constants import BOARD_BACKGROUND_COLOR
 from constants import BOARD_HEIGHT
 from constants import BOARD_MARKER_LINE_COLOR
-from constants import BOARD_MARKER_LINE_SEPARATION
+from constants import BOARD_GRID_SEPARATION
 from constants import BOARD_WIDTH
 from constants import CONNECTOR_RADIUS
 from constants import CONNECTOR_TAG
@@ -62,7 +62,7 @@ class Board(Frame):
     """
     Draws guide markings on the board.
     """
-    for dim in xrange(0, self.width, BOARD_MARKER_LINE_SEPARATION):
+    for dim in xrange(0, self.width, BOARD_GRID_SEPARATION):
       self.canvas.create_line((0, dim, self.width, dim),
           fill=BOARD_MARKER_LINE_COLOR)
       self.canvas.create_line((dim, 0, dim, self.height),

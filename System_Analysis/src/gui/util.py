@@ -4,7 +4,7 @@ Utility methods.
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
-from constants import BOARD_MARKER_LINE_SEPARATION
+from constants import BOARD_GRID_SEPARATION
 from constants import WIRE_COLOR
 from constants import WIRE_WIDTH
 from math import sqrt
@@ -17,19 +17,29 @@ from Tkinter import SEL_LAST
 
 def create_editable_text(canvas, x, y, text='?'):
   """
-  TODO(mikemeko)
-  don't forget to give credit to http://effbot.org/zone/editing-canvas-text-items.htm
+  Creates an edittable text box on the |canvas| centered at the given position
+      (|x|, |y|) and containing the given |text|.
+  Returns the canvas id of the text box.
+  Credit to http://effbot.org/zone/editing-canvas-text-items.htm
   """
+  # create the text box
   text_box = canvas.create_text(x, y, text=text)
   def set_focus(event):
+    """
+    Focus text box. Selects all the text inside the text box.
+    """
     canvas.focus_set()
     canvas.focus(text_box)
     canvas.select_from(CURRENT, 0)
     canvas.select_to(CURRENT, END)
   canvas.tag_bind(text_box, '<Double-Button-1>', set_focus)
   def handle_key(event):
+    """
+    Handle a key press when the text box is in focus.
+    """
     insert = canvas.index(text_box, INSERT)
     if event.char >= ' ':
+      # printable character
       if canvas.select_item():
         canvas.dchars(text_box, SEL_FIRST, SEL_LAST)
         canvas.select_clear()
@@ -49,6 +59,9 @@ def create_editable_text(canvas, x, y, text='?'):
       canvas.select_clear()
   canvas.tag_bind(text_box, '<Key>', handle_key)
   def release_focus(event):
+    """
+    Releases focus from the text box when editting is done.
+    """
     canvas.focus('')
   canvas.tag_bind(text_box, '<Return>', release_focus)
   return text_box
@@ -102,5 +115,5 @@ def snap(coord):
   """
   Returns |coord| snapped to the closest board marker location.
   """
-  return (((coord + BOARD_MARKER_LINE_SEPARATION / 2) //
-      BOARD_MARKER_LINE_SEPARATION) * BOARD_MARKER_LINE_SEPARATION)
+  return (((coord + BOARD_GRID_SEPARATION / 2) // BOARD_GRID_SEPARATION) *
+      BOARD_GRID_SEPARATION)
