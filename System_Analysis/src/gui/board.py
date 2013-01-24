@@ -8,6 +8,7 @@ __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
 from components import Drawable
 from components import Wire
+from components import Wire_Connector_Drawable
 from constants import BOARD_BACKGROUND_COLOR
 from constants import BOARD_HEIGHT
 from constants import BOARD_MARKER_LINE_COLOR
@@ -17,7 +18,9 @@ from constants import CONNECTOR_RADIUS
 from constants import CONNECTOR_TAG
 from constants import DRAG_TAG
 from constants import WIRE_COLOR
-from constants import WIRE_ILLEGAL_COLOR
+from constants import WIRE_CONNECTOR_SIZE
+from math import atan2
+from math import pi
 from Tkinter import ALL
 from Tkinter import Canvas
 from Tkinter import Frame
@@ -159,8 +162,9 @@ class Board(Frame):
     x2, y2 = self._wire_end
     # indicate whether wire is legal or not
     fill = WIRE_COLOR
-    if self._connector_at(self._wire_end) is None:
-      fill = WIRE_ILLEGAL_COLOR
+    # TODO(mikemeko): sort this out
+    #if self._connector_at(self._wire_end) is None:
+    #  fill = WIRE_ILLEGAL_COLOR
     self._wire_id = create_wire(self.canvas, x1, y1, x2, y2, fill=fill)
   def _wire_press(self, event):
     """
@@ -180,17 +184,31 @@ class Board(Frame):
   def _wire_release(self, event):
     """
     Callback for when wire creation is complete.
+    TODO(mikemeko): revisit this
     """
     if self._wire_id is not None:
+      start_connector = self._connector_at(self._wire_start)
       end_connector = self._connector_at(self._wire_end)
-      # only draw wire if mouse released at a connector
       if end_connector is None:
-        self.canvas.delete(self._wire_id)
-      else:
-        start_connector = self._connector_at(self._wire_start)
-        wire = Wire(self._wire_id, start_connector, end_connector)
-        start_connector.start_wires.add(wire)
-        end_connector.end_wires.add(wire)
+        wire_connector_drawable = Wire_Connector_Drawable()
+        # TODO(mikemeko): clarify
+        ox, oy = map(snap, self._wire_end)
+        sx, sy = self._wire_start
+        ex, ey = self._wire_end
+        angle = atan2(ey - sy, ex - sx)
+        if abs(angle) <= pi / 4:
+          ox, oy = ox, oy - WIRE_CONNECTOR_SIZE / 2
+        elif abs(angle) >= 3 * pi / 4:
+          ox, oy = ox - WIRE_CONNECTOR_SIZE, oy - WIRE_CONNECTOR_SIZE / 2
+        elif angle > 0:
+          ox, oy = ox - WIRE_CONNECTOR_SIZE / 2, oy
+        else:
+          ox, oy = ox - WIRE_CONNECTOR_SIZE / 2, oy - WIRE_CONNECTOR_SIZE
+        self.add_drawable(wire_connector_drawable, (ox, oy))
+        end_connector = self._connector_at(self._wire_end)
+      wire = Wire(self._wire_id, start_connector, end_connector)
+      start_connector.start_wires.add(wire)
+      end_connector.end_wires.add(wire)
     # reset
     self._wire_id = None
     self._wire_start = None

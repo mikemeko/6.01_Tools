@@ -11,9 +11,29 @@ from constants import CONNECTOR_RADIUS
 from constants import CONNECTOR_RIGHT
 from constants import CONNECTOR_TAG
 from constants import CONNECTOR_TOP
+from constants import WIRE_CONNECTOR_CONNECTORS
+from constants import WIRE_CONNECTOR_FILL
+from constants import WIRE_CONNECTOR_OUTLINE
+from constants import WIRE_CONNECTOR_SIZE
 from util import create_circle
 from util import create_wire
 from util import snap
+
+def create_connector(canvas, point, drawable):
+  """
+  |point|: a tuple of the form (x, y) indicating where the connecter should
+      be drawn.
+  Draws a connector for this Drawable at the indicated |point|.
+  TODO(mikemeko): maybe make this constructor?
+  """
+  assert isinstance(drawable, Drawable), 'drawable must be a Drawable'
+  x, y = map(snap, point)
+  canvas_id = create_circle(canvas, x, y, CONNECTOR_RADIUS,
+      fill=CONNECTOR_COLOR, activewidth=2, tags=CONNECTOR_TAG)
+  # TODO(mikemeko)
+  new_connector = Connector(canvas_id, (x, y), drawable)
+  drawable.connectors.add(new_connector)
+  return new_connector
 
 class Drawable:
   """
@@ -62,6 +82,7 @@ class Drawable:
         be drawn.
     Draws a connector for this Drawable at the indicated |point|.
     """
+    # TODO(mikemeko): replace this with util helper method
     x, y = map(snap, point)
     canvas_id = create_circle(canvas, x, y, CONNECTOR_RADIUS,
         fill=CONNECTOR_COLOR, activewidth=2, tags=CONNECTOR_TAG)
@@ -188,3 +209,20 @@ class Wire:
     x1, y1 = self.start_connector.center
     x2, y2 = self.end_connector.center
     self.canvas_id = create_wire(canvas, x1, y1, x2, y2)
+
+class Wire_Connector_Drawable(Drawable):
+  """
+  TODO(mikemeko)
+  """
+  def __init__(self):
+    x1, y1, x2, y2 = 0, 0, WIRE_CONNECTOR_SIZE, WIRE_CONNECTOR_SIZE
+    Drawable.__init__(self, WIRE_CONNECTOR_SIZE, WIRE_CONNECTOR_SIZE,
+        WIRE_CONNECTOR_CONNECTORS)
+  def draw_on(self, canvas, offset=(0, 0)):
+    """
+    TODO(mikemeko)
+    """
+    ox, oy = offset
+    self.parts.add(canvas.create_rectangle((ox, oy, WIRE_CONNECTOR_SIZE + ox,
+        WIRE_CONNECTOR_SIZE + oy), fill=WIRE_CONNECTOR_FILL,
+        outline=WIRE_CONNECTOR_OUTLINE))

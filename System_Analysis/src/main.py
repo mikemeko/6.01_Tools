@@ -23,10 +23,6 @@ from constants import IO_BBOX
 from constants import IO_FILL
 from constants import IO_OUTLINE
 from constants import IO_PADDING
-from constants import WIRE_CONNECTOR_BBOX
-from constants import WIRE_CONNECTOR_CONNECTORS
-from constants import WIRE_CONNECTOR_FILL
-from constants import WIRE_CONNECTOR_OUTLINE
 from constants import X_CONNECTORS
 from constants import Y_CONNECTORS
 from core.constants import X
@@ -115,22 +111,6 @@ class Adder_Drawable(Drawable):
     self.parts.add(canvas.create_text((ox + ADDER_RADIUS, oy + ADDER_RADIUS),
         text=ADDER_TEXT))
 
-class Wire_Connector_Drawable(Drawable):
-  """
-  TODO(mikemeko)
-  """
-  def __init__(self):
-    x1, y1, x2, y2 = WIRE_CONNECTOR_BBOX
-    Drawable.__init__(self, x2 - x1, y2 - y1, WIRE_CONNECTOR_CONNECTORS)
-  def draw_on(self, canvas, offset=(0, 0)):
-    """
-    TODO(mikemeko)
-    """
-    x1, y1, x2, y2 = WIRE_CONNECTOR_BBOX
-    ox, oy = offset
-    self.parts.add(canvas.create_rectangle((x1 + ox, y1 + oy, x2 + ox,
-        y2 + oy), fill=WIRE_CONNECTOR_FILL, outline=WIRE_CONNECTOR_OUTLINE))
-
 class IO_Drawable(Drawable):
   """
   TODO(mikemeko)
@@ -173,5 +153,4 @@ if __name__ == '__main__':
   palette.add_drawable_type(Gain_Left_Drawable)
   palette.add_drawable_type(Delay_Drawable)
   palette.add_drawable_type(Adder_Drawable)
-  palette.add_drawable_type(Wire_Connector_Drawable)
   root.mainloop()
