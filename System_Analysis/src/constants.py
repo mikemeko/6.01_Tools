@@ -9,13 +9,13 @@ from gui.constants import CONNECTOR_LEFT
 from gui.constants import CONNECTOR_RIGHT
 
 # colors
-ADDER_FILL = 'orange'
+ADDER_FILL = '#5ED1BA'
 ADDER_OUTLINE = 'black'
-DELAY_FILL = 'orange'
+DELAY_FILL = '#5ED1BA'
 DELAY_OUTLINE = 'black'
-GAIN_FILL = 'orange'
+GAIN_FILL = '#5ED1BA'
 GAIN_OUTLINE = 'black'
-IO_FILL = 'yellow'
+IO_FILL = '#5ED1BA'
 IO_OUTLINE = 'black'
 
 # connector flags for drawable components
