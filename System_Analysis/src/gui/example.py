@@ -26,9 +26,6 @@ class Rectangle(Drawable):
     Drawable.__init__(self, width, height, connectors)
     self.fill = fill
   def draw_on(self, canvas, offset=(0, 0)):
-    """
-    Draws this rectangle on the |canvas|.
-    """
     self.parts.add(canvas.create_rectangle(self.bounding_box(offset),
         fill=self.fill))
 
@@ -48,9 +45,6 @@ class Circle(Drawable):
     self.color3 = color3
     self.color4 = color4
   def draw_on(self, canvas, offset=(0, 0)):
-    """
-    Draws this colorful circle on the |canvas| at the given |offset|.
-    """
     x, y = offset
     d = 2 * self.r
     # this demonstrates multiple drawn parts for one drawable item
@@ -82,9 +76,6 @@ class Triangle(Drawable):
     self.fill = fill
     self.outline = outline
   def draw_on(self, canvas, offset=(0, 0)):
-    """
-    Draws this triangle on the |canvas| at the given |offset|.
-    """
     ox, oy = offset
     self.parts.add(canvas.create_polygon(self.x1 + ox, self.y1 + oy,
         self.x2 + ox, self.y2 + oy, self.x3 + ox, self.y3 + oy,

@@ -19,22 +19,6 @@ from util import create_circle
 from util import create_wire
 from util import snap
 
-def create_connector(canvas, point, drawable):
-  """
-  |point|: a tuple of the form (x, y) indicating where the connecter should
-      be drawn.
-  Draws a connector for this Drawable at the indicated |point|.
-  TODO(mikemeko): maybe make this constructor?
-  """
-  assert isinstance(drawable, Drawable), 'drawable must be a Drawable'
-  x, y = map(snap, point)
-  canvas_id = create_circle(canvas, x, y, CONNECTOR_RADIUS,
-      fill=CONNECTOR_COLOR, activewidth=2, tags=CONNECTOR_TAG)
-  # TODO(mikemeko)
-  new_connector = Connector(canvas_id, (x, y), drawable)
-  drawable.connectors.add(new_connector)
-  return new_connector
-
 class Drawable:
   """
   An abstract class to represent an item that is drawn on the board. All
@@ -82,7 +66,6 @@ class Drawable:
         be drawn.
     Draws a connector for this Drawable at the indicated |point|.
     """
-    # TODO(mikemeko): replace this with util helper method
     x, y = map(snap, point)
     canvas_id = create_circle(canvas, x, y, CONNECTOR_RADIUS,
         fill=CONNECTOR_COLOR, activewidth=2, tags=CONNECTOR_TAG)

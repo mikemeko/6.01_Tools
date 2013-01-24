@@ -26,11 +26,11 @@ X_CONNECTORS = CONNECTOR_RIGHT
 Y_CONNECTORS = CONNECTOR_LEFT
 
 # drawable component constants
-ADDER_RADIUS = 20
-DELAY_BBOX = (0, 0, 40, 40) # TODO(mikemeko): clarify
-GAIN_LEFT_VERTICES = (0, 20, 30, 0, 30, 40) # TODO(mikemeko): clarify
-GAIN_RIGHT_VERTICES = (0, 0, 0, 40, 30, 20) # TODO(mikemeko): clarify
-IO_BBOX = (0, 0, 40, 40) # TODO(mikemeko): clarify
+ADDER_RADIUS = 10
+DELAY_SIZE = 40
+GAIN_LEFT_VERTICES = (0, 20, 30, 0, 30, 40)
+GAIN_RIGHT_VERTICES = (0, 0, 0, 40, 30, 20)
+IO_SIZE = 40
 IO_PADDING = 40
 
 # text
