@@ -60,7 +60,7 @@ class Board(Frame):
     self._setup_bindings()
   def _setup_drawing_board(self):
     """
-    Draws guide markings on the board.
+    Draws grid lines on the board.
     """
     for dim in xrange(0, self.width, BOARD_GRID_SEPARATION):
       self.canvas.create_line((0, dim, self.width, dim),
@@ -160,12 +160,7 @@ class Board(Frame):
       self.canvas.delete(self._wire_id)
     x1, y1 = self._wire_start
     x2, y2 = self._wire_end
-    # indicate whether wire is legal or not
-    fill = WIRE_COLOR
-    # TODO(mikemeko): sort this out
-    #if self._connector_at(self._wire_end) is None:
-    #  fill = WIRE_ILLEGAL_COLOR
-    self._wire_id = create_wire(self.canvas, x1, y1, x2, y2, fill=fill)
+    self._wire_id = create_wire(self.canvas, x1, y1, x2, y2, fill=WIRE_COLOR)
   def _wire_press(self, event):
     """
     Callback for when a connector is pressed to start creating a wire. Updates
@@ -184,28 +179,34 @@ class Board(Frame):
   def _wire_release(self, event):
     """
     Callback for when wire creation is complete.
-    TODO(mikemeko): revisit this
     """
     if self._wire_id is not None:
       start_connector = self._connector_at(self._wire_start)
       end_connector = self._connector_at(self._wire_end)
+      # if no end connector is found when wire drawing is complete, then create
+      # a Wire_Connector_Drawable at the end of the wire
       if end_connector is None:
         wire_connector_drawable = Wire_Connector_Drawable()
-        # TODO(mikemeko): clarify
+        # setup offset in an intuitive place based on how the wire was drawn
         ox, oy = map(snap, self._wire_end)
         sx, sy = self._wire_start
         ex, ey = self._wire_end
         angle = atan2(ey - sy, ex - sx)
         if abs(angle) <= pi / 4:
+          # east
           ox, oy = ox, oy - WIRE_CONNECTOR_SIZE / 2
         elif abs(angle) >= 3 * pi / 4:
+          # west
           ox, oy = ox - WIRE_CONNECTOR_SIZE, oy - WIRE_CONNECTOR_SIZE / 2
         elif angle > 0:
+          # south
           ox, oy = ox - WIRE_CONNECTOR_SIZE / 2, oy
         else:
+          # north
           ox, oy = ox - WIRE_CONNECTOR_SIZE / 2, oy - WIRE_CONNECTOR_SIZE
         self.add_drawable(wire_connector_drawable, (ox, oy))
         end_connector = self._connector_at(self._wire_end)
+      # create wire
       wire = Wire(self._wire_id, start_connector, end_connector)
       start_connector.start_wires.add(wire)
       end_connector.end_wires.add(wire)
