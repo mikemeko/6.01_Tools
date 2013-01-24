@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Unittests for system_function.py.
 """

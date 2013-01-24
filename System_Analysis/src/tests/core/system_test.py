@@ -12,7 +12,7 @@ from core.system import Delay
 from core.system import Gain
 from core.system import System
 from core.system import System_Function
-from test_util import assert_system_functions_equal
+from util import assert_system_functions_equal
 from unittest import main
 from unittest import TestCase
 

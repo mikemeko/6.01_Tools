@@ -8,8 +8,8 @@ from core.constants import X
 from core.constants import Y
 from core.poly import Polynomial
 from core.poly import R_Polynomial
-from test_util import assert_polys_equal
-from test_util import assert_r_polys_equal
+from util import assert_polys_equal
+from util import assert_r_polys_equal
 from unittest import main
 from unittest import TestCase
 
