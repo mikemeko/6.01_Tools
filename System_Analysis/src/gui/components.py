@@ -46,12 +46,6 @@ class Drawable:
     All subclasses should implement this.
     """
     raise NotImplementedError('subclasses should implement this')
-  def draw_on_palette(self, canvas):
-    """
-    TODO(mikemeko)
-    """
-    # TODO(mikemeko)
-    self.draw_on(canvas)
   def bounding_box(self, offset=(0, 0)):
     """
     Returns the bounding box of this Drawable, when drawn with the given
@@ -195,16 +189,14 @@ class Wire:
 
 class Wire_Connector_Drawable(Drawable):
   """
-  TODO(mikemeko)
+  Drawable to connect wires. This can be used to "bend" wires as well us as an
+      ending to wires that outherwise would not have endings.
   """
   def __init__(self):
     x1, y1, x2, y2 = 0, 0, WIRE_CONNECTOR_SIZE, WIRE_CONNECTOR_SIZE
     Drawable.__init__(self, WIRE_CONNECTOR_SIZE, WIRE_CONNECTOR_SIZE,
         WIRE_CONNECTOR_CONNECTORS)
   def draw_on(self, canvas, offset=(0, 0)):
-    """
-    TODO(mikemeko)
-    """
     ox, oy = offset
     self.parts.add(canvas.create_rectangle((ox, oy, WIRE_CONNECTOR_SIZE + ox,
         WIRE_CONNECTOR_SIZE + oy), fill=WIRE_CONNECTOR_FILL,
