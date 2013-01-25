@@ -113,7 +113,7 @@ class Board(Frame):
     for drawable in self.drawables:
       for connector in drawable.connectors:
         for wire in connector.start_wires:
-          if wire.canvas_id == canvas_id:
+          if canvas_id in wire.parts:
             return wire
         for wire in connector.end_wires:
           if canvas_id in wire.parts:
