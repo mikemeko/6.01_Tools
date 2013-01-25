@@ -17,7 +17,6 @@ from constants import BOARD_WIDTH
 from constants import CONNECTOR_RADIUS
 from constants import CONNECTOR_TAG
 from constants import DRAG_TAG
-from constants import WIRE_COLOR
 from constants import WIRE_CONNECTOR_SIZE
 from math import atan2
 from math import pi
@@ -52,7 +51,7 @@ class Board(Frame):
     self._drag_last_x = None
     self._drag_last_y = None
     # state for drawing wires
-    self._wire_id = None
+    self._wire_parts = None
     self._wire_start = None
     self._wire_end = None
     # setup ui
@@ -156,11 +155,12 @@ class Board(Frame):
     """
     Draws the wire currently being created.
     """
-    if self._wire_id is not None:
-      self.canvas.delete(self._wire_id)
+    if self._wire_parts is not None:
+      for part in self._wire_parts:
+        self.canvas.delete(part)
     x1, y1 = self._wire_start
     x2, y2 = self._wire_end
-    self._wire_id = create_wire(self.canvas, x1, y1, x2, y2, fill=WIRE_COLOR)
+    self._wire_parts = create_wire(self.canvas, x1, y1, x2, y2)
   def _wire_press(self, event):
     """
     Callback for when a connector is pressed to start creating a wire. Updates
@@ -180,7 +180,7 @@ class Board(Frame):
     """
     Callback for when wire creation is complete.
     """
-    if self._wire_id is not None:
+    if self._wire_parts is not None:
       start_connector = self._connector_at(self._wire_start)
       end_connector = self._connector_at(self._wire_end)
       # if no end connector is found when wire drawing is complete, then create
@@ -207,11 +207,11 @@ class Board(Frame):
         self.add_drawable(wire_connector_drawable, (ox, oy))
         end_connector = self._connector_at(self._wire_end)
       # create wire
-      wire = Wire(self._wire_id, start_connector, end_connector)
+      wire = Wire(self._wire_parts, start_connector, end_connector)
       start_connector.start_wires.add(wire)
       end_connector.end_wires.add(wire)
     # reset
-    self._wire_id = None
+    self._wire_parts = None
     self._wire_start = None
     self._wire_end = None
   def _delete(self, event):

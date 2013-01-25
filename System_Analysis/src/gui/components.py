@@ -15,6 +15,7 @@ from constants import WIRE_CONNECTOR_CONNECTORS
 from constants import WIRE_CONNECTOR_FILL
 from constants import WIRE_CONNECTOR_OUTLINE
 from constants import WIRE_CONNECTOR_SIZE
+from Tkinter import Canvas
 from util import create_circle
 from util import create_wire
 from util import snap
@@ -156,9 +157,9 @@ class Wire:
   """
   Representation for a wire connecting Drawables via Connectors.
   """
-  def __init__(self, canvas_id, start_connector, end_connector):
+  def __init__(self, parts, start_connector, end_connector):
     """
-    |canvas_id|: the canvas id of this wire.
+    |parts|: a list of the canvas ids of the lines the wire is composed of.
     |start_connector|: the start Connector for this wire.
     |end_connector|: the end Connector for this wire.
     """
@@ -166,15 +167,17 @@ class Wire:
         ' Connector')
     assert isinstance(end_connector, Connector), ('end_connector must be a '
         'Connector')
-    self.canvas_id = canvas_id
+    self.parts = parts
     self.start_connector = start_connector
     self.end_connector = end_connector
   def delete_from(self, canvas):
     """
     Deletes this wire from the |canvas|.
     """
-    # delete this wire
-    canvas.delete(self.canvas_id)
+    assert isinstance(canvas, Canvas), 'canvas must be a Canvas'
+    # delete the lines the wire is composed of
+    for part in self.parts:
+      canvas.delete(part)
     # remove this wire from the connectors' wire lists
     self.start_connector.start_wires.remove(self)
     self.end_connector.end_wires.remove(self)
@@ -182,10 +185,14 @@ class Wire:
     """
     Redraws this wire.
     """
-    canvas.delete(self.canvas_id)
+    assert isinstance(canvas, Canvas), 'canvas must be a Canvas'
+    # delete the lines the wire is composed of
+    for part in self.parts:
+      canvas.delete(part)
+    # redraw the wire
     x1, y1 = self.start_connector.center
     x2, y2 = self.end_connector.center
-    self.canvas_id = create_wire(canvas, x1, y1, x2, y2)
+    self.parts = create_wire(canvas, x1, y1, x2, y2)
 
 class Wire_Connector_Drawable(Drawable):
   """
