@@ -116,7 +116,7 @@ class Board(Frame):
           if wire.canvas_id == canvas_id:
             return wire
         for wire in connector.end_wires:
-          if wire.canvas_id == canvas_id:
+          if canvas_id in wire.parts:
             return wire
     return None
   def _drag_press(self, event):
