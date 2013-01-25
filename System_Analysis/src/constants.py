@@ -9,13 +9,13 @@ from gui.constants import CONNECTOR_LEFT
 from gui.constants import CONNECTOR_RIGHT
 
 # colors
-ADDER_FILL = '#5ED1BA'
+ADDER_FILL = '#FFB873'
 ADDER_OUTLINE = 'black'
-DELAY_FILL = '#5ED1BA'
+DELAY_FILL = '#FFB873'
 DELAY_OUTLINE = 'black'
-GAIN_FILL = '#5ED1BA'
+GAIN_FILL = '#FFB873'
 GAIN_OUTLINE = 'black'
-IO_FILL = '#5ED1BA'
+IO_FILL = '#FFB873'
 IO_OUTLINE = 'black'
 
 # connector flags for drawable components
@@ -27,12 +27,12 @@ Y_CONNECTORS = CONNECTOR_LEFT
 
 # drawable component constants
 ADDER_RADIUS = 10
+ADDER_SEGMENT_SIZE = 10
 DELAY_SIZE = 40
-GAIN_LEFT_VERTICES = (0, 20, 30, 0, 30, 40)
-GAIN_RIGHT_VERTICES = (0, 0, 0, 40, 30, 20)
+GAIN_LEFT_VERTICES = (0, 20, 40, 0, 40, 40)
+GAIN_RIGHT_VERTICES = (0, 0, 0, 40, 40, 20)
 IO_SIZE = 40
 IO_PADDING = 40
 
 # text
-ADDER_TEXT = '+'
 DELAY_TEXT = 'R'

@@ -8,7 +8,7 @@ from constants import ADDER_CONNECTORS
 from constants import ADDER_FILL
 from constants import ADDER_OUTLINE
 from constants import ADDER_RADIUS
-from constants import ADDER_TEXT
+from constants import ADDER_SEGMENT_SIZE
 from constants import DELAY_CONNECTORS
 from constants import DELAY_FILL
 from constants import DELAY_OUTLINE
@@ -92,12 +92,15 @@ class Adder_Drawable(Drawable):
     d = 2 * ADDER_RADIUS
     Drawable.__init__(self, d, d, ADDER_CONNECTORS)
   def draw_on(self, canvas, offset=(0, 0)):
-    d = 2 * ADDER_RADIUS
+    r = ADDER_RADIUS
+    d = 2 * r
     ox, oy = offset
     self.parts.add(canvas.create_oval(ox, oy, ox + d, oy + d, fill=ADDER_FILL,
         outline=ADDER_OUTLINE))
-    self.parts.add(canvas.create_text((ox + ADDER_RADIUS, oy + ADDER_RADIUS),
-        text=ADDER_TEXT))
+    self.parts.add(canvas.create_line(ox + r, oy + r - ADDER_SEGMENT_SIZE / 2,
+        ox + r, oy + r + ADDER_SEGMENT_SIZE / 2))
+    self.parts.add(canvas.create_line(ox + r - ADDER_SEGMENT_SIZE / 2, oy + r,
+        ox + r + ADDER_SEGMENT_SIZE / 2, oy + r))
 
 class IO_Drawable(Drawable):
   """
