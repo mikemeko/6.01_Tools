@@ -23,6 +23,11 @@ from constants import IO_FILL
 from constants import IO_OUTLINE
 from constants import IO_PADDING
 from constants import IO_SIZE
+from constants import RUN_OUTLINE
+from constants import RUN_RECT_FILL
+from constants import RUN_RECT_SIZE
+from constants import RUN_TRIANGLE_FILL
+from constants import RUN_TRIANGLE_VERTICES
 from constants import X_CONNECTORS
 from constants import Y_CONNECTORS
 from core.constants import X
@@ -119,6 +124,23 @@ class IO_Drawable(Drawable):
     self.parts.add(canvas.create_text((ox + IO_SIZE / 2, oy + IO_SIZE / 2),
         text=self.signal))
 
+class Run_Drawable(Drawable):
+  """
+  Drawable to serve as a "Run" button.
+  """
+  def __init__(self):
+    Drawable.__init__(self, RUN_RECT_SIZE, RUN_RECT_SIZE)
+  def draw_on(self, canvas, offset=(0, 0)):
+    # TODO(mikemeko): make prettier run button
+    x1, y1, x2, y2, x3, y3 = RUN_TRIANGLE_VERTICES
+    ox, oy = offset
+    x1, x2, x3 = x1 + ox, x2 + ox, x3 + ox
+    y1, y2, y3 = y1 + oy, y2 + oy, y3 + oy
+    self.parts.add(canvas.create_rectangle((ox, oy, ox + RUN_RECT_SIZE,
+        oy + RUN_RECT_SIZE), fill=RUN_RECT_FILL, outline=RUN_OUTLINE))
+    self.parts.add(canvas.create_polygon(x1, y1, x2, y2, x3, y3,
+        fill=RUN_TRIANGLE_FILL, outline=RUN_OUTLINE))
+
 if __name__ == '__main__':
   # create board and palette
   root = Tk()
@@ -139,5 +161,11 @@ if __name__ == '__main__':
   palette.add_drawable_type(Gain_Left_Drawable)
   palette.add_drawable_type(Delay_Drawable)
   palette.add_drawable_type(Adder_Drawable)
+  def callback(event):
+    """
+    TODO(mikemeko)
+    """
+    # TODO(mikemeko)
+  palette.add_drawable_type(Run_Drawable, on_left=False, callback=callback)
   # run main loop
   root.mainloop()

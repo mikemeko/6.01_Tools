@@ -34,8 +34,10 @@ class Palette(Frame):
     self.height = height
     # drawable types displayed on this palette
     self.drawable_types = set()
-    # x-position of last item added for display on this palette
-    self.current_x = 0
+    # x-position of last item added on the left side of this palette
+    self.current_left_x = 0
+    # x-position of last item added on the right side of this palette
+    self.current_right_x = self.width
     # setup ui
     self.canvas.pack()
     self.pack()
@@ -57,26 +59,35 @@ class Palette(Frame):
       if not self.board.is_duplicate(new_drawable, offset):
         self.board.add_drawable(new_drawable, offset)
     return callback
-  def add_drawable_type(self, drawable_type, *args, **kwargs):
+  def add_drawable_type(self, drawable_type, on_left=True, callback=None,
+      *args, **kwargs):
     """
     Adds a drawable type for display on this palette. |args| and |kwargs| are
         the arguments to be used when creating drawables of the given
         |drawable_type|.
+    TODO(mikemeko): comments, look over below code
     """
     assert issubclass(drawable_type, Drawable), ('drawable must be a Drawable '
         'subclass')
+    # TODO(mikemeko): remove next line? possibly different callbacks?
     assert drawable_type not in self.drawable_types, 'type already on display'
     self.drawable_types.add(drawable_type)
     # create a sample (display) drawable
     display = drawable_type(*args, **kwargs)
     # draw the display
-    offset_x = self.current_x + PALETTE_PADDING
+    if on_left:
+      offset_x = self.current_left_x + PALETTE_PADDING
+      self.current_left_x += PALETTE_PADDING + display.width + PALETTE_PADDING
+    else:
+      offset_x = self.current_right_x - PALETTE_PADDING - display.width
+      self.current_right_x -= PALETTE_PADDING + display.width + PALETTE_PADDING
     offset_y = (self.height - display.height) / 2
     offset = (offset_x, offset_y)
-    self.current_x += PALETTE_PADDING + display.width + PALETTE_PADDING
     display.draw_on(self.canvas, offset)
     display.draw_connectors(self.canvas, offset)
-    # attach callback that adds items of this drawable type to the board
+    # attach callback to drawn parts
+    # default callback adds items of this drawable type to the board
+    if callback is None:
+      callback = self._add_item_callback(drawable_type, *args, **kwargs)
     for part in display.parts:
-      self.canvas.tag_bind(part, '<ButtonPress-1>', self._add_item_callback(
-          drawable_type, *args, **kwargs))
+      self.canvas.tag_bind(part, '<ButtonPress-1>', callback)
