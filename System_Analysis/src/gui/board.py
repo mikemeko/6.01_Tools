@@ -151,6 +151,17 @@ class Board(Frame):
     self._drag_item = None
     self._drag_last_x = None
     self._drag_last_y = None
+  def _straighten_wire(self):
+    """
+    Ensures that the wire currently being drawn is horizontal or vertical.
+    """
+    if self._wire_start is not None and self._wire_end is not None:
+      x1, y1 = self._wire_start
+      x2, y2 = self._wire_end
+      if abs(x2 - x1) > abs(y2 - y1):
+        self._wire_end = (x2, y1)
+      else:
+        self._wire_end = (x1, y2)
   def _draw_current_wire(self):
     """
     Draws the wire currently being created.
@@ -158,6 +169,7 @@ class Board(Frame):
     if self._wire_parts is not None:
       for part in self._wire_parts:
         self.canvas.delete(part)
+    self._straighten_wire()
     x1, y1 = self._wire_start
     x2, y2 = self._wire_end
     self._wire_parts = create_wire(self.canvas, x1, y1, x2, y2)
