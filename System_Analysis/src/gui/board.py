@@ -102,8 +102,8 @@ class Board(Frame):
     """
     for drawable in self.drawables:
       for connector in drawable.connectors:
-        x, y = connector.center
-        if point_inside_circle(point, (x, y, CONNECTOR_RADIUS)):
+        cx, cy = connector.center
+        if point_inside_circle(point, (cx, cy, CONNECTOR_RADIUS)):
           return connector
     return None
   def _wire_with_id(self, canvas_id):
@@ -169,7 +169,6 @@ class Board(Frame):
     if self._wire_parts is not None:
       for part in self._wire_parts:
         self.canvas.delete(part)
-    self._straighten_wire()
     x1, y1 = self._wire_start
     x2, y2 = self._wire_end
     self._wire_parts = create_wire(self.canvas, x1, y1, x2, y2)
@@ -179,15 +178,14 @@ class Board(Frame):
         wire data.
     """
     self._wire_start = (snap(event.x), snap(event.y))
+    assert self._connector_at(self._wire_start), 'no connector at wire start'
   def _wire_move(self, event):
     """
     Callback for when a wire is changed while being created. Updates wire data.
     """
-    new_wire_end = (snap(event.x), snap(event.y))
-    if self._wire_end != new_wire_end:
-      # update wire end and redraw
-      self._wire_end = new_wire_end
-      self._draw_current_wire()
+    self._wire_end = (snap(event.x), snap(event.y))
+    self._straighten_wire()
+    self._draw_current_wire()
   def _wire_release(self, event):
     """
     Callback for when wire creation is complete.
@@ -234,6 +232,8 @@ class Board(Frame):
     drawable_to_delete = self._drawable_at((event.x, event.y))
     if drawable_to_delete is not None:
       drawable_to_delete.delete_from(self.canvas)
+      self.drawables.remove(drawable_to_delete)
+      del self.drawable_offsets[drawable_to_delete]
       return
     # delete a connector?
     connector_to_delete = self._connector_at((event.x, event.y))
