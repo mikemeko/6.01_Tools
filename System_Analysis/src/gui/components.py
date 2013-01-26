@@ -156,11 +156,12 @@ class Wire:
   """
   Representation for a wire connecting Drawables via Connectors.
   """
-  def __init__(self, parts, start_connector, end_connector):
+  def __init__(self, parts, start_connector, end_connector, label):
     """
     |parts|: a list of the canvas ids of the lines the wire is composed of.
     |start_connector|: the start Connector for this wire.
     |end_connector|: the end Connector for this wire.
+    TODO(mikemeko)
     """
     assert isinstance(start_connector, Connector), ('start_connector must be a'
         ' Connector')
@@ -169,6 +170,7 @@ class Wire:
     self.parts = parts
     self.start_connector = start_connector
     self.end_connector = end_connector
+    self.label = label
   def delete_from(self, canvas):
     """
     Deletes this wire from the |canvas|.
@@ -192,6 +194,11 @@ class Wire:
     x1, y1 = self.start_connector.center
     x2, y2 = self.end_connector.center
     self.parts = create_wire(canvas, x1, y1, x2, y2)
+  # TODO(mikemeko): str and repr for others
+  def __str__(self):
+    return str(self.label)
+  def __repr__(self):
+    return str(self)
 
 class Wire_Connector_Drawable(Drawable):
   """
@@ -201,9 +208,13 @@ class Wire_Connector_Drawable(Drawable):
       the wire connector drawable should also be deleted if there are no other
       wires attached to it.
   """
-  def __init__(self):
+  def __init__(self, label):
+    """
+    TODO(mikemeko)
+    """
     Drawable.__init__(self, CONNECTOR_RADIUS * 2, CONNECTOR_RADIUS * 2,
         CONNECTOR_CENTER)
+    self.label = label
   def draw_on(self, canvas, offset=(0, 0)):
     # nothing to draw
     pass

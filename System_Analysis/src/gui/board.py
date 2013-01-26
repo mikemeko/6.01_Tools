@@ -51,6 +51,7 @@ class Board(Frame):
     self._wire_parts = None
     self._wire_start = None
     self._wire_end = None
+    self._wire_labeler = 0 # TODO(mikemeko): clarify
     # setup ui
     self._setup_drawing_board()
     self._setup_bindings()
@@ -186,19 +187,33 @@ class Board(Frame):
   def _wire_release(self, event):
     """
     Callback for when wire creation is complete.
+    TODO(mikemeko): look over below code
     """
     if self._wire_parts:
       start_connector = self._connector_at(self._wire_start)
+      if isinstance(start_connector.drawable, Wire_Connector_Drawable):
+        label = start_connector.drawable.label
+      else:
+        label = str(self._wire_labeler)
+        self._wire_labeler += 1
       end_connector = self._connector_at(self._wire_end)
       # if no end connector is found when wire drawing is complete, then create
       # a Wire_Connector_Drawable at the end of the wire
       if end_connector is None:
-        wire_connector_drawable = Wire_Connector_Drawable()
+        wire_connector_drawable = Wire_Connector_Drawable(label)
         # setup offset in an intuitive place based on how the wire was drawn
         self.add_drawable(wire_connector_drawable, self._wire_end)
         end_connector = self._connector_at(self._wire_end)
+      elif isinstance(end_connector.drawable, Wire_Connector_Drawable):
+        def update_labels(connector, new_label):
+          if isinstance(connector.drawable, Wire_Connector_Drawable):
+            connector.drawable.label = new_label
+            for wire in connector.start_wires:
+              wire.label = new_label
+              update_labels(wire.end_connector, new_label)
+        update_labels(end_connector, label)
       # create wire
-      wire = Wire(self._wire_parts, start_connector, end_connector)
+      wire = Wire(self._wire_parts, start_connector, end_connector, label)
       start_connector.start_wires.add(wire)
       end_connector.end_wires.add(wire)
     # reset
