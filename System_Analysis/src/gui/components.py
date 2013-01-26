@@ -5,16 +5,13 @@ The things that may exist on a board: drawable items, connectors, and wires.
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
 from constants import CONNECTOR_BOTTOM
+from constants import CONNECTOR_CENTER
 from constants import CONNECTOR_COLOR
 from constants import CONNECTOR_LEFT
 from constants import CONNECTOR_RADIUS
 from constants import CONNECTOR_RIGHT
 from constants import CONNECTOR_TAG
 from constants import CONNECTOR_TOP
-from constants import WIRE_CONNECTOR_CONNECTORS
-from constants import WIRE_CONNECTOR_FILL
-from constants import WIRE_CONNECTOR_OUTLINE
-from constants import WIRE_CONNECTOR_SIZE
 from Tkinter import Canvas
 from util import create_circle
 from util import create_wire
@@ -73,6 +70,8 @@ class Drawable:
     x1, y1, x2, y2 = self.bounding_box(offset)
     if self.connector_flags & CONNECTOR_BOTTOM:
       self._draw_connector(canvas, ((x1 + x2) / 2, y2))
+    if self.connector_flags & CONNECTOR_CENTER:
+      self._draw_connector(canvas, ((x1 + x2) / 2, (y1 + y2) / 2))
     if self.connector_flags & CONNECTOR_LEFT:
       self._draw_connector(canvas, (x1, (y1 + y2) / 2))
     if self.connector_flags & CONNECTOR_RIGHT:
@@ -198,13 +197,13 @@ class Wire_Connector_Drawable(Drawable):
   """
   Drawable to connect wires. This can be used to "bend" wires as well us as an
       ending to wires that outherwise would not have endings.
+  TODO(mikemeko): when a wire connected to a wire connector drawable is deleted
+      the wire connector drawable should also be deleted if there are no other
+      wires attached to it.
   """
   def __init__(self):
-    x1, y1, x2, y2 = 0, 0, WIRE_CONNECTOR_SIZE, WIRE_CONNECTOR_SIZE
-    Drawable.__init__(self, WIRE_CONNECTOR_SIZE, WIRE_CONNECTOR_SIZE,
-        WIRE_CONNECTOR_CONNECTORS)
+    Drawable.__init__(self, CONNECTOR_RADIUS * 2, CONNECTOR_RADIUS * 2,
+        CONNECTOR_CENTER)
   def draw_on(self, canvas, offset=(0, 0)):
-    ox, oy = offset
-    self.parts.add(canvas.create_rectangle((ox, oy, WIRE_CONNECTOR_SIZE + ox,
-        WIRE_CONNECTOR_SIZE + oy), fill=WIRE_CONNECTOR_FILL,
-        outline=WIRE_CONNECTOR_OUTLINE))
+    # nothing to draw
+    pass

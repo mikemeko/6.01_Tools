@@ -17,9 +17,6 @@ from constants import BOARD_WIDTH
 from constants import CONNECTOR_RADIUS
 from constants import CONNECTOR_TAG
 from constants import DRAG_TAG
-from constants import WIRE_CONNECTOR_SIZE
-from math import atan2
-from math import pi
 from Tkinter import ALL
 from Tkinter import Canvas
 from Tkinter import Frame
@@ -198,23 +195,7 @@ class Board(Frame):
       if end_connector is None:
         wire_connector_drawable = Wire_Connector_Drawable()
         # setup offset in an intuitive place based on how the wire was drawn
-        ox, oy = map(snap, self._wire_end)
-        sx, sy = self._wire_start
-        ex, ey = self._wire_end
-        angle = atan2(ey - sy, ex - sx)
-        if abs(angle) <= pi / 4:
-          # east
-          ox, oy = ox, oy - WIRE_CONNECTOR_SIZE / 2
-        elif abs(angle) >= 3 * pi / 4:
-          # west
-          ox, oy = ox - WIRE_CONNECTOR_SIZE, oy - WIRE_CONNECTOR_SIZE / 2
-        elif angle > 0:
-          # south
-          ox, oy = ox - WIRE_CONNECTOR_SIZE / 2, oy
-        else:
-          # north
-          ox, oy = ox - WIRE_CONNECTOR_SIZE / 2, oy - WIRE_CONNECTOR_SIZE
-        self.add_drawable(wire_connector_drawable, (ox, oy))
+        self.add_drawable(wire_connector_drawable, self._wire_end)
         end_connector = self._connector_at(self._wire_end)
       # create wire
       wire = Wire(self._wire_parts, start_connector, end_connector)
