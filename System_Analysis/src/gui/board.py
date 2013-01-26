@@ -192,7 +192,7 @@ class Board(Frame):
     """
     Callback for when wire creation is complete.
     """
-    if self._wire_parts is not None:
+    if self._wire_parts:
       start_connector = self._connector_at(self._wire_start)
       end_connector = self._connector_at(self._wire_end)
       # if no end connector is found when wire drawing is complete, then create

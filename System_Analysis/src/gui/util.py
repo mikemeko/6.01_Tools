@@ -86,6 +86,8 @@ def create_wire(canvas, x1, y1, x2, y2):
   """
   assert isinstance(canvas, Canvas), 'canvas must be a Canvas'
   parts = []
+  if x1 == x2 and y1 == y2:
+    return parts
   # line connecting two points
   parts.append(canvas.create_line(x1, y1, x2, y2, fill=WIRE_COLOR,
       width=WIRE_WIDTH))
