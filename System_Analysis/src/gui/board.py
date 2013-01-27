@@ -215,7 +215,9 @@ class Board(Frame):
       # create wire
       wire = Wire(self._wire_parts, start_connector, end_connector, label)
       start_connector.start_wires.add(wire)
+      start_connector.lift(self.canvas)
       end_connector.end_wires.add(wire)
+      end_connector.lift(self.canvas)
     # reset
     self._wire_parts = None
     self._wire_start = None

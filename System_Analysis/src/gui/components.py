@@ -141,6 +141,11 @@ class Connector:
       self.center = (x + dx, y + dy)
       canvas.move(self.canvas_id, dx, dy)
       self.redraw_wires(canvas)
+  def lift(self, canvas):
+    """
+    TODO(mikemeko)
+    """
+    canvas.tag_raise(self.canvas_id)
   def redraw_wires(self, canvas):
     """
     Redraws the wires for this connector.
@@ -151,6 +156,7 @@ class Connector:
     # ensure that all wires that end at this connector end at its center
     for wire in self.end_wires:
       wire.redraw(canvas)
+    self.lift(canvas)
 
 class Wire:
   """

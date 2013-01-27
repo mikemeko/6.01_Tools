@@ -226,7 +226,7 @@ if __name__ == '__main__':
     assert X_label is not None
     assert Y_label is not None
     sys = System(system_components, X=X_label, Y=Y_label)
-    plot_unit_sample_response(sys)
+    plot_pole_zero_diagram(sys)
   palette.add_drawable_type(Run_Drawable, on_left=False, callback=callback)
   # run main loop
   root.mainloop()
