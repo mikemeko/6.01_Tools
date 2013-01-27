@@ -17,6 +17,7 @@ from system_function import System_Function
 from Tkinter import Canvas
 from Tkinter import Frame
 from Tkinter import Tk
+from util import complex_str
 from util import empty
 from util import in_bounds
 
@@ -78,8 +79,8 @@ class Pole_Zero_Diagram(Frame):
     counts = dict(zip(sorted_items, [items.count(c) for c in sorted_items]))
     for c in items:
       self._draw_circle(canvas, (self.window_size / 2 + c.real * unit_radius,
-          self.window_size / 2 + c.imag * unit_radius),
-          POLE_ZERO_RADIUS * counts[c], color, str(c))
+          self.window_size / 2 - c.imag * unit_radius),
+          POLE_ZERO_RADIUS * counts[c], color, complex_str(c))
       counts[c] -= 1
   def _draw_poles_and_zeros(self):
     """
@@ -112,16 +113,14 @@ class Pole_Zero_Diagram(Frame):
     canvas.pack()
     self.configure(background=BACKGROUND_COLOR)
     self.pack()
-  def show(self):
-    """
-    Displays the pole-zero diagram.
-    """
-    self.mainloop()
 
-def plot_pole_zero_diagram(sys):
+def plot_pole_zero_diagram(sys, mainloop=False):
   """
   Plots the pole-zero diagram of the given system.
+  |mainloop|: if True, this method calls Tk.mainloop().
   """
   root = Tk()
   root.resizable(0, 0)
-  Pole_Zero_Diagram(root, sys).show()
+  Pole_Zero_Diagram(root, sys)
+  if mainloop:
+    root.mainloop()
