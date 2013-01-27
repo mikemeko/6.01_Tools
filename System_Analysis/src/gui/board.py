@@ -42,16 +42,16 @@ class Board(Frame):
         highlightthickness=0, background=BOARD_BACKGROUND_COLOR)
     # the drawables on this board
     self.drawables = set()
+    # TODO(mikemeko): consider making offset a Drawable attribute
     self.drawable_offsets = dict()
     # state for dragging
     self._drag_item = None
-    self._drag_last_x = None
-    self._drag_last_y = None
+    self._drag_last_point = None
     # state for drawing wires
     self._wire_parts = None
     self._wire_start = None
     self._wire_end = None
-    self._wire_labeler = 0 # TODO(mikemeko): clarify
+    self._wire_labeler = 0 # used to uniquely label wires
     # setup ui
     self._setup_drawing_board()
     self._setup_bindings()
@@ -74,7 +74,7 @@ class Board(Frame):
     self.canvas.tag_bind(DRAG_TAG, '<ButtonPress-1>', self._drag_press)
     self.canvas.tag_bind(DRAG_TAG, '<B1-Motion>', self._drag_move)
     self.canvas.tag_bind(DRAG_TAG, '<ButtonRelease-1>', self._drag_release)
-    # wire bindings
+    # wire drawing bindings
     self.canvas.tag_bind(CONNECTOR_TAG, '<ButtonPress-1>', self._wire_press)
     self.canvas.tag_bind(CONNECTOR_TAG, '<B1-Motion>', self._wire_move)
     self.canvas.tag_bind(CONNECTOR_TAG, '<ButtonRelease-1>',
@@ -110,10 +110,7 @@ class Board(Frame):
     """
     for drawable in self.drawables:
       for connector in drawable.connectors:
-        for wire in connector.start_wires:
-          if canvas_id in wire.parts:
-            return wire
-        for wire in connector.end_wires:
+        for wire in connector.wires():
           if canvas_id in wire.parts:
             return wire
     return None
@@ -121,52 +118,55 @@ class Board(Frame):
     """
     Callback for when a drawable item is clicked. Updates drag state.
     """
-    drag_item = self._drawable_at((event.x, event.y))
-    if drag_item is not None:
-      self._drag_item = drag_item
-      self._drag_last_x = event.x
-      self._drag_last_y = event.y
+    self._drag_item = self._drawable_at((event.x, event.y))
+    assert self._drag_item, 'No item being dragged'
+    self._drag_last_point = (event.x, event.y)
   def _drag_move(self, event):
     """
     Callback for when a drawable item is being moved. Updates drag state.
     """
-    if self._drag_item is not None:
-      dx = snap(event.x - self._drag_last_x)
-      dy = snap(event.y - self._drag_last_y)
-      # move the item being dragged
-      self._drag_item.move(self.canvas, dx, dy)
-      # update drag state
-      self._drag_last_x += dx
-      self._drag_last_y += dy
-      # update offset of item being dragged
-      x, y = self.drawable_offsets[self._drag_item]
-      self.drawable_offsets[self._drag_item] = x + dx, y + dy
+    assert self._drag_item, 'No item being dragged'
+    last_x, last_y = self._drag_last_point
+    dx = snap(event.x - last_x)
+    dy = snap(event.y - last_y)
+    # move the item being dragged
+    self._drag_item.move(self.canvas, dx, dy)
+    # update drag state
+    self._drag_last_point = (last_x + dx, last_y + dy)
+    # update offset of item being dragged
+    x, y = self.drawable_offsets[self._drag_item]
+    self.drawable_offsets[self._drag_item] = x + dx, y + dy
   def _drag_release(self, event):
     """
     Callback for when a drawable item is released. Updates drag state.
     """
     # reset
     self._drag_item = None
-    self._drag_last_x = None
-    self._drag_last_y = None
+    self._drag_last_point = None
   def _straighten_wire(self):
     """
     Ensures that the wire currently being drawn is horizontal or vertical.
     """
-    if self._wire_start is not None and self._wire_end is not None:
-      x1, y1 = self._wire_start
-      x2, y2 = self._wire_end
-      if abs(x2 - x1) > abs(y2 - y1):
-        self._wire_end = (x2, y1)
-      else:
-        self._wire_end = (x1, y2)
+    assert self._wire_start and self._wire_end, 'No wire ends'
+    x1, y1 = self._wire_start
+    x2, y2 = self._wire_end
+    if abs(x2 - x1) > abs(y2 - y1):
+      self._wire_end = (x2, y1)
+    else:
+      self._wire_end = (x1, y2)
+  def _erase_previous_wire(self):
+    """
+    Erases the previous version (if any) of the wire currently being drawn.
+    """
+    if self._wire_parts:
+      for part in self._wire_parts:
+        self.canvas.delete(part)
   def _draw_current_wire(self):
     """
     Draws the wire currently being created.
     """
-    if self._wire_parts is not None:
-      for part in self._wire_parts:
-        self.canvas.delete(part)
+    assert self._wire_start and self._wire_end, 'No wire ends'
+    self._erase_previous_wire()
     x1, y1 = self._wire_start
     x2, y2 = self._wire_end
     self._wire_parts = create_wire(self.canvas, x1, y1, x2, y2)
@@ -176,42 +176,55 @@ class Board(Frame):
         wire data.
     """
     self._wire_start = (snap(event.x), snap(event.y))
-    assert self._connector_at(self._wire_start), 'no connector at wire start'
+    # if there isn't a connector at wire start, don't allow drawing wire
+    if not self._connector_at(self._wire_start):
+      self._wire_start = None
+      self._erase_previous_wire()
   def _wire_move(self, event):
     """
     Callback for when a wire is changed while being created. Updates wire data.
     """
-    self._wire_end = (snap(event.x), snap(event.y))
-    self._straighten_wire()
-    self._draw_current_wire()
+    if self._wire_start:
+      self._wire_end = (snap(event.x), snap(event.y))
+      self._straighten_wire()
+      self._draw_current_wire()
   def _wire_release(self, event):
     """
-    Callback for when wire creation is complete.
-    TODO(mikemeko): look over below code
+    Callback for when wire creation is complete. Updates wire data.
+    Appropriately updates wire labels.
     """
     if self._wire_parts:
       start_connector = self._connector_at(self._wire_start)
+      # find a label for the new wire
       if isinstance(start_connector.drawable, Wire_Connector_Drawable):
+        # if drawing off of a wire connector, use its label for the new wire
         label = start_connector.drawable.label
       else:
+        # if drawing off of an item, assign a new label to the new wire
         label = str(self._wire_labeler)
         self._wire_labeler += 1
       end_connector = self._connector_at(self._wire_end)
-      # if no end connector is found when wire drawing is complete, then create
-      # a Wire_Connector_Drawable at the end of the wire
-      if end_connector is None:
+      if not end_connector:
+        # if no end connector is found when wire drawing is complete, then
+        # create a wire connector at the end of the new wire
         wire_connector_drawable = Wire_Connector_Drawable(label)
         # setup offset in an intuitive place based on how the wire was drawn
         self.add_drawable(wire_connector_drawable, self._wire_end)
         end_connector = self._connector_at(self._wire_end)
       elif isinstance(end_connector.drawable, Wire_Connector_Drawable):
-        def update_labels(connector, new_label):
+        # if an end connector is found, and it is a wire connector, we need to
+        # update the labels of all wires and wire connectors attached to it
+        def update_labels(connector):
+          """
+          If |connector| is a wire connector, this method updates the labels on
+          it, the wires that start at it, and all following wire connectors.
+          """
           if isinstance(connector.drawable, Wire_Connector_Drawable):
-            connector.drawable.label = new_label
+            connector.drawable.label = label
             for wire in connector.start_wires:
-              wire.label = new_label
-              update_labels(wire.end_connector, new_label)
-        update_labels(end_connector, label)
+              wire.label = label
+              update_labels(wire.end_connector)
+        update_labels(end_connector)
       # create wire
       wire = Wire(self._wire_parts, start_connector, end_connector, label)
       start_connector.start_wires.add(wire)
@@ -222,28 +235,45 @@ class Board(Frame):
     self._wire_parts = None
     self._wire_start = None
     self._wire_end = None
+  def _delete_drawable(self, drawable):
+    """
+    Deletes the given |drawable| from the board.
+    """
+    drawable.delete_from(self.canvas)
+    self.drawables.remove(drawable)
+    del self.drawable_offsets[drawable]
+  def _maybe_delete_empty_wire_connector(self, connector):
+    """
+    Deletes |connector| if it is a wire connector and it is not connected to
+        any wires.
+    """
+    if connector.num_wires() is 0 and isinstance(connector.drawable,
+        Wire_Connector_Drawable):
+      self._delete_drawable(connector.drawable)
   def _delete(self, event):
     """
     Callback for deleting an item on the board.
     """
     # delete a drawable item?
     drawable_to_delete = self._drawable_at((event.x, event.y))
-    if drawable_to_delete is not None:
-      drawable_to_delete.delete_from(self.canvas)
-      self.drawables.remove(drawable_to_delete)
-      del self.drawable_offsets[drawable_to_delete]
+    if drawable_to_delete:
+      self._delete_drawable(drawable_to_delete)
       return
     # delete a connector?
     connector_to_delete = self._connector_at((event.x, event.y))
-    if connector_to_delete is not None:
+    if connector_to_delete:
       # delete the drawable containing the connector
-      connector_to_delete.drawable.delete_from(self.canvas)
+      self._delete_drawable(connector_to_delete.drawable)
       return
     # delete a wire?
     canvas_id = self.canvas.find_closest(event.x, event.y)[0]
     wire_to_delete = self._wire_with_id(canvas_id)
-    if wire_to_delete is not None:
+    if wire_to_delete:
       wire_to_delete.delete_from(self.canvas)
+      # if the wire's start and end connectors are wire connectors, maybe
+      # delete them
+      self._maybe_delete_empty_wire_connector(wire_to_delete.start_connector)
+      self._maybe_delete_empty_wire_connector(wire_to_delete.end_connector)
   def is_duplicate(self, drawable, offset=(0, 0)):
     """
     Returns True if the exact |drawable| at the given |offset| is already on

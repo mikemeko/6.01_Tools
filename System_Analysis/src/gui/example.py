@@ -10,6 +10,8 @@ from constants import CONNECTOR_BOTTOM
 from constants import CONNECTOR_LEFT
 from constants import CONNECTOR_RIGHT
 from constants import CONNECTOR_TOP
+from constants import LEFT
+from constants import RIGHT
 from palette import Palette
 from Tkinter import Tk
 
@@ -89,11 +91,12 @@ if __name__ == '__main__':
   # create palette
   palette = Palette(root, board)
   # add displays to the palette
-  palette.add_drawable_type(Circle, 20, CONNECTOR_TOP | CONNECTOR_BOTTOM |
-      CONNECTOR_LEFT | CONNECTOR_RIGHT, 'red', 'yellow', 'cyan', 'orange')
-  palette.add_drawable_type(Triangle, 0, 40, 30, 20, CONNECTOR_LEFT |
-      CONNECTOR_RIGHT, 'green')
-  palette.add_drawable_type(Rectangle, 40, 40, CONNECTOR_LEFT |
+  palette.add_drawable_type(Circle, LEFT, None, 20, CONNECTOR_TOP |
+      CONNECTOR_BOTTOM | CONNECTOR_LEFT | CONNECTOR_RIGHT, 'red', 'yellow',
+      'cyan', 'orange')
+  palette.add_drawable_type(Triangle, LEFT, None, 0, 40, 30, 20,
+      CONNECTOR_LEFT | CONNECTOR_RIGHT, 'green')
+  palette.add_drawable_type(Rectangle, RIGHT, None, 40, 40, CONNECTOR_LEFT |
       CONNECTOR_RIGHT, 'blue')
   # run main loop
   root.mainloop()

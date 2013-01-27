@@ -91,7 +91,8 @@ class Drawable:
       connector.delete_from(canvas)
   def move(self, canvas, dx, dy):
     """
-    Moves this item by |dx| in the x direction and |dy| in the y direction.
+    Moves this item by |dx| in the x direction and |dy| in the y direction on
+        the given |canvas|.
     """
     if dx != 0 or dy != 0:
       # move all parts of this item
@@ -126,11 +127,8 @@ class Connector:
     """
     # delete this connector
     canvas.delete(self.canvas_id)
-    # delete all wires that start at this connector
-    for wire in set(self.start_wires):
-      wire.delete_from(canvas)
-    # delete all wires that end at this connector
-    for wire in set(self.end_wires):
+    # delete all wires attached to this connector
+    for wire in self.wires():
       wire.delete_from(canvas)
   def move(self, canvas, dx, dy):
     """
@@ -158,6 +156,19 @@ class Connector:
     for wire in self.end_wires:
       wire.redraw(canvas)
     self.lift(canvas)
+  def wires(self):
+    """
+    Returns a generator of the wires attached to this connector.
+    """
+    for wire in self.start_wires:
+      yield wire
+    for wire in self.end_wires:
+      yield wire
+  def num_wires(self):
+    """
+    Returns the number of wires attached to this connector.
+    """
+    return len(self.start_wires) + len(self.end_wires)
 
 class Wire:
   """

@@ -20,6 +20,10 @@ CONNECTOR_LEFT =   2**2
 CONNECTOR_RIGHT =  2**3
 CONNECTOR_TOP =    2**4
 
+# sides of the palette on which items are added
+LEFT = 0
+RIGHT = 1
+
 # size constants
 BOARD_WIDTH = 600
 BOARD_HEIGHT = 400

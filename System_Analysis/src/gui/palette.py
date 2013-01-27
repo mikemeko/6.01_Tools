@@ -6,10 +6,12 @@ __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
 from board import Board
 from components import Drawable
+from constants import LEFT
 from constants import PALETTE_BACKGROUND_COLOR
 from constants import PALETTE_HEIGHT
 from constants import PALETTE_PADDING
 from constants import PALETTE_WIDTH
+from constants import RIGHT
 from Tkinter import Canvas
 from Tkinter import Frame
 
@@ -59,8 +61,8 @@ class Palette(Frame):
       if not self.board.is_duplicate(new_drawable, offset):
         self.board.add_drawable(new_drawable, offset)
     return callback
-  def add_drawable_type(self, drawable_type, on_left=True, callback=None,
-      *args, **kwargs):
+  def add_drawable_type(self, drawable_type, side, callback, *args,
+      **kwargs):
     """
     Adds a drawable type for display on this palette. |args| and |kwargs| are
         the arguments to be used when creating drawables of the given
@@ -75,12 +77,15 @@ class Palette(Frame):
     # create a sample (display) drawable
     display = drawable_type(*args, **kwargs)
     # draw the display
-    if on_left:
+    if side == LEFT:
       offset_x = self.current_left_x + PALETTE_PADDING
       self.current_left_x += PALETTE_PADDING + display.width + PALETTE_PADDING
-    else:
+    elif side == RIGHT:
       offset_x = self.current_right_x - PALETTE_PADDING - display.width
       self.current_right_x -= PALETTE_PADDING + display.width + PALETTE_PADDING
+    else:
+      # problem: default left?
+      pass
     offset_y = (self.height - display.height) / 2
     offset = (offset_x, offset_y)
     display.draw_on(self.canvas, offset)

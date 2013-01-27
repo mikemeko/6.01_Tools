@@ -47,6 +47,8 @@ from core.util import empty
 from gui.board import Board
 from gui.components import Drawable
 from gui.components import Wire_Connector_Drawable
+from gui.constants import LEFT
+from gui.constants import RIGHT
 from gui.palette import Palette
 from gui.util import create_editable_text
 from Tkinter import Tk
@@ -244,14 +246,14 @@ if __name__ == '__main__':
   board.add_drawable(out, (board.width - out.width - IO_PADDING,
       (board.height - out.height) / 2))
   # add LTI system components to palette
-  palette.add_drawable_type(Gain_Right_Drawable)
-  palette.add_drawable_type(Gain_Left_Drawable)
-  palette.add_drawable_type(Delay_Drawable)
-  palette.add_drawable_type(Adder_Drawable)
+  palette.add_drawable_type(Gain_Right_Drawable, LEFT, None)
+  palette.add_drawable_type(Gain_Left_Drawable, LEFT, None)
+  palette.add_drawable_type(Delay_Drawable, LEFT, None)
+  palette.add_drawable_type(Adder_Drawable, LEFT, None)
   # add buttons to create pzr and usr
-  palette.add_drawable_type(PZD_Run_Drawable, on_left=False,
-      callback=lambda event: run_analysis(board, plot_pole_zero_diagram))
-  palette.add_drawable_type(USR_Run_Drawable, on_left=False,
-      callback=lambda event: run_analysis(board, plot_unit_sample_response))
+  palette.add_drawable_type(PZD_Run_Drawable, RIGHT,
+      lambda event: run_analysis(board, plot_pole_zero_diagram))
+  palette.add_drawable_type(USR_Run_Drawable, RIGHT,
+      lambda event: run_analysis(board, plot_unit_sample_response))
   # run main loop
   root.mainloop()
