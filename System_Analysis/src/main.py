@@ -1,5 +1,6 @@
 """
 Main.
+Runs system analysis tool.
 """
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
@@ -29,6 +30,8 @@ from constants import PZD
 from constants import RUN_RECT_FILL
 from constants import RUN_RECT_OUTLINE
 from constants import RUN_RECT_SIZE
+from constants import RUN_TEXT_ACTIVE_FILL
+from constants import RUN_TEXT_FILL
 from constants import USR
 from constants import X_CONNECTORS
 from constants import Y_CONNECTORS
@@ -50,11 +53,11 @@ from Tkinter import Tk
 
 class Gain_Drawable(Drawable):
   """
-  TODO(mikemeko)
+  Abstract Drawable for LTI Gain components.
   """
   def __init__(self, vertices):
     """
-    TODO(mikemeko)
+    |vertices|: the vertices of the triangle for this gain.
     """
     x1, y1, x2, y2, x3, y3 = vertices
     min_x, max_x = [f(x1, x2, x3) for f in min, max]
@@ -62,24 +65,27 @@ class Gain_Drawable(Drawable):
     Drawable.__init__(self, max_x - min_x, max_y - min_y, GAIN_CONNECTORS)
     self.vertices = vertices
   def draw_on(self, canvas, offset=(0, 0)):
-    # TODO(mikemeko): this is a hack :(
-    self.canvas = canvas
     x1, y1, x2, y2, x3, y3 = self.vertices
     ox, oy = offset
     x1, x2, x3 = x1 + ox, x2 + ox, x3 + ox
     y1, y2, y3 = y1 + oy, y2 + oy, y3 + oy
     self.parts.add(canvas.create_polygon(x1, y1, x2, y2, x3, y3,
         fill=GAIN_FILL, outline=GAIN_OUTLINE))
-    self.gain_text = create_editable_text(canvas, (x1 + x2 + x3) / 3,
+    gain_text = create_editable_text(canvas, (x1 + x2 + x3) / 3,
         oy + self.height / 2)
-    self.parts.add(self.gain_text)
-  def get_K(self):
-    try:
-      # TODO(mikemeko)
-      return float(self.canvas.itemcget(self.gain_text, 'text'))
-    except:
-      # TODO(mikemeko)
-      raise Exception('could not get gain')
+    self.parts.add(gain_text)
+    def get_K():
+      """
+      Returns a floating point number for the constant for this gain, or raises
+          an Exception if the constant cannot be obtained.
+      """
+      try:
+        return float(canvas.itemcget(gain_text, 'text'))
+      except:
+        raise Exception('Could not obtain gain constant')
+    # TODO(mikemeko): this is a bit hacky, but it avoids storing the canvas
+    self.get_K = get_K
+
 class Gain_Right_Drawable(Gain_Drawable):
   """
   Drawable for rightward facing LTI Gain component.
@@ -127,7 +133,7 @@ class Adder_Drawable(Drawable):
 
 class IO_Drawable(Drawable):
   """
-  Drawable for input and output signals.
+  Drawable for input (X) and output (Y) signals.
   """
   def __init__(self, signal, connectors):
     """
@@ -144,7 +150,7 @@ class IO_Drawable(Drawable):
 
 class Run_Drawable(Drawable):
   """
-  Drawable to serve as a "Run" button.
+  Abstract Drawable to serve as a "Run" button.
   """
   def __init__(self, text):
     Drawable.__init__(self, RUN_RECT_SIZE, RUN_RECT_SIZE)
@@ -154,72 +160,78 @@ class Run_Drawable(Drawable):
     self.parts.add(canvas.create_rectangle((ox, oy, ox + RUN_RECT_SIZE,
         oy + RUN_RECT_SIZE), fill=RUN_RECT_FILL, outline=RUN_RECT_OUTLINE))
     self.parts.add(canvas.create_text(ox + RUN_RECT_SIZE / 2, oy +
-        RUN_RECT_SIZE / 2, text=self.text))
+        RUN_RECT_SIZE / 2, text=self.text, fill=RUN_TEXT_FILL,
+        activefill=RUN_TEXT_ACTIVE_FILL))
 
 class PZD_Run_Drawable(Run_Drawable):
   """
-  TODO(mikemeko)
+  Drawable to surve as a button to draw a pole-zero diagram.
   """
   def __init__(self):
     Run_Drawable.__init__(self, PZD)
 
 class USR_Run_Drawable(Run_Drawable):
   """
-  TODO(mikemeko)
+  Drawable to serve as a button to draw a unit sample response.
   """
   def __init__(self):
     Run_Drawable.__init__(self, USR)
 
-def callback(board, sys_call):
+def run_analysis(board, analyze):
   """
-  TODO(mikemeko): comment; look over below code
+  Extracts a System object from what is drawn on the given |board| and calls
+      the given function |analyze| on it.
   """
+  # DT LTI components in the system
   system_components = []
+  # X and Y signal names
   X_label, Y_label = None, None
   for drawable in board.drawables:
+    # input and output signals for current drawable
     inp, out = [], []
     for connector in drawable.connectors:
       inp.extend(wire.label for wire in connector.end_wires)
       out.extend(wire.label for wire in connector.start_wires)
-    if isinstance(drawable, Gain_Right_Drawable) or isinstance(drawable,
-        Gain_Left_Drawable):
-      assert len(inp) == 1
-      assert len(out) == 1
+    # gain component
+    if isinstance(drawable, Gain_Drawable):
+      assert len(inp) == 1, 'Gain must have exactly 1 input'
+      assert len(out) == 1, 'Gain must have exactly 1 output'
       system_components.append(Gain(inp[0], out[0], drawable.get_K()))
+    # delay component
     elif isinstance(drawable, Delay_Drawable):
-      assert len(inp) == 1
-      assert len(out) == 1
+      assert len(inp) == 1, 'Delay must have exactly 1 input'
+      assert len(out) == 1, 'Delay must have exactly 1 output'
       system_components.append(Delay(inp[0], out[0]))
+    # adder component
     elif isinstance(drawable, Adder_Drawable):
-      assert len(inp) >= 1
-      assert len(out) == 1
+      assert len(inp) >= 1, 'Adder must have at least 1 input'
+      assert len(out) == 1, 'Adder must have exactly 1 output'
       system_components.append(Adder(inp, out[0]))
+    # X and Y signals
     elif isinstance(drawable, IO_Drawable):
-      assert len(drawable.connectors) == 1
+      # has only one connector
       connector = iter(drawable.connectors).next()
       if drawable.signal == X:
-        assert empty(connector.end_wires)
-        # TODO(mikemeko): below assert not needed?
-        #assert len(connector.start_wires) == 1
-        assert X_label is None
-        X_label = iter(connector.start_wires).next().label
-      else:
-        assert empty(connector.start_wires)
-        assert len(connector.end_wires) == 1
-        assert Y_label is None
-        Y_label = iter(connector.end_wires).next().label
+        assert empty(inp), 'X component cannot have any inputs'
+        assert len(out) == 1, 'X component must have exactly 1 output'
+        X_label = out[0]
+      else: # drawable.signal == Y
+        assert empty(out), 'Y component cannot have any outputs'
+        assert len(inp) == 1, 'Y component must have exactly 1 input'
+        Y_label = inp[0]
     elif isinstance(drawable, Wire_Connector_Drawable):
       # nothing to do
       pass
     else:
-      raise Exception('Illegal drawable')
-  assert X_label is not None
-  assert Y_label is not None
-  sys = System(system_components, X=X_label, Y=Y_label)
-  sys_call(sys)
+      raise Exception('Found unexpected component on board')
+  assert X_label is not None, 'No input signal found'
+  assert Y_label is not None, 'No output signal found'
+  # create and analyze system
+  system = System(system_components, X=X_label, Y=Y_label)
+  analyze(system)
 
 if __name__ == '__main__':
-  # create board and palette
+  # create root, board, and palette
   root = Tk()
   root.resizable(0, 0)
   root.title('%s (%s)' % (APP_NAME, DEV_STAGE))
@@ -227,21 +239,19 @@ if __name__ == '__main__':
   palette = Palette(root, board)
   # create input and output boxes (added to board automatically)
   inp = IO_Drawable(X, X_CONNECTORS)
-  inp_offset_x = IO_PADDING
-  inp_offset_y = board.height / 2 - inp.height / 2
-  board.add_drawable(inp, (inp_offset_x, inp_offset_y))
-  out= IO_Drawable(Y, Y_CONNECTORS)
-  out_offset_x = board.width - out.width - IO_PADDING
-  out_offset_y = inp_offset_y
-  board.add_drawable(out, (out_offset_x, out_offset_y))
+  board.add_drawable(inp, (IO_PADDING, (board.height - inp.height) / 2))
+  out = IO_Drawable(Y, Y_CONNECTORS)
+  board.add_drawable(out, (board.width - out.width - IO_PADDING,
+      (board.height - out.height) / 2))
   # add LTI system components to palette
   palette.add_drawable_type(Gain_Right_Drawable)
   palette.add_drawable_type(Gain_Left_Drawable)
   palette.add_drawable_type(Delay_Drawable)
   palette.add_drawable_type(Adder_Drawable)
+  # add buttons to create pzr and usr
   palette.add_drawable_type(PZD_Run_Drawable, on_left=False,
-      callback=lambda event: callback(board, plot_pole_zero_diagram))
+      callback=lambda event: run_analysis(board, plot_pole_zero_diagram))
   palette.add_drawable_type(USR_Run_Drawable, on_left=False,
-      callback=lambda event: callback(board, plot_unit_sample_response))
+      callback=lambda event: run_analysis(board, plot_unit_sample_response))
   # run main loop
   root.mainloop()

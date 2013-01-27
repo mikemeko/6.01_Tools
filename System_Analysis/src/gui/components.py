@@ -42,6 +42,7 @@ class Drawable:
     Draws the parts of this item on the |canvas| at the given |offset|. Should
         add the canvas ids of all drawn objects to self.parts.
     All subclasses should implement this.
+    This method is called exactly once per Drawable.
     """
     raise NotImplementedError('subclasses should implement this')
   def bounding_box(self, offset=(0, 0)):

@@ -18,6 +18,8 @@ IO_FILL = 'yellow'
 IO_OUTLINE = 'black'
 RUN_RECT_OUTLINE = 'black'
 RUN_RECT_FILL = 'white'
+RUN_TEXT_ACTIVE_FILL = 'red'
+RUN_TEXT_FILL = 'black'
 
 # connector flags for drawable components
 ADDER_CONNECTORS = CONNECTOR_LEFT | CONNECTOR_RIGHT
