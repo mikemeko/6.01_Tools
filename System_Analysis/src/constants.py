@@ -16,30 +16,30 @@ GAIN_FILL = '#FFB873'
 GAIN_OUTLINE = 'black'
 IO_FILL = 'yellow'
 IO_OUTLINE = 'black'
-RUN_RECT_OUTLINE = 'black'
 RUN_RECT_FILL = 'white'
+RUN_RECT_OUTLINE = 'black'
 RUN_TEXT_ACTIVE_FILL = 'red'
 RUN_TEXT_FILL = 'black'
 
-# connector flags for drawable components
+# connector flags for system drawable components
 ADDER_CONNECTORS = CONNECTOR_LEFT | CONNECTOR_RIGHT
 DELAY_CONNECTORS = CONNECTOR_LEFT | CONNECTOR_RIGHT
 GAIN_CONNECTORS = CONNECTOR_LEFT | CONNECTOR_RIGHT
 X_CONNECTORS = CONNECTOR_RIGHT
 Y_CONNECTORS = CONNECTOR_LEFT
 
-# drawable component constants
+# system drawable component constants
 ADDER_RADIUS = 10
 ADDER_SEGMENT_SIZE = 10
 DELAY_SIZE = 40
 GAIN_LEFT_VERTICES = (0, 20, 40, 0, 40, 40)
 GAIN_RIGHT_VERTICES = (0, 0, 0, 40, 40, 20)
-IO_SIZE = 20
 IO_PADDING = 40
+IO_SIZE = 20
 RUN_RECT_SIZE = 40
 
 # text
-APP_NAME = 'System Analysis Simulator' # TODO(mikemeko): better name
+APP_NAME = 'System Analysis Simulator' # TODO(mikemeko): find better name :)
 DELAY_TEXT = 'R'
 DEV_STAGE = 'Pre-alpha'
 PZD = 'PZR' # pole-zero diagram
