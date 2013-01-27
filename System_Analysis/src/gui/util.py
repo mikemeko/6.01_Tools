@@ -55,7 +55,7 @@ def create_editable_text(canvas, x, y, text='?'):
         canvas.select_clear()
       else:
         if insert > 0:
-          canvas.dchars(text_box, insert - 1, insert)
+          canvas.dchars(text_box, insert - 1, insert - 1)
     elif event.keysym == 'Right':
       canvas.icursor(text_box, insert + 1)
       canvas.select_clear()
