@@ -128,7 +128,7 @@ class Connector:
     # delete this connector
     canvas.delete(self.canvas_id)
     # delete all wires attached to this connector
-    for wire in self.wires():
+    for wire in list(self.wires()):
       wire.delete_from(canvas)
   def move(self, canvas, dx, dy):
     """
