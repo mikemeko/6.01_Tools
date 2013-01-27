@@ -16,9 +16,8 @@ GAIN_FILL = '#FFB873'
 GAIN_OUTLINE = 'black'
 IO_FILL = 'yellow'
 IO_OUTLINE = 'black'
-RUN_OUTLINE = 'black'
+RUN_RECT_OUTLINE = 'black'
 RUN_RECT_FILL = 'white'
-RUN_TRIANGLE_FILL = 'green'
 
 # connector flags for drawable components
 ADDER_CONNECTORS = CONNECTOR_LEFT | CONNECTOR_RIGHT
@@ -36,9 +35,10 @@ GAIN_RIGHT_VERTICES = (0, 0, 0, 40, 40, 20)
 IO_SIZE = 20
 IO_PADDING = 40
 RUN_RECT_SIZE = 40
-RUN_TRIANGLE_VERTICES = (10, 10, 10, 30, 30, 20)
 
 # text
 APP_NAME = 'System Analysis Simulator' # TODO(mikemeko): better name
 DELAY_TEXT = 'R'
 DEV_STAGE = 'Pre-alpha'
+PZD = 'PZR' # pole-zero diagram
+USR = 'USR' # unit sample response

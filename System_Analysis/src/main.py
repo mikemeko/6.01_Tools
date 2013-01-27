@@ -25,11 +25,11 @@ from constants import IO_FILL
 from constants import IO_OUTLINE
 from constants import IO_PADDING
 from constants import IO_SIZE
-from constants import RUN_OUTLINE
+from constants import PZD
 from constants import RUN_RECT_FILL
+from constants import RUN_RECT_OUTLINE
 from constants import RUN_RECT_SIZE
-from constants import RUN_TRIANGLE_FILL
-from constants import RUN_TRIANGLE_VERTICES
+from constants import USR
 from constants import X_CONNECTORS
 from constants import Y_CONNECTORS
 from core.constants import X
@@ -146,18 +146,77 @@ class Run_Drawable(Drawable):
   """
   Drawable to serve as a "Run" button.
   """
-  def __init__(self):
+  def __init__(self, text):
     Drawable.__init__(self, RUN_RECT_SIZE, RUN_RECT_SIZE)
+    self.text = text
   def draw_on(self, canvas, offset=(0, 0)):
-    # TODO(mikemeko): make prettier run button
-    x1, y1, x2, y2, x3, y3 = RUN_TRIANGLE_VERTICES
     ox, oy = offset
-    x1, x2, x3 = x1 + ox, x2 + ox, x3 + ox
-    y1, y2, y3 = y1 + oy, y2 + oy, y3 + oy
     self.parts.add(canvas.create_rectangle((ox, oy, ox + RUN_RECT_SIZE,
-        oy + RUN_RECT_SIZE), fill=RUN_RECT_FILL, outline=RUN_OUTLINE))
-    self.parts.add(canvas.create_polygon(x1, y1, x2, y2, x3, y3,
-        fill=RUN_TRIANGLE_FILL, outline=RUN_OUTLINE))
+        oy + RUN_RECT_SIZE), fill=RUN_RECT_FILL, outline=RUN_RECT_OUTLINE))
+    self.parts.add(canvas.create_text(ox + RUN_RECT_SIZE / 2, oy +
+        RUN_RECT_SIZE / 2, text=self.text))
+
+class PZD_Run_Drawable(Run_Drawable):
+  """
+  TODO(mikemeko)
+  """
+  def __init__(self):
+    Run_Drawable.__init__(self, PZD)
+
+class USR_Run_Drawable(Run_Drawable):
+  """
+  TODO(mikemeko)
+  """
+  def __init__(self):
+    Run_Drawable.__init__(self, USR)
+
+def callback(board, sys_call):
+  """
+  TODO(mikemeko): comment; look over below code
+  """
+  system_components = []
+  X_label, Y_label = None, None
+  for drawable in board.drawables:
+    inp, out = [], []
+    for connector in drawable.connectors:
+      inp.extend(wire.label for wire in connector.end_wires)
+      out.extend(wire.label for wire in connector.start_wires)
+    if isinstance(drawable, Gain_Right_Drawable) or isinstance(drawable,
+        Gain_Left_Drawable):
+      assert len(inp) == 1
+      assert len(out) == 1
+      system_components.append(Gain(inp[0], out[0], drawable.get_K()))
+    elif isinstance(drawable, Delay_Drawable):
+      assert len(inp) == 1
+      assert len(out) == 1
+      system_components.append(Delay(inp[0], out[0]))
+    elif isinstance(drawable, Adder_Drawable):
+      assert len(inp) >= 1
+      assert len(out) == 1
+      system_components.append(Adder(inp, out[0]))
+    elif isinstance(drawable, IO_Drawable):
+      assert len(drawable.connectors) == 1
+      connector = iter(drawable.connectors).next()
+      if drawable.signal == X:
+        assert empty(connector.end_wires)
+        # TODO(mikemeko): below assert not needed?
+        #assert len(connector.start_wires) == 1
+        assert X_label is None
+        X_label = iter(connector.start_wires).next().label
+      else:
+        assert empty(connector.start_wires)
+        assert len(connector.end_wires) == 1
+        assert Y_label is None
+        Y_label = iter(connector.end_wires).next().label
+    elif isinstance(drawable, Wire_Connector_Drawable):
+      # nothing to do
+      pass
+    else:
+      raise Exception('Illegal drawable')
+  assert X_label is not None
+  assert Y_label is not None
+  sys = System(system_components, X=X_label, Y=Y_label)
+  sys_call(sys)
 
 if __name__ == '__main__':
   # create board and palette
@@ -180,53 +239,9 @@ if __name__ == '__main__':
   palette.add_drawable_type(Gain_Left_Drawable)
   palette.add_drawable_type(Delay_Drawable)
   palette.add_drawable_type(Adder_Drawable)
-  def callback(event):
-    """
-    TODO(mikemeko): comment; look over below code
-    """
-    system_components = []
-    X_label, Y_label = None, None
-    for drawable in board.drawables:
-      inp, out = [], []
-      for connector in drawable.connectors:
-        inp.extend(wire.label for wire in connector.end_wires)
-        out.extend(wire.label for wire in connector.start_wires)
-      if isinstance(drawable, Gain_Right_Drawable) or isinstance(drawable,
-          Gain_Left_Drawable):
-        assert len(inp) == 1
-        assert len(out) == 1
-        system_components.append(Gain(inp[0], out[0], drawable.get_K()))
-      elif isinstance(drawable, Delay_Drawable):
-        assert len(inp) == 1
-        assert len(out) == 1
-        system_components.append(Delay(inp[0], out[0]))
-      elif isinstance(drawable, Adder_Drawable):
-        assert len(inp) >= 1
-        assert len(out) == 1
-        system_components.append(Adder(inp, out[0]))
-      elif isinstance(drawable, IO_Drawable):
-        assert len(drawable.connectors) == 1
-        connector = iter(drawable.connectors).next()
-        if drawable.signal == X:
-          assert empty(connector.end_wires)
-          # TODO(mikemeko): below assert not needed?
-          #assert len(connector.start_wires) == 1
-          assert X_label is None
-          X_label = iter(connector.start_wires).next().label
-        else:
-          assert empty(connector.start_wires)
-          assert len(connector.end_wires) == 1
-          assert Y_label is None
-          Y_label = iter(connector.end_wires).next().label
-      elif isinstance(drawable, Wire_Connector_Drawable):
-        # nothing to do
-        pass
-      else:
-        raise Exception('Illegal drawable')
-    assert X_label is not None
-    assert Y_label is not None
-    sys = System(system_components, X=X_label, Y=Y_label)
-    plot_pole_zero_diagram(sys)
-  palette.add_drawable_type(Run_Drawable, on_left=False, callback=callback)
+  palette.add_drawable_type(PZD_Run_Drawable, on_left=False,
+      callback=lambda event: callback(board, plot_pole_zero_diagram))
+  palette.add_drawable_type(USR_Run_Drawable, on_left=False,
+      callback=lambda event: callback(board, plot_unit_sample_response))
   # run main loop
   root.mainloop()
