@@ -6,7 +6,6 @@ __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
 from board import Board
 from components import Drawable
-from constants import LEFT
 from constants import PALETTE_BACKGROUND_COLOR
 from constants import PALETTE_HEIGHT
 from constants import PALETTE_PADDING
@@ -34,11 +33,9 @@ class Palette(Frame):
         highlightthickness=0, background=PALETTE_BACKGROUND_COLOR)
     self.width = width
     self.height = height
-    # drawable types displayed on this palette
-    self.drawable_types = set()
-    # x-position of last item added on the left side of this palette
+    # x-position of last item added on the LEFT side of this palette
     self.current_left_x = 0
-    # x-position of last item added on the right side of this palette
+    # x-position of last item added on the RIGHT side of this palette
     self.current_right_x = self.width
     # setup ui
     self.canvas.pack()
@@ -64,28 +61,26 @@ class Palette(Frame):
   def add_drawable_type(self, drawable_type, side, callback, *args,
       **kwargs):
     """
-    Adds a drawable type for display on this palette. |args| and |kwargs| are
-        the arguments to be used when creating drawables of the given
-        |drawable_type|.
-    TODO(mikemeko): comments, look over below code
+    Adds a drawable type for display on this palette.
+    |drawable_type|: a subclass of Drawable to display.
+    |side|: the side of this palette on which to put the display (LEFT or
+        RIGHT).
+    |callback|: method to call when display item is clicked. If None, the
+        default callback adds an item of the display type to the board.
+    |*args, **kwargs|: extra arguments needed to initialize the drawable type.
     """
     assert issubclass(drawable_type, Drawable), ('drawable must be a Drawable '
         'subclass')
-    # TODO(mikemeko): remove next line? possibly different callbacks?
-    assert drawable_type not in self.drawable_types, 'type already on display'
-    self.drawable_types.add(drawable_type)
     # create a sample (display) drawable
     display = drawable_type(*args, **kwargs)
-    # draw the display
-    if side == LEFT:
-      offset_x = self.current_left_x + PALETTE_PADDING
-      self.current_left_x += PALETTE_PADDING + display.width + PALETTE_PADDING
-    elif side == RIGHT:
+    # draw the display on the appropriate side of the palette
+    if side == RIGHT:
       offset_x = self.current_right_x - PALETTE_PADDING - display.width
       self.current_right_x -= PALETTE_PADDING + display.width + PALETTE_PADDING
     else:
-      # problem: default left?
-      pass
+      # if given |side| is illegal, assume LEFT
+      offset_x = self.current_left_x + PALETTE_PADDING
+      self.current_left_x += PALETTE_PADDING + display.width + PALETTE_PADDING
     offset_y = (self.height - display.height) / 2
     offset = (offset_x, offset_y)
     display.draw_on(self.canvas, offset)
@@ -96,3 +91,5 @@ class Palette(Frame):
       callback = self._add_item_callback(drawable_type, *args, **kwargs)
     for part in display.parts:
       self.canvas.tag_bind(part, '<ButtonPress-1>', callback)
+    for connector in display.connectors:
+      self.canvas.tag_bind(connector.canvas_id, '<ButtonPress-1>', callback)

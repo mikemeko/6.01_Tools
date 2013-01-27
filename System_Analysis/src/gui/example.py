@@ -96,7 +96,12 @@ if __name__ == '__main__':
       'cyan', 'orange')
   palette.add_drawable_type(Triangle, LEFT, None, 0, 40, 30, 20,
       CONNECTOR_LEFT | CONNECTOR_RIGHT, 'green')
-  palette.add_drawable_type(Rectangle, RIGHT, None, 40, 40, CONNECTOR_LEFT |
-      CONNECTOR_RIGHT, 'blue')
+  def rectangle_callback(event):
+    """
+    Sample callback.
+    """
+    print 'Rectangle clicked :)'
+  palette.add_drawable_type(Rectangle, RIGHT, rectangle_callback, 40, 40,
+      CONNECTOR_LEFT | CONNECTOR_RIGHT, 'blue')
   # run main loop
   root.mainloop()
