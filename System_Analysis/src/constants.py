@@ -42,5 +42,5 @@ RUN_RECT_SIZE = 40
 APP_NAME = 'System Analysis Simulator' # TODO(mikemeko): find better name :)
 DELAY_TEXT = 'R'
 DEV_STAGE = 'Pre-alpha'
-PZD = 'PZR' # pole-zero diagram
+PZD = 'PZD' # pole-zero diagram
 USR = 'USR' # unit sample response
