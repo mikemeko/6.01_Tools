@@ -142,7 +142,8 @@ class Connector:
       self.redraw_wires(canvas)
   def lift(self, canvas):
     """
-    TODO(mikemeko)
+    Lifts (raises) this connector above the wires that are attached to it so
+        that it is easy to draw more wires.
     """
     canvas.tag_raise(self.canvas_id)
   def redraw_wires(self, canvas):
@@ -179,7 +180,7 @@ class Wire:
     |parts|: a list of the canvas ids of the lines the wire is composed of.
     |start_connector|: the start Connector for this wire.
     |end_connector|: the end Connector for this wire.
-    TODO(mikemeko)
+    |label|: the label for this wire.
     """
     assert isinstance(start_connector, Connector), ('start_connector must be a'
         ' Connector')
@@ -212,23 +213,16 @@ class Wire:
     x1, y1 = self.start_connector.center
     x2, y2 = self.end_connector.center
     self.parts = create_wire(canvas, x1, y1, x2, y2)
-  # TODO(mikemeko): str and repr for others
-  def __str__(self):
-    return str(self.label)
-  def __repr__(self):
-    return str(self)
 
 class Wire_Connector_Drawable(Drawable):
   """
   Drawable to connect wires. This can be used to "bend" wires as well us as an
       ending to wires that outherwise would not have endings.
-  TODO(mikemeko): when a wire connected to a wire connector drawable is deleted
-      the wire connector drawable should also be deleted if there are no other
-      wires attached to it.
   """
   def __init__(self, label):
     """
-    TODO(mikemeko)
+    |label|: the label for this connector, which should be the same as the
+        labels for all the wires that are attached to it.
     """
     Drawable.__init__(self, CONNECTOR_RADIUS * 2, CONNECTOR_RADIUS * 2,
         CONNECTOR_CENTER)
