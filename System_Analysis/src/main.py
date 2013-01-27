@@ -228,6 +228,9 @@ def run_analysis(board, analyze):
       raise Exception('Found unexpected component on board')
   assert X_label is not None, 'No input signal found'
   assert Y_label is not None, 'No output signal found'
+  # if there are no components, we have a wire
+  if empty(system_components):
+    system_components.append(Gain(X_label, Y_label, 1))
   # create and analyze system
   system = System(system_components, X=X_label, Y=Y_label)
   analyze(system)
