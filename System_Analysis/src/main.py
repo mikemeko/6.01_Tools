@@ -11,11 +11,12 @@ from constants import ADDER_OUTLINE
 from constants import ADDER_RADIUS
 from constants import ADDER_SEGMENT_SIZE
 from constants import APP_NAME
-from constants import DELAY_CONNECTORS
 from constants import DELAY_FILL
+from constants import DELAY_HORIZONTAL_CONNECTORS
 from constants import DELAY_OUTLINE
 from constants import DELAY_SIZE
 from constants import DELAY_TEXT
+from constants import DELAY_VERTICAL_CONNECTORS
 from constants import DEV_STAGE
 from constants import GAIN_CONNECTORS
 from constants import GAIN_FILL
@@ -104,16 +105,30 @@ class Gain_Left_Drawable(Gain_Drawable):
 
 class Delay_Drawable(Drawable):
   """
-  Drawable for LTI Delay component.
+  Abstract Drawable for LTI Delay components.
   """
-  def __init__(self):
-    Drawable.__init__(self, DELAY_SIZE, DELAY_SIZE, DELAY_CONNECTORS)
+  def __init__(self, connectors):
+    Drawable.__init__(self, DELAY_SIZE, DELAY_SIZE, connectors)
   def draw_on(self, canvas, offset=(0, 0)):
     ox, oy = offset
     self.parts.add(canvas.create_rectangle((ox, oy, ox + DELAY_SIZE,
         oy + DELAY_SIZE), fill=DELAY_FILL, outline=DELAY_OUTLINE))
     self.parts.add(canvas.create_text((ox + DELAY_SIZE / 2,
         oy + DELAY_SIZE / 2), text=DELAY_TEXT))
+
+class Delay_Horizontal_Drawable(Delay_Drawable):
+  """
+  Horizontal LTI Delay component.
+  """
+  def __init__(self):
+    Delay_Drawable.__init__(self, DELAY_HORIZONTAL_CONNECTORS)
+
+class Delay_Vertical_Drawable(Delay_Drawable):
+  """
+  Vertical LTI Delay component.
+  """
+  def __init__(self):
+    Delay_Drawable.__init__(self, DELAY_VERTICAL_CONNECTORS)
 
 class Adder_Drawable(Drawable):
   """
@@ -251,7 +266,8 @@ if __name__ == '__main__':
   # add LTI system components to palette
   palette.add_drawable_type(Gain_Right_Drawable, LEFT, None)
   palette.add_drawable_type(Gain_Left_Drawable, LEFT, None)
-  palette.add_drawable_type(Delay_Drawable, LEFT, None)
+  palette.add_drawable_type(Delay_Horizontal_Drawable, LEFT, None)
+  palette.add_drawable_type(Delay_Vertical_Drawable, LEFT, None)
   palette.add_drawable_type(Adder_Drawable, LEFT, None)
   # add buttons to create pzr and usr
   palette.add_drawable_type(PZD_Run_Drawable, RIGHT,

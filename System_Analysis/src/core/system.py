@@ -58,6 +58,8 @@ class Gain(Component):
     i = len(signals[self.out_var])
     if len(signals[self.inp_vars[0]]) > i:
       signals[self.out_var].append(self.K * signals[self.inp_vars[0]][i])
+  def __str__(self):
+    return 'Gain inp=%s out=%s K=%f' % (self.inp_vars[0], self.out_var, self.K)
 
 class Delay(Component):
   """
@@ -73,6 +75,8 @@ class Delay(Component):
       signals[self.out_var].append(0)
     elif len(signals[self.inp_vars[0]]) > i - 1:
       signals[self.out_var].append(signals[self.inp_vars[0]][i - 1])
+  def __str__(self):
+    return 'Delay inp=%s out=%s' % (self.inp_vars[0], self.out_var)
 
 class Adder(Component):
   """
@@ -84,6 +88,8 @@ class Adder(Component):
     i = len(signals[self.out_var])
     if all(len(signals[v]) > i for v in self.inp_vars):
       signals[self.out_var].append(sum(signals[v][i] for v in self.inp_vars))
+  def __str__(self):
+    return 'Adder inp=%s out=%s' % (str(self.inp_vars), self.out_var)
 
 class System:
   """
@@ -108,6 +114,7 @@ class System:
   def _solve_sf(self):
     """
     Solves for the system function of this system.
+    TODO(mikemeko): this fails for some systems, bug fix in progress!
     """
     last_comp = self.last_component()
     var_reps = {self.X:Polynomial({self.X:R_Polynomial([1])}),
@@ -153,3 +160,6 @@ class System:
     Returns the zeros of this system (may include hidden zeros).
     """
     return self.sf.zeros()
+  def __str__(self):
+    return 'System inp=%s out=%s\nComponents=%s' % (self.X, self.Y,
+        str(map(str, self.components)))
