@@ -5,17 +5,19 @@ Representation for a system function.
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
 from numpy import roots
-from poly import R_Polynomial
+from poly import R_Ratio
 
 class System_Function:
   """
   Representation for a system function.
   """
-  def __init__(self, numerator, denominator):
-    assert isinstance(numerator, R_Polynomial), 'numerator must be a poly'
-    assert isinstance(denominator, R_Polynomial), 'denominator must be a poly'
-    self.numerator = numerator
-    self.denominator = denominator
+  def __init__(self, ratio):
+    """
+    TODO(mikemeko)
+    """
+    assert isinstance(ratio, R_Ratio)
+    self.numerator = ratio.numerator
+    self.denominator = ratio.denominator
     self._pad_coeffs()
   def _pad_coeffs(self):
     """

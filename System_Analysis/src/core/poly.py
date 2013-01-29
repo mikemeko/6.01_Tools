@@ -14,6 +14,7 @@ class R_Polynomial:
     """
     |coeffs|: a list of the coefficients of powers of R. For example, 2R**2 + 1
         has coefficients [1, 0, 2].
+    TODO(mikemeko): trim 0s?
     """
     self.coeffs = coeffs
     self.degree = len(coeffs) - 1
@@ -42,10 +43,18 @@ class R_Polynomial:
   def __sub__(self, other):
     assert isinstance(other, R_Polynomial), 'other must be an R_Polynomial'
     return self + other.scalar_mult(-1)
+  def __mul__(self, other):
+    assert isinstance(other, R_Polynomial), 'other must be an R_Polynomial'
+    new_coeffs = [0] * (self.degree + other.degree + 1)
+    for exp1 in xrange(self.degree + 1):
+      for exp2 in xrange(other.degree + 1):
+        new_coeffs[exp1 + exp2] += self.coeff(exp1) * other.coeff(exp2)
+    return R_Polynomial(new_coeffs)
   def _prettify(self, coeff, exp):
     """
     Returns a prettified version of |coeff|*R**|exp|.
     """
+    # TODO(mikemeko): improve this!
     if coeff == 0:
       return '0'
     elif exp == 0:
@@ -56,8 +65,54 @@ class R_Polynomial:
     else:
       return '%sR^%d' % (coeff_str, exp)
   def __str__(self):
+    # TODO(mikemeko): improve this!
     return '+'.join(self._prettify(self.coeff(exp), exp)
         for exp in xrange(self.degree + 1) if self.coeff(exp) is not 0)
+
+class R_Ratio:
+  """
+  TODO(mikemeko)
+  """
+  def __init__(self, numerator, denominator=R_Polynomial([1])):
+    """
+    TODO(mikemeko)
+    """
+    assert isinstance(numerator, R_Polynomial), ('numerator must be an '
+        'R_Polynomial')
+    assert isinstance(denominator, R_Polynomial), ('denominator must be an '
+        'R_Polynomial')
+    self.numerator = numerator
+    self.denominator = denominator
+  def scalar_mult(self, const):
+    """
+    TODO(mikemeko)
+    """
+    return R_Ratio(self.numerator.scalar_mult(const), self.denominator)
+  def shift(self):
+    """
+    TODO(mikemeko)
+    """
+    return R_Ratio(self.numerator.shift(), self.denominator)
+  def __add__(self, other):
+    assert isinstance(other, R_Ratio), 'other must be an R_Ratio'
+    n1, d1 = self.numerator, self.denominator
+    n2, d2 = other.numerator, other.denominator
+    return R_Ratio(n1 * d2 + n2 * d1, d1 * d2)
+  def __mul__(self, other):
+    assert isinstance(other, R_Ratio), 'other must be an R_Ratio'
+    n1, d1 = self.numerator, self.denominator
+    n2, d2 = other.numerator, other.denominator
+    return R_Ratio(n1 * n2, d1 * d2)
+  def __div__(self, other):
+    assert isinstance(other, R_Ratio), 'other must be an R_Ratio'
+    n1, d1 = self.numerator, self.denominator
+    n2, d2 = other.numerator, other.denominator
+    return R_Ratio(n1 * d2, n2 * d1)
+  def __sub__(self, other):
+    assert isinstance(other, R_Ratio), 'other must be an R_Ratio'
+    return self + other.scalar_mult(-1)
+  def __str__(self):
+    return '%s / %s' % (str(self.numerator), str(self.denominator))
 
 class Polynomial:
   """
@@ -68,10 +123,12 @@ class Polynomial:
     |data|: a dictionary mapping variable names to their coefficients. For
         example, RX + 2Y is represented by {X:R_Polynomial([0, 1]),
         Y:R_Polynomial([2])}.
+    TODO(mikemeko): update
     """
+    assert isinstance(data, dict), 'data must be a dict'
     for var in data:
-      assert isinstance(var, str), 'signal variable names must be strings'
-      assert isinstance(data[var], R_Polynomial), 'coeff must be R_Polynomials'
+      assert isinstance(var, str), 'variable names must be strings'
+      assert isinstance(data[var], R_Ratio), 'coeff must be R_Ratio'
     self.data = data
   def variables(self):
     """
@@ -80,9 +137,9 @@ class Polynomial:
     return set(self.data.keys())
   def coeff(self, var):
     """
-    Returns the coefficient for the given variable.
+    Returns the coefficient (an R_Ratio) for the given variable.
     """
-    return self.data.get(var, R_Polynomial([0]))
+    return self.data.get(var, R_Ratio(R_Polynomial([0])))
   def scalar_mult(self, const):
     """
     Returns |const| times this polynomial.
@@ -99,6 +156,20 @@ class Polynomial:
     for var in self.data:
       new_data[var] = self.coeff(var).shift()
     return Polynomial(new_data)
+  def substitute(self, var, poly):
+    """
+    TODO(mikemeko)
+    """
+    assert isinstance(var, str), 'var must be a string'
+    assert isinstance(poly, Polynomial), 'poly must be a Polynomial'
+    # TODO(mikemeko): assert var in this poly
+    new_data = dict(self.data)
+    # TODO(mikemeko): method for has_variable
+    if var in self.data:
+      del new_data[var]
+      for v in poly.variables():
+        new_data[v] = self.coeff(v) + (self.coeff(var) * poly.coeff(v))
+    return Polynomial(new_data)
   def __add__(self, other):
     assert isinstance(other, Polynomial), 'other must be a Polynomial'
     new_data = {}
@@ -114,3 +185,12 @@ class Polynomial:
   def __str__(self):
     return '+'.join('(%s)%s' % tuple(map(str, reversed(item)))
         for item in self.data.items())
+
+if __name__ == '__main__':
+  p = Polynomial({'X':R_Ratio(R_Polynomial([0, 1])),
+      'Y':R_Ratio(R_Polynomial([2]))})
+  print p
+  print 'X =', Polynomial({'A':R_Ratio(R_Polynomial([0, 1])),
+      'B':R_Ratio(R_Polynomial([2]))})
+  print p.substitute('X', Polynomial({'A':R_Ratio(R_Polynomial([0, 1])),
+      'B':R_Ratio(R_Polynomial([2]))}))

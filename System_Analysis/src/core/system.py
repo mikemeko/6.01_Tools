@@ -9,6 +9,7 @@ from constants import Y
 from constants import DEFAULT_NUM_SAMPLES
 from poly import Polynomial
 from poly import R_Polynomial
+from poly import R_Ratio
 from system_function import System_Function
 
 class Component:
@@ -19,23 +20,29 @@ class Component:
     """
     |imp_vars|: a list of the names of the input variables to this component.
     |out_var|: the name of the output variable of this component.
+    TODO(mikemeko): update
     """
     self.inp_vars = inp_vars
     self.out_var = out_var
-    self.updated_out = None
+  #@property
+  #def sf_update(self, inp_polys):
+  #  """
+  #  This updates the the |updated_out| attribute. It is called once all the
+  #      input variables to this component are described as polynomials only in
+  #      terms of X and Y, given in |inp_polys|.
+  #  """
+  #  raise NotImplementedError('subclasses should implement this')
+  #def sf_updated(self):
+  #  """
+  #  Returns True if the |updated_out| has been updated, False otherwise.
+  #  """
+  #  return self.updated_out is not None
   @property
-  def sf_update(self, inp_polys):
+  def get_poly(self):
     """
-    This updates the the |updated_out| attribute. It is called once all the
-        input variables to this component are described as polynomials only in
-        terms of X and Y, given in |inp_polys|.
+    TODO(mikemeko)
     """
     raise NotImplementedError('subclasses should implement this')
-  def sf_updated(self):
-    """
-    Returns True if the |updated_out| has been updated, False otherwise.
-    """
-    return self.updated_out is not None
   @property
   def response_update(self, signals):
     """
@@ -51,15 +58,18 @@ class Gain(Component):
   def __init__(self, inp_var, out_var, K):
     assert isinstance(K, (float, int, long)), 'K must be a number'
     Component.__init__(self, [inp_var], out_var)
+    self.inp_var = inp_var
     self.K = K
-  def sf_update(self, inp_polys):
-    self.updated_out = inp_polys[0].scalar_mult(self.K)
+  #def sf_update(self, inp_polys):
+  #  self.updated_out = inp_polys[0].scalar_mult(self.K)
+  def get_poly(self):
+    return Polynomial({self.inp_var: R_Ratio(R_Polynomial([self.K]))})
   def response_update(self, signals):
     i = len(signals[self.out_var])
-    if len(signals[self.inp_vars[0]]) > i:
-      signals[self.out_var].append(self.K * signals[self.inp_vars[0]][i])
+    if len(signals[self.inp_var]) > i:
+      signals[self.out_var].append(self.K * signals[self.inp_var][i])
   def __str__(self):
-    return 'Gain inp=%s out=%s K=%f' % (self.inp_vars[0], self.out_var, self.K)
+    return 'Gain inp=%s out=%s K=%f' % (self.inp_var, self.out_var, self.K)
 
 class Delay(Component):
   """
@@ -67,23 +77,31 @@ class Delay(Component):
   """
   def __init__(self, inp_var, out_var):
     Component.__init__(self, [inp_var], out_var)
-  def sf_update(self, inp_bound):
-    self.updated_out = inp_bound[0].shift()
+    self.inp_var = inp_var
+  #def sf_update(self, inp_bound):
+  #  self.updated_out = inp_bound[0].shift()
+  def get_poly(self):
+    return Polynomial({self.inp_var: R_Ratio(R_Polynomial([0, 1]))})
   def response_update(self, signals):
     i = len(signals[self.out_var])
     if i == 0:
       signals[self.out_var].append(0)
-    elif len(signals[self.inp_vars[0]]) > i - 1:
-      signals[self.out_var].append(signals[self.inp_vars[0]][i - 1])
+    elif len(signals[self.inp_var]) > i - 1:
+      signals[self.out_var].append(signals[self.inp_var][i - 1])
   def __str__(self):
-    return 'Delay inp=%s out=%s' % (self.inp_vars[0], self.out_var)
+    return 'Delay inp=%s out=%s' % (self.inp_var, self.out_var)
 
 class Adder(Component):
   """
   Representation for an adder.
   """
-  def sf_update(self, inp_bound):
-    self.updated_out = reduce(Polynomial.__add__, inp_bound)
+  #def sf_update(self, inp_bound):
+  #  self.updated_out = reduce(Polynomial.__add__, inp_bound)
+  def get_poly(self):
+    data = {}
+    for var in self.inp_vars:
+      data[var] = R_Ratio(R_Polynomial([1]))
+    return Polynomial(data)
   def response_update(self, signals):
     i = len(signals[self.out_var])
     if all(len(signals[v]) > i for v in self.inp_vars):
@@ -111,21 +129,43 @@ class System:
     for c in self.components:
       if c.out_var == self.Y:
         return c
+  def _solve_for_var(self, var, poly):
+    """
+    TODO(mikemeko)
+    """
+    assert isinstance(var, str)
+    assert isinstance(poly, Polynomial)
+    if var not in poly.variables():
+      return poly
+    new_data = {}
+    denominator = R_Ratio(R_Polynomial([1])) - poly.coeff(var)
+    for v in poly.variables():
+      if v is not var:
+        new_data[v] = poly.coeff(v) / denominator
+    return Polynomial(new_data)
   def _solve_sf(self):
     """
     Solves for the system function of this system.
     TODO(mikemeko): this fails for some systems, bug fix in progress!
     """
-    last_comp = self.last_component()
-    var_reps = {self.X:Polynomial({self.X:R_Polynomial([1])}),
-        self.Y:Polynomial({self.Y:R_Polynomial([1])})}
-    while not last_comp.sf_updated():
-      for c in self.components:
-        if not c.sf_updated() and all(i in var_reps for i in c.inp_vars):
-          c.sf_update([var_reps[i] for i in c.inp_vars])
-          var_reps[c.out_var] = c.updated_out
-    self.sf = System_Function(var_reps[self.Y].coeff(self.X),
-        R_Polynomial([1]) - var_reps[self.Y].coeff(self.Y))
+    variables = {}
+    for component in self.components:
+      variables[component.out_var] = component.get_poly()
+      print component.out_var, '=', variables[component.out_var]
+    print
+    for component in self.components:
+      var = component.out_var
+      if var is not self.Y:
+        print 'removing', var
+        poly = self._solve_for_var(var, variables.pop(var))
+        for v in variables:
+          variables[v] = variables[v].substitute(var, poly)
+        for v in variables:
+          print v,'=',variables[v]
+        print
+    # TODO(mikemeko): assert some stuff here
+    self.sf = System_Function(self._solve_for_var(self.Y,
+        variables[self.Y]).coeff(self.X))
   def variables(self):
     """
     Returns a set of the variables in this System.
@@ -163,3 +203,14 @@ class System:
   def __str__(self):
     return 'System inp=%s out=%s\nComponents=%s' % (self.X, self.Y,
         str(map(str, self.components)))
+
+if __name__ == '__main__':
+  A, B, C, D, E, F = 'A', 'B', 'C', 'D', 'E', 'F'
+  sys = System([Adder([X, F], A),
+                Gain(A, B, 1),
+                Adder([B, D], C),
+                Delay(C, E),
+                Adder([C, E], Y),
+                Gain(E, D, 11),
+                Gain(Y, F, -1)])
+  print sys.sf
