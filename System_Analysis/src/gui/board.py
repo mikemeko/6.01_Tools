@@ -17,9 +17,22 @@ from constants import BOARD_WIDTH
 from constants import CONNECTOR_RADIUS
 from constants import CONNECTOR_TAG
 from constants import DRAG_TAG
+from constants import ERROR
+from constants import INFO
+from constants import MESSAGE_ERROR_COLOR
+from constants import MESSAGE_HEIGHT
+from constants import MESSAGE_INFO_COLOR
+from constants import MESSAGE_INFO_DURATION
+from constants import MESSAGE_PADDING
+from constants import MESSAGE_TEXT_WIDTH
+from constants import MESSAGE_WARNING_COLOR
+from constants import MESSAGE_WIDTH
+from constants import WARNING
+from threading import Timer
 from Tkinter import ALL
 from Tkinter import Canvas
 from Tkinter import Frame
+from util import create_circle
 from util import create_wire
 from util import point_inside_bbox
 from util import point_inside_circle
@@ -55,6 +68,8 @@ class Board(Frame):
     self._wire_labeler = 0 # used to uniquely label wires
     # state for key-press callbacks
     self._key_press_callbacks = {}
+    # state for message display
+    self._message_parts = []
     # setup ui
     self._setup_drawing_board()
     self._setup_bindings()
@@ -302,6 +317,51 @@ class Board(Frame):
           bbox == other.bounding_box(self.drawable_offsets[other])):
         return True
     return False
+  def remove_message(self):
+    """
+    Removes the current message on the board, if any.
+    """
+    for part in self._message_parts:
+      self.canvas.delete(part)
+    # clear out message parts list
+    self._message_parts = []
+  def display_message(self, message, message_type=INFO):
+    """
+    Displays the given |message| on the board. |message_type| should be one of
+        INFO, WARNING, or ERROR.
+    """
+    # remove current message, if any
+    self.remove_message()
+    # message container
+    if message_type is WARNING:
+      fill = MESSAGE_WARNING_COLOR
+    elif message_type is ERROR:
+      fill = MESSAGE_ERROR_COLOR
+    else:
+      # default is info
+      message_type = INFO
+      fill = MESSAGE_INFO_COLOR
+    self._message_parts.append(self.canvas.create_rectangle((self.width -
+        MESSAGE_WIDTH - MESSAGE_PADDING, self.height - MESSAGE_HEIGHT -
+        MESSAGE_PADDING, self.width -  MESSAGE_PADDING, self.height -
+        MESSAGE_PADDING), fill=fill))
+    # message
+    self._message_parts.append(self.canvas.create_text(self.width -
+        MESSAGE_WIDTH / 2 - MESSAGE_PADDING, self.height - MESSAGE_HEIGHT / 2 -
+        MESSAGE_PADDING, text=message, width=MESSAGE_TEXT_WIDTH))
+    # close button
+    cx, cy = (self.width - MESSAGE_PADDING - 10, self.height -
+        MESSAGE_HEIGHT - MESSAGE_PADDING + 10)
+    circle = create_circle(self.canvas, cx, cy, 5, fill='white')
+    x_1 = self.canvas.create_line(cx - 4, cy - 4, cx + 4, cy + 4)
+    x_2 = self.canvas.create_line(cx + 4, cy - 4, cx - 4, cy + 4)
+    for close_part in (circle, x_1, x_2):
+      self._message_parts.append(close_part)
+      self.canvas.tag_bind(close_part, '<Button-1>', lambda event:
+          self.remove_message())
+    # automatically remove info messages after a little while
+    if message_type is INFO:
+      Timer(MESSAGE_INFO_DURATION, self.remove_message).start()
   def add_drawable(self, drawable, offset=(0, 0)):
     """
     Adds the given |drawable| to this board at the given |offset|.
