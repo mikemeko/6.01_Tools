@@ -281,15 +281,13 @@ class Board(Frame):
       self._maybe_delete_empty_wire_connector(wire_to_delete.end_connector)
   def add_key_binding(self, key, callback):
     """
-    TODO(mikemeko)
+    Adds a key-binding so that whenever |key| is pressed, |callback| is called.
     """
-    # TODO(mikemeko): check conditions on key
     self._key_press_callbacks[key] = callback
   def _handle_key_press(self, event):
     """
-    TODO(mikemeko)
+    Handles a key-press event.
     """
-    # Consider logging stuff
     if event.char in self._key_press_callbacks:
       self._key_press_callbacks[event.char]()
   def is_duplicate(self, drawable, offset=(0, 0)):
