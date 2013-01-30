@@ -36,6 +36,7 @@ class Component:
     """
     |signals| is a dictionary mapping variables to lists. This appends, if
         possible, the next sample of the output signal of this component.
+    Returns True on success, or False on failure.
     """
     raise NotImplementedError('subclasses should implement this')
 
@@ -55,6 +56,8 @@ class Gain(Component):
     i = len(signals[self.out_var])
     if len(signals[self.inp_var]) > i:
       signals[self.out_var].append(self.K * signals[self.inp_var][i])
+      return True
+    return False
   def __str__(self):
     return 'Gain inp=%s out=%s K=%f' % (self.inp_var, self.out_var, self.K)
 
@@ -72,8 +75,11 @@ class Delay(Component):
     i = len(signals[self.out_var])
     if i == 0:
       signals[self.out_var].append(0)
+      return True
     elif len(signals[self.inp_var]) > i - 1:
       signals[self.out_var].append(signals[self.inp_var][i - 1])
+      return True
+    return False
   def __str__(self):
     return 'Delay inp=%s out=%s' % (self.inp_var, self.out_var)
 
@@ -91,6 +97,8 @@ class Adder(Component):
     i = len(signals[self.out_var])
     if all(len(signals[v]) > i for v in self.inp_vars):
       signals[self.out_var].append(sum(signals[v][i] for v in self.inp_vars))
+      return True
+    return False
   def __str__(self):
     return 'Adder inp=%s out=%s' % (str(self.inp_vars), self.out_var)
 
@@ -169,8 +177,12 @@ class System:
     # input is unit sample signal
     signals[self.X] = [1] + [0] * (num_samples - 1)
     while len(signals[self.Y]) < num_samples:
+      # flag to catch feedback loops without delays
+      any_updates = False
       for c in self.components:
-        c.response_update(signals)
+        any_updates = any_updates or c.response_update(signals)
+      if not any_updates:
+        raise Exception('system has a feedback loop without a delay')
     return signals[self.Y]
   def poles(self):
     """
