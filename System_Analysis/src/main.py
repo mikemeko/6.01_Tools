@@ -49,6 +49,7 @@ from gui.board import Board
 from gui.components import Drawable
 from gui.components import Wire_Connector_Drawable
 from gui.constants import ERROR
+from gui.constants import INFO
 from gui.constants import LEFT
 from gui.constants import RIGHT
 from gui.palette import Palette
@@ -315,5 +316,7 @@ if __name__ == '__main__':
       plot_pole_zero_diagram))
   board.add_key_binding('u', lambda: run_analysis(board,
       plot_unit_sample_response))
+  # some UI help
+  board.display_message('Right-click to delete.', INFO)
   # run main loop
   root.mainloop()
