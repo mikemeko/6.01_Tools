@@ -17,6 +17,8 @@ class System_Function:
     """
     assert isinstance(ratio, R_Ratio)
     self.ratio = ratio
+    # store lists of the coefficients of the numerator and denominator
+    # polynomials in R
     self.numerator_coeffs = list(ratio.numerator.coeffs)
     self.denominator_coeffs = list(ratio.denominator.coeffs)
     self._pad_coeffs()
