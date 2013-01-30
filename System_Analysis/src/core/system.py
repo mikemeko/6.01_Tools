@@ -106,15 +106,17 @@ class System:
   """
   Representation for a DT LTI system.
   """
-  def __init__(self, components, X=X, Y=Y):
+  def __init__(self, components, X=X, Y=Y, display_error=None):
     """
     |components|: a list of the instances of Component in this System.
     |X|: the input signal of this system.
     |Y|: the output signal of this system.
+    |display_error|: method that takes in an error message and displays it.
     """
     self.components = components
     self.X = X
     self.Y = Y
+    self.display_error = display_error
     self.sf = None
     self._solve_sf()
   def _solve_for_var(self, var, poly):
@@ -151,10 +153,11 @@ class System:
           out_var_reps[out_var] = out_var_reps[out_var].substitute(
               out_var_to_eliminate, new_rep)
     # TODO(mikemeko): better error messages here
-    assert len(out_var_reps) == 1, 'unable to solve for system function'
-    assert self.Y in out_var_reps, 'unable to solve for system function'
-    assert set(out_var_reps[self.Y].variables()).issubset(
-        set([self.X, self.Y])), 'unable to solve for system function'
+    if len(out_var_reps) != 1 or self.Y not in out_var_reps or not (
+        set(out_var_reps[self.Y].variables()).issubset(set([self.X, self.Y]))):
+      if self.display_error:
+        self.display_error('Unable to solve for system function')
+      return
     # solve for self.Y in terms of only self.X and obtain system function
     self.sf = System_Function(self._solve_for_var(self.Y,
         out_var_reps[self.Y]).coeff(self.X))
@@ -169,7 +172,7 @@ class System:
   def unit_sample_response(self, num_samples=DEFAULT_NUM_SAMPLES):
     """
     Returns the first |num_samples| samples of the unit sample response of this
-        System, starting at n=0.
+        System, starting at n=0. Returns None on failure.
     """
     signals = {}
     for v in self.variables():
@@ -182,7 +185,9 @@ class System:
       for c in self.components:
         any_updates = any_updates or c.response_update(signals)
       if not any_updates:
-        raise Exception('system has a feedback loop without a delay')
+        if self.display_error:
+          self.display_error('System has a feedback loop without a delay')
+        return None
     return signals[self.Y]
   def poles(self):
     """

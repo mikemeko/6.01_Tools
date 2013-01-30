@@ -8,9 +8,9 @@ __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 BOARD_BACKGROUND_COLOR = 'white'
 BOARD_MARKER_LINE_COLOR = '#DDD'
 CONNECTOR_COLOR = '#777'
-MESSAGE_ERROR_COLOR = 'red' # TODO(mikemeko)
-MESSAGE_INFO_COLOR = 'green' # TODO(mikemeko)
-MESSAGE_WARNING_COLOR = 'yellow' # TODO(mikemeko)
+MESSAGE_ERROR_COLOR = '#FD7279'
+MESSAGE_INFO_COLOR = '#95EE6B'
+MESSAGE_WARNING_COLOR = '#FFD640'
 PALETTE_BACKGROUND_COLOR = '#BBB'
 WIRE_COLOR = '#777'
 WIRE_CONNECTOR_FILL = 'grey'
@@ -48,7 +48,7 @@ WIRE_ARROW_LENGTH = 10
 WIRE_WIDTH = 2
 
 # duration constants
-MESSAGE_INFO_DURATION = 2 # seconds
+MESSAGE_INFO_DURATION = 3 # seconds
 
 # tags
 CONNECTOR_TAG = 'connector_tag'

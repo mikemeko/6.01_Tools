@@ -70,6 +70,7 @@ class Board(Frame):
     self._key_press_callbacks = {}
     # state for message display
     self._message_parts = []
+    self._message_remove_timer = None
     # setup ui
     self._setup_drawing_board()
     self._setup_bindings()
@@ -332,6 +333,10 @@ class Board(Frame):
     """
     # remove current message, if any
     self.remove_message()
+    # cancel message remove timer
+    if self._message_remove_timer:
+      self._message_remove_timer.cancel()
+      self._message_remove_timer = None
     # message container
     if message_type is WARNING:
       fill = MESSAGE_WARNING_COLOR
@@ -361,7 +366,9 @@ class Board(Frame):
           self.remove_message())
     # automatically remove info messages after a little while
     if message_type is INFO:
-      Timer(MESSAGE_INFO_DURATION, self.remove_message).start()
+      self._message_remove_timer = Timer(MESSAGE_INFO_DURATION,
+          self.remove_message)
+      self._message_remove_timer.start()
   def add_drawable(self, drawable, offset=(0, 0)):
     """
     Adds the given |drawable| to this board at the given |offset|.

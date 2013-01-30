@@ -37,6 +37,7 @@ class Pole_Zero_Diagram(Frame):
       self.sf = sys
     else:
       raise Exception('sys must be a System or System_Function')
+    assert self.sf is not None, 'sf cannot be None'
     Frame.__init__(self, parent)
     parent.title('H(R) = %s' % str(self.sf))
     self.window_size = window_size
