@@ -35,6 +35,7 @@ class Board(Frame):
     |height|: the height of this board.
     """
     Frame.__init__(self, parent, background=BOARD_BACKGROUND_COLOR)
+    self.parent = parent
     self.width = width
     self.height = height
     # canvas on which items are drawn
@@ -52,6 +53,8 @@ class Board(Frame):
     self._wire_start = None
     self._wire_end = None
     self._wire_labeler = 0 # used to uniquely label wires
+    # state for key-press callbacks
+    self._key_press_callbacks = {}
     # setup ui
     self._setup_drawing_board()
     self._setup_bindings()
@@ -81,6 +84,8 @@ class Board(Frame):
         self._wire_release)
     # delete binding
     self.canvas.tag_bind(ALL, '<ButtonPress-3>', self._delete)
+    # key-press binding
+    self.parent.bind('<Key>', self._handle_key_press)
   def _drawable_at(self, point):
     """
     |point|: a tuple of the form (x, y) indicating a location on the canvas.
@@ -274,6 +279,19 @@ class Board(Frame):
       # delete them
       self._maybe_delete_empty_wire_connector(wire_to_delete.start_connector)
       self._maybe_delete_empty_wire_connector(wire_to_delete.end_connector)
+  def add_key_binding(self, key, callback):
+    """
+    TODO(mikemeko)
+    """
+    # TODO(mikemeko): check conditions on key
+    self._key_press_callbacks[key] = callback
+  def _handle_key_press(self, event):
+    """
+    TODO(mikemeko)
+    """
+    # Consider logging stuff
+    if event.char in self._key_press_callbacks:
+      self._key_press_callbacks[event.char]()
   def is_duplicate(self, drawable, offset=(0, 0)):
     """
     Returns True if the exact |drawable| at the given |offset| is already on

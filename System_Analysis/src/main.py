@@ -274,5 +274,10 @@ if __name__ == '__main__':
       lambda event: run_analysis(board, plot_pole_zero_diagram))
   palette.add_drawable_type(USR_Run_Drawable, RIGHT,
       lambda event: run_analysis(board, plot_unit_sample_response))
+  # shortcuts
+  board.add_key_binding('p', lambda: run_analysis(board,
+      plot_pole_zero_diagram))
+  board.add_key_binding('u', lambda: run_analysis(board,
+      plot_unit_sample_response))
   # run main loop
   root.mainloop()

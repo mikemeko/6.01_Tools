@@ -151,18 +151,12 @@ class System:
     variables = {}
     for component in self.components:
       variables[component.out_var] = component.get_poly()
-      print component.out_var, '=', variables[component.out_var]
-    print
     for component in self.components:
       var = component.out_var
       if var is not self.Y:
-        print 'removing', var
         poly = self._solve_for_var(var, variables.pop(var))
         for v in variables:
           variables[v] = variables[v].substitute(var, poly)
-        for v in variables:
-          print v,'=',variables[v]
-        print
     # TODO(mikemeko): assert some stuff here
     self.sf = System_Function(self._solve_for_var(self.Y,
         variables[self.Y]).coeff(self.X))
@@ -205,12 +199,13 @@ class System:
         str(map(str, self.components)))
 
 if __name__ == '__main__':
-  A, B, C, D, E, F = 'A', 'B', 'C', 'D', 'E', 'F'
+  A, B, C, D, E, F, G = 'A', 'B', 'C', 'D', 'E', 'F', 'G'
   sys = System([Adder([X, F], A),
-                Gain(A, B, 1),
+                Gain(A, B, 6),
                 Adder([B, D], C),
                 Delay(C, E),
                 Adder([C, E], Y),
                 Gain(E, D, 11),
-                Gain(Y, F, -1)])
+                Delay(Y, F),
+                Gain(F, G, -1)])
   print sys.sf

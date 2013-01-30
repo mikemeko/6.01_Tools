@@ -32,3 +32,9 @@ def in_bounds(val, min_val, max_val):
   Returns True if min_val <= val <= max_val, False otherwise.
   """
   return min_val <= val <= max_val
+
+def is_number(val):
+  """
+  Returns True if |val| is a number, False otherwise.
+  """
+  return isinstance(val, (float, int, long))

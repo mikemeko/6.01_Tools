@@ -5,6 +5,7 @@ Unittests for system_function.py.
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
 from core.poly import R_Polynomial
+from core.poly import R_Ratio
 from core.system_function import System_Function
 from unittest import main
 from unittest import TestCase
@@ -14,10 +15,13 @@ class System_Function_Test(TestCase):
   Tests for System_Function.
   """
   def setUp(self):
-    self.sf1 = System_Function(R_Polynomial([1]), R_Polynomial([1]))
-    self.sf2 = System_Function(R_Polynomial([0,0,1]), R_Polynomial([1]))
-    self.sf3 = System_Function(R_Polynomial([1]), R_Polynomial([1, -0.5]))
-    self.sf4 = System_Function(R_Polynomial([1,1]), R_Polynomial([1,-3,2]))
+    self.sf1 = System_Function(R_Ratio(R_Polynomial([1]), R_Polynomial([1])))
+    self.sf2 = System_Function(R_Ratio(R_Polynomial([0,0,1]),
+        R_Polynomial([1])))
+    self.sf3 = System_Function(R_Ratio(R_Polynomial([1]),
+        R_Polynomial([1, -0.5])))
+    self.sf4 = System_Function(R_Ratio(R_Polynomial([1,1]),
+        R_Polynomial([1,-3,2])))
   def test_poles(self):
     assert self.sf1.poles() == []
     assert self.sf2.poles() == [0, 0]
