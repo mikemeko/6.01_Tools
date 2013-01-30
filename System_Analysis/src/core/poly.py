@@ -223,6 +223,11 @@ class Polynomial:
       for v in poly.variables():
         new_data[v] = self.coeff(v) + (self.coeff(var) * poly.coeff(v))
     return Polynomial(new_data)
+  def copy(self):
+    """
+    Returns a copy of this polynomial.
+    """
+    return Polynomial(self.data)
   def __add__(self, other):
     assert isinstance(other, Polynomial), 'other must be a Polynomial'
     new_data = {}

@@ -237,8 +237,7 @@ def run_analysis(board, analyze):
         assert len(inp) == 1, 'Y component must have exactly 1 input'
         Y_label = inp[0]
     elif isinstance(drawable, Wire_Connector_Drawable):
-      # nothing to do
-      pass
+      assert len(inp) == 1, 'wire connector must have exactly 1 input'
     else:
       raise Exception('Found unexpected component on board')
   assert X_label is not None, 'No input signal found'
