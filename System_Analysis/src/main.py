@@ -198,7 +198,7 @@ def run_analysis(board, analyze):
   system_components = []
   # X and Y signal names
   X_label, Y_label = None, None
-  for drawable in board.drawables:
+  for drawable in board.get_drawables():
     # input and output signals for current drawable
     inp, out = [], []
     for connector in drawable.connectors:

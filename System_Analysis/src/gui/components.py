@@ -12,7 +12,6 @@ from constants import CONNECTOR_RADIUS
 from constants import CONNECTOR_RIGHT
 from constants import CONNECTOR_TAG
 from constants import CONNECTOR_TOP
-from Tkinter import Canvas
 from util import create_circle
 from util import create_wire
 from util import snap
@@ -36,6 +35,8 @@ class Drawable:
     self.parts = set()
     # connectors on this item, updated by board
     self.connectors = set()
+    # flag for whether this drawable is on the board / deleted
+    self._live = True
   @property
   def draw_on(self, canvas, offset):
     """
@@ -51,6 +52,12 @@ class Drawable:
         result in this rotation. The default implementation is no rotation.
     """
     return self
+  def live(self):
+    """
+    Returns True if this drawable is still on the board, or False if it has
+        been deleted.
+    """
+    return self._live
   def bounding_box(self, offset=(0, 0)):
     """
     Returns the bounding box of this Drawable, when drawn with the given
@@ -89,6 +96,9 @@ class Drawable:
     """
     Deletes this item from the |canvas|.
     """
+    assert self._live, 'this drawable has already been deleted.'
+    # mark this drawable deleted
+    self._live = False
     # delete all parts of this item
     for part in self.parts:
       canvas.delete(part)
@@ -107,6 +117,13 @@ class Drawable:
       # move all connectors for this item
       for connector in self.connectors:
         connector.move(canvas, dx, dy)
+  def wires(self):
+    """
+    Returns the wires for this drawable.
+    """
+    for connector in self.connectors:
+      for wire in connector.wires():
+        yield wire
 
 class Connector:
   """
@@ -196,22 +213,30 @@ class Wire:
     self.start_connector = start_connector
     self.end_connector = end_connector
     self.label = label
+  def _maybe_delete_empty_wire_connector(self, canvas, connector):
+    """
+    Deletes |connector| if it is a wire connector and it is not connected to
+        any wires.
+    """
+    if connector.num_wires() is 0 and isinstance(connector.drawable,
+        Wire_Connector_Drawable) and connector.drawable.live():
+      connector.drawable.delete_from(canvas)
   def delete_from(self, canvas):
     """
     Deletes this wire from the |canvas|.
     """
-    assert isinstance(canvas, Canvas), 'canvas must be a Canvas'
     # delete the lines the wire is composed of
     for part in self.parts:
       canvas.delete(part)
     # remove this wire from the connectors' wire lists
     self.start_connector.start_wires.remove(self)
+    self._maybe_delete_empty_wire_connector(canvas, self.start_connector)
     self.end_connector.end_wires.remove(self)
+    self._maybe_delete_empty_wire_connector(canvas, self.end_connector)
   def redraw(self, canvas):
     """
     Redraws this wire.
     """
-    assert isinstance(canvas, Canvas), 'canvas must be a Canvas'
     # delete the lines the wire is composed of
     for part in self.parts:
       canvas.delete(part)

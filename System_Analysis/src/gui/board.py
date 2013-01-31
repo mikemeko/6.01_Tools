@@ -55,12 +55,12 @@ class Board(Frame):
     self.width = width
     self.height = height
     # canvas on which items are drawn
-    self.canvas = Canvas(self, width=width, height=height,
+    self._canvas = Canvas(self, width=width, height=height,
         highlightthickness=0, background=BOARD_BACKGROUND_COLOR)
-    # the drawables on this board
-    self.drawables = set()
+    # the drawables on this board, includes deleted drawables
+    self._drawables = set()
     # TODO(mikemeko): consider making offset a Drawable attribute
-    self.drawable_offsets = dict()
+    self._drawable_offsets = dict()
     # state for dragging
     self._drag_item = None
     self._drag_last_point = None
@@ -82,41 +82,41 @@ class Board(Frame):
     Draws grid lines on the board.
     """
     for dim in xrange(0, self.width, BOARD_GRID_SEPARATION):
-      self.canvas.create_line((0, dim, self.width, dim),
+      self._canvas.create_line((0, dim, self.width, dim),
           fill=BOARD_MARKER_LINE_COLOR)
-      self.canvas.create_line((dim, 0, dim, self.height),
+      self._canvas.create_line((dim, 0, dim, self.height),
           fill=BOARD_MARKER_LINE_COLOR)
-    self.canvas.pack()
+    self._canvas.pack()
     self.pack()
   def _setup_bindings(self):
     """
     Makes all necessary event bindings.
     """
     # drag bindings
-    self.canvas.tag_bind(DRAG_TAG, '<ButtonPress-1>', self._drag_press)
-    self.canvas.tag_bind(DRAG_TAG, '<B1-Motion>', self._drag_move)
-    self.canvas.tag_bind(DRAG_TAG, '<ButtonRelease-1>', self._drag_release)
+    self._canvas.tag_bind(DRAG_TAG, '<ButtonPress-1>', self._drag_press)
+    self._canvas.tag_bind(DRAG_TAG, '<B1-Motion>', self._drag_move)
+    self._canvas.tag_bind(DRAG_TAG, '<ButtonRelease-1>', self._drag_release)
     # wire drawing bindings
-    self.canvas.tag_bind(CONNECTOR_TAG, '<ButtonPress-1>', self._wire_press)
-    self.canvas.tag_bind(CONNECTOR_TAG, '<B1-Motion>', self._wire_move)
-    self.canvas.tag_bind(CONNECTOR_TAG, '<ButtonRelease-1>',
+    self._canvas.tag_bind(CONNECTOR_TAG, '<ButtonPress-1>', self._wire_press)
+    self._canvas.tag_bind(CONNECTOR_TAG, '<B1-Motion>', self._wire_move)
+    self._canvas.tag_bind(CONNECTOR_TAG, '<ButtonRelease-1>',
         self._wire_release)
     # delete binding
-    self.canvas.tag_bind(ALL, '<Control-Button-1>', self._delete)
+    self._canvas.tag_bind(ALL, '<Control-Button-1>', self._delete)
     # key-press and key-release bindings
     self.parent.bind('<KeyPress>', self._key_press)
     self.parent.bind('<KeyRelease>', self._key_release)
     # rotate binding
-    self.canvas.tag_bind(ROTATE_TAG, '<Shift-Button-1>', self._rotate)
+    self._canvas.tag_bind(ROTATE_TAG, '<Shift-Button-1>', self._rotate)
   def _drawable_at(self, point):
     """
     |point|: a tuple of the form (x, y) indicating a location on the canvas.
     Returns the drawable located at canvas location |point|, or None if no such
         item exists.
     """
-    for drawable in self.drawables:
+    for drawable in self.get_drawables():
       if point_inside_bbox(point, drawable.bounding_box(
-          self.drawable_offsets[drawable])):
+          self._drawable_offsets[drawable])):
         return drawable
     return None
   def _connector_at(self, point):
@@ -125,7 +125,7 @@ class Board(Frame):
     Returns the connector located at canvas location |point|, or None if no
         such connector exists.
     """
-    for drawable in self.drawables:
+    for drawable in self.get_drawables():
       for connector in drawable.connectors:
         cx, cy = connector.center
         if point_inside_circle(point, (cx, cy, CONNECTOR_RADIUS)):
@@ -135,7 +135,7 @@ class Board(Frame):
     """
     Returns the wire with id |canvas_id|, or None if no such wire exists.
     """
-    for drawable in self.drawables:
+    for drawable in self.get_drawables():
       for connector in drawable.connectors:
         for wire in connector.wires():
           if canvas_id in wire.parts:
@@ -157,12 +157,12 @@ class Board(Frame):
     dx = snap(event.x - last_x)
     dy = snap(event.y - last_y)
     # move the item being dragged
-    self._drag_item.move(self.canvas, dx, dy)
+    self._drag_item.move(self._canvas, dx, dy)
     # update drag state
     self._drag_last_point = (last_x + dx, last_y + dy)
     # update offset of item being dragged
-    x, y = self.drawable_offsets[self._drag_item]
-    self.drawable_offsets[self._drag_item] = x + dx, y + dy
+    x, y = self._drawable_offsets[self._drag_item]
+    self._drawable_offsets[self._drag_item] = x + dx, y + dy
   def _drag_release(self, event):
     """
     Callback for when a drawable item is released. Updates drag state.
@@ -187,7 +187,7 @@ class Board(Frame):
     """
     if self._wire_parts:
       for part in self._wire_parts:
-        self.canvas.delete(part)
+        self._canvas.delete(part)
   def _draw_current_wire(self):
     """
     Draws the wire currently being created.
@@ -196,7 +196,7 @@ class Board(Frame):
     self._erase_previous_wire()
     x1, y1 = self._wire_start
     x2, y2 = self._wire_end
-    self._wire_parts = create_wire(self.canvas, x1, y1, x2, y2)
+    self._wire_parts = create_wire(self._canvas, x1, y1, x2, y2)
   def _wire_press(self, event):
     """
     Callback for when a connector is pressed to start creating a wire. Updates
@@ -255,28 +255,13 @@ class Board(Frame):
       # create wire
       wire = Wire(self._wire_parts, start_connector, end_connector, label)
       start_connector.start_wires.add(wire)
-      start_connector.lift(self.canvas)
+      start_connector.lift(self._canvas)
       end_connector.end_wires.add(wire)
-      end_connector.lift(self.canvas)
+      end_connector.lift(self._canvas)
     # reset
     self._wire_parts = None
     self._wire_start = None
     self._wire_end = None
-  def _delete_drawable(self, drawable):
-    """
-    Deletes the given |drawable| from the board.
-    """
-    drawable.delete_from(self.canvas)
-    self.drawables.remove(drawable)
-    del self.drawable_offsets[drawable]
-  def _maybe_delete_empty_wire_connector(self, connector):
-    """
-    Deletes |connector| if it is a wire connector and it is not connected to
-        any wires.
-    """
-    if connector.num_wires() is 0 and isinstance(connector.drawable,
-        Wire_Connector_Drawable):
-      self._delete_drawable(connector.drawable)
   def _delete(self, event):
     """
     Callback for deleting an item on the board.
@@ -284,23 +269,19 @@ class Board(Frame):
     # delete a drawable item?
     drawable_to_delete = self._drawable_at((event.x, event.y))
     if drawable_to_delete:
-      self._delete_drawable(drawable_to_delete)
+      drawable_to_delete.delete_from(self._canvas)
       return
     # delete a connector?
     connector_to_delete = self._connector_at((event.x, event.y))
     if connector_to_delete:
       # delete the drawable containing the connector
-      self._delete_drawable(connector_to_delete.drawable)
+      connector_to_delete.drawable.delete_from(self._canvas)
       return
     # delete a wire?
-    canvas_id = self.canvas.find_closest(event.x, event.y)[0]
+    canvas_id = self._canvas.find_closest(event.x, event.y)[0]
     wire_to_delete = self._wire_with_id(canvas_id)
     if wire_to_delete:
-      wire_to_delete.delete_from(self.canvas)
-      # if the wire's start and end connectors are wire connectors, maybe
-      # delete them
-      self._maybe_delete_empty_wire_connector(wire_to_delete.start_connector)
-      self._maybe_delete_empty_wire_connector(wire_to_delete.end_connector)
+      wire_to_delete.delete_from(self._canvas)
   def add_key_binding(self, key, callback):
     """
     Adds a key-binding so that whenever |key| is pressed, |callback| is called.
@@ -329,14 +310,15 @@ class Board(Frame):
     drawable_to_rotate = self._drawable_at((event.x, event.y))
     if drawable_to_rotate:
       # make sure that it is not connected to other drawables
-      for connector in drawable_to_rotate.connectors:
-        if any(connector.wires()):
-          self.display_message('Cannot rotate a connected item', ERROR)
-          return
+      if any(drawable_to_rotate.wires()):
+        self.display_message('Cannot rotate a connected item', ERROR)
+        return
       # remove current drawable and add rotated version
-      offset = self.drawable_offsets[drawable_to_rotate]
-      self._delete_drawable(drawable_to_rotate)
-      self.add_drawable(drawable_to_rotate.rotated(), offset)
+      rotated_drawable = drawable_to_rotate.rotated()
+      if rotated_drawable is not drawable_to_rotate:
+        offset = self._drawable_offsets[drawable_to_rotate]
+        drawable_to_rotate.delete_from(self._canvas)
+        self.add_drawable(rotated_drawable, offset)
   def is_duplicate(self, drawable, offset=(0, 0)):
     """
     Returns True if the exact |drawable| at the given |offset| is already on
@@ -344,9 +326,9 @@ class Board(Frame):
     """
     assert isinstance(drawable, Drawable), 'drawable must be a Drawable'
     bbox = drawable.bounding_box(offset)
-    for other in self.drawables:
+    for other in self.get_drawables():
       if (drawable.__class__ == other.__class__ and
-          bbox == other.bounding_box(self.drawable_offsets[other])):
+          bbox == other.bounding_box(self._drawable_offsets[other])):
         return True
     return False
   def remove_message(self):
@@ -354,7 +336,7 @@ class Board(Frame):
     Removes the current message on the board, if any.
     """
     for part in self._message_parts:
-      self.canvas.delete(part)
+      self._canvas.delete(part)
     # clear out message parts list
     self._message_parts = []
   def display_message(self, message, message_type=INFO):
@@ -379,23 +361,23 @@ class Board(Frame):
       # default is info
       fill = MESSAGE_INFO_COLOR
       duration = MESSAGE_INFO_DURATION
-    self._message_parts.append(self.canvas.create_rectangle((self.width -
+    self._message_parts.append(self._canvas.create_rectangle((self.width -
         MESSAGE_WIDTH - MESSAGE_PADDING, self.height - MESSAGE_HEIGHT -
         MESSAGE_PADDING, self.width -  MESSAGE_PADDING, self.height -
         MESSAGE_PADDING), fill=fill))
     # message
-    self._message_parts.append(self.canvas.create_text(self.width -
+    self._message_parts.append(self._canvas.create_text(self.width -
         MESSAGE_WIDTH / 2 - MESSAGE_PADDING, self.height - MESSAGE_HEIGHT / 2 -
         MESSAGE_PADDING, text=message, width=MESSAGE_TEXT_WIDTH))
     # close button
     cx, cy = (self.width - MESSAGE_PADDING - 10, self.height -
         MESSAGE_HEIGHT - MESSAGE_PADDING + 10)
-    circle = create_circle(self.canvas, cx, cy, 5, fill='white')
-    x_1 = self.canvas.create_line(cx - 4, cy - 4, cx + 4, cy + 4)
-    x_2 = self.canvas.create_line(cx + 4, cy - 4, cx - 4, cy + 4)
+    circle = create_circle(self._canvas, cx, cy, 5, fill='white')
+    x_1 = self._canvas.create_line(cx - 4, cy - 4, cx + 4, cy + 4)
+    x_2 = self._canvas.create_line(cx + 4, cy - 4, cx - 4, cy + 4)
     for close_part in (circle, x_1, x_2):
       self._message_parts.append(close_part)
-      self.canvas.tag_bind(close_part, '<Button-1>', lambda event:
+      self._canvas.tag_bind(close_part, '<Button-1>', lambda event:
           self.remove_message())
     # automatically remove messages after a little while
     self._message_remove_timer = Timer(duration, self.remove_message)
@@ -406,12 +388,19 @@ class Board(Frame):
     """
     assert isinstance(drawable, Drawable), 'drawable must be a Drawable'
     # add it to the list of drawables on this board
-    self.drawables.add(drawable)
-    self.drawable_offsets[drawable] = offset
+    self._drawables.add(drawable)
+    self._drawable_offsets[drawable] = offset
     # draw it
-    drawable.draw_on(self.canvas, offset)
+    drawable.draw_on(self._canvas, offset)
     # draw its connectors
-    drawable.draw_connectors(self.canvas, offset)
+    drawable.draw_connectors(self._canvas, offset)
     # attach drag tag
     for part in drawable.parts:
-      self.canvas.itemconfig(part, tags=(DRAG_TAG, ROTATE_TAG))
+      self._canvas.itemconfig(part, tags=(DRAG_TAG, ROTATE_TAG))
+  def get_drawables(self):
+    """
+    Returns the live drawables on this board.
+    """
+    for drawable in self._drawables:
+      if drawable.live():
+        yield drawable
