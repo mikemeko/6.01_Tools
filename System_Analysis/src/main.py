@@ -11,18 +11,19 @@ from constants import ADDER_OUTLINE
 from constants import ADDER_RADIUS
 from constants import ADDER_SEGMENT_SIZE
 from constants import APP_NAME
+from constants import DELAY_CONNECTORS
 from constants import DELAY_FILL
-from constants import DELAY_HORIZONTAL_CONNECTORS
 from constants import DELAY_OUTLINE
 from constants import DELAY_SIZE
 from constants import DELAY_TEXT
-from constants import DELAY_VERTICAL_CONNECTORS
 from constants import DEV_STAGE
 from constants import GAIN_CONNECTORS
+from constants import GAIN_DOWN_VERTICES
 from constants import GAIN_FILL
-from constants import GAIN_OUTLINE
 from constants import GAIN_LEFT_VERTICES
+from constants import GAIN_OUTLINE
 from constants import GAIN_RIGHT_VERTICES
+from constants import GAIN_UP_VERTICES
 from constants import IO_FILL
 from constants import IO_OUTLINE
 from constants import IO_PADDING
@@ -54,20 +55,21 @@ from gui.constants import LEFT
 from gui.constants import RIGHT
 from gui.palette import Palette
 from gui.util import create_editable_text
+from gui.util import rotate_connector_flags
 from Tkinter import Tk
 
 class Gain_Drawable(Drawable):
   """
   Abstract Drawable for LTI Gain components.
   """
-  def __init__(self, vertices):
+  def __init__(self, vertices=GAIN_RIGHT_VERTICES, connectors=GAIN_CONNECTORS):
     """
     |vertices|: the vertices of the triangle for this gain.
     """
     x1, y1, x2, y2, x3, y3 = vertices
     min_x, max_x = [f(x1, x2, x3) for f in min, max]
     min_y, max_y = [f(y1, y2, y3) for f in min, max]
-    Drawable.__init__(self, max_x - min_x, max_y - min_y, GAIN_CONNECTORS)
+    Drawable.__init__(self, max_x - min_x, max_y - min_y, connectors)
     self.vertices = vertices
   def draw_on(self, canvas, offset=(0, 0)):
     x1, y1, x2, y2, x3, y3 = self.vertices
@@ -77,7 +79,7 @@ class Gain_Drawable(Drawable):
     self.parts.add(canvas.create_polygon(x1, y1, x2, y2, x3, y3,
         fill=GAIN_FILL, outline=GAIN_OUTLINE))
     gain_text = create_editable_text(canvas, (x1 + x2 + x3) / 3,
-        oy + self.height / 2)
+        (y1 + y2 + y3) / 3)
     self.parts.add(gain_text)
     def get_K():
       """
@@ -90,26 +92,25 @@ class Gain_Drawable(Drawable):
         raise Exception('Could not obtain gain constant')
     # TODO(mikemeko): this is a bit hacky, but it avoids storing the canvas
     self.get_K = get_K
-
-class Gain_Right_Drawable(Gain_Drawable):
-  """
-  Drawable for rightward facing LTI Gain component.
-  """
-  def __init__(self):
-    Gain_Drawable.__init__(self, GAIN_RIGHT_VERTICES)
-
-class Gain_Left_Drawable(Gain_Drawable):
-  """
-  Drawable for leftward facing LTI Gain component.
-  """
-  def __init__(self):
-    Gain_Drawable.__init__(self, GAIN_LEFT_VERTICES)
+  def rotated(self):
+    new_connector_flags = rotate_connector_flags(self.connector_flags)
+    if self.vertices == GAIN_RIGHT_VERTICES:
+      return Gain_Drawable(GAIN_DOWN_VERTICES, new_connector_flags)
+    elif self.vertices == GAIN_DOWN_VERTICES:
+      return Gain_Drawable(GAIN_LEFT_VERTICES, new_connector_flags)
+    elif self.vertices == GAIN_LEFT_VERTICES:
+      return Gain_Drawable(GAIN_UP_VERTICES, new_connector_flags)
+    elif self.vertices == GAIN_UP_VERTICES:
+      return Gain_Drawable(GAIN_RIGHT_VERTICES, new_connector_flags)
+    else:
+      # should never get here
+      raise Exception('Unexpected triangle vertices')
 
 class Delay_Drawable(Drawable):
   """
-  Abstract Drawable for LTI Delay components.
+  Drawable for LTI Delay component.
   """
-  def __init__(self, connectors):
+  def __init__(self, connectors=DELAY_CONNECTORS):
     Drawable.__init__(self, DELAY_SIZE, DELAY_SIZE, connectors)
   def draw_on(self, canvas, offset=(0, 0)):
     ox, oy = offset
@@ -117,28 +118,16 @@ class Delay_Drawable(Drawable):
         oy + DELAY_SIZE), fill=DELAY_FILL, outline=DELAY_OUTLINE))
     self.parts.add(canvas.create_text((ox + DELAY_SIZE / 2,
         oy + DELAY_SIZE / 2), text=DELAY_TEXT))
-
-class Delay_Horizontal_Drawable(Delay_Drawable):
-  """
-  Horizontal LTI Delay component.
-  """
-  def __init__(self):
-    Delay_Drawable.__init__(self, DELAY_HORIZONTAL_CONNECTORS)
-
-class Delay_Vertical_Drawable(Delay_Drawable):
-  """
-  Vertical LTI Delay component.
-  """
-  def __init__(self):
-    Delay_Drawable.__init__(self, DELAY_VERTICAL_CONNECTORS)
+  def rotated(self):
+    return Delay_Drawable(rotate_connector_flags(self.connector_flags))
 
 class Adder_Drawable(Drawable):
   """
   Drawable for LTI Adder component.
   """
-  def __init__(self):
+  def __init__(self, connectors=ADDER_CONNECTORS):
     d = 2 * ADDER_RADIUS
-    Drawable.__init__(self, d, d, ADDER_CONNECTORS)
+    Drawable.__init__(self, d, d, connectors)
   def draw_on(self, canvas, offset=(0, 0)):
     r = ADDER_RADIUS
     d = 2 * r
@@ -149,6 +138,8 @@ class Adder_Drawable(Drawable):
         ox + r, oy + r + ADDER_SEGMENT_SIZE / 2))
     self.parts.add(canvas.create_line(ox + r - ADDER_SEGMENT_SIZE / 2, oy + r,
         ox + r + ADDER_SEGMENT_SIZE / 2, oy + r))
+  def rotated(self):
+    return Adder_Drawable(rotate_connector_flags(self.connector_flags))
 
 class IO_Drawable(Drawable):
   """
@@ -301,10 +292,8 @@ if __name__ == '__main__':
   board.add_drawable(out, (board.width - out.width - IO_PADDING,
       (board.height - out.height) / 2))
   # add LTI system components to palette
-  palette.add_drawable_type(Gain_Right_Drawable, LEFT, None)
-  palette.add_drawable_type(Gain_Left_Drawable, LEFT, None)
-  palette.add_drawable_type(Delay_Horizontal_Drawable, LEFT, None)
-  palette.add_drawable_type(Delay_Vertical_Drawable, LEFT, None)
+  palette.add_drawable_type(Gain_Drawable, LEFT, None)
+  palette.add_drawable_type(Delay_Drawable, LEFT, None)
   palette.add_drawable_type(Adder_Drawable, LEFT, None)
   # add buttons to create pzr and usr
   palette.add_drawable_type(PZD_Run_Drawable, RIGHT,
@@ -317,6 +306,6 @@ if __name__ == '__main__':
   board.add_key_binding('u', lambda: run_analysis(board,
       plot_unit_sample_response))
   # some UI help
-  board.display_message('Right-click to delete.', INFO)
+  board.display_message('Right-click to delete.\nShift-click to rotate.', INFO)
   # run main loop
   root.mainloop()

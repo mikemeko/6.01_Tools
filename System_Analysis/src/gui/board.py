@@ -20,13 +20,16 @@ from constants import DRAG_TAG
 from constants import ERROR
 from constants import INFO
 from constants import MESSAGE_ERROR_COLOR
+from constants import MESSAGE_ERROR_DURATION
 from constants import MESSAGE_HEIGHT
 from constants import MESSAGE_INFO_COLOR
 from constants import MESSAGE_INFO_DURATION
 from constants import MESSAGE_PADDING
 from constants import MESSAGE_TEXT_WIDTH
 from constants import MESSAGE_WARNING_COLOR
+from constants import MESSAGE_WARNING_DURATION
 from constants import MESSAGE_WIDTH
+from constants import ROTATE_TAG
 from constants import WARNING
 from threading import Timer
 from Tkinter import ALL
@@ -102,6 +105,8 @@ class Board(Frame):
     self.canvas.tag_bind(ALL, '<ButtonPress-3>', self._delete)
     # key-press binding
     self.parent.bind('<Key>', self._handle_key_press)
+    # rotate binding
+    self.canvas.tag_bind(ROTATE_TAG, '<Shift-Button-1>', self._rotate)
   def _drawable_at(self, point):
     """
     |point|: a tuple of the form (x, y) indicating a location on the canvas.
@@ -302,10 +307,25 @@ class Board(Frame):
     self._key_press_callbacks[key] = callback
   def _handle_key_press(self, event):
     """
-    Handles a key-press event.
+    Callback for a key-press event.
     """
     if event.char in self._key_press_callbacks:
       self._key_press_callbacks[event.char]()
+  def _rotate(self, event):
+    """
+    Callback for item rotation.
+    """
+    drawable_to_rotate = self._drawable_at((event.x, event.y))
+    if drawable_to_rotate:
+      # make sure that it is not connected to other drawables
+      for connector in drawable_to_rotate.connectors:
+        if any(connector.wires()):
+          self.display_message('Cannot rotate a connected item', ERROR)
+          return
+      # remove current drawable and add rotated version
+      offset = self.drawable_offsets[drawable_to_rotate]
+      self._delete_drawable(drawable_to_rotate)
+      self.add_drawable(drawable_to_rotate.rotated(), offset)
   def is_duplicate(self, drawable, offset=(0, 0)):
     """
     Returns True if the exact |drawable| at the given |offset| is already on
@@ -340,12 +360,14 @@ class Board(Frame):
     # message container
     if message_type is WARNING:
       fill = MESSAGE_WARNING_COLOR
+      duration = MESSAGE_WARNING_DURATION
     elif message_type is ERROR:
       fill = MESSAGE_ERROR_COLOR
+      duration = MESSAGE_ERROR_DURATION
     else:
       # default is info
-      message_type = INFO
       fill = MESSAGE_INFO_COLOR
+      duration = MESSAGE_INFO_DURATION
     self._message_parts.append(self.canvas.create_rectangle((self.width -
         MESSAGE_WIDTH - MESSAGE_PADDING, self.height - MESSAGE_HEIGHT -
         MESSAGE_PADDING, self.width -  MESSAGE_PADDING, self.height -
@@ -364,11 +386,9 @@ class Board(Frame):
       self._message_parts.append(close_part)
       self.canvas.tag_bind(close_part, '<Button-1>', lambda event:
           self.remove_message())
-    # automatically remove info messages after a little while
-    if message_type is INFO:
-      self._message_remove_timer = Timer(MESSAGE_INFO_DURATION,
-          self.remove_message)
-      self._message_remove_timer.start()
+    # automatically remove messages after a little while
+    self._message_remove_timer = Timer(duration, self.remove_message)
+    self._message_remove_timer.start()
   def add_drawable(self, drawable, offset=(0, 0)):
     """
     Adds the given |drawable| to this board at the given |offset|.
@@ -383,4 +403,4 @@ class Board(Frame):
     drawable.draw_connectors(self.canvas, offset)
     # attach drag tag
     for part in drawable.parts:
-      self.canvas.itemconfig(part, tags=DRAG_TAG)
+      self.canvas.itemconfig(part, tags=(DRAG_TAG, ROTATE_TAG))

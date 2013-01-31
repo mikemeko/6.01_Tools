@@ -48,8 +48,11 @@ WIRE_ARROW_LENGTH = 10
 WIRE_WIDTH = 2
 
 # duration constants
+MESSAGE_ERROR_DURATION = 5 # seconds
 MESSAGE_INFO_DURATION = 3 # seconds
+MESSAGE_WARNING_DURATION = 4 # seconds
 
 # tags
 CONNECTOR_TAG = 'connector_tag'
 DRAG_TAG = 'drag_tag'
+ROTATE_TAG = 'rotate_tag'

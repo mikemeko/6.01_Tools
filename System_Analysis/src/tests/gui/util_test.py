@@ -4,10 +4,16 @@ Unittests for gui/util.py.
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
+from gui.constants import CONNECTOR_BOTTOM
+from gui.constants import CONNECTOR_CENTER
+from gui.constants import CONNECTOR_LEFT
+from gui.constants import CONNECTOR_RIGHT
+from gui.constants import CONNECTOR_TOP
 from gui.constants import BOARD_GRID_SEPARATION
 from gui.util import dist
 from gui.util import point_inside_bbox
 from gui.util import point_inside_circle
+from gui.util import rotate_connector_flags
 from gui.util import snap
 from math import sqrt
 from unittest import main
@@ -35,6 +41,14 @@ class Util_Test(TestCase):
     self.assertEquals(0, snap(BOARD_GRID_SEPARATION / 4))
     self.assertEquals(BOARD_GRID_SEPARATION, snap(3 * BOARD_GRID_SEPARATION /
         4))
+  def test_rotate_connector_flags(self):
+    assert rotate_connector_flags(CONNECTOR_CENTER) == CONNECTOR_CENTER
+    assert rotate_connector_flags(CONNECTOR_TOP) == CONNECTOR_RIGHT
+    assert rotate_connector_flags(CONNECTOR_RIGHT) == CONNECTOR_BOTTOM
+    assert rotate_connector_flags(CONNECTOR_BOTTOM) == CONNECTOR_LEFT
+    assert rotate_connector_flags(CONNECTOR_LEFT) == CONNECTOR_TOP
+    assert rotate_connector_flags(CONNECTOR_LEFT | CONNECTOR_CENTER |
+        CONNECTOR_RIGHT) == CONNECTOR_TOP | CONNECTOR_CENTER | CONNECTOR_BOTTOM
 
 if __name__ == '__main__':
   main()

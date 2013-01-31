@@ -5,6 +5,11 @@ Utility methods.
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
 from constants import BOARD_GRID_SEPARATION
+from constants import CONNECTOR_BOTTOM
+from constants import CONNECTOR_CENTER
+from constants import CONNECTOR_LEFT
+from constants import CONNECTOR_RIGHT
+from constants import CONNECTOR_TOP
 from constants import WIRE_ARROW_LENGTH
 from constants import WIRE_COLOR
 from constants import WIRE_WIDTH
@@ -138,3 +143,21 @@ def snap(coord):
   """
   return (((coord + BOARD_GRID_SEPARATION / 2) // BOARD_GRID_SEPARATION) *
       BOARD_GRID_SEPARATION)
+
+def rotate_connector_flags(connector_flags):
+  """
+  Returns the flags that would result from rotationg the given
+      |connector_flags| by 90 degrees clockwise.
+  """
+  new_flags = 0
+  if connector_flags & CONNECTOR_CENTER:
+    new_flags |= CONNECTOR_CENTER
+  if connector_flags & CONNECTOR_TOP:
+    new_flags |= CONNECTOR_RIGHT
+  if connector_flags & CONNECTOR_RIGHT:
+    new_flags |= CONNECTOR_BOTTOM
+  if connector_flags & CONNECTOR_BOTTOM:
+    new_flags |= CONNECTOR_LEFT
+  if connector_flags & CONNECTOR_LEFT:
+    new_flags |= CONNECTOR_TOP
+  return new_flags

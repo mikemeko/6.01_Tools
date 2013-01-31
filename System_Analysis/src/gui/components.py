@@ -45,6 +45,12 @@ class Drawable:
     This method is called exactly once per Drawable.
     """
     raise NotImplementedError('subclasses should implement this')
+  def rotated(self):
+    """
+    Returns a rotated version of this drawable. On a board, Shift-click will
+        result in this rotation. The default implementation is no rotation.
+    """
+    return self
   def bounding_box(self, offset=(0, 0)):
     """
     Returns the bounding box of this Drawable, when drawn with the given
