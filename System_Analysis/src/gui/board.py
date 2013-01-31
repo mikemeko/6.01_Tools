@@ -102,9 +102,10 @@ class Board(Frame):
     self.canvas.tag_bind(CONNECTOR_TAG, '<ButtonRelease-1>',
         self._wire_release)
     # delete binding
-    self.canvas.tag_bind(ALL, '<ButtonPress-3>', self._delete)
-    # key-press binding
-    self.parent.bind('<Key>', self._handle_key_press)
+    self.canvas.tag_bind(ALL, '<Control-Button-1>', self._delete)
+    # key-press and key-release bindings
+    self.parent.bind('<KeyPress>', self._key_press)
+    self.parent.bind('<KeyRelease>', self._key_release)
     # rotate binding
     self.canvas.tag_bind(ROTATE_TAG, '<Shift-Button-1>', self._rotate)
   def _drawable_at(self, point):
@@ -145,8 +146,8 @@ class Board(Frame):
     Callback for when a drawable item is clicked. Updates drag state.
     """
     self._drag_item = self._drawable_at((event.x, event.y))
-    assert self._drag_item, 'No item being dragged'
-    self._drag_last_point = (event.x, event.y)
+    if self._drag_item:
+      self._drag_last_point = (event.x, event.y)
   def _drag_move(self, event):
     """
     Callback for when a drawable item is being moved. Updates drag state.
@@ -305,12 +306,22 @@ class Board(Frame):
     Adds a key-binding so that whenever |key| is pressed, |callback| is called.
     """
     self._key_press_callbacks[key] = callback
-  def _handle_key_press(self, event):
+  def _key_press(self, event):
     """
-    Callback for a key-press event.
+    Callback for when a key is pressed.
     """
-    if event.char in self._key_press_callbacks:
+    if event.keysym in ('Control_L', 'Control_R'):
+      self.parent.configure(cursor='pirate')
+    elif event.keysym in ('Shift_L', 'Shift_R'):
+      self.parent.configure(cursor='exchange')
+    elif event.char in self._key_press_callbacks:
       self._key_press_callbacks[event.char]()
+  def _key_release(self, event):
+    """
+    Callback for when a key is released.
+    """
+    if event.keysym in ('Control_L', 'Control_R', 'Shift_L', 'Shift_R'):
+      self.parent.configure(cursor='arrow')
   def _rotate(self, event):
     """
     Callback for item rotation.

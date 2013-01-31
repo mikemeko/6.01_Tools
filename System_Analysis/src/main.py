@@ -306,6 +306,6 @@ if __name__ == '__main__':
   board.add_key_binding('u', lambda: run_analysis(board,
       plot_unit_sample_response))
   # some UI help
-  board.display_message('Right-click to delete.\nShift-click to rotate.', INFO)
+  board.display_message('Ctrl-click to delete.\nShift-click to rotate.', INFO)
   # run main loop
   root.mainloop()
