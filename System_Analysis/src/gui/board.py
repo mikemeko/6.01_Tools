@@ -311,9 +311,9 @@ class Board(Frame):
     Callback for when a key is pressed.
     """
     if event.keysym in ('Control_L', 'Control_R'):
-      self.parent.configure(cursor='pirate')
+      self.configure(cursor='pirate')
     elif event.keysym in ('Shift_L', 'Shift_R'):
-      self.parent.configure(cursor='exchange')
+      self.configure(cursor='exchange')
     elif event.char in self._key_press_callbacks:
       self._key_press_callbacks[event.char]()
   def _key_release(self, event):
@@ -321,7 +321,7 @@ class Board(Frame):
     Callback for when a key is released.
     """
     if event.keysym in ('Control_L', 'Control_R', 'Shift_L', 'Shift_R'):
-      self.parent.configure(cursor='arrow')
+      self.configure(cursor='arrow')
   def _rotate(self, event):
     """
     Callback for item rotation.
