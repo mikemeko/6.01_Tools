@@ -74,6 +74,8 @@ class Board(Frame):
     # state for message display
     self._message_parts = []
     self._message_remove_timer = None
+    # state to track whether this board has been changed
+    self._changed = False
     # setup ui
     self._setup_drawing_board()
     self._setup_bindings()
@@ -158,6 +160,9 @@ class Board(Frame):
     last_x, last_y = self._drag_last_point
     dx = snap(event.x - last_x)
     dy = snap(event.y - last_y)
+    # mark the board changed if so
+    if dx or dy:
+      self._set_changed()
     # move the item being dragged
     self._drag_item.move(self._canvas, dx, dy)
     # update drag state
@@ -260,30 +265,36 @@ class Board(Frame):
       start_connector.lift(self._canvas)
       end_connector.end_wires.add(wire)
       end_connector.lift(self._canvas)
+      # mark the board changed
+      self._set_changed()
     # reset
     self._wire_parts = None
     self._wire_start = None
     self._wire_end = None
   def _delete(self, event):
     """
-    Callback for deleting an item on the board.
+    Callback for deleting an item on the board. Mark the board changed if
+        any item is deleted.
     """
     # delete a drawable item?
     drawable_to_delete = self._drawable_at((event.x, event.y))
     if drawable_to_delete:
       drawable_to_delete.delete_from(self._canvas)
+      self._set_changed()
       return
     # delete a connector?
     connector_to_delete = self._connector_at((event.x, event.y))
     if connector_to_delete:
       # delete the drawable containing the connector
       connector_to_delete.drawable.delete_from(self._canvas)
+      self._set_changed()
       return
     # delete a wire?
     canvas_id = self._canvas.find_closest(event.x, event.y)[0]
     wire_to_delete = self._wire_with_id(canvas_id)
     if wire_to_delete:
       wire_to_delete.delete_from(self._canvas)
+      self._set_changed()
   def add_key_binding(self, key, callback):
     """
     Adds a key-binding so that whenever |key| is pressed, |callback| is called.
@@ -307,7 +318,7 @@ class Board(Frame):
       self.configure(cursor='arrow')
   def _rotate(self, event):
     """
-    Callback for item rotation.
+    Callback for item rotation. Marks the board changed if any item is rotated.
     """
     drawable_to_rotate = self._drawable_at((event.x, event.y))
     if drawable_to_rotate:
@@ -321,6 +332,7 @@ class Board(Frame):
         offset = self._drawable_offsets[drawable_to_rotate]
         drawable_to_rotate.delete_from(self._canvas)
         self.add_drawable(rotated_drawable, offset)
+        self._set_changed()
   def _quit(self):
     """
     Callback on exit.
@@ -396,6 +408,28 @@ class Board(Frame):
     # automatically remove messages after a little while
     self._message_remove_timer = Timer(duration, self.remove_message)
     self._message_remove_timer.start()
+  def changed(self):
+    """
+    Returns True if this board has been changed since the last call to
+        reset_changed (or initialization if no such call has been made), False
+        otherwise.
+    """
+    return self._changed
+  def reset_changed(self):
+    """
+    Marks this board unchanged.
+    """
+    self._set_unchanged()
+  def _set_changed(self):
+    """
+    Sets the changed flag to True.
+    """
+    self._changed = True
+  def _set_unchanged(self):
+    """
+    Sets the changed flag to False.
+    """
+    self._changed = False
   def add_drawable(self, drawable, offset=(0, 0)):
     """
     Adds the given |drawable| to this board at the given |offset|.
@@ -411,6 +445,8 @@ class Board(Frame):
     # attach drag tag
     for part in drawable.parts:
       self._canvas.itemconfig(part, tags=(DRAG_TAG, ROTATE_TAG))
+    # mark this board changed
+    self._set_changed()
   def get_drawables(self):
     """
     Returns the live drawables on this board.
