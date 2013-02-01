@@ -46,9 +46,9 @@ def run_analysis(board, analyze):
         board.display_message('Gain must have exactly 1 output', ERROR)
         return
       try:
-        K = drawable.get_K()
-      except Exception as e:
-        board.display_message(e.message, ERROR)
+        K = float(drawable.get_K())
+      except Exception:
+        board.display_message('Could not obtain gain constant', ERROR)
         return
       system_components.append(Gain(inp[0], out[0], K))
     # delay component

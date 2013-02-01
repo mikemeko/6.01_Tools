@@ -269,3 +269,9 @@ class Wire_Connector_Drawable(Drawable):
   def draw_on(self, canvas, offset=(0, 0)):
     # nothing to draw
     pass
+  def get_rep(self, offset):
+    """
+    TODO(mikemeko)
+    make this required for all drawables?
+    """
+    return 'Wire connector %s %s' % (self.label, offset)

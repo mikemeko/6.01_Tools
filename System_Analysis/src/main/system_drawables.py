@@ -14,13 +14,14 @@ from constants import DELAY_FILL
 from constants import DELAY_OUTLINE
 from constants import DELAY_SIZE
 from constants import DELAY_TEXT
-from constants import GAIN_CONNECTORS
 from constants import GAIN_DOWN_VERTICES
 from constants import GAIN_FILL
+from constants import GAIN_HORIZONTAL_CONNECTORS
 from constants import GAIN_LEFT_VERTICES
 from constants import GAIN_OUTLINE
 from constants import GAIN_RIGHT_VERTICES
 from constants import GAIN_UP_VERTICES
+from constants import GAIN_VERTICAL_CONNECTORS
 from constants import IO_FILL
 from constants import IO_OUTLINE
 from constants import IO_SIZE
@@ -39,15 +40,25 @@ class Gain_Drawable(Drawable):
   """
   Abstract Drawable for LTI Gain components.
   """
-  def __init__(self, vertices=GAIN_RIGHT_VERTICES, connectors=GAIN_CONNECTORS):
+  def __init__(self, vertices=GAIN_RIGHT_VERTICES):
     """
     |vertices|: the vertices of the triangle for this gain.
     """
+    self.vertices = vertices
     x1, y1, x2, y2, x3, y3 = vertices
     min_x, max_x = [f(x1, x2, x3) for f in min, max]
     min_y, max_y = [f(y1, y2, y3) for f in min, max]
-    Drawable.__init__(self, max_x - min_x, max_y - min_y, connectors)
-    self.vertices = vertices
+    Drawable.__init__(self, max_x - min_x, max_y - min_y,
+        self._get_connector_flags())
+  def _get_connector_flags(self):
+    """
+    Returns the appropriate connector flags for this gain drawable using its
+        vertices.
+    """
+    if self.vertices in (GAIN_RIGHT_VERTICES, GAIN_LEFT_VERTICES):
+      return GAIN_HORIZONTAL_CONNECTORS
+    else: # (GAIN_DOWN_VERTICES, GAIN_UP_VERTICES)
+      return GAIN_VERTICAL_CONNECTORS
   def draw_on(self, canvas, offset=(0, 0)):
     x1, y1, x2, y2, x3, y3 = self.vertices
     ox, oy = offset
@@ -60,28 +71,28 @@ class Gain_Drawable(Drawable):
     self.parts.add(gain_text)
     def get_K():
       """
-      Returns a floating point number for the constant for this gain, or raises
-          an Exception if the constant cannot be obtained.
+      TODO(mikemeko)
       """
-      try:
-        return float(canvas.itemcget(gain_text, 'text'))
-      except:
-        raise Exception('Could not obtain gain constant')
+      return canvas.itemcget(gain_text, 'text')
     # TODO(mikemeko): this is a bit hacky, but it avoids storing the canvas
     self.get_K = get_K
   def rotated(self):
-    new_connector_flags = rotate_connector_flags(self.connector_flags)
     if self.vertices == GAIN_RIGHT_VERTICES:
-      return Gain_Drawable(GAIN_DOWN_VERTICES, new_connector_flags)
+      return Gain_Drawable(GAIN_DOWN_VERTICES)
     elif self.vertices == GAIN_DOWN_VERTICES:
-      return Gain_Drawable(GAIN_LEFT_VERTICES, new_connector_flags)
+      return Gain_Drawable(GAIN_LEFT_VERTICES)
     elif self.vertices == GAIN_LEFT_VERTICES:
-      return Gain_Drawable(GAIN_UP_VERTICES, new_connector_flags)
+      return Gain_Drawable(GAIN_UP_VERTICES)
     elif self.vertices == GAIN_UP_VERTICES:
-      return Gain_Drawable(GAIN_RIGHT_VERTICES, new_connector_flags)
+      return Gain_Drawable(GAIN_RIGHT_VERTICES)
     else:
       # should never get here
       raise Exception('Unexpected triangle vertices')
+  def get_rep(self, offset):
+    """
+    TODO(mikemeko)
+    """
+    return 'Gain %s %s %s' % (self.get_K(), str(self.vertices), str(offset))
 
 class Delay_Drawable(Drawable):
   """
@@ -97,6 +108,11 @@ class Delay_Drawable(Drawable):
         oy + DELAY_SIZE / 2), text=DELAY_TEXT))
   def rotated(self):
     return Delay_Drawable(rotate_connector_flags(self.connector_flags))
+  def get_rep(self, offset):
+    """
+    TODO(mikemeko)
+    """
+    return 'Delay %d %s' % (self.connector_flags, str(offset))
 
 class Adder_Drawable(Drawable):
   """
@@ -117,6 +133,11 @@ class Adder_Drawable(Drawable):
         ox + r + ADDER_SEGMENT_SIZE / 2, oy + r))
   def rotated(self):
     return Adder_Drawable(rotate_connector_flags(self.connector_flags))
+  def get_rep(self, offset):
+    """
+    TODO(mikemeko)
+    """
+    return 'Adder %d %s' % (self.connector_flags, str(offset))
 
 class IO_Drawable(Drawable):
   """

@@ -4,8 +4,10 @@ Main constants.
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
+from gui.constants import CONNECTOR_BOTTOM
 from gui.constants import CONNECTOR_LEFT
 from gui.constants import CONNECTOR_RIGHT
+from gui.constants import CONNECTOR_TOP
 
 # colors
 ADDER_FILL = '#EEE'
@@ -24,7 +26,8 @@ RUN_TEXT_FILL = 'black'
 # connector flags for system drawable components
 ADDER_CONNECTORS = CONNECTOR_LEFT | CONNECTOR_RIGHT
 DELAY_CONNECTORS = CONNECTOR_LEFT | CONNECTOR_RIGHT
-GAIN_CONNECTORS = CONNECTOR_LEFT | CONNECTOR_RIGHT
+GAIN_HORIZONTAL_CONNECTORS = CONNECTOR_LEFT | CONNECTOR_RIGHT
+GAIN_VERTICAL_CONNECTORS = CONNECTOR_BOTTOM | CONNECTOR_TOP
 X_CONNECTORS = CONNECTOR_RIGHT
 Y_CONNECTORS = CONNECTOR_LEFT
 

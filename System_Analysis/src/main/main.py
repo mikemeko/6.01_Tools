@@ -15,6 +15,7 @@ from core.constants import X
 from core.constants import Y
 from core.pole_zero_diagram import plot_pole_zero_diagram
 from core.unit_sample_response import plot_unit_sample_response
+from file_save import save_board
 from gui.board import Board
 from gui.constants import INFO
 from gui.constants import LEFT
@@ -27,6 +28,16 @@ from system_drawables import IO_Drawable
 from system_drawables import PZD_Run_Drawable
 from system_drawables import USR_Run_Drawable
 from Tkinter import Tk
+
+# TODO(mikemeko): global variable :(
+file_name = None
+
+def save(board):
+  """
+  TODO(mikemeko)
+  """
+  global file_name
+  file_name = save_board(board, file_name)
 
 if __name__ == '__main__':
   # create root, board, and palette
@@ -55,6 +66,8 @@ if __name__ == '__main__':
       plot_pole_zero_diagram))
   board.add_key_binding('u', lambda: run_analysis(board,
       plot_unit_sample_response))
+  # TODO(mikemeko): Ctrl-s instead of s
+  board.add_key_binding('s', lambda: save(board))
   # some UI help
   board.display_message('Ctrl-click to delete.\nShift-click to rotate.', INFO)
   # run main loop

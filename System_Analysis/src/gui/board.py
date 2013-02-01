@@ -418,3 +418,9 @@ class Board(Frame):
     for drawable in self._drawables:
       if drawable.live():
         yield drawable
+  def get_drawable_offset(self, drawable):
+    """
+    TODO(mikemeko)
+    """
+    assert drawable in self._drawable_offsets, 'drawable must be on this board'
+    return self._drawable_offsets[drawable]
