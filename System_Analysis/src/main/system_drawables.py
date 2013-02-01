@@ -134,6 +134,9 @@ class IO_Drawable(Drawable):
         oy + IO_SIZE), fill=IO_FILL, outline=IO_OUTLINE))
     self.parts.add(canvas.create_text((ox + IO_SIZE / 2, oy + IO_SIZE / 2),
         text=self.signal))
+  def deletable(self):
+    # disable deleting IO drawables
+    return False
 
 class Run_Drawable(Drawable):
   """
