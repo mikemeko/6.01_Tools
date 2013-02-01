@@ -108,6 +108,8 @@ class Board(Frame):
     self.parent.bind('<KeyRelease>', self._key_release)
     # rotate binding
     self._canvas.tag_bind(ROTATE_TAG, '<Shift-Button-1>', self._rotate)
+    # on quit
+    self.parent.protocol('WM_DELETE_WINDOW', self._quit)
   def _drawable_at(self, point):
     """
     |point|: a tuple of the form (x, y) indicating a location on the canvas.
@@ -319,6 +321,12 @@ class Board(Frame):
         offset = self._drawable_offsets[drawable_to_rotate]
         drawable_to_rotate.delete_from(self._canvas)
         self.add_drawable(rotated_drawable, offset)
+  def _quit(self):
+    """
+    Callback on exit.
+    """
+    self._cancel_message_remove_timer()
+    self.parent.quit()
   def is_duplicate(self, drawable, offset=(0, 0)):
     """
     Returns True if the exact |drawable| at the given |offset| is already on
@@ -331,10 +339,18 @@ class Board(Frame):
           bbox == other.bounding_box(self._drawable_offsets[other])):
         return True
     return False
+  def _cancel_message_remove_timer(self):
+    """
+    Cancles timer that has been set to remove current message (if any).
+    """
+    if self._message_remove_timer:
+      self._message_remove_timer.cancel()
+      self._message_remove_timer = None
   def remove_message(self):
     """
     Removes the current message on the board, if any.
     """
+    self._cancel_message_remove_timer()
     for part in self._message_parts:
       self._canvas.delete(part)
     # clear out message parts list
@@ -347,9 +363,7 @@ class Board(Frame):
     # remove current message, if any
     self.remove_message()
     # cancel message remove timer
-    if self._message_remove_timer:
-      self._message_remove_timer.cancel()
-      self._message_remove_timer = None
+    self._cancel_message_remove_timer()
     # message container
     if message_type is WARNING:
       fill = MESSAGE_WARNING_COLOR
