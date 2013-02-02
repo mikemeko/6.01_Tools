@@ -17,6 +17,7 @@ from system_drawables import Adder_Drawable
 from system_drawables import Delay_Drawable
 from system_drawables import Gain_Drawable
 from system_drawables import IO_Drawable
+from util import is_callable
 
 def run_analysis(board, analyze):
   """
@@ -24,7 +25,7 @@ def run_analysis(board, analyze):
       the given function |analyze| on it.
   """
   assert isinstance(board, Board), 'board must be a Board'
-  assert hasattr(analyze, '__call__'), 'analyze must be callable'
+  assert is_callable(analyze), 'analyze must be callable'
   # remove current message on the board, if any
   board.remove_message()
   # DT LTI components in the system
