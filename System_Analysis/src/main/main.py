@@ -9,10 +9,6 @@ from analyze_board import run_analysis
 from constants import APP_NAME
 from constants import DEV_STAGE
 from constants import IO_PADDING
-from constants import X_CONNECTORS
-from constants import Y_CONNECTORS
-from core.constants import X
-from core.constants import Y
 from core.pole_zero_diagram import plot_pole_zero_diagram
 from core.unit_sample_response import plot_unit_sample_response
 from file_save import open_board
@@ -25,7 +21,8 @@ from gui.palette import Palette
 from system_drawables import Adder_Drawable
 from system_drawables import Delay_Drawable
 from system_drawables import Gain_Drawable
-from system_drawables import IO_Drawable
+from system_drawables import IO_X_Drawable
+from system_drawables import IO_Y_Drawable
 from system_drawables import PZD_Run_Drawable
 from system_drawables import USR_Run_Drawable
 from tkMessageBox import askquestion
@@ -39,9 +36,9 @@ if __name__ == '__main__':
   board = Board(root)
   palette = Palette(root, board)
   # create input and output boxes (added to board automatically)
-  inp = IO_Drawable(X, X_CONNECTORS)
+  inp = IO_X_Drawable()
   board.add_drawable(inp, (IO_PADDING, (board.height - inp.height) / 2))
-  out = IO_Drawable(Y, Y_CONNECTORS)
+  out = IO_Y_Drawable()
   board.add_drawable(out, (board.width - out.width - IO_PADDING,
       (board.height - out.height) / 2))
   # mark the board unchanged

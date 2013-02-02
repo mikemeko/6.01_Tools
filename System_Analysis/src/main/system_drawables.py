@@ -32,6 +32,10 @@ from constants import RUN_RECT_SIZE
 from constants import RUN_TEXT_ACTIVE_FILL
 from constants import RUN_TEXT_FILL
 from constants import USR
+from constants import X_CONNECTORS
+from constants import Y_CONNECTORS
+from core.constants import X
+from core.constants import Y
 from gui.components import Drawable
 from gui.util import create_editable_text
 from gui.util import rotate_connector_flags
@@ -146,6 +150,20 @@ class IO_Drawable(Drawable):
         oy + IO_SIZE), fill=IO_FILL, outline=IO_OUTLINE))
     self.parts.add(canvas.create_text((ox + IO_SIZE / 2, oy + IO_SIZE / 2),
         text=self.signal))
+
+class IO_X_Drawable(IO_Drawable):
+  """
+  TODO(mikemeko)
+  """
+  def __init__(self):
+    IO_Drawable.__init__(self, X, X_CONNECTORS)
+
+class IO_Y_Drawable(IO_Drawable):
+  """
+  TODO(mikemeko)
+  """
+  def __init__(self):
+    IO_Drawable.__init__(self, Y, Y_CONNECTORS)
 
 class Run_Drawable(Drawable):
   """

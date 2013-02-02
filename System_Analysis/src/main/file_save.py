@@ -5,6 +5,8 @@ TODO(mikemeko)
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
 from constants import APP_NAME
+from core.constants import X
+from core.constants import Y
 from gui.board import Board
 from gui.components import Wire
 from gui.components import Wire_Connector_Drawable
@@ -13,6 +15,8 @@ from system_drawables import Adder_Drawable
 from system_drawables import Delay_Drawable
 from system_drawables import Gain_Drawable
 from system_drawables import IO_Drawable
+from system_drawables import IO_X_Drawable
+from system_drawables import IO_Y_Drawable
 from tkFileDialog import askopenfilename
 from tkFileDialog import asksaveasfilename
 
@@ -82,7 +86,13 @@ def deserialize_item(item_str, board):
   if io_match:
     signal = io_match.group(1)
     ox, oy = map(int, io_match.groups()[1:])
-    print signal, ox, oy
+    if signal is X:
+      board.add_drawable(IO_X_Drawable(), (ox, oy))
+    elif signal is Y:
+      board.add_drawable(IO_Y_Drawable(), (ox, oy))
+    else:
+      # should never get here
+      raise Exception('Unexpected IO signal')
     return
   wire_connector_match = match(r'Wire connector (\w+) \((\d+), (\d+)\)',
       item_str)
