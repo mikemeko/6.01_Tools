@@ -52,7 +52,7 @@ def serialize_wire(wire):
   TODO(mikemeko)
   """
   assert isinstance(wire, Wire)
-  return 'Wire %s %s' % (str(wire.start_connector.center),
+  return 'Wire %s %s %s' % (wire.label, str(wire.start_connector.center),
       str(wire.end_connector.center))
 
 def deserialize_item(item_str, board):
@@ -62,7 +62,6 @@ def deserialize_item(item_str, board):
   # TODO(mikemeko): greate nice regexps to reuse at places
   assert isinstance(item_str, str)
   assert isinstance(board, Board), 'board must be a Board'
-  print item_str
   adder_match = match(r'Adder (\d+) \((\d+), (\d+)\)', item_str)
   if adder_match:
     connector_flags, ox, oy = map(int, adder_match.groups())
@@ -101,10 +100,11 @@ def deserialize_item(item_str, board):
     ox, oy = map(int, wire_connector_match.groups()[1:])
     board.add_drawable(Wire_Connector_Drawable(label), (ox, oy))
     return
-  wire_match = match(r'Wire \((\d+), (\d+)\) \((\d+), (\d+)\)', item_str)
+  wire_match = match(r'Wire (\w+) \((\d+), (\d+)\) \((\d+), (\d+)\)', item_str)
   if wire_match:
-    x1, y1, x2, y2 = map(int, wire_match.groups())
-    print x1, y1, x2, y2
+    label = wire_match.group(1)
+    x1, y1, x2, y2 = map(int, wire_match.groups()[1:])
+    board.add_wire(x1, y1, x2, y2, label)
     return
   # should never get here
   raise Exception('Could not deserialize serialized item')

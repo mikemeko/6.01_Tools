@@ -204,6 +204,15 @@ class Board(Frame):
     x1, y1 = self._wire_start
     x2, y2 = self._wire_end
     self._wire_parts = create_wire(self._canvas, x1, y1, x2, y2)
+  def _add_wire(self, wire_parts, start_connector, end_connector, label):
+    """
+    TODO(mikemeko)
+    """
+    wire = Wire(wire_parts, start_connector, end_connector, label)
+    start_connector.start_wires.add(wire)
+    start_connector.lift(self._canvas)
+    end_connector.end_wires.add(wire)
+    end_connector.lift(self._canvas)
   def _wire_press(self, event):
     """
     Callback for when a connector is pressed to start creating a wire. Updates
@@ -260,17 +269,24 @@ class Board(Frame):
               update_labels(wire.end_connector)
         update_labels(end_connector)
       # create wire
-      wire = Wire(self._wire_parts, start_connector, end_connector, label)
-      start_connector.start_wires.add(wire)
-      start_connector.lift(self._canvas)
-      end_connector.end_wires.add(wire)
-      end_connector.lift(self._canvas)
+      self._add_wire(self._wire_parts, start_connector, end_connector,
+          label)
       # mark the board changed
       self._set_changed()
     # reset
     self._wire_parts = None
     self._wire_start = None
     self._wire_end = None
+  def add_wire(self, x1, y1, x2, y2, label):
+    """
+    TODO(mikemeko)
+    """
+    start_connector = self._connector_at((x1, y1))
+    assert start_connector, 'There must be a connector at (x1, y1)'
+    end_connector = self._connector_at((x2, y2))
+    assert end_connector, 'There must be a connector at (x2, y2)'
+    self._add_wire(create_wire(self._canvas, x1, y1, x2, y2),
+        start_connector, end_connector, label)
   def _delete(self, event):
     """
     Callback for deleting an item on the board. Mark the board changed if
