@@ -76,6 +76,12 @@ class Gain_Drawable(Drawable):
       return canvas.itemcget(gain_text, 'text')
     # TODO(mikemeko): this is a bit hacky, but it avoids storing the canvas
     self.get_K = get_K
+    def set_K(K):
+      """
+      TODO(mikemeko)
+      """
+      canvas.itemconfig(gain_text, text=K)
+    self.set_K = set_K
   def rotated(self):
     if self.vertices == GAIN_RIGHT_VERTICES:
       return Gain_Drawable(GAIN_DOWN_VERTICES)
@@ -88,11 +94,6 @@ class Gain_Drawable(Drawable):
     else:
       # should never get here
       raise Exception('Unexpected triangle vertices')
-  def get_rep(self, offset):
-    """
-    TODO(mikemeko)
-    """
-    return 'Gain %s %s %s' % (self.get_K(), str(self.vertices), str(offset))
 
 class Delay_Drawable(Drawable):
   """
@@ -108,11 +109,6 @@ class Delay_Drawable(Drawable):
         oy + DELAY_SIZE / 2), text=DELAY_TEXT))
   def rotated(self):
     return Delay_Drawable(rotate_connector_flags(self.connector_flags))
-  def get_rep(self, offset):
-    """
-    TODO(mikemeko)
-    """
-    return 'Delay %d %s' % (self.connector_flags, str(offset))
 
 class Adder_Drawable(Drawable):
   """
@@ -133,11 +129,6 @@ class Adder_Drawable(Drawable):
         ox + r + ADDER_SEGMENT_SIZE / 2, oy + r))
   def rotated(self):
     return Adder_Drawable(rotate_connector_flags(self.connector_flags))
-  def get_rep(self, offset):
-    """
-    TODO(mikemeko)
-    """
-    return 'Adder %d %s' % (self.connector_flags, str(offset))
 
 class IO_Drawable(Drawable):
   """

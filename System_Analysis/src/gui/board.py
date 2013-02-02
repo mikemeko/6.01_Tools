@@ -460,3 +460,11 @@ class Board(Frame):
     """
     assert drawable in self._drawable_offsets, 'drawable must be on this board'
     return self._drawable_offsets[drawable]
+  def clear(self):
+    """
+    TODO(mikemeko)
+    """
+    for drawable in self.get_drawables():
+      drawable.delete_from(self._canvas)
+    self._drawables.clear()
+    self._drawable_offsets.clear()
