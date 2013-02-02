@@ -153,11 +153,13 @@ def open_board(board):
       filetypes=[('%s files' % APP_NAME,'.sys')])
   # TODO(mikemeko): check that file name is valid
   # clear the board
-  board.clear()
-  open_file = open(file_name, 'r')
-  for line in open_file:
-    deserialize_item(line.strip(), board)
-  open_file.close()
+  if file_name:
+    board.clear()
+    open_file = open(file_name, 'r')
+    for line in open_file:
+      deserialize_item(line, board)
+    open_file.close()
+  return file_name
 
 def build_board_from_rep(board, rep):
   """

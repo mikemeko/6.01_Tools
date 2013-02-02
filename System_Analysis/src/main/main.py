@@ -29,11 +29,39 @@ from tkMessageBox import askquestion
 from Tkinter import Tk
 
 if __name__ == '__main__':
+  # file opening / saving
+  # TODO(mikemeko): global variable :(
+  global file_name
+  file_name = None
+  def save_file():
+    """
+    TODO(mikemeko)
+    """
+    global file_name
+    file_name = save_board(board, file_name)
+  def request_save():
+    """
+    TODO(mikemeko)
+    """
+    if board.changed():
+      if askquestion(title='Save?',
+          message='System has been changed, save first?') == 'yes':
+        save_file()
+  def open_file():
+    """
+    TODO(mikemeko)
+    """
+    global file_name
+    # save first if the board has been changed
+    request_save()
+    new_file_name = open_board(board)
+    if new_file_name:
+      file_name = new_file_name
   # create root, board, and palette
   root = Tk()
   root.resizable(0, 0)
   root.title('%s (%s)' % (APP_NAME, DEV_STAGE))
-  board = Board(root)
+  board = Board(root, on_exit=request_save)
   palette = Palette(root, board)
   # create input and output boxes (added to board automatically)
   inp = IO_X_Drawable()
@@ -57,29 +85,8 @@ if __name__ == '__main__':
       plot_pole_zero_diagram))
   board.add_key_binding('u', lambda: run_analysis(board,
       plot_unit_sample_response))
-  # file opening / saving
-  # TODO(mikemeko): global variable :(
-  global file_name
-  file_name = None
-  def save_file():
-    """
-    TODO(mikemeko)
-    """
-    global file_name
-    file_name = save_board(board, file_name)
   # TODO(mikemeko): Ctrl-s instead of s
   board.add_key_binding('s', save_file)
-  def open_file():
-    """
-    TODO(mikemeko)
-    """
-    global file_name
-    # save first if the board has been changed
-    if board.changed():
-      if askquestion(title='Save?',
-          message='System has been changed, save first?') == 'yes':
-        save_file()
-    file_name = open_board(board)
   # TODO(mikemeko): Ctrl-o instead of o
   board.add_key_binding('o', open_file)
   # some UI help

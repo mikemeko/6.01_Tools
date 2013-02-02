@@ -45,15 +45,18 @@ class Board(Frame):
   """
   Tkinter Frame that supports drawing and manipulating various items.
   """
-  def __init__(self, parent, width=BOARD_WIDTH, height=BOARD_HEIGHT):
+  def __init__(self, parent, width=BOARD_WIDTH, height=BOARD_HEIGHT,
+      on_exit=None):
     """
     |width|: the width of this board.
     |height|: the height of this board.
+    |on_exit|: a function call on exit.
     """
     Frame.__init__(self, parent, background=BOARD_BACKGROUND_COLOR)
     self.parent = parent
     self.width = width
     self.height = height
+    self._on_exit = on_exit
     # canvas on which items are drawn
     self._canvas = Canvas(self, width=width, height=height,
         highlightthickness=0, background=BOARD_BACKGROUND_COLOR)
@@ -354,6 +357,8 @@ class Board(Frame):
     Callback on exit.
     """
     self._cancel_message_remove_timer()
+    if self._on_exit:
+      self._on_exit()
     self.parent.quit()
   def is_duplicate(self, drawable, offset=(0, 0)):
     """
