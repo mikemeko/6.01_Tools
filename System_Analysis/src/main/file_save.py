@@ -77,7 +77,8 @@ def deserialize_item(item_str, board):
   if gain_match:
     K = float(gain_match.group(1))
     x1, y1, x2, y2, x3, y3, ox, oy = map(int, gain_match.groups()[1:])
-    gain_drawable = Gain_Drawable((x1, y1, x2, y2, x3, y3))
+    gain_drawable = Gain_Drawable( on_gain_changed=lambda: board.set_changed(
+        True), vertices=(x1, y1, x2, y2, x3, y3))
     board.add_drawable(gain_drawable, (ox, oy))
     gain_drawable.set_K(K)
     return

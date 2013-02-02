@@ -46,16 +46,18 @@ class Board(Frame):
   Tkinter Frame that supports drawing and manipulating various items.
   """
   def __init__(self, parent, width=BOARD_WIDTH, height=BOARD_HEIGHT,
-      on_exit=None):
+      on_changed=None, on_exit=None):
     """
     |width|: the width of this board.
     |height|: the height of this board.
-    |on_exit|: a function call on exit.
+    |on_changed|: a function to call when changed status is reset.
+    |on_exit|: a function to call on exit.
     """
     Frame.__init__(self, parent, background=BOARD_BACKGROUND_COLOR)
     self.parent = parent
     self.width = width
     self.height = height
+    self._on_changed = on_changed
     self._on_exit = on_exit
     # canvas on which items are drawn
     self._canvas = Canvas(self, width=width, height=height,
@@ -165,7 +167,7 @@ class Board(Frame):
     dy = snap(event.y - last_y)
     # mark the board changed if so
     if dx or dy:
-      self._set_changed()
+      self.set_changed(True)
     # move the item being dragged
     self._drag_item.move(self._canvas, dx, dy)
     # update drag state
@@ -275,7 +277,7 @@ class Board(Frame):
       self._add_wire(self._wire_parts, start_connector, end_connector,
           label)
       # mark the board changed
-      self._set_changed()
+      self.set_changed(True)
     # reset
     self._wire_parts = None
     self._wire_start = None
@@ -299,21 +301,21 @@ class Board(Frame):
     drawable_to_delete = self._drawable_at((event.x, event.y))
     if drawable_to_delete:
       drawable_to_delete.delete_from(self._canvas)
-      self._set_changed()
+      self.set_changed(True)
       return
     # delete a connector?
     connector_to_delete = self._connector_at((event.x, event.y))
     if connector_to_delete:
       # delete the drawable containing the connector
       connector_to_delete.drawable.delete_from(self._canvas)
-      self._set_changed()
+      self.set_changed(True)
       return
     # delete a wire?
     canvas_id = self._canvas.find_closest(event.x, event.y)[0]
     wire_to_delete = self._wire_with_id(canvas_id)
     if wire_to_delete:
       wire_to_delete.delete_from(self._canvas)
-      self._set_changed()
+      self.set_changed(True)
   def add_key_binding(self, key, callback):
     """
     Adds a key-binding so that whenever |key| is pressed, |callback| is called.
@@ -351,7 +353,7 @@ class Board(Frame):
         offset = self._drawable_offsets[drawable_to_rotate]
         drawable_to_rotate.delete_from(self._canvas)
         self.add_drawable(rotated_drawable, offset)
-        self._set_changed()
+        self.set_changed(True)
   def _quit(self):
     """
     Callback on exit.
@@ -431,26 +433,18 @@ class Board(Frame):
     self._message_remove_timer.start()
   def changed(self):
     """
-    Returns True if this board has been changed since the last call to
-        reset_changed (or initialization if no such call has been made), False
-        otherwise.
+    Returns True if this board has been changed since the last time the changed
+        flag was reset to False.
     """
     return self._changed
-  def reset_changed(self):
+  def set_changed(self, changed):
     """
-    Marks this board unchanged.
+    Sets the changed status of this board.
     """
-    self._set_unchanged()
-  def _set_changed(self):
-    """
-    Sets the changed flag to True.
-    """
-    self._changed = True
-  def _set_unchanged(self):
-    """
-    Sets the changed flag to False.
-    """
-    self._changed = False
+    assert isinstance(changed, bool), 'changed must be a bool'
+    self._changed = changed
+    if self._on_changed:
+      self._on_changed(changed)
   def add_drawable(self, drawable, offset=(0, 0)):
     """
     Adds the given |drawable| to this board at the given |offset|.
@@ -467,7 +461,7 @@ class Board(Frame):
     for part in drawable.parts:
       self._canvas.itemconfig(part, tags=(DRAG_TAG, ROTATE_TAG))
     # mark this board changed
-    self._set_changed()
+    self.set_changed(True)
   def get_drawables(self):
     """
     Returns the live drawables on this board.

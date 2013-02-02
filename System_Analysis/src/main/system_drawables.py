@@ -39,15 +39,21 @@ from core.constants import Y
 from gui.components import Drawable
 from gui.util import create_editable_text
 from gui.util import rotate_connector_flags
+from util import is_callable
 
 class Gain_Drawable(Drawable):
   """
   Abstract Drawable for LTI Gain components.
   """
-  def __init__(self, vertices=GAIN_RIGHT_VERTICES):
+  def __init__(self, on_gain_changed, vertices=GAIN_RIGHT_VERTICES):
     """
+    |on_gain_changed|: function to be called when the gain is changed.
     |vertices|: the vertices of the triangle for this gain.
     """
+    assert is_callable(on_gain_changed), 'on_gain_changed must be callable'
+    assert vertices in (GAIN_RIGHT_VERTICES, GAIN_DOWN_VERTICES,
+        GAIN_LEFT_VERTICES, GAIN_UP_VERTICES), 'invalide gain vertices'
+    self.on_gain_changed = on_gain_changed
     self.vertices = vertices
     x1, y1, x2, y2, x3, y3 = vertices
     min_x, max_x = [f(x1, x2, x3) for f in min, max]
@@ -71,7 +77,7 @@ class Gain_Drawable(Drawable):
     self.parts.add(canvas.create_polygon(x1, y1, x2, y2, x3, y3,
         fill=GAIN_FILL, outline=GAIN_OUTLINE))
     gain_text = create_editable_text(canvas, (x1 + x2 + x3) / 3,
-        (y1 + y2 + y3) / 3)
+        (y1 + y2 + y3) / 3, on_text_changed=self.on_gain_changed)
     self.parts.add(gain_text)
     def get_K():
       """

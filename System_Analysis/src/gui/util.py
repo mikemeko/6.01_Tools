@@ -25,13 +25,15 @@ from Tkinter import INSERT
 from Tkinter import SEL_FIRST
 from Tkinter import SEL_LAST
 
-def create_editable_text(canvas, x, y, text='?'):
+def create_editable_text(canvas, x, y, text='?', on_text_changed=lambda:None):
   """
   Creates an edittable text box on the |canvas| centered at the given position
-      (|x|, |y|) and containing the given |text|.
+      (|x|, |y|) and containing the given |text|. |on_text_changed| is called
+      whenever the text is changed.
   Returns the canvas id of the text box.
   Credit to http://effbot.org/zone/editing-canvas-text-items.htm
   """
+  assert isinstance(canvas, Canvas), 'canvas must be a Canvas'
   # create the text box
   text_box = canvas.create_text(x, y, text=text)
   def set_focus(event):
@@ -47,6 +49,7 @@ def create_editable_text(canvas, x, y, text='?'):
     """
     Handle a key press when the text box is in focus.
     """
+    text_before_key = canvas.itemcget(text_box, 'text')
     insert = canvas.index(text_box, INSERT)
     if event.char >= ' ':
       # printable character
@@ -67,6 +70,10 @@ def create_editable_text(canvas, x, y, text='?'):
     elif event.keysym == 'Left':
       canvas.icursor(text_box, insert - 1)
       canvas.select_clear()
+    text_after_key = canvas.itemcget(text_box, 'text')
+    # callback if text is changed
+    if text_before_key != text_after_key:
+      on_text_changed()
   canvas.tag_bind(text_box, '<Key>', handle_key)
   def release_focus(event):
     """

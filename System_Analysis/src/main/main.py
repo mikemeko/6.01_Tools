@@ -27,18 +27,31 @@ from system_drawables import PZD_Run_Drawable
 from system_drawables import USR_Run_Drawable
 from tkMessageBox import askquestion
 from Tkinter import Tk
+from util import strip_dir
+from util import strip_file_name
 
 if __name__ == '__main__':
+  # create root
+  root = Tk()
+  root.resizable(0, 0)
   # file opening / saving
   # TODO(mikemeko): global variable :(
   global file_name
   file_name = None
+  def on_changed(changed):
+    """
+    TODO(mikemeko)
+    """
+    # reset title
+    root.title('%s (%s) %s %s' % (APP_NAME, DEV_STAGE,
+        strip_file_name(file_name), '*' if changed else ''))
   def save_file():
     """
     TODO(mikemeko)
     """
     global file_name
     file_name = save_board(board, file_name)
+    on_changed(False)
   def request_save():
     """
     TODO(mikemeko)
@@ -57,11 +70,8 @@ if __name__ == '__main__':
     new_file_name = open_board(board)
     if new_file_name:
       file_name = new_file_name
-  # create root, board, and palette
-  root = Tk()
-  root.resizable(0, 0)
-  root.title('%s (%s)' % (APP_NAME, DEV_STAGE))
-  board = Board(root, on_exit=request_save)
+    on_changed(False)
+  board = Board(root, on_changed=on_changed, on_exit=request_save)
   palette = Palette(root, board)
   # create input and output boxes (added to board automatically)
   inp = IO_X_Drawable()
@@ -70,9 +80,10 @@ if __name__ == '__main__':
   board.add_drawable(out, (board.width - out.width - IO_PADDING,
       (board.height - out.height) / 2))
   # mark the board unchanged
-  board.reset_changed()
+  board.set_changed(False)
   # add LTI system components to palette
-  palette.add_drawable_type(Gain_Drawable, LEFT, None)
+  palette.add_drawable_type(Gain_Drawable, LEFT, None,
+      on_gain_changed=lambda: board.set_changed(True))
   palette.add_drawable_type(Delay_Drawable, LEFT, None)
   palette.add_drawable_type(Adder_Drawable, LEFT, None)
   # add buttons to create pzr and usr
