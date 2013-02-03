@@ -211,7 +211,10 @@ class Board(Frame):
     self._wire_parts = create_wire(self._canvas, x1, y1, x2, y2)
   def _add_wire(self, wire_parts, start_connector, end_connector, label):
     """
-    TODO(mikemeko)
+    Creates a Wire object using the given parameters. This method assumes that
+        |start_connector| and |end_connector| are connectors on this board and
+        that the wire has been drawn on the board with the given |wire_parts|.
+        The wire will have the given |label|.
     """
     wire = Wire(wire_parts, start_connector, end_connector, label)
     start_connector.start_wires.add(wire)
@@ -284,7 +287,9 @@ class Board(Frame):
     self._wire_end = None
   def add_wire(self, x1, y1, x2, y2, label):
     """
-    TODO(mikemeko)
+    Adds a wire to this board going from (|x1|, |y1|) to (|x2|, |y2|) and with
+        the given |label|. This method assumes that there are connectors on
+        this board at the given start and end locations of the wire.
     """
     start_connector = self._connector_at((x1, y1))
     assert start_connector, 'There must be a connector at (x1, y1)'
@@ -471,13 +476,14 @@ class Board(Frame):
         yield drawable
   def get_drawable_offset(self, drawable):
     """
-    TODO(mikemeko)
+    Returns the offset with which the given |drawable| is drawn. Assumes that
+        the |drawable| is on this board.
     """
     assert drawable in self._drawable_offsets, 'drawable must be on this board'
     return self._drawable_offsets[drawable]
   def clear(self):
     """
-    TODO(mikemeko)
+    Removes all drawables from this board.
     """
     for drawable in self.get_drawables():
       drawable.delete_from(self._canvas)
