@@ -19,6 +19,8 @@ from system_drawables import IO_X_Drawable
 from system_drawables import IO_Y_Drawable
 from tkFileDialog import askopenfilename
 from tkFileDialog import asksaveasfilename
+from util import strip_dir
+from util import strip_file_name
 
 def is_system_drawable(drawable):
   """
@@ -145,13 +147,15 @@ def save_board(board, file_name):
   save_file.close()
   return file_name
 
-def open_board(board):
+def open_board(board, current_file_name):
   """
   TODO(mikemeko)
   """
   assert isinstance(board, Board), 'board must be a Board'
   file_name = askopenfilename(title="Open File ...",
-      filetypes=[('%s files' % APP_NAME,'.sys')])
+      filetypes=[('%s files' % APP_NAME,'.sys')],
+      initialfile=strip_file_name(current_file_name),
+      initialdir=strip_dir(current_file_name))
   # TODO(mikemeko): check that file name is valid
   # clear the board
   if file_name:
@@ -161,8 +165,3 @@ def open_board(board):
       deserialize_item(line, board)
     open_file.close()
   return file_name
-
-def build_board_from_rep(board, rep):
-  """
-  TODO(mikemeko)
-  """

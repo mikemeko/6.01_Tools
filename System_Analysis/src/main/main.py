@@ -27,7 +27,6 @@ from system_drawables import PZD_Run_Drawable
 from system_drawables import USR_Run_Drawable
 from tkMessageBox import askquestion
 from Tkinter import Tk
-from util import strip_dir
 from util import strip_file_name
 
 if __name__ == '__main__':
@@ -38,20 +37,33 @@ if __name__ == '__main__':
   # TODO(mikemeko): global variable :(
   global file_name
   file_name = None
-  def on_changed(changed):
+  def reset_board():
+    """
+    TODO(mikemeko)
+    """
+    board.clear()
+    # create input and output boxes (added to board automatically)
+    inp = IO_X_Drawable()
+    board.add_drawable(inp, (IO_PADDING, (board.height - inp.height) / 2))
+    out = IO_Y_Drawable()
+    board.add_drawable(out, (board.width - out.width - IO_PADDING,
+        (board.height - out.height) / 2))
+    # mark the board unchanged
+    board.set_changed(False)
+  def on_changed(board_changed):
     """
     TODO(mikemeko)
     """
     # reset title
     root.title('%s (%s) %s %s' % (APP_NAME, DEV_STAGE,
-        strip_file_name(file_name), '*' if changed else ''))
+        strip_file_name(file_name), '*' if board_changed else ''))
   def save_file():
     """
     TODO(mikemeko)
     """
     global file_name
     file_name = save_board(board, file_name)
-    on_changed(False)
+    board.set_changed(False)
   def request_save():
     """
     TODO(mikemeko)
@@ -67,20 +79,21 @@ if __name__ == '__main__':
     global file_name
     # save first if the board has been changed
     request_save()
-    new_file_name = open_board(board)
+    new_file_name = open_board(board, file_name)
     if new_file_name:
       file_name = new_file_name
-    on_changed(False)
+      board.set_changed(False)
+  def new_file():
+    """
+    TODO(mikemeko)
+    """
+    global file_name
+    request_save()
+    file_name = None
+    reset_board()
   board = Board(root, on_changed=on_changed, on_exit=request_save)
+  reset_board()
   palette = Palette(root, board)
-  # create input and output boxes (added to board automatically)
-  inp = IO_X_Drawable()
-  board.add_drawable(inp, (IO_PADDING, (board.height - inp.height) / 2))
-  out = IO_Y_Drawable()
-  board.add_drawable(out, (board.width - out.width - IO_PADDING,
-      (board.height - out.height) / 2))
-  # mark the board unchanged
-  board.set_changed(False)
   # add LTI system components to palette
   palette.add_drawable_type(Gain_Drawable, LEFT, None,
       on_gain_changed=lambda: board.set_changed(True))
@@ -100,6 +113,8 @@ if __name__ == '__main__':
   board.add_key_binding('s', save_file)
   # TODO(mikemeko): Ctrl-o instead of o
   board.add_key_binding('o', open_file)
+  # TODO(mikemeko): Ctrl-n instead of n
+  board.add_key_binding('n', new_file)
   # some UI help
   board.display_message('Ctrl-click to delete.\nShift-click to rotate.', INFO)
   # run main loop
