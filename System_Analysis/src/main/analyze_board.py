@@ -1,5 +1,5 @@
 """
-TODO(mikemeko)
+Contains the method to analyze the DT LTI system drawn on a board.
 """
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'

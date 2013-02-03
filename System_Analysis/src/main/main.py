@@ -29,6 +29,7 @@ from system_drawables import IO_Y_Drawable
 from system_drawables import PZD_Run_Drawable
 from system_drawables import USR_Run_Drawable
 from tkMessageBox import askquestion
+from Tkinter import Menu
 from Tkinter import Tk
 from util import strip_file_name
 
@@ -137,6 +138,17 @@ if __name__ == '__main__':
   board.add_key_binding('o', open_file)
   # TODO(mikemeko): Ctrl-n instead of n
   board.add_key_binding('n', new_file)
+  # menu
+  # TODO(mikemeko): accelerators don't work
+  menu = Menu(root, tearoff=0)
+  file_menu = Menu(menu, tearoff=0)
+  file_menu.add_command(label='New', command=new_file, accelerator='Ctrl+N')
+  file_menu.add_command(label='Open', command=open_file, accelerator='Ctrl+O')
+  file_menu.add_command(label='Save', command=save_file, accelerator='Ctrl+S')
+  file_menu.add_separator()
+  file_menu.add_command(label='Quit', command=board.quit, accelerator='Ctrl+Q')
+  menu.add_cascade(label='File', menu=file_menu)
+  root.config(menu=menu)
   # some UI help
   board.display_message(INIT_UI_HELP, INFO)
   # run main loop

@@ -116,7 +116,7 @@ class Board(Frame):
     # rotate binding
     self._canvas.tag_bind(ROTATE_TAG, '<Shift-Button-1>', self._rotate)
     # on quit
-    self.parent.protocol('WM_DELETE_WINDOW', self._quit)
+    self.parent.protocol('WM_DELETE_WINDOW', self.quit)
   def _drawable_at(self, point):
     """
     |point|: a tuple of the form (x, y) indicating a location on the canvas.
@@ -359,14 +359,14 @@ class Board(Frame):
         drawable_to_rotate.delete_from(self._canvas)
         self.add_drawable(rotated_drawable, offset)
         self.set_changed(True)
-  def _quit(self):
+  def quit(self):
     """
     Callback on exit.
     """
     self._cancel_message_remove_timer()
     if self._on_exit:
       self._on_exit()
-    self.parent.quit()
+    Frame.quit(self)
   def is_duplicate(self, drawable, offset=(0, 0)):
     """
     Returns True if the exact |drawable| at the given |offset| is already on
