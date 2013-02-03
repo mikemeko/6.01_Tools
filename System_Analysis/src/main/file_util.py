@@ -1,10 +1,22 @@
 """
-TODO(mikemeko)
+Utility methods to save and open DT LTI system boards.
 """
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
+from constants import ADDER_MARK
 from constants import APP_NAME
+from constants import DELAY_MARK
+from constants import FILE_EXTENSION
+from constants import GAIN_MARK
+from constants import IO_MARK
+from constants import OPEN_FILE_TITLE
+from constants import RE_GAIN_VERTICES
+from constants import RE_INT
+from constants import RE_INT_PAIR
+from constants import SAVE_AS_TITLE
+from constants import WIRE_CONNECTOR_MARK
+from constants import WIRE_MARK
 from core.constants import X
 from core.constants import Y
 from gui.board import Board
@@ -24,67 +36,80 @@ from util import strip_file_name
 
 def is_system_drawable(drawable):
   """
-  TODO(mikemeko)
+  Returns True if |drawable| is a Drawable that can be found in a DT LTI system
+      board, False otherwise.
   """
   return isinstance(drawable, (Adder_Drawable, Delay_Drawable, Gain_Drawable,
       IO_Drawable, Wire_Connector_Drawable))
 
 def serialize_system_drawable(drawable, offset):
   """
-  TODO(mikemeko)
+  Serializes the given |drawable| that is placed at the given |offset| on the
+      board.
   """
-  assert is_system_drawable(drawable)
+  assert is_system_drawable(drawable), ('drawable must be a DT LTI system '
+      'drawable')
+  # adder
   if isinstance(drawable, Adder_Drawable):
-    return 'Adder %d %s' % (drawable.connector_flags, str(offset))
+    return '%s %d %s' % (ADDER_MARK, drawable.connector_flags, str(offset))
+  # delay
   elif isinstance(drawable, Delay_Drawable):
-    return 'Delay %d %s' % (drawable.connector_flags, str(offset))
+    return '%s %d %s' % (DELAY_MARK, drawable.connector_flags, str(offset))
+  # gain
   elif isinstance(drawable, Gain_Drawable):
-    return 'Gain %s %s %s' % (drawable.get_K(), str(drawable.vertices),
-        str(offset))
+    return '%s %s %s %s' % (GAIN_MARK, drawable.get_K(),
+        str(drawable.vertices), str(offset))
+  # X or Y
   elif isinstance(drawable, IO_Drawable):
-    return 'IO %s %s' % (drawable.signal, str(offset))
+    return '%s %s %s' % (IO_MARK, drawable.signal, str(offset))
+  # wire connector
   elif isinstance(drawable, Wire_Connector_Drawable):
-    return 'Wire connector %s %s' % (drawable.label, offset)
+    return '%s %s %s' % (WIRE_CONNECTOR_MARK, drawable.label, offset)
   else:
     # should never get here
     raise Exception('Unexpected Drawable type')
 
 def serialize_wire(wire):
   """
-  TODO(mikemeko)
+  Serializes the given |wire|.
   """
-  assert isinstance(wire, Wire)
-  return 'Wire %s %s %s' % (wire.label, str(wire.start_connector.center),
-      str(wire.end_connector.center))
+  assert isinstance(wire, Wire), 'wire must be a Wire'
+  return '%s %s %s %s' % (WIRE_MARK, wire.label,
+      str(wire.start_connector.center), str(wire.end_connector.center))
 
 def deserialize_item(item_str, board):
   """
-  TODO(mikemeko)
+  Deserializes the given |item_str| and adds it appropriately to the |board|.
   """
-  # TODO(mikemeko): greate nice regexps to reuse at places
-  assert isinstance(item_str, str)
+  assert isinstance(item_str, str), 'item_str must be a string'
   assert isinstance(board, Board), 'board must be a Board'
-  adder_match = match(r'Adder (\d+) \((\d+), (\d+)\)', item_str)
+  # adder
+  adder_match = match(r'%s %s %s' % (ADDER_MARK, RE_INT, RE_INT_PAIR),
+      item_str)
   if adder_match:
     connector_flags, ox, oy = map(int, adder_match.groups())
     board.add_drawable(Adder_Drawable(connector_flags), (ox, oy))
     return
-  delay_match = match(r'Delay (\d+) \((\d+), (\d+)\)', item_str)
+  # delay
+  delay_match = match(r'%s %s %s' % (DELAY_MARK, RE_INT, RE_INT_PAIR),
+      item_str)
   if delay_match:
     connector_flags, ox, oy = map(int, delay_match.groups())
     board.add_drawable(Delay_Drawable(connector_flags), (ox, oy))
     return
-  gain_match = match(r'Gain ([-+]?\d*[.]?\d+) \((\d+), (\d+), (\d+), (\d+), '
-      '(\d+), (\d+)\) \((\d+), (\d+)\)', item_str)
+  # gain
+  gain_match = match(r'%s (.+) %s %s' % (GAIN_MARK, RE_GAIN_VERTICES,
+      RE_INT_PAIR), item_str)
   if gain_match:
-    K = float(gain_match.group(1))
+    K = gain_match.group(1)
     x1, y1, x2, y2, x3, y3, ox, oy = map(int, gain_match.groups()[1:])
-    gain_drawable = Gain_Drawable( on_gain_changed=lambda: board.set_changed(
+    gain_drawable = Gain_Drawable(on_gain_changed=lambda: board.set_changed(
         True), vertices=(x1, y1, x2, y2, x3, y3))
     board.add_drawable(gain_drawable, (ox, oy))
     gain_drawable.set_K(K)
     return
-  io_match = match(r'IO (\w+) \((\d+), (\d+)\)', item_str)
+  # X or Y
+  io_match = match(r'%s (\w+) %s' % (IO_MARK, RE_INT_PAIR), item_str)
   if io_match:
     signal = io_match.group(1)
     ox, oy = map(int, io_match.groups()[1:])
@@ -96,14 +121,17 @@ def deserialize_item(item_str, board):
       # should never get here
       raise Exception('Unexpected IO signal')
     return
-  wire_connector_match = match(r'Wire connector (\w+) \((\d+), (\d+)\)',
-      item_str)
+  # wire connector
+  wire_connector_match = match(r'%s (\w+) %s' % (WIRE_CONNECTOR_MARK,
+      RE_INT_PAIR), item_str)
   if wire_connector_match:
     label = wire_connector_match.group(1)
     ox, oy = map(int, wire_connector_match.groups()[1:])
     board.add_drawable(Wire_Connector_Drawable(label), (ox, oy))
     return
-  wire_match = match(r'Wire (\w+) \((\d+), (\d+)\) \((\d+), (\d+)\)', item_str)
+  # wire
+  wire_match = match(r'%s (\w+) %s %s' % (WIRE_MARK, RE_INT_PAIR, RE_INT_PAIR),
+      item_str)
   if wire_match:
     label = wire_match.group(1)
     x1, y1, x2, y2 = map(int, wire_match.groups()[1:])
@@ -114,34 +142,35 @@ def deserialize_item(item_str, board):
 
 def get_board_rep(board):
   """
-  TODO(mikemeko)
+  Serializes the DT LTI system drawn on the given |board|
   """
   assert isinstance(board, Board), 'board must be a Board'
   rep = []
-  # first record all drawables on the board (except for IO drawables)
+  # record all drawables on the board
   for drawable in board.get_drawables():
-    assert is_system_drawable(drawable)
     rep.append(serialize_system_drawable(drawable, board.get_drawable_offset(
         drawable)))
-  # then record all wires on the board
+  # record all wires on the board
   rep.extend(map(serialize_wire, reduce(set.union, (drawable.wires() for
       drawable in board.get_drawables()), set())))
+  # delimit with line breaks
   return '\n'.join(rep)
 
 def save_board(board, file_name):
   """
-  TODO(mikemeko)
+  Saves the given |board|. If the given |file_name| is not valid, asks the user
+      for a new file name.
+  Returns the file name that was used.
   """
   assert isinstance(board, Board), 'board must be a Board'
-  if not file_name:
-    # TODO(mikemeko): not .sys
-    # if file name is not provided, ask for one
-    file_name = asksaveasfilename(title='Save file as ...',
-        filetypes=[('%s files' % APP_NAME,'.sys')])
-    # TODO(mikemeko): attache .sys if not already provided
-  else:
-    # TODO(mikemeko): check that file name is valid
-    pass
+  if not file_name or not file_name.endswith(FILE_EXTENSION):
+    # if valid file name is not provided, ask for one
+    file_name = asksaveasfilename(title=SAVE_AS_TITLE,
+        filetypes=[('%s files' % APP_NAME, FILE_EXTENSION)])
+    # ensure extension is tagged
+    if not file_name.endswith(FILE_EXTENSION):
+      file_name += FILE_EXTENSION
+  # write serialized board into file
   save_file = open(file_name, 'w')
   save_file.write(get_board_rep(board))
   save_file.close()
@@ -149,17 +178,21 @@ def save_board(board, file_name):
 
 def open_board(board, current_file_name):
   """
-  TODO(mikemeko)
+  Opens a new system and adds the components to the given |board|.
+  |current_file_name| is the path for the board currently open. It is used to
+      suggest what new file to open.
+  Returns the name of the file that was openned, or '' if no file was openned.
   """
   assert isinstance(board, Board), 'board must be a Board'
-  file_name = askopenfilename(title="Open File ...",
-      filetypes=[('%s files' % APP_NAME,'.sys')],
+  file_name = askopenfilename(title=OPEN_FILE_TITLE,
+      filetypes=[('%s files' % APP_NAME, FILE_EXTENSION)],
       initialfile=strip_file_name(current_file_name),
       initialdir=strip_dir(current_file_name))
-  # TODO(mikemeko): check that file name is valid
-  # clear the board
   if file_name:
+    assert file_name.endswith(FILE_EXTENSION), 'invalid DT LTI system file'
+    # clear board
     board.clear()
+    # update board with new system
     open_file = open(file_name, 'r')
     for line in open_file:
       deserialize_item(line, board)

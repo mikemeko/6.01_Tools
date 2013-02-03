@@ -14,8 +14,8 @@ from constants import REQUEST_SAVE_MESSAGE
 from constants import REQUEST_SAVE_TITLE
 from core.pole_zero_diagram import plot_pole_zero_diagram
 from core.unit_sample_response import plot_unit_sample_response
-from file_save import open_board
-from file_save import save_board
+from file_util import open_board
+from file_util import save_board
 from gui.board import Board
 from gui.constants import INFO
 from gui.constants import LEFT
