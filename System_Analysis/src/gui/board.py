@@ -16,6 +16,7 @@ from constants import BOARD_GRID_SEPARATION
 from constants import BOARD_WIDTH
 from constants import CONNECTOR_RADIUS
 from constants import CONNECTOR_TAG
+from constants import CTRL_DOWN
 from constants import DRAG_TAG
 from constants import ERROR
 from constants import INFO
@@ -30,6 +31,7 @@ from constants import MESSAGE_WARNING_COLOR
 from constants import MESSAGE_WARNING_DURATION
 from constants import MESSAGE_WIDTH
 from constants import ROTATE_TAG
+from constants import SHIFT_DOWN
 from constants import WARNING
 from threading import Timer
 from Tkinter import ALL
@@ -75,6 +77,8 @@ class Board(Frame):
     self._wire_end = None
     self._wire_labeler = 0 # used to uniquely label wires
     # state for key-press callbacks
+    self._ctrl_pressed = False
+    self._shift_pressed = False
     self._key_press_callbacks = {}
     # state for message display
     self._message_parts = []
@@ -321,27 +325,40 @@ class Board(Frame):
     if wire_to_delete:
       wire_to_delete.delete_from(self._canvas)
       self.set_changed(True)
-  def add_key_binding(self, key, callback):
+  def add_key_binding(self, key, callback, flags=0):
     """
     Adds a key-binding so that whenever |key| is pressed, |callback| is called.
     """
-    self._key_press_callbacks[key] = callback
+    self._key_press_callbacks[key.lower()] = (callback, flags)
   def _key_press(self, event):
     """
     Callback for when a key is pressed.
     """
     if event.keysym in ('Control_L', 'Control_R'):
+      self._ctrl_pressed = True
       self.configure(cursor='pirate')
     elif event.keysym in ('Shift_L', 'Shift_R'):
+      self._shift_pressed = True
       self.configure(cursor='exchange')
-    elif event.char in self._key_press_callbacks:
-      self._key_press_callbacks[event.char]()
+    elif event.keysym.lower() in self._key_press_callbacks:
+      callback, flags = self._key_press_callbacks[event.keysym.lower()]
+      if (self._ctrl_pressed or not flags & CTRL_DOWN) and (
+          self._shift_pressed or not flags & SHIFT_DOWN):
+        callback()
+        # reset key-press flags and cursor
+        self.configure(cursor='arrow')
+        self._ctrl_pressed = False
+        self._shift_pressed = False
   def _key_release(self, event):
     """
     Callback for when a key is released.
     """
-    if event.keysym in ('Control_L', 'Control_R', 'Shift_L', 'Shift_R'):
+    if event.keysym in ('Control_L', 'Control_R'):
       self.configure(cursor='arrow')
+      self._ctrl_pressed = False
+    elif event.keysym in ('Shift_L', 'Shift_R'):
+      self.configure(cursor='arrow')
+      self._shift_pressed = False
   def _rotate(self, event):
     """
     Callback for item rotation. Marks the board changed if any item is rotated.

@@ -52,6 +52,10 @@ MESSAGE_ERROR_DURATION = 5 # seconds
 MESSAGE_INFO_DURATION = 3 # seconds
 MESSAGE_WARNING_DURATION = 4 # seconds
 
+# key-press flags
+CTRL_DOWN =  2**0
+SHIFT_DOWN = 2**1
+
 # tags
 CONNECTOR_TAG = 'connector_tag'
 DRAG_TAG = 'drag_tag'

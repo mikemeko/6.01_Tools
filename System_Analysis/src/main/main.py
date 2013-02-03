@@ -17,6 +17,7 @@ from core.unit_sample_response import plot_unit_sample_response
 from file_util import open_board
 from file_util import save_board
 from gui.board import Board
+from gui.constants import CTRL_DOWN
 from gui.constants import INFO
 from gui.constants import LEFT
 from gui.constants import RIGHT
@@ -132,21 +133,17 @@ if __name__ == '__main__':
       plot_pole_zero_diagram))
   board.add_key_binding('u', lambda: run_analysis(board,
       plot_unit_sample_response))
-  # TODO(mikemeko): Ctrl-s instead of s
-  board.add_key_binding('s', save_file)
-  # TODO(mikemeko): Ctrl-o instead of o
-  board.add_key_binding('o', open_file)
-  # TODO(mikemeko): Ctrl-n instead of n
-  board.add_key_binding('n', new_file)
+  board.add_key_binding('s', save_file, CTRL_DOWN)
+  board.add_key_binding('o', open_file, CTRL_DOWN)
+  board.add_key_binding('n', new_file, CTRL_DOWN)
   # menu
-  # TODO(mikemeko): accelerators don't work
   menu = Menu(root, tearoff=0)
   file_menu = Menu(menu, tearoff=0)
-  file_menu.add_command(label='New', command=new_file, accelerator='Ctrl+N')
-  file_menu.add_command(label='Open', command=open_file, accelerator='Ctrl+O')
-  file_menu.add_command(label='Save', command=save_file, accelerator='Ctrl+S')
+  file_menu.add_command(label='New', command=new_file)
+  file_menu.add_command(label='Open', command=open_file)
+  file_menu.add_command(label='Save', command=save_file)
   file_menu.add_separator()
-  file_menu.add_command(label='Quit', command=board.quit, accelerator='Ctrl+Q')
+  file_menu.add_command(label='Quit', command=board.quit)
   menu.add_cascade(label='File', menu=file_menu)
   root.config(menu=menu)
   # some UI help
