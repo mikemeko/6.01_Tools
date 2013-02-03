@@ -94,13 +94,13 @@ class Gain_Drawable(Drawable):
     self.set_K = set_K
   def rotated(self):
     if self.vertices == GAIN_RIGHT_VERTICES:
-      return Gain_Drawable(GAIN_DOWN_VERTICES)
+      return Gain_Drawable(self.on_gain_changed, GAIN_DOWN_VERTICES)
     elif self.vertices == GAIN_DOWN_VERTICES:
-      return Gain_Drawable(GAIN_LEFT_VERTICES)
+      return Gain_Drawable(self.on_gain_changed, GAIN_LEFT_VERTICES)
     elif self.vertices == GAIN_LEFT_VERTICES:
-      return Gain_Drawable(GAIN_UP_VERTICES)
+      return Gain_Drawable(self.on_gain_changed, GAIN_UP_VERTICES)
     elif self.vertices == GAIN_UP_VERTICES:
-      return Gain_Drawable(GAIN_RIGHT_VERTICES)
+      return Gain_Drawable(self.on_gain_changed, GAIN_RIGHT_VERTICES)
     else:
       # should never get here
       raise Exception('Unexpected triangle vertices')

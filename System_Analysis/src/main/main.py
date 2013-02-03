@@ -8,7 +8,10 @@ __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 from analyze_board import run_analysis
 from constants import APP_NAME
 from constants import DEV_STAGE
+from constants import INIT_UI_HELP
 from constants import IO_PADDING
+from constants import REQUEST_SAVE_MESSAGE
+from constants import REQUEST_SAVE_TITLE
 from core.pole_zero_diagram import plot_pole_zero_diagram
 from core.unit_sample_response import plot_unit_sample_response
 from file_save import open_board
@@ -33,16 +36,19 @@ if __name__ == '__main__':
   # create root
   root = Tk()
   root.resizable(0, 0)
-  # file opening / saving
-  # TODO(mikemeko): global variable :(
+  # global variables (sorry!) used by various methods below
+  global board
   global file_name
+  # no opened file initially
   file_name = None
   def reset_board():
     """
-    TODO(mikemeko)
+    Clears the board and puts the the input (X) and output (Y) drawables.
     """
+    global board
+    # clear board
     board.clear()
-    # create input and output boxes (added to board automatically)
+    # create input and output drawables
     inp = IO_X_Drawable()
     board.add_drawable(inp, (IO_PADDING, (board.height - inp.height) / 2))
     out = IO_Y_Drawable()
@@ -52,54 +58,70 @@ if __name__ == '__main__':
     board.set_changed(False)
   def on_changed(board_changed):
     """
-    TODO(mikemeko)
+    This will be called every time the board is changed. |board_changed| is
+        True if the board has been changed (i.e. requires saving),
+        False otherwise.
     """
-    # reset title
+    global file_name
+    # reset title to indicate need for save
     root.title('%s (%s) %s %s' % (APP_NAME, DEV_STAGE,
         strip_file_name(file_name), '*' if board_changed else ''))
   def save_file():
     """
-    TODO(mikemeko)
+    Saves the current board.
     """
+    global board
     global file_name
+    # save board
     file_name = save_board(board, file_name)
+    # mark the board unchanged
     board.set_changed(False)
   def request_save():
     """
-    TODO(mikemeko)
+    Checks if the board has been changed, and asks the user to save the file.
     """
+    global board
     if board.changed():
-      if askquestion(title='Save?',
-          message='System has been changed, save first?') == 'yes':
+      if askquestion(title=REQUEST_SAVE_TITLE,
+          message=REQUEST_SAVE_MESSAGE) == 'yes':
         save_file()
   def open_file():
     """
-    TODO(mikemeko)
+    Opens a saved board.
     """
+    global board
     global file_name
-    # save first if the board has been changed
+    # if the board has been changed, request save first
     request_save()
+    # open a new board
     new_file_name = open_board(board, file_name)
     if new_file_name:
+      # update to new file name
       file_name = new_file_name
+      # mark the board unchanged
       board.set_changed(False)
   def new_file():
     """
-    TODO(mikemeko)
+    Opens a new board.
     """
     global file_name
+    # if the baord has been changed, request save first
     request_save()
+    # update to no file name
     file_name = None
+    # reset to empty board
     reset_board()
+  # create empty board
   board = Board(root, on_changed=on_changed, on_exit=request_save)
   reset_board()
+  # create palette
   palette = Palette(root, board)
-  # add LTI system components to palette
+  # add DT LTI system components to palette
   palette.add_drawable_type(Gain_Drawable, LEFT, None,
       on_gain_changed=lambda: board.set_changed(True))
   palette.add_drawable_type(Delay_Drawable, LEFT, None)
   palette.add_drawable_type(Adder_Drawable, LEFT, None)
-  # add buttons to create pzr and usr
+  # add buttons to create PZR and USR
   palette.add_drawable_type(PZD_Run_Drawable, RIGHT,
       lambda event: run_analysis(board, plot_pole_zero_diagram))
   palette.add_drawable_type(USR_Run_Drawable, RIGHT,
@@ -116,6 +138,6 @@ if __name__ == '__main__':
   # TODO(mikemeko): Ctrl-n instead of n
   board.add_key_binding('n', new_file)
   # some UI help
-  board.display_message('Ctrl-click to delete.\nShift-click to rotate.', INFO)
+  board.display_message(INIT_UI_HELP, INFO)
   # run main loop
   root.mainloop()
