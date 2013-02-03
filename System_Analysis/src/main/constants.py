@@ -10,11 +10,11 @@ from gui.constants import CONNECTOR_RIGHT
 from gui.constants import CONNECTOR_TOP
 
 # colors
-ADDER_FILL = '#EEE'
+ADDER_FILL = '#93E1D4'
 ADDER_OUTLINE = 'black'
-DELAY_FILL = '#EEE'
+DELAY_FILL = '#93E1D4'
 DELAY_OUTLINE = 'black'
-GAIN_FILL = '#EEE'
+GAIN_FILL = '#93E1D4'
 GAIN_OUTLINE = 'black'
 IO_FILL = '#BBB'
 IO_OUTLINE = 'black'
