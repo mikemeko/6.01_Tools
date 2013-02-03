@@ -93,13 +93,13 @@ class R_Polynomial:
         s = 'xxx' # we return s[3:]
         s += str(coeff_0)
       coeff_1 = self.coeff(1)
-      if coeff_1 == 1:
+      if abs(coeff_1) == 1:
         s += ' - R' if coeff_1 < 0 else ' + R'
       elif coeff_1:
         s += (' - %sR' if coeff_1 < 0 else ' + %sR') % str(abs(coeff_1))
       for exp in xrange(2, self.degree + 1):
         coeff_exp = self.coeff(exp)
-        if coeff_exp == 1:
+        if abs(coeff_exp) == 1:
           s += (' - R^%s' if coeff_exp < 0 else ' + R^%s') % str(exp)
         elif coeff_exp:
           s += (' - %sR^%s' if coeff_exp < 0 else ' + %sR^%s') % (
