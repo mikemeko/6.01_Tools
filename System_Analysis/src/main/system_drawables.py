@@ -1,5 +1,5 @@
 """
-TODO(mikemeko)
+All the Drawables (see gui/components.py) for the DT LTI system analysis tool.
 """
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
@@ -81,14 +81,14 @@ class Gain_Drawable(Drawable):
     self.parts.add(gain_text)
     def get_K():
       """
-      TODO(mikemeko)
+      Returns a string representing this gain's constant.
       """
       return canvas.itemcget(gain_text, 'text')
-    # TODO(mikemeko): this is a bit hacky, but it avoids storing the canvas
     self.get_K = get_K
     def set_K(K):
       """
-      TODO(mikemeko)
+      Sets the constant for this gain. This is used for deserializing gain
+          components (see main/filesave.py).
       """
       canvas.itemconfig(gain_text, text=K)
     self.set_K = set_K
@@ -159,14 +159,14 @@ class IO_Drawable(Drawable):
 
 class IO_X_Drawable(IO_Drawable):
   """
-  TODO(mikemeko)
+  Drawable for input (X) signal.
   """
   def __init__(self):
     IO_Drawable.__init__(self, X, X_CONNECTORS)
 
 class IO_Y_Drawable(IO_Drawable):
   """
-  TODO(mikemeko)
+  Drawable for output (Y) signal.
   """
   def __init__(self):
     IO_Drawable.__init__(self, Y, Y_CONNECTORS)
