@@ -79,6 +79,7 @@ def create_editable_text(canvas, x, y, text='?', on_text_changed=lambda:None):
     """
     Releases focus from the text box when editting is done.
     """
+    canvas.select_clear()
     canvas.focus('')
   canvas.tag_bind(text_box, '<Return>', release_focus)
   return text_box
