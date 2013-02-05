@@ -45,11 +45,11 @@ RUN_RECT_SIZE = 40
 
 # text
 ADDER_MARK = 'Adder'
-APP_NAME = 'System Analysis Simulator' # TODO(mikemeko): find better name :)
+APP_NAME = 'System Simulator'
 DELAY_MARK = 'Delay'
 DELAY_TEXT = 'R'
 DEV_STAGE = 'Pre-alpha'
-FILE_EXTENSION = '.sysim' # TODO(mikemeko): find better extension :)
+FILE_EXTENSION = '.sysim'
 GAIN_MARK = 'Gain'
 INIT_UI_HELP = 'Ctrl-click to delete.\nShift-click to rotate.'
 IO_MARK = 'IO'
