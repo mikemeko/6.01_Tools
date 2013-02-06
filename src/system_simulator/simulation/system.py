@@ -7,11 +7,11 @@ __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 from constants import X
 from constants import Y
 from constants import DEFAULT_NUM_SAMPLES
+from core.util.util import is_number
 from poly import Polynomial
 from poly import R_Polynomial
 from poly import R_Ratio
 from system_function import System_Function
-from util import is_number
 
 class Component:
   """

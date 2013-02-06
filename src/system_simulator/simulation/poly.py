@@ -8,8 +8,8 @@ Representations for:
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
-from util import empty
-from util import is_number
+from core.util.util import empty
+from core.util.util import is_number
 
 class R_Polynomial:
   """

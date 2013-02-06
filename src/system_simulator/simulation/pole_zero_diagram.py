@@ -12,14 +12,14 @@ from constants import POLE_ZERO_RADIUS
 from constants import TEXT_OFFSET
 from constants import UNIT_CIRCLE_SPACE
 from constants import ZERO_COLOR
+from core.util.util import empty
+from core.util.util import in_bounds
 from system import System
 from system_function import System_Function
 from Tkinter import Canvas
 from Tkinter import Frame
 from Tkinter import Tk
 from util import complex_str
-from util import empty
-from util import in_bounds
 
 class Pole_Zero_Diagram(Frame):
   """

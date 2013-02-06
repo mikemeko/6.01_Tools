@@ -1,5 +1,5 @@
 """
-Core constants.
+System simulator constants.
 """
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'

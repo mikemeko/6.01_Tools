@@ -7,6 +7,7 @@ __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 from core.gui.board import Board
 from core.gui.components import Wire_Connector_Drawable
 from core.gui.constants import ERROR
+from core.util.util import empty
 from core.util.util import is_callable
 from system_drawables import Adder_Drawable
 from system_drawables import Delay_Drawable
@@ -17,7 +18,6 @@ from system_simulator.simulation.system import Adder
 from system_simulator.simulation.system import Delay
 from system_simulator.simulation.system import Gain
 from system_simulator.simulation.system import System
-from system_simulator.simulation.util import empty
 
 def run_analysis(board, analyze):
   """
