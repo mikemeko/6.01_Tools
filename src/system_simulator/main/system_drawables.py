@@ -34,11 +34,11 @@ from constants import RUN_TEXT_FILL
 from constants import USR
 from constants import X_CONNECTORS
 from constants import Y_CONNECTORS
-from core.constants import X
-from core.constants import Y
-from gui.components import Drawable
-from gui.util import create_editable_text
-from gui.util import rotate_connector_flags
+from system_simulator.simulation.constants import X
+from system_simulator.simulation.constants import Y
+from core.gui.components import Drawable
+from core.gui.util import create_editable_text
+from core.gui.util import rotate_connector_flags
 from util import is_callable
 
 class Gain_Drawable(Drawable):

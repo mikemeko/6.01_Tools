@@ -17,11 +17,11 @@ from constants import RE_INT_PAIR
 from constants import SAVE_AS_TITLE
 from constants import WIRE_CONNECTOR_MARK
 from constants import WIRE_MARK
-from core.constants import X
-from core.constants import Y
-from gui.board import Board
-from gui.components import Wire
-from gui.components import Wire_Connector_Drawable
+from system_simulator.simulation.constants import X
+from system_simulator.simulation.constants import Y
+from core.gui.board import Board
+from core.gui.components import Wire
+from core.gui.components import Wire_Connector_Drawable
 from re import match
 from system_drawables import Adder_Drawable
 from system_drawables import Delay_Drawable

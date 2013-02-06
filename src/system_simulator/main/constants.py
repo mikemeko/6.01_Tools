@@ -4,10 +4,10 @@ Main constants.
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
-from gui.constants import CONNECTOR_BOTTOM
-from gui.constants import CONNECTOR_LEFT
-from gui.constants import CONNECTOR_RIGHT
-from gui.constants import CONNECTOR_TOP
+from core.gui.constants import CONNECTOR_BOTTOM
+from core.gui.constants import CONNECTOR_LEFT
+from core.gui.constants import CONNECTOR_RIGHT
+from core.gui.constants import CONNECTOR_TOP
 
 # colors
 ADDER_FILL = '#93E1D4'

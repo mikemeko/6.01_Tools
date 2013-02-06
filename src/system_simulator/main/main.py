@@ -1,6 +1,5 @@
 """
-Main.
-Runs system analysis tool.
+Runs system simulator.
 """
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
@@ -12,16 +11,18 @@ from constants import INIT_UI_HELP
 from constants import IO_PADDING
 from constants import REQUEST_SAVE_MESSAGE
 from constants import REQUEST_SAVE_TITLE
-from core.pole_zero_diagram import plot_pole_zero_diagram
-from core.unit_sample_response import plot_unit_sample_response
+from system_simulator.simulation.pole_zero_diagram import (
+    plot_pole_zero_diagram)
+from system_simulator.simulation.unit_sample_response import (
+    plot_unit_sample_response)
 from file_util import open_board
 from file_util import save_board
-from gui.board import Board
-from gui.constants import CTRL_DOWN
-from gui.constants import INFO
-from gui.constants import LEFT
-from gui.constants import RIGHT
-from gui.palette import Palette
+from core.gui.board import Board
+from core.gui.constants import CTRL_DOWN
+from core.gui.constants import INFO
+from core.gui.constants import LEFT
+from core.gui.constants import RIGHT
+from core.gui.palette import Palette
 from system_drawables import Adder_Drawable
 from system_drawables import Delay_Drawable
 from system_drawables import Gain_Drawable

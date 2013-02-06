@@ -1,3 +1,3 @@
-# Script to run system analysis tool.
-python -m main.main
+# Script to run system simulator.
+python -m system_simulator.main.main
 
