@@ -76,7 +76,9 @@ if __name__ == '__main__':
     global board
     global file_name
     # save board
-    file_name = save_board(board, file_name)
+    saved_file_name = save_board(board, file_name)
+    if saved_file_name:
+      file_name = saved_file_name
     # mark the board unchanged
     board.set_changed(False)
   def request_save():

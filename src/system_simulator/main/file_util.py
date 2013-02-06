@@ -168,12 +168,13 @@ def save_board(board, file_name):
     file_name = asksaveasfilename(title=SAVE_AS_TITLE,
         filetypes=[('%s files' % APP_NAME, FILE_EXTENSION)])
     # ensure extension is tagged
-    if not file_name.endswith(FILE_EXTENSION):
+    if file_name and not file_name.endswith(FILE_EXTENSION):
       file_name += FILE_EXTENSION
-  # write serialized board into file
-  save_file = open(file_name, 'w')
-  save_file.write(get_board_rep(board))
-  save_file.close()
+  if file_name:
+    # write serialized board into file
+    save_file = open(file_name, 'w')
+    save_file.write(get_board_rep(board))
+    save_file.close()
   return file_name
 
 def open_board(board, current_file_name):
