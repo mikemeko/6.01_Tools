@@ -4,14 +4,14 @@ Unittests for poly.py.
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
-from core.poly import Polynomial
-from core.poly import R_Polynomial
-from core.poly import R_Ratio
+from system_simulator.simulation.poly import Polynomial
+from system_simulator.simulation.poly import R_Polynomial
+from system_simulator.simulation.poly import R_Ratio
+from unittest import main
+from unittest import TestCase
 from util import assert_polys_equal
 from util import assert_r_polys_equal
 from util import assert_r_ratios_equal
-from unittest import main
-from unittest import TestCase
 
 class R_Polynomial_Test(TestCase):
   """

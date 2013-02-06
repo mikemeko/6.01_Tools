@@ -4,10 +4,10 @@ Utilities for testing.
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
-from core.poly import Polynomial
-from core.poly import R_Polynomial
-from core.poly import R_Ratio
-from core.system import System_Function
+from system_simulator.simulation.poly import Polynomial
+from system_simulator.simulation.poly import R_Polynomial
+from system_simulator.simulation.poly import R_Ratio
+from system_simulator.simulation.system import System_Function
 
 def assert_r_polys_equal(r_poly_1, r_poly_2):
   """

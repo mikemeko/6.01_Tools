@@ -4,17 +4,17 @@ Unittests for gui/util.py.
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
-from gui.constants import CONNECTOR_BOTTOM
-from gui.constants import CONNECTOR_CENTER
-from gui.constants import CONNECTOR_LEFT
-from gui.constants import CONNECTOR_RIGHT
-from gui.constants import CONNECTOR_TOP
-from gui.constants import BOARD_GRID_SEPARATION
-from gui.util import dist
-from gui.util import point_inside_bbox
-from gui.util import point_inside_circle
-from gui.util import rotate_connector_flags
-from gui.util import snap
+from core.gui.constants import CONNECTOR_BOTTOM
+from core.gui.constants import CONNECTOR_CENTER
+from core.gui.constants import CONNECTOR_LEFT
+from core.gui.constants import CONNECTOR_RIGHT
+from core.gui.constants import CONNECTOR_TOP
+from core.gui.constants import BOARD_GRID_SEPARATION
+from core.gui.util import dist
+from core.gui.util import point_inside_bbox
+from core.gui.util import point_inside_circle
+from core.gui.util import rotate_connector_flags
+from core.gui.util import snap
 from math import sqrt
 from unittest import main
 from unittest import TestCase

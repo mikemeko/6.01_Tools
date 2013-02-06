@@ -4,18 +4,18 @@ Unittests for system.py.
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
-from core.constants import X
-from core.constants import Y
-from core.poly import R_Polynomial
-from core.poly import R_Ratio
-from core.system import Adder
-from core.system import Delay
-from core.system import Gain
-from core.system import System
-from core.system import System_Function
-from util import assert_system_functions_equal
+from system_simulator.simulation.constants import X
+from system_simulator.simulation.constants import Y
+from system_simulator.simulation.poly import R_Polynomial
+from system_simulator.simulation.poly import R_Ratio
+from system_simulator.simulation.system import Adder
+from system_simulator.simulation.system import Delay
+from system_simulator.simulation.system import Gain
+from system_simulator.simulation.system import System
+from system_simulator.simulation.system import System_Function
 from unittest import main
 from unittest import TestCase
+from util import assert_system_functions_equal
 
 class System_Test(TestCase):
   """

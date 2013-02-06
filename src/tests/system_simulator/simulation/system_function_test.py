@@ -4,9 +4,9 @@ Unittests for system_function.py.
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
-from core.poly import R_Polynomial
-from core.poly import R_Ratio
-from core.system_function import System_Function
+from system_simulator.simulation.poly import R_Polynomial
+from system_simulator.simulation.poly import R_Ratio
+from system_simulator.simulation.system_function import System_Function
 from unittest import main
 from unittest import TestCase
 
