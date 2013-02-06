@@ -4,7 +4,9 @@ Utility methods.
 
 __author__ = 'mikemeko@mit.edu (Mike Mekonnen)'
 
-def complex_str(c, ndigits=2):
+from constants import DEFAULT_ROUND_DIGITS
+
+def complex_str(c, ndigits=DEFAULT_ROUND_DIGITS):
   """
   Returns a string representing the complex number |c| with the real and
       imaginary parts rounded to |ndigits| digits after the decimal points.

@@ -11,6 +11,7 @@ Y = 'Y'
 # pole-zero diagram constants
 AXES_COLOR = 'grey'
 BACKGROUND_COLOR = 'white'
+DEFAULT_ROUND_DIGITS = 2 # number of digits poles and zeros are rounded to
 DEFAULT_WINDOW_SIZE = 400
 POLE_COLOR = 'red'
 POLE_ZERO_RADIUS = 4

@@ -4,6 +4,8 @@ Representation for a system function.
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
+from constants import DEFAULT_ROUND_DIGITS
+from core.util.util import is_number
 from numpy import roots
 from poly import R_Ratio
 
@@ -34,15 +36,25 @@ class System_Function:
       self.numerator_coeffs += [0] * diff
     elif dn < ln:
       self.denominator_coeffs += [0] * diff
+  def _round(self, root):
+    """
+    Rounds the given |root| (pole or zero) to |DEFAULT_ROUND_DIGITS| places.
+        This avoids some floating-point precision issues.
+    """
+    assert is_number(root), 'root must be a number'
+    if isinstance(root, complex):
+      return complex(round(root.real, DEFAULT_ROUND_DIGITS), round(root.imag,
+          DEFAULT_ROUND_DIGITS))
+    return round(root, DEFAULT_ROUND_DIGITS)
   def poles(self):
     """
     Returns the poles of this system (may include hidden poles).
     """
-    return list(roots(self.denominator_coeffs))
+    return map(self._round, roots(self.denominator_coeffs))
   def zeros(self):
     """
     Returns the zeros of this system (may include hidden zeros).
     """
-    return list(roots(self.numerator_coeffs))
+    return map(self._round, roots(self.numerator_coeffs))
   def __str__(self):
     return str(self.ratio)

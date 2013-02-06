@@ -26,4 +26,4 @@ def is_number(val):
   """
   Returns True if |val| is a number, False otherwise.
   """
-  return isinstance(val, (float, int, long))
+  return isinstance(val, (complex, float, int, long))
