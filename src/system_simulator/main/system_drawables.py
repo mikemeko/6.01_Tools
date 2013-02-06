@@ -1,5 +1,5 @@
 """
-All the Drawables (see gui/components.py) for the DT LTI system analysis tool.
+All the Drawables for the DT LTI system simulator.
 """
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
@@ -34,12 +34,12 @@ from constants import RUN_TEXT_FILL
 from constants import USR
 from constants import X_CONNECTORS
 from constants import Y_CONNECTORS
-from system_simulator.simulation.constants import X
-from system_simulator.simulation.constants import Y
 from core.gui.components import Drawable
 from core.gui.util import create_editable_text
 from core.gui.util import rotate_connector_flags
-from util import is_callable
+from core.util.util import is_callable
+from system_simulator.simulation.constants import X
+from system_simulator.simulation.constants import Y
 
 class Gain_Drawable(Drawable):
   """

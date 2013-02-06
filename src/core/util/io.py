@@ -1,5 +1,5 @@
 """
-Utility methods.
+Utility methods to aid IO, saving/opening files, etc.
 """
 
 __author__ = 'mikemeko@mit.edu (Mike Mekonnen)'
@@ -7,12 +7,6 @@ __author__ = 'mikemeko@mit.edu (Mike Mekonnen)'
 from os.path import isdir
 from os.path import isfile
 from os.path import split
-
-def is_callable(obj):
-  """
-  Returns True if |obj| is callable, False otherwise.
-  """
-  return hasattr(obj, '__call__')
 
 def strip_file_name(path):
   """

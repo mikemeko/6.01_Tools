@@ -4,20 +4,20 @@ Contains the method to analyze the DT LTI system drawn on a board.
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
+from core.gui.board import Board
+from core.gui.components import Wire_Connector_Drawable
+from core.gui.constants import ERROR
+from core.util.util import is_callable
+from system_drawables import Adder_Drawable
+from system_drawables import Delay_Drawable
+from system_drawables import Gain_Drawable
+from system_drawables import IO_Drawable
 from system_simulator.simulation.constants import X
 from system_simulator.simulation.system import Adder
 from system_simulator.simulation.system import Delay
 from system_simulator.simulation.system import Gain
 from system_simulator.simulation.system import System
 from system_simulator.simulation.util import empty
-from core.gui.board import Board
-from core.gui.components import Wire_Connector_Drawable
-from core.gui.constants import ERROR
-from system_drawables import Adder_Drawable
-from system_drawables import Delay_Drawable
-from system_drawables import Gain_Drawable
-from system_drawables import IO_Drawable
-from util import is_callable
 
 def run_analysis(board, analyze):
   """

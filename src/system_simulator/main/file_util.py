@@ -17,11 +17,11 @@ from constants import RE_INT_PAIR
 from constants import SAVE_AS_TITLE
 from constants import WIRE_CONNECTOR_MARK
 from constants import WIRE_MARK
-from system_simulator.simulation.constants import X
-from system_simulator.simulation.constants import Y
 from core.gui.board import Board
 from core.gui.components import Wire
 from core.gui.components import Wire_Connector_Drawable
+from core.util.io import strip_dir
+from core.util.io import strip_file_name
 from re import match
 from system_drawables import Adder_Drawable
 from system_drawables import Delay_Drawable
@@ -29,10 +29,10 @@ from system_drawables import Gain_Drawable
 from system_drawables import IO_Drawable
 from system_drawables import IO_X_Drawable
 from system_drawables import IO_Y_Drawable
+from system_simulator.simulation.constants import X
+from system_simulator.simulation.constants import Y
 from tkFileDialog import askopenfilename
 from tkFileDialog import asksaveasfilename
-from util import strip_dir
-from util import strip_file_name
 
 def is_system_drawable(drawable):
   """
