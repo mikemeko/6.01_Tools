@@ -45,10 +45,12 @@ class Gain_Drawable(Drawable):
   """
   Abstract Drawable for LTI Gain components.
   """
-  def __init__(self, on_gain_changed, vertices=GAIN_RIGHT_VERTICES):
+  def __init__(self, on_gain_changed, vertices=GAIN_RIGHT_VERTICES,
+      init_K=1):
     """
     |on_gain_changed|: function to be called when the gain is changed.
     |vertices|: the vertices of the triangle for this gain.
+    |init_K|: the initial gain constant.
     """
     assert is_callable(on_gain_changed), 'on_gain_changed must be callable'
     assert vertices in (GAIN_RIGHT_VERTICES, GAIN_DOWN_VERTICES,
@@ -60,6 +62,7 @@ class Gain_Drawable(Drawable):
     min_y, max_y = [f(y1, y2, y3) for f in min, max]
     Drawable.__init__(self, max_x - min_x, max_y - min_y,
         self._get_connector_flags())
+    self.init_K = init_K
   def _get_connector_flags(self):
     """
     Returns the appropriate connector flags for this gain drawable using its
@@ -77,7 +80,8 @@ class Gain_Drawable(Drawable):
     self.parts.add(canvas.create_polygon(x1, y1, x2, y2, x3, y3,
         fill=GAIN_FILL, outline=GAIN_OUTLINE))
     gain_text = create_editable_text(canvas, (x1 + x2 + x3) / 3,
-        (y1 + y2 + y3) / 3, on_text_changed=self.on_gain_changed)
+        (y1 + y2 + y3) / 3, text=self.init_K,
+        on_text_changed=self.on_gain_changed)
     self.parts.add(gain_text)
     def get_K():
       """
@@ -94,13 +98,17 @@ class Gain_Drawable(Drawable):
     self.set_K = set_K
   def rotated(self):
     if self.vertices == GAIN_RIGHT_VERTICES:
-      return Gain_Drawable(self.on_gain_changed, GAIN_DOWN_VERTICES)
+      return Gain_Drawable(self.on_gain_changed, GAIN_DOWN_VERTICES,
+          self.get_K())
     elif self.vertices == GAIN_DOWN_VERTICES:
-      return Gain_Drawable(self.on_gain_changed, GAIN_LEFT_VERTICES)
+      return Gain_Drawable(self.on_gain_changed, GAIN_LEFT_VERTICES,
+          self.get_K())
     elif self.vertices == GAIN_LEFT_VERTICES:
-      return Gain_Drawable(self.on_gain_changed, GAIN_UP_VERTICES)
+      return Gain_Drawable(self.on_gain_changed, GAIN_UP_VERTICES,
+          self.get_K())
     elif self.vertices == GAIN_UP_VERTICES:
-      return Gain_Drawable(self.on_gain_changed, GAIN_RIGHT_VERTICES)
+      return Gain_Drawable(self.on_gain_changed, GAIN_RIGHT_VERTICES,
+          self.get_K())
     else:
       # should never get here
       raise Exception('Unexpected triangle vertices')
