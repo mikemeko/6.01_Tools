@@ -48,12 +48,13 @@ class Board(Frame):
   Tkinter Frame that supports drawing and manipulating various items.
   """
   def __init__(self, parent, width=BOARD_WIDTH, height=BOARD_HEIGHT,
-      on_changed=None, on_exit=None):
+      on_changed=None, on_exit=None, directed_wires=True):
     """
     |width|: the width of this board.
     |height|: the height of this board.
     |on_changed|: a function to call when changed status is reset.
     |on_exit|: a function to call on exit.
+    |directed_wires|: if True, wires will be directed (i.e. have arrows).
     """
     Frame.__init__(self, parent, background=BOARD_BACKGROUND_COLOR)
     self.parent = parent
@@ -61,6 +62,7 @@ class Board(Frame):
     self.height = height
     self._on_changed = on_changed
     self._on_exit = on_exit
+    self._directed_wires = directed_wires
     # canvas on which items are drawn
     self._canvas = Canvas(self, width=width, height=height,
         highlightthickness=0, background=BOARD_BACKGROUND_COLOR)
@@ -212,7 +214,8 @@ class Board(Frame):
     self._erase_previous_wire()
     x1, y1 = self._wire_start
     x2, y2 = self._wire_end
-    self._wire_parts = create_wire(self._canvas, x1, y1, x2, y2)
+    self._wire_parts = create_wire(self._canvas, x1, y1, x2, y2,
+        self._directed_wires)
   def _add_wire(self, wire_parts, start_connector, end_connector, label):
     """
     Creates a Wire object using the given parameters. This method assumes that
@@ -299,8 +302,8 @@ class Board(Frame):
     assert start_connector, 'There must be a connector at (x1, y1)'
     end_connector = self._connector_at((x2, y2))
     assert end_connector, 'There must be a connector at (x2, y2)'
-    self._add_wire(create_wire(self._canvas, x1, y1, x2, y2),
-        start_connector, end_connector, label)
+    self._add_wire(create_wire(self._canvas, x1, y1, x2, y2,
+        self._directed_wires), start_connector, end_connector, label)
   def _delete(self, event):
     """
     Callback for deleting an item on the board. Mark the board changed if

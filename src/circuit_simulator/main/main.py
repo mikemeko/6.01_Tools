@@ -18,7 +18,7 @@ if __name__ == '__main__':
   root = Tk()
   root.resizable(0, 0)
   # create empty board
-  board = Board(root)
+  board = Board(root, directed_wires=False)
   # create palette
   palette = Palette(root, board)
   # add circuit components to palette
