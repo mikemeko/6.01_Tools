@@ -1,3 +1,3 @@
 # Script to run circuit simulator.
-# TODO(mikemeko)
+python -m circuit_simulator.main.main
 
