@@ -22,7 +22,7 @@ def solve_equations(equations):
       if var:
         coeffs[var_index[var]] += coeff
       else:
-        const += coeff
+        const -= coeff
     A.append(coeffs)
     b.append([const])
   x = solve(matrix(A), matrix(b))
