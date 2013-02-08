@@ -223,7 +223,8 @@ class Board(Frame):
         that the wire has been drawn on the board with the given |wire_parts|.
         The wire will have the given |label|.
     """
-    wire = Wire(wire_parts, start_connector, end_connector, label)
+    wire = Wire(wire_parts, start_connector, end_connector, label,
+        self._directed_wires)
     start_connector.start_wires.add(wire)
     start_connector.lift(self._canvas)
     end_connector.end_wires.add(wire)
