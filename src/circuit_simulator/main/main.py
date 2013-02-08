@@ -6,6 +6,7 @@ __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
 from circuit_drawables import Ground
 from circuit_drawables import Power
+from circuit_drawables import Resistor
 from constants import APP_NAME
 from constants import DEV_STAGE
 from core.gui.board import Board
@@ -24,6 +25,7 @@ if __name__ == '__main__':
   # add circuit components to palette
   palette.add_drawable_type(Ground, LEFT, None)
   palette.add_drawable_type(Power, LEFT, None)
+  palette.add_drawable_type(Resistor, LEFT, None)
   # set title
   root.title('%s (%s)' % (APP_NAME, DEV_STAGE))
   # run main loop
