@@ -65,26 +65,18 @@ class Circuit:
     self.gnd = gnd
     self.data = None # TODO(mikemeko): clarify
     self._solve()
-  def _append_in_dict(self, d, key, val):
-    """
-    TODO(mikemeko)
-    """
-    if key in d:
-      d[key].append(val)
-    else:
-      d[key] = [val]
   def _solve(self):
     equations = []
     KCL = {}
     for component in self.components:
       equations.append(component.equation())
-      self._append_in_dict(KCL, component.n1, (1, component.i))
-      self._append_in_dict(KCL, component.n2, (-1, component.i))
+      KCL[component.n1] = KCL.get(component.n1, []) + [(1, component.i)]
+      KCL[component.n2] = KCL.get(component.n2, []) + [(-1, component.i)]
     equations.extend([KCL[n] for n in KCL if n is not self.gnd])
     equations.append([(1, self.gnd)])
     self.data = solve_equations(equations)
 
 if __name__ == '__main__':
-  c = Circuit([Voltage_Source('e1', 'e0', 'i1', 10), Resistor('e1', 'e2', 'i2',
-      3), Resistor('e2', 'e0', 'i3', 3)], 'e0')
+  c = Circuit([Voltage_Source('e1', 'e0', 'i3', 10), Resistor('e1', 'e2', 'i1',
+      3), Resistor('e2', 'e0', 'i2', 3)], 'e0')
   print c.data
