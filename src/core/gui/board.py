@@ -394,16 +394,18 @@ class Board(Frame):
     if self._on_exit:
       self._on_exit()
     Frame.quit(self)
-  def is_duplicate(self, drawable, offset=(0, 0)):
+  def is_duplicate(self, drawable, offset=(0, 0), disregard_location=False):
     """
     Returns True if the exact |drawable| at the given |offset| is already on
-        the board, False otherwise.
+        the board, False otherwise. If |disregard_location| is True, |drawable|
+        will be considered duplicate if its type is anywhere on the board.
     """
     assert isinstance(drawable, Drawable), 'drawable must be a Drawable'
     bbox = drawable.bounding_box(offset)
     for other in self.get_drawables():
       if (drawable.__class__ == other.__class__ and
-          bbox == other.bounding_box(self._drawable_offsets[other])):
+          (disregard_location or bbox == other.bounding_box(
+          self._drawable_offsets[other]))):
         return True
     return False
   def _cancel_message_remove_timer(self):

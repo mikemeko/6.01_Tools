@@ -28,11 +28,15 @@ if __name__ == '__main__':
   # create palette
   palette = Palette(root, board)
   # add circuit components to palette
-  palette.add_drawable_type(Ground_Drawable, LEFT, None)
-  palette.add_drawable_type(Power_Drawable, LEFT, None)
+  palette.add_drawable_type(Ground_Drawable, LEFT, None,
+      disregard_location=True)
+  palette.add_drawable_type(Power_Drawable, LEFT, None,
+      disregard_location=True)
   palette.add_drawable_type(Resistor_Drawable, LEFT, None)
-  palette.add_drawable_type(Probe_Minus_Drawable, LEFT, None)
-  palette.add_drawable_type(Probe_Plus_Drawable, LEFT, None)
+  palette.add_drawable_type(Probe_Minus_Drawable, LEFT, None,
+      disregard_location=True)
+  palette.add_drawable_type(Probe_Plus_Drawable, LEFT, None,
+      disregard_location=True)
   def analyze(circuit, probe_plus, probe_minus):
     """
     TODO(mikemeko)

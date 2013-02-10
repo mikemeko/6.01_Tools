@@ -62,4 +62,4 @@ DRAG_TAG = 'drag_tag'
 ROTATE_TAG = 'rotate_tag'
 
 # debug options
-DISPLAY_WIRE_LABELS = True
+DISPLAY_WIRE_LABELS = False
