@@ -12,6 +12,7 @@ from constants import CONNECTOR_RADIUS
 from constants import CONNECTOR_RIGHT
 from constants import CONNECTOR_TAG
 from constants import CONNECTOR_TOP
+from constants import DISPLAY_WIRE_LABELS
 from util import create_circle
 from util import create_wire
 from util import snap
@@ -215,6 +216,16 @@ class Wire:
     self.end_connector = end_connector
     self.label = label
     self.directed = directed
+  def other_connector(self, connector):
+    """
+    TODO(mikemeko)
+    """
+    if connector is self.start_connector:
+      return self.end_connector
+    elif connector is self.end_connector:
+      return self.start_connector
+    else:
+      raise Exception('Unexpected connector for this wire')
   def _maybe_delete_empty_wire_connector(self, canvas, connector):
     """
     Deletes |connector| if it is a wire connector and it is not connected to
@@ -235,6 +246,15 @@ class Wire:
     self._maybe_delete_empty_wire_connector(canvas, self.start_connector)
     self.end_connector.end_wires.remove(self)
     self._maybe_delete_empty_wire_connector(canvas, self.end_connector)
+  def _draw_label(self, canvas):
+    """
+    TODO(mikemeko)
+    """
+    if DISPLAY_WIRE_LABELS:
+      x1, y1 = self.start_connector.center
+      x2, y2 = self.end_connector.center
+      self.parts.append(canvas.create_text((x1 + x2) / 2, (y1 + y2) / 2,
+          text=self.label))
   def redraw(self, canvas):
     """
     Redraws this wire.
@@ -246,6 +266,11 @@ class Wire:
     x1, y1 = self.start_connector.center
     x2, y2 = self.end_connector.center
     self.parts = create_wire(canvas, x1, y1, x2, y2, self.directed)
+    # redraw label
+    self._draw_label(canvas)
+    # TODO(mikemeko)
+    self.start_connector.lift(canvas)
+    self.end_connector.lift(canvas)
 
 class Wire_Connector_Drawable(Drawable):
   """

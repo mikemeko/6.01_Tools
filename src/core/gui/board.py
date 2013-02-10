@@ -225,6 +225,7 @@ class Board(Frame):
     """
     wire = Wire(wire_parts, start_connector, end_connector, label,
         self._directed_wires)
+    wire.redraw(self._canvas)
     start_connector.start_wires.add(wire)
     start_connector.lift(self._canvas)
     end_connector.end_wires.add(wire)
@@ -273,6 +274,9 @@ class Board(Frame):
       elif isinstance(end_connector.drawable, Wire_Connector_Drawable):
         # if an end connector is found, and it is a wire connector, we need to
         # update the labels of all wires and wire connectors attached to it
+        # TODO(mikemeko) this is not a good solution, if a string of wire
+        #     wire connectors is broken and an item is inserted, the labeling
+        #     may not be correctly changed
         def update_labels(connector):
           """
           If |connector| is a wire connector, this method updates the labels on
@@ -280,9 +284,11 @@ class Board(Frame):
           """
           if isinstance(connector.drawable, Wire_Connector_Drawable):
             connector.drawable.label = label
-            for wire in connector.start_wires:
-              wire.label = label
-              update_labels(wire.end_connector)
+            for wire in connector.wires():
+              if wire.label is not label:
+                wire.label = label
+                wire.redraw(self._canvas)
+                update_labels(wire.other_connector(connector))
         update_labels(end_connector)
       # create wire
       self._add_wire(self._wire_parts, start_connector, end_connector,
@@ -416,10 +422,12 @@ class Board(Frame):
       self._canvas.delete(part)
     # clear out message parts list
     self._message_parts = []
-  def display_message(self, message, message_type=INFO):
+  def display_message(self, message, message_type=INFO, auto_remove=True):
     """
     Displays the given |message| on the board. |message_type| should be one of
-        INFO, WARNING, or ERROR.
+        INFO, WARNING, or ERROR. If |auto_remove| is True, the message is
+        automatically removed after a few seconds (duration depends on type of
+        message).
     """
     # remove current message, if any
     self.remove_message()
@@ -455,8 +463,9 @@ class Board(Frame):
       self._canvas.tag_bind(close_part, '<Button-1>', lambda event:
           self.remove_message())
     # automatically remove messages after a little while
-    self._message_remove_timer = Timer(duration, self.remove_message)
-    self._message_remove_timer.start()
+    if auto_remove:
+      self._message_remove_timer = Timer(duration, self.remove_message)
+      self._message_remove_timer.start()
   def changed(self):
     """
     Returns True if this board has been changed since the last time the changed

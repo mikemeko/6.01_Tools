@@ -13,6 +13,9 @@ from constants import PIN_RIGHT_CONNECTORS
 from constants import PIN_TEXT_COLOR
 from constants import POSITIVE_COLOR
 from constants import POWER
+from constants import PROBE_MINUS
+from constants import PROBE_PLUS
+from constants import PROBE_SIZE
 from constants import RESISTOR_HORIZONTAL_CONNECTORS
 from constants import RESISTOR_HORIZONTAL_HEIGHT
 from constants import RESISTOR_HORIZONTAL_WIDTH
@@ -23,7 +26,7 @@ from core.gui.util import create_editable_text
 from core.gui.util import rotate_connector_flags
 from Tkinter import CENTER
 
-class Pin(Drawable):
+class Pin_Drawable(Drawable):
   """
   Drawable to represent pins: power and ground.
   """
@@ -43,30 +46,51 @@ class Pin(Drawable):
         oy + self.height / 2, text=self.text, fill=PIN_TEXT_COLOR,
         width=self.width, justify=CENTER))
 
-class Power(Pin):
+class Power_Drawable(Pin_Drawable):
   """
   Power pin.
   """
   def __init__(self, width=PIN_HORIZONTAL_WIDTH, height=PIN_HORIZONTAL_HEIGHT,
       connectors=PIN_RIGHT_CONNECTORS):
-    Pin.__init__(self, '+%d' % POWER, POSITIVE_COLOR, width, height,
+    Pin_Drawable.__init__(self, '+%d' % POWER, POSITIVE_COLOR, width, height,
         connectors)
   def rotated(self):
-    return Power(self.height, self.width,
+    return Power_Drawable(self.height, self.width,
         rotate_connector_flags(self.connector_flags))
 
-class Ground(Pin):
+class Ground_Drawable(Pin_Drawable):
   """
   Ground pin.
   """
   def __init__(self, width=PIN_HORIZONTAL_WIDTH, height=PIN_HORIZONTAL_HEIGHT,
       connectors=PIN_RIGHT_CONNECTORS):
-    Pin.__init__(self, GROUND, NEGATIVE_COLOR, width, height, connectors)
+    Pin_Drawable.__init__(self, GROUND, NEGATIVE_COLOR, width, height,
+        connectors)
   def rotated(self):
-    return Ground(self.height, self.width,
+    return Ground_Drawable(self.height, self.width,
         rotate_connector_flags(self.connector_flags))
 
-class Resistor(Drawable):
+class Probe_Plus_Drawable(Pin_Drawable):
+  """
+  TODO(mikemeko)
+  """
+  def __init__(self, connectors=PIN_RIGHT_CONNECTORS):
+    Pin_Drawable.__init__(self, PROBE_PLUS, POSITIVE_COLOR, PROBE_SIZE,
+        PROBE_SIZE, connectors)
+  def rotated(self):
+    return Probe_Plus_Drawable(rotate_connector_flags(self.connector_flags))
+
+class Probe_Minus_Drawable(Pin_Drawable):
+  """
+  TODO(mikemeko)
+  """
+  def __init__(self, connectors=PIN_RIGHT_CONNECTORS):
+    Pin_Drawable.__init__(self, PROBE_MINUS, NEGATIVE_COLOR, PROBE_SIZE,
+        PROBE_SIZE, connectors)
+  def rotated(self):
+    return Probe_Minus_Drawable(rotate_connector_flags(self.connector_flags))
+
+class Resistor_Drawable(Drawable):
   """
   Drawable for Resistors.
   """
@@ -81,6 +105,9 @@ class Resistor(Drawable):
   def draw_on(self, canvas, offset=(0, 0)):
     ox, oy = offset
     w, h = self.width, self.height
+    # TODO(mikemeko): constants?
+    self.parts.add(canvas.create_rectangle(ox, oy, ox + w, oy + h,
+        fill='white', outline='grey'))
     if w > h: # horizontal
       s = w / (2 * RESISTOR_NUM_ZIG_ZAGS)
       self.parts.add(canvas.create_line(ox, oy + h / 2, ox + s, oy))
@@ -113,5 +140,5 @@ class Resistor(Drawable):
       return canvas.itemcget(resistor_text, 'text')
     self.get_resistance = get_resistance
   def rotated(self):
-    return Resistor(self.height, self.width,
+    return Resistor_Drawable(self.height, self.width,
         rotate_connector_flags(self.connector_flags), self.get_resistance())

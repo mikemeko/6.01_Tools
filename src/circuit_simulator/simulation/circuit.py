@@ -37,6 +37,8 @@ class Voltage_Source(One_Port):
     self.v0 = v0
   def equation(self):
     return [(1, self.n1), (-1, self.n2), (-self.v0, None)]
+  def __str__(self):
+    return 'Vsrc %s %s %s %f' % (self.n1, self.n2, self.i, self.v0)
 
 class Resistor(One_Port):
   """
@@ -50,6 +52,8 @@ class Resistor(One_Port):
     self.r = r
   def equation(self):
     return [(1, self.n1), (-1, self.n2), (-self.r, self.i)]
+  def __str__(self):
+    return 'Resistor %s %s %s %f' % (self.n1, self.n2, self.i, self.r)
 
 class Circuit:
   """
