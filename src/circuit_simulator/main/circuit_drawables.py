@@ -16,10 +16,12 @@ from constants import POWER_VOLTS
 from constants import PROBE_MINUS
 from constants import PROBE_PLUS
 from constants import PROBE_SIZE
+from constants import RESISTOR_FILL
 from constants import RESISTOR_HORIZONTAL_CONNECTORS
 from constants import RESISTOR_HORIZONTAL_HEIGHT
 from constants import RESISTOR_HORIZONTAL_WIDTH
 from constants import RESISTOR_NUM_ZIG_ZAGS
+from constants import RESISTOR_OUTLINE
 from constants import RESISTOR_TEXT_PADDING
 from constants import SIMULATE
 from core.gui.components import Drawable
@@ -30,7 +32,7 @@ from Tkinter import CENTER
 
 class Pin_Drawable(Drawable):
   """
-  Drawable to represent pins: power and ground.
+  Drawable to represent pins: power, ground, and probes.
   """
   def __init__(self, text, fill, width, height, connectors):
     """
@@ -74,7 +76,7 @@ class Ground_Drawable(Pin_Drawable):
 
 class Probe_Plus_Drawable(Pin_Drawable):
   """
-  TODO(mikemeko)
+  +probe pin.
   """
   def __init__(self, connectors=PIN_RIGHT_CONNECTORS):
     Pin_Drawable.__init__(self, PROBE_PLUS, POSITIVE_COLOR, PROBE_SIZE,
@@ -84,7 +86,7 @@ class Probe_Plus_Drawable(Pin_Drawable):
 
 class Probe_Minus_Drawable(Pin_Drawable):
   """
-  TODO(mikemeko)
+  -probe pin.
   """
   def __init__(self, connectors=PIN_RIGHT_CONNECTORS):
     Pin_Drawable.__init__(self, PROBE_MINUS, NEGATIVE_COLOR, PROBE_SIZE,
@@ -107,9 +109,8 @@ class Resistor_Drawable(Drawable):
   def draw_on(self, canvas, offset=(0, 0)):
     ox, oy = offset
     w, h = self.width, self.height
-    # TODO(mikemeko): constants?
     self.parts.add(canvas.create_rectangle(ox, oy, ox + w, oy + h,
-        fill='white', outline='grey'))
+        fill=RESISTOR_FILL, outline=RESISTOR_OUTLINE))
     if w > h: # horizontal
       s = w / (2 * RESISTOR_NUM_ZIG_ZAGS)
       self.parts.add(canvas.create_line(ox, oy + h / 2, ox + s, oy))

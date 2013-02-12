@@ -12,6 +12,8 @@ NEGATIVE_COLOR = 'blue'
 PIN_OUTLINE = 'black'
 PIN_TEXT_COLOR = 'white'
 POSITIVE_COLOR = 'red'
+RESISTOR_FILL = 'white'
+RESISTOR_OUTLINE = 'grey'
 
 # connector flags for circuit drawable components
 PIN_RIGHT_CONNECTORS = CONNECTOR_RIGHT
