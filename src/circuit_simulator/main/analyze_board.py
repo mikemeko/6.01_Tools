@@ -33,23 +33,8 @@ def run_analysis(board, analyze):
   board.remove_message()
   # elements of the circuit
   circuit_components = []
-  # first find ground node
-  gnd = None
-  for drawable in board.get_drawables():
-    nodes = [wire.label for wire in drawable.wires()]
-    # ground component
-    if isinstance(drawable, Ground_Drawable):
-      if len(nodes) != 1:
-        board.display_message('There must be exatly one wire connected to '
-            'ground component', ERROR)
-        return
-      gnd = nodes[0]
-      break
-  else:
-    board.display_message('No ground component found', ERROR)
-    return
-  # probe labels
-  probe_plus, probe_minus = None, None
+  # first find power and ground nodes
+  pwr, gnd = set(), set()
   for drawable in board.get_drawables():
     nodes = [wire.label for wire in drawable.wires()]
     # power component
@@ -58,23 +43,55 @@ def run_analysis(board, analyze):
         board.display_message('There must be exactly one wire connected to '
             'power component', ERROR)
         return
-      n1, n2 = nodes[0], gnd
-      circuit_components.append(Voltage_Source(n1, n2, current_name(drawable,
-          n1, n2), POWER))
+      pwr.add(nodes[0])
+    # ground component
+    if isinstance(drawable, Ground_Drawable):
+      if len(nodes) != 1:
+        board.display_message('There must be exatly one wire connected to '
+            'ground component', ERROR)
+        return
+      gnd.add(nodes[0])
+  if not pwr:
+    board.display_message('No power component found', ERROR)
+    return
+  if not gnd:
+    board.display_message('No ground component found', ERROR)
+    return
+  if pwr.intersection(gnd):
+    board.display_message('Short circuit', ERROR)
+    return
+  pwr_rep = iter(pwr).next()
+  gnd_rep = iter(gnd).next()
+  # add voltage source to circuit
+  circuit_components.append(Voltage_Source(pwr_rep, gnd_rep,
+      current_name(drawable, pwr_rep, gnd_rep), POWER))
+  def validate_node(node):
+    """
+    TODO(mikemeko)
+    """
+    if node in pwr:
+      return pwr_rep
+    elif node in gnd:
+      return gnd_rep
+    return node
+  # probe labels
+  probe_plus, probe_minus = None, None
+  for drawable in board.get_drawables():
+    nodes = [wire.label for wire in drawable.wires()]
     # probe plus
-    elif isinstance(drawable, Probe_Plus_Drawable):
+    if isinstance(drawable, Probe_Plus_Drawable):
       if len(nodes) != 1:
         board.display_message('There must be exactly one wire connected to '
             'probe plus component', ERROR)
         return
-      probe_plus = nodes[0]
+      probe_plus = validate_node(nodes[0])
     # probe minus
     elif isinstance(drawable, Probe_Minus_Drawable):
       if len(nodes) != 1:
         board.display_message('There must be exactly one wire connected to '
             'probe minus component', ERROR)
         return
-      probe_minus = nodes[0]
+      probe_minus = validate_node(nodes[0])
     # resistor component
     elif isinstance(drawable, Resistor_Drawable):
       if len(nodes) != 2:
@@ -86,7 +103,7 @@ def run_analysis(board, analyze):
       except:
         board.display_message('Could not obtain resistance constant', ERROR)
         return
-      n1, n2 = nodes
+      n1, n2 = map(validate_node, nodes)
       circuit_components.append(Resistor(n1, n2, current_name(drawable, n1,
           n2), r))
   # make sure either both or neither of the probes is present
@@ -94,5 +111,5 @@ def run_analysis(board, analyze):
     board.display_message('Either both or neither of the probes should be '
         'present', ERROR)
   # create and analyze circuit
-  circuit = Circuit(circuit_components, gnd)
+  circuit = Circuit(circuit_components, gnd_rep)
   analyze(circuit, probe_plus, probe_minus)
