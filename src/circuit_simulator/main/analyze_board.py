@@ -9,10 +9,12 @@ from circuit_drawables import Power_Drawable
 from circuit_drawables import Probe_Minus_Drawable
 from circuit_drawables import Probe_Plus_Drawable
 from circuit_drawables import Resistor_Drawable
-from constants import POWER
 from circuit_simulator.simulation.circuit import Circuit
 from circuit_simulator.simulation.circuit import Resistor
 from circuit_simulator.simulation.circuit import Voltage_Source
+from constants import GROUND
+from constants import POWER
+from constants import POWER_VOLTS
 from core.gui.board import Board
 from core.gui.constants import ERROR
 from core.gui.constants import WARNING
@@ -20,94 +22,101 @@ from core.util.util import is_callable
 
 def current_name(drawable, n1, n2):
   """
-  TODO(mikemeko)
+  Returns a unique name for the current through the given |drawable| going from
+      node |n1| to node |n2|.
   """
-  return '%s %s->%s' % (str(drawable), n1, n2)
+  return '%d %s->%s' % (id(drawable), n1, n2)
 
 def run_analysis(board, analyze):
   """
-  TODO(mikemeko)
+  Extracts a Circuit object from what is drawn on the given |board| and calls
+      the given function |analyze| on it. The funtion |analyze| should take as
+      arguments the circuit, as well as the labels for the positive and
+      negative probe, in that order.
   """
   assert isinstance(board, Board), 'board must be a Board'
   assert is_callable(analyze), 'analyze must be callable'
   # remove current message on board, if any
   board.remove_message()
-  # elements of the circuit
+  # components in the circuit
   circuit_components = []
-  # first find power and ground nodes
-  pwr, gnd = set(), set()
+  # first identify all power and ground nodes and use the same name for all
+  #     power nodes, as well as the same name for all ground nodes
+  power_nodes, ground_nodes = set(), set()
   for drawable in board.get_drawables():
+    # wires attached to this component
     nodes = [wire.label for wire in drawable.wires()]
     # power component
     if isinstance(drawable, Power_Drawable):
       if len(nodes) != 1:
-        board.display_message('There must be exactly one wire connected to '
-            'power component', ERROR)
+        board.display_message('Power component must be connected to 1 wire',
+            ERROR)
         return
-      pwr.add(nodes[0])
+      power_nodes.add(nodes[0])
     # ground component
     if isinstance(drawable, Ground_Drawable):
       if len(nodes) != 1:
-        board.display_message('There must be exatly one wire connected to '
-            'ground component', ERROR)
+        board.display_message('Ground component must be connected to 1 wire',
+            ERROR)
         return
-      gnd.add(nodes[0])
-  if not pwr:
-    board.display_message('No power component found', ERROR)
+      ground_nodes.add(nodes[0])
+  # ensure that there is at least one power component
+  if not power_nodes:
+    board.display_message('No power components', ERROR)
     return
-  if not gnd:
-    board.display_message('No ground component found', ERROR)
+  # ensure that there is at least one ground component
+  if not ground_nodes:
+    board.display_message('No ground components', ERROR)
     return
-  if pwr.intersection(gnd):
+  # ensure that power nodes and ground nodes are disjoint (no short circuit)
+  if power_nodes.intersection(ground_nodes):
     board.display_message('Short circuit', ERROR)
     return
-  pwr_rep = iter(pwr).next()
-  gnd_rep = iter(gnd).next()
   # add voltage source to circuit
-  circuit_components.append(Voltage_Source(pwr_rep, gnd_rep,
-      current_name(drawable, pwr_rep, gnd_rep), POWER))
-  def validate_node(node):
+  circuit_components.append(Voltage_Source(POWER, GROUND,
+      current_name(drawable, POWER, GROUND), POWER_VOLTS))
+  def maybe_rename_node(node):
     """
-    TODO(mikemeko)
+    If this node is a power node or a ground node, this method returns the
+        appropriate name, otherwise the original name is returned.
     """
-    if node in pwr:
-      return pwr_rep
-    elif node in gnd:
-      return gnd_rep
+    if node in power_nodes:
+      return POWER
+    elif node in ground_nodes:
+      return GROUND
     return node
   # probe labels
   probe_plus, probe_minus = None, None
   for drawable in board.get_drawables():
+    # wires attached to this component
     nodes = [wire.label for wire in drawable.wires()]
-    # probe plus
+    # probe plus component
     if isinstance(drawable, Probe_Plus_Drawable):
       if len(nodes) != 1:
-        board.display_message('There must be exactly one wire connected to '
-            'probe plus component', ERROR)
+        board.display_message('+probe must be connected to 1 wire', ERROR)
         return
-      probe_plus = validate_node(nodes[0])
-    # probe minus
+      probe_plus = maybe_rename_node(nodes[0])
+    # probe minus component
     elif isinstance(drawable, Probe_Minus_Drawable):
       if len(nodes) != 1:
-        board.display_message('There must be exactly one wire connected to '
-            'probe minus component', ERROR)
+        board.display_message('-probe must be connected to 1 wire', ERROR)
         return
-      probe_minus = validate_node(nodes[0])
+      probe_minus = maybe_rename_node(nodes[0])
     # resistor component
     elif isinstance(drawable, Resistor_Drawable):
       if len(nodes) != 2:
-        board.display_message('There must be exactly two wires connected to '
-            'resistor component', ERROR)
+        board.display_message('Resistor must be connected to 2 wires', ERROR)
         return
+      # get its resistance
       try:
         r = float(drawable.get_resistance())
       except:
         board.display_message('Could not obtain resistance constant', ERROR)
         return
-      n1, n2 = map(validate_node, nodes)
+      n1, n2 = map(maybe_rename_node, nodes)
       circuit_components.append(Resistor(n1, n2, current_name(drawable, n1,
           n2), r))
-  # make sure either both or neither of the probes is present
+  # make sure both of the probes are present
   if not probe_plus and not probe_minus:
     board.display_message('No probes', WARNING)
   elif not probe_plus:
@@ -116,5 +125,5 @@ def run_analysis(board, analyze):
     board.display_message('No -probe', WARNING)
   else:
     # create and analyze circuit
-    circuit = Circuit(circuit_components, gnd_rep)
+    circuit = Circuit(circuit_components, GROUND)
     analyze(circuit, probe_plus, probe_minus)

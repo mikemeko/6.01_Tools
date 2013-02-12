@@ -31,9 +31,9 @@ if __name__ == '__main__':
     """
     assert probe_plus and probe_minus, 'no probes provided for analysis'
     if probe_plus not in circuit.data:
-      board.display_message('Plus probe is disconnected', WARNING)
+      board.display_message('+probe is disconnected', WARNING)
     elif probe_minus not in circuit.data:
-      board.display_message('Minus probe is disconnected', WARNING)
+      board.display_message('-probe is disconnected', WARNING)
     else:
       probe_difference = circuit.data[probe_plus] - circuit.data[probe_minus]
       board.display_message('%.3f V' % probe_difference, message_type=INFO,

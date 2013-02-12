@@ -12,7 +12,7 @@ from constants import PIN_OUTLINE
 from constants import PIN_RIGHT_CONNECTORS
 from constants import PIN_TEXT_COLOR
 from constants import POSITIVE_COLOR
-from constants import POWER
+from constants import POWER_VOLTS
 from constants import PROBE_MINUS
 from constants import PROBE_PLUS
 from constants import PROBE_SIZE
@@ -54,8 +54,8 @@ class Power_Drawable(Pin_Drawable):
   """
   def __init__(self, width=PIN_HORIZONTAL_WIDTH, height=PIN_HORIZONTAL_HEIGHT,
       connectors=PIN_RIGHT_CONNECTORS):
-    Pin_Drawable.__init__(self, '+%d' % POWER, POSITIVE_COLOR, width, height,
-        connectors)
+    Pin_Drawable.__init__(self, '+%d' % POWER_VOLTS, POSITIVE_COLOR, width,
+        height, connectors)
   def rotated(self):
     return Power_Drawable(self.height, self.width,
         rotate_connector_flags(self.connector_flags))
