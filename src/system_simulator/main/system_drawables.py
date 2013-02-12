@@ -26,15 +26,11 @@ from constants import IO_FILL
 from constants import IO_OUTLINE
 from constants import IO_SIZE
 from constants import PZD
-from constants import RUN_RECT_FILL
-from constants import RUN_RECT_OUTLINE
-from constants import RUN_RECT_SIZE
-from constants import RUN_TEXT_ACTIVE_FILL
-from constants import RUN_TEXT_FILL
 from constants import USR
 from constants import X_CONNECTORS
 from constants import Y_CONNECTORS
 from core.gui.components import Drawable
+from core.gui.components import Run_Drawable
 from core.gui.util import create_editable_text
 from core.gui.util import rotate_connector_flags
 from core.util.util import is_callable
@@ -178,21 +174,6 @@ class IO_Y_Drawable(IO_Drawable):
   """
   def __init__(self):
     IO_Drawable.__init__(self, Y, Y_CONNECTORS)
-
-class Run_Drawable(Drawable):
-  """
-  Abstract Drawable to serve as a "Run" button.
-  """
-  def __init__(self, text):
-    Drawable.__init__(self, RUN_RECT_SIZE, RUN_RECT_SIZE)
-    self.text = text
-  def draw_on(self, canvas, offset=(0, 0)):
-    ox, oy = offset
-    self.parts.add(canvas.create_rectangle((ox, oy, ox + RUN_RECT_SIZE,
-        oy + RUN_RECT_SIZE), fill=RUN_RECT_FILL, outline=RUN_RECT_OUTLINE))
-    self.parts.add(canvas.create_text(ox + RUN_RECT_SIZE / 2, oy +
-        RUN_RECT_SIZE / 2, text=self.text, fill=RUN_TEXT_FILL,
-        activefill=RUN_TEXT_ACTIVE_FILL))
 
 class PZD_Run_Drawable(Run_Drawable):
   """

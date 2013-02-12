@@ -18,10 +18,6 @@ GAIN_FILL = '#93E1D4'
 GAIN_OUTLINE = 'black'
 IO_FILL = '#BBB'
 IO_OUTLINE = 'black'
-RUN_RECT_FILL = 'white'
-RUN_RECT_OUTLINE = 'black'
-RUN_TEXT_ACTIVE_FILL = 'red'
-RUN_TEXT_FILL = 'black'
 
 # connector flags for system drawable components
 ADDER_CONNECTORS = CONNECTOR_LEFT | CONNECTOR_RIGHT
@@ -41,7 +37,6 @@ GAIN_RIGHT_VERTICES = (0, 0, 0, 40, 40, 20) # pointing right
 GAIN_UP_VERTICES = (20, 0, 0, 40, 40, 40) # pointing up
 IO_PADDING = 40
 IO_SIZE = 20
-RUN_RECT_SIZE = 40
 
 # text
 ADDER_MARK = 'Adder'

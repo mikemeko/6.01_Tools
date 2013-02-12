@@ -10,11 +10,13 @@ from circuit_drawables import Power_Drawable
 from circuit_drawables import Probe_Minus_Drawable
 from circuit_drawables import Probe_Plus_Drawable
 from circuit_drawables import Resistor_Drawable
+from circuit_drawables import Simulate_Run_Drawable
 from constants import APP_NAME
 from constants import DEV_STAGE
 from core.gui.board import Board
 from core.gui.constants import INFO
 from core.gui.constants import LEFT
+from core.gui.constants import RIGHT
 from core.gui.constants import WARNING
 from core.gui.palette import Palette
 from Tkinter import Tk
@@ -23,6 +25,19 @@ if __name__ == '__main__':
   # create root
   root = Tk()
   root.resizable(0, 0)
+  def analyze(circuit, probe_plus, probe_minus):
+    """
+    TODO(mikemeko)
+    """
+    assert probe_plus and probe_minus, 'no probes provided for analysis'
+    if probe_plus not in circuit.data:
+      board.display_message('Plus probe is disconnected', WARNING)
+    elif probe_minus not in circuit.data:
+      board.display_message('Minus probe is disconnected', WARNING)
+    else:
+      probe_difference = circuit.data[probe_plus] - circuit.data[probe_minus]
+      board.display_message('%.3f V' % probe_difference, message_type=INFO,
+          auto_remove=False)
   # create empty board
   board = Board(root, directed_wires=False)
   # create palette
@@ -35,19 +50,10 @@ if __name__ == '__main__':
       disregard_location=True)
   palette.add_drawable_type(Probe_Plus_Drawable, LEFT, None,
       disregard_location=True)
-  def analyze(circuit, probe_plus, probe_minus):
-    """
-    TODO(mikemeko)
-    """
-    if probe_plus and probe_minus:
-      if probe_plus not in circuit.data:
-        board.display_message('Plus probe is disconnected', WARNING)
-      elif probe_minus not in circuit.data:
-        board.display_message('Minus probe is disconnected', WARNING)
-      else:
-        probe_difference = circuit.data[probe_plus] - circuit.data[probe_minus]
-        board.display_message('%sV' % probe_difference, message_type=INFO,
-            auto_remove=False)
+  # add button to simulate circuit
+  palette.add_drawable_type(Simulate_Run_Drawable, RIGHT,
+      lambda event: run_analysis(board, analyze))
+  # shortcuts
   board.add_key_binding('a', lambda: run_analysis(board, analyze))
   # set title
   root.title('%s (%s)' % (APP_NAME, DEV_STAGE))

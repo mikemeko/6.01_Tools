@@ -13,6 +13,11 @@ from constants import CONNECTOR_RIGHT
 from constants import CONNECTOR_TAG
 from constants import CONNECTOR_TOP
 from constants import DISPLAY_WIRE_LABELS
+from constants import RUN_RECT_FILL
+from constants import RUN_RECT_OUTLINE
+from constants import RUN_RECT_SIZE
+from constants import RUN_TEXT_ACTIVE_FILL
+from constants import RUN_TEXT_FILL
 from util import create_circle
 from util import create_wire
 from util import snap
@@ -288,3 +293,18 @@ class Wire_Connector_Drawable(Drawable):
   def draw_on(self, canvas, offset=(0, 0)):
     # nothing to draw
     pass
+
+class Run_Drawable(Drawable):
+  """
+  Abstract Drawable to serve as a "Run" button.
+  """
+  def __init__(self, text):
+    Drawable.__init__(self, RUN_RECT_SIZE, RUN_RECT_SIZE)
+    self.text = text
+  def draw_on(self, canvas, offset=(0, 0)):
+    ox, oy = offset
+    self.parts.add(canvas.create_rectangle((ox, oy, ox + RUN_RECT_SIZE,
+        oy + RUN_RECT_SIZE), fill=RUN_RECT_FILL, outline=RUN_RECT_OUTLINE))
+    self.parts.add(canvas.create_text(ox + RUN_RECT_SIZE / 2, oy +
+        RUN_RECT_SIZE / 2, text=self.text, fill=RUN_TEXT_FILL,
+        activefill=RUN_TEXT_ACTIVE_FILL))

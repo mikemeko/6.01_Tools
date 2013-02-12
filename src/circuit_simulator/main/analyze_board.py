@@ -1,5 +1,5 @@
 """
-TODO(mikemeko)
+Contains the method to analyze the circuit drawn on a board.
 """
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
@@ -15,6 +15,7 @@ from circuit_simulator.simulation.circuit import Resistor
 from circuit_simulator.simulation.circuit import Voltage_Source
 from core.gui.board import Board
 from core.gui.constants import ERROR
+from core.gui.constants import WARNING
 from core.util.util import is_callable
 
 def current_name(drawable, n1, n2):
@@ -107,9 +108,13 @@ def run_analysis(board, analyze):
       circuit_components.append(Resistor(n1, n2, current_name(drawable, n1,
           n2), r))
   # make sure either both or neither of the probes is present
-  if (probe_plus and not probe_minus) or (not probe_plus and probe_minus):
-    board.display_message('Either both or neither of the probes should be '
-        'present', ERROR)
-  # create and analyze circuit
-  circuit = Circuit(circuit_components, gnd_rep)
-  analyze(circuit, probe_plus, probe_minus)
+  if not probe_plus and not probe_minus:
+    board.display_message('No probes', WARNING)
+  elif not probe_plus:
+    board.display_message('No +probe', WARNING)
+  elif not probe_minus:
+    board.display_message('No -probe', WARNING)
+  else:
+    # create and analyze circuit
+    circuit = Circuit(circuit_components, gnd_rep)
+    analyze(circuit, probe_plus, probe_minus)

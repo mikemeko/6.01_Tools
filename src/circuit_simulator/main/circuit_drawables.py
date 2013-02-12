@@ -21,7 +21,9 @@ from constants import RESISTOR_HORIZONTAL_HEIGHT
 from constants import RESISTOR_HORIZONTAL_WIDTH
 from constants import RESISTOR_NUM_ZIG_ZAGS
 from constants import RESISTOR_TEXT_PADDING
+from constants import SIMULATE
 from core.gui.components import Drawable
+from core.gui.components import Run_Drawable
 from core.gui.util import create_editable_text
 from core.gui.util import rotate_connector_flags
 from Tkinter import CENTER
@@ -142,3 +144,10 @@ class Resistor_Drawable(Drawable):
   def rotated(self):
     return Resistor_Drawable(self.height, self.width,
         rotate_connector_flags(self.connector_flags), self.get_resistance())
+
+class Simulate_Run_Drawable(Run_Drawable):
+  """
+  Drawable to surve as a button to simulate circuit.
+  """
+  def __init__(self):
+    Run_Drawable.__init__(self, SIMULATE)
