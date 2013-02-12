@@ -27,13 +27,14 @@ if __name__ == '__main__':
   root.resizable(0, 0)
   def analyze(circuit, probe_plus, probe_minus):
     """
-    TODO(mikemeko)
+    Displays a message on the board showing the voltage difference between
+        nodes |probe_plus| and |probe_minus| of the given |circuit|.
     """
-    assert probe_plus and probe_minus, 'no probes provided for analysis'
+    assert probe_plus and probe_minus, 'need both +probe and -probs'
     if probe_plus not in circuit.data:
-      board.display_message('+probe is disconnected', WARNING)
+      board.display_message('+probe is disconnected from circuit', WARNING)
     elif probe_minus not in circuit.data:
-      board.display_message('-probe is disconnected', WARNING)
+      board.display_message('-probe is disconnected from circuit', WARNING)
     else:
       probe_difference = circuit.data[probe_plus] - circuit.data[probe_minus]
       board.display_message('%.3f V' % probe_difference, message_type=INFO,
@@ -43,12 +44,12 @@ if __name__ == '__main__':
   # create palette
   palette = Palette(root, board)
   # add circuit components to palette
-  palette.add_drawable_type(Ground_Drawable, LEFT, None)
   palette.add_drawable_type(Power_Drawable, LEFT, None)
+  palette.add_drawable_type(Ground_Drawable, LEFT, None)
   palette.add_drawable_type(Resistor_Drawable, LEFT, None)
-  palette.add_drawable_type(Probe_Minus_Drawable, LEFT, None,
-      disregard_location=True)
   palette.add_drawable_type(Probe_Plus_Drawable, LEFT, None,
+      disregard_location=True)
+  palette.add_drawable_type(Probe_Minus_Drawable, LEFT, None,
       disregard_location=True)
   # add button to simulate circuit
   palette.add_drawable_type(Simulate_Run_Drawable, RIGHT,

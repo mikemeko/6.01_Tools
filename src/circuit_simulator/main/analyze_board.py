@@ -93,13 +93,13 @@ def run_analysis(board, analyze):
     # probe plus component
     if isinstance(drawable, Probe_Plus_Drawable):
       if len(nodes) != 1:
-        board.display_message('+probe must be connected to 1 wire', ERROR)
+        board.display_message('+probe must be connected to 1 wire', WARNING)
         return
       probe_plus = maybe_rename_node(nodes[0])
     # probe minus component
     elif isinstance(drawable, Probe_Minus_Drawable):
       if len(nodes) != 1:
-        board.display_message('-probe must be connected to 1 wire', ERROR)
+        board.display_message('-probe must be connected to 1 wire', WARNING)
         return
       probe_minus = maybe_rename_node(nodes[0])
     # resistor component
