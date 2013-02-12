@@ -1,7 +1,7 @@
 """
 GUI tool on which several items may be drawn. Supports dragging the items
-    around, connecting the items with wires, deleting items, and ...
-    TODO(mikemeko).
+    around, connecting the items with wires, deleting items, rotating items,
+    and displaying messages.
 """
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
@@ -128,6 +128,7 @@ class Board(Frame):
     |point|: a tuple of the form (x, y) indicating a location on the canvas.
     Returns the drawable located at canvas location |point|, or None if no such
         item exists.
+    TODO(mikemeko): should return the topmost such drawable.
     """
     for drawable in self.get_drawables():
       if point_inside_bbox(point, drawable.bounding_box(
@@ -139,6 +140,7 @@ class Board(Frame):
     |point|: a tuple of the form (x, y) indicating a location on the canvas.
     Returns the connector located at canvas location |point|, or None if no
         such connector exists.
+    TODO(mikemeko): should return the topmost such connector.
     """
     for drawable in self.get_drawables():
       for connector in drawable.connectors:
@@ -151,10 +153,9 @@ class Board(Frame):
     Returns the wire with id |canvas_id|, or None if no such wire exists.
     """
     for drawable in self.get_drawables():
-      for connector in drawable.connectors:
-        for wire in connector.wires():
-          if canvas_id in wire.parts:
-            return wire
+      for wire in drawable.wires():
+        if canvas_id in wire.parts:
+          return wire
     return None
   def _drag_press(self, event):
     """
@@ -232,7 +233,7 @@ class Board(Frame):
     end_connector.lift(self._canvas)
   def _new_wire_label(self):
     """
-    TODO(mikemeko)
+    Returns a new wire label that has not yet been used.
     """
     label = str(self._wire_labeler)
     self._wire_labeler += 1
@@ -240,10 +241,10 @@ class Board(Frame):
   def _update_labels(self, connector, label):
     """
     If |connector| is a wire connector, this method updates the labels on
-    it, the wires that start at it, and all following wire connectors.
-    TODO(mikemeko)
+        it and on all wires and wire connectors that are connected to it.
     """
-    if isinstance(connector.drawable, Wire_Connector_Drawable):
+    if isinstance(connector.drawable, Wire_Connector_Drawable) and (
+        connector.drawable.label is not label):
       connector.drawable.label = label
       for wire in connector.wires():
         if wire.label is not label:
@@ -486,6 +487,7 @@ class Board(Frame):
     Sets the changed status of this board.
     """
     assert isinstance(changed, bool), 'changed must be a bool'
+    self.remove_message()
     self._changed = changed
     if self._on_changed:
       self._on_changed(changed)

@@ -223,7 +223,8 @@ class Wire:
     self.directed = directed
   def other_connector(self, connector):
     """
-    TODO(mikemeko)
+    Returns the connector on this wire on the opposite end of the given
+        |connector|, which must be one of the two connectors for this wire.
     """
     if connector is self.start_connector:
       return self.end_connector
@@ -253,7 +254,8 @@ class Wire:
     self._maybe_delete_empty_wire_connector(canvas, self.end_connector)
   def _draw_label(self, canvas):
     """
-    TODO(mikemeko)
+    Draws the label of this wire. This is only done if the DISPLAY_WIRE_LABELS
+        flag is set, and may be useful for debugging.
     """
     if DISPLAY_WIRE_LABELS:
       x1, y1 = self.start_connector.center
@@ -273,7 +275,7 @@ class Wire:
     self.parts = create_wire(canvas, x1, y1, x2, y2, self.directed)
     # redraw label
     self._draw_label(canvas)
-    # TODO(mikemeko)
+    # lift connectors to make it easy to draw other wires
     self.start_connector.lift(canvas)
     self.end_connector.lift(canvas)
 

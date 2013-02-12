@@ -45,8 +45,9 @@ class Palette(Frame):
       **kwargs):
     """
     Returns a callback method that, when called, adds an item of the given
-        |drawable_type| to the board.
-    TODO(mikemeko)
+        |drawable_type| to the board. Does not allow adding duplicated items
+        to the board. If |disregard_location| is True, location is disregarded
+        on duplicate test.
     """
     assert issubclass(drawable_type, Drawable), ('drawable must be a Drawable '
         'subclass')
@@ -74,8 +75,9 @@ class Palette(Frame):
         RIGHT).
     |callback|: method to call when display item is clicked. If None, the
         default callback adds an item of the display type to the board.
+    |disregard_location|: when checking for duplicates on the board, if this
+        flag is set, the locations of drawables will be disregarded.
     |*args, **kwargs|: extra arguments needed to initialize the drawable type.
-    TODO(mikemeko)
     """
     assert issubclass(drawable_type, Drawable), ('drawable must be a Drawable '
         'subclass')
