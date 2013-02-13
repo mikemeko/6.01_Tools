@@ -70,18 +70,14 @@ def create_editable_text(canvas, x, y, text='?', on_text_changed=lambda:None):
     elif event.keysym == 'Left':
       canvas.icursor(text_box, insert - 1)
       canvas.select_clear()
+    elif event.keysym in ('Escape', 'Return'):
+      canvas.select_clear()
+      canvas.focus('')
     text_after_key = canvas.itemcget(text_box, 'text')
     # callback if text is changed
     if text_before_key != text_after_key:
       on_text_changed()
   canvas.tag_bind(text_box, '<Key>', handle_key)
-  def release_focus(event):
-    """
-    Releases focus from the text box when editting is done.
-    """
-    canvas.select_clear()
-    canvas.focus('')
-  canvas.tag_bind(text_box, '<Return>', release_focus)
   return text_box
 
 def create_circle(canvas, x, y, r, *args, **kwargs):
