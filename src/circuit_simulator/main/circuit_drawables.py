@@ -28,6 +28,7 @@ from core.gui.components import Drawable
 from core.gui.components import Run_Drawable
 from core.gui.util import create_editable_text
 from core.gui.util import rotate_connector_flags
+from core.util.util import is_callable
 from Tkinter import CENTER
 
 class Pin_Drawable(Drawable):
@@ -98,13 +99,17 @@ class Resistor_Drawable(Drawable):
   """
   Drawable for Resistors.
   """
-  def __init__(self, width=RESISTOR_HORIZONTAL_WIDTH,
+  def __init__(self, on_resistance_changed, width=RESISTOR_HORIZONTAL_WIDTH,
       height=RESISTOR_HORIZONTAL_HEIGHT,
       connectors=RESISTOR_HORIZONTAL_CONNECTORS, init_resistance=1):
     """
+    |on_resistance_changed|: function to be called when resistance is changed.
     |init_resistance|: the initial resistance for this resistor.
     """
+    assert is_callable(on_resistance_changed), ('on_resistance_changed must be'
+        ' callable')
     Drawable.__init__(self, width, height, connectors)
+    self.on_resistance_changed = on_resistance_changed
     self.init_resistance = init_resistance
   def draw_on(self, canvas, offset=(0, 0)):
     ox, oy = offset
@@ -121,7 +126,8 @@ class Resistor_Drawable(Drawable):
             ox + 2 * i * s, oy + h))
       self.parts.add(canvas.create_line(ox + w, oy  + h / 2, ox + w - s, oy))
       resistor_text = create_editable_text(canvas, ox + w / 2,
-          oy - RESISTOR_TEXT_PADDING, text=self.init_resistance)
+          oy - RESISTOR_TEXT_PADDING, text=self.init_resistance,
+          on_text_changed=self.on_resistance_changed)
     else: # vertical
       s = h / (2 * RESISTOR_NUM_ZIG_ZAGS)
       self.parts.add(canvas.create_line(ox + w / 2, oy, ox + w, oy + s))
@@ -143,8 +149,9 @@ class Resistor_Drawable(Drawable):
       return canvas.itemcget(resistor_text, 'text')
     self.get_resistance = get_resistance
   def rotated(self):
-    return Resistor_Drawable(self.height, self.width,
-        rotate_connector_flags(self.connector_flags), self.get_resistance())
+    return Resistor_Drawable(self.on_resistance_changed, self.height,
+        self.width, rotate_connector_flags(self.connector_flags),
+        self.get_resistance())
 
 class Simulate_Run_Drawable(Run_Drawable):
   """
