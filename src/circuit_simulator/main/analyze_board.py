@@ -103,6 +103,8 @@ def run_analysis(board, analyze):
         return
       probe_minus = maybe_rename_node(nodes[0])
     # resistor component
+    # TODO(mikemeko): better check for resistor connections (exactly one node
+    #     on each end of the resistor)
     elif isinstance(drawable, Resistor_Drawable):
       if len(nodes) != 2:
         board.display_message('Resistor must be connected to 2 wires', ERROR)
