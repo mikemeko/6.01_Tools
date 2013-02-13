@@ -140,7 +140,8 @@ class Resistor_Drawable(Drawable):
           oy + h - s))
       resistor_text = create_editable_text(canvas,
           ox + w + RESISTOR_TEXT_PADDING, oy + h / 2,
-          text=self.init_resistance)
+          text=self.init_resistance,
+          on_text_changed=self.on_resistance_changed)
     self.parts.add(resistor_text)
     def get_resistance():
       """
