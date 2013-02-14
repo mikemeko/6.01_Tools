@@ -6,6 +6,7 @@ __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
 from analyze_board import run_analysis
 from circuit_drawables import Ground_Drawable
+from circuit_drawables import Op_Amp_Drawable
 from circuit_drawables import Power_Drawable
 from circuit_drawables import Probe_Minus_Drawable
 from circuit_drawables import Probe_Plus_Drawable
@@ -13,6 +14,7 @@ from circuit_drawables import Resistor_Drawable
 from circuit_drawables import Simulate_Run_Drawable
 from constants import APP_NAME
 from constants import DEV_STAGE
+from constants import PALETTE_HEIGHT
 from core.gui.board import Board
 from core.gui.constants import INFO
 from core.gui.constants import LEFT
@@ -42,12 +44,13 @@ if __name__ == '__main__':
   # create empty board
   board = Board(root, directed_wires=False)
   # create palette
-  palette = Palette(root, board)
+  palette = Palette(root, board, height=PALETTE_HEIGHT)
   # add circuit components to palette
   palette.add_drawable_type(Power_Drawable, LEFT, None)
   palette.add_drawable_type(Ground_Drawable, LEFT, None)
   palette.add_drawable_type(Resistor_Drawable, LEFT, None,
       on_resistance_changed=lambda: board.set_changed(True))
+  palette.add_drawable_type(Op_Amp_Drawable, LEFT, None)
   palette.add_drawable_type(Probe_Plus_Drawable, LEFT, None,
       disregard_location=True)
   palette.add_drawable_type(Probe_Minus_Drawable, LEFT, None,

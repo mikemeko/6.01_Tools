@@ -6,6 +6,14 @@ __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
 from constants import GROUND
 from constants import NEGATIVE_COLOR
+from constants import OP_AMP_CONNECTOR_PADDING
+from constants import OP_AMP_DOWN_VERTICES
+from constants import OP_AMP_FILL
+from constants import OP_AMP_LEFT_VERTICES
+from constants import OP_AMP_OUTLINE
+from constants import OP_AMP_RIGHT_VERTICES
+from constants import OP_AMP_SIGN_PADDING
+from constants import OP_AMP_UP_VERTICES
 from constants import PIN_HORIZONTAL_HEIGHT
 from constants import PIN_HORIZONTAL_WIDTH
 from constants import PIN_OUTLINE
@@ -153,6 +161,87 @@ class Resistor_Drawable(Drawable):
     return Resistor_Drawable(self.on_resistance_changed, self.height,
         self.width, rotate_connector_flags(self.connector_flags),
         self.get_resistance())
+
+class Op_Amp_Drawable(Drawable):
+  """
+  TODO(mikemeko)
+  """
+  def __init__(self, vertices=OP_AMP_RIGHT_VERTICES):
+    """
+    TODO(mikemeko)
+    """
+    assert vertices in (OP_AMP_RIGHT_VERTICES, OP_AMP_DOWN_VERTICES,
+        OP_AMP_LEFT_VERTICES, OP_AMP_UP_VERTICES), 'invalid op amp vertices'
+    self.vertices = vertices
+    x1, y1, x2, y2, x3, y3 = vertices
+    min_x, max_x = [f(x1, x2, x3) for f in min, max]
+    min_y, max_y = [f(y1, y2, y3) for f in min, max]
+    Drawable.__init__(self, max_x - min_x, max_y - min_y)
+  def draw_on(self, canvas, offset=(0, 0)):
+    x1, y1, x2, y2, x3, y3 = self.vertices
+    ox, oy = offset
+    x1, x2, x3 = x1 + ox, x2 + ox, x3 + ox
+    y1, y2, y3 = y1 + oy, y2 + oy, y3 + oy
+    self.parts.add(canvas.create_polygon(x1, y1, x2, y2, x3, y3,
+        fill=OP_AMP_FILL, outline=OP_AMP_OUTLINE))
+    if self.vertices == OP_AMP_RIGHT_VERTICES:
+      self.parts.add(canvas.create_text(x1 + OP_AMP_SIGN_PADDING,
+          y1 + OP_AMP_CONNECTOR_PADDING, text='+'))
+      self.parts.add(canvas.create_text(x2 + OP_AMP_SIGN_PADDING,
+          y2 - OP_AMP_CONNECTOR_PADDING, text='-'))
+    elif self.vertices == OP_AMP_DOWN_VERTICES:
+      self.parts.add(canvas.create_text(x3 - OP_AMP_CONNECTOR_PADDING,
+          y3 + OP_AMP_SIGN_PADDING, text='+'))
+      self.parts.add(canvas.create_text(x1 + OP_AMP_CONNECTOR_PADDING,
+          y1 + OP_AMP_SIGN_PADDING, text='-'))
+    elif self.vertices == OP_AMP_LEFT_VERTICES:
+      self.parts.add(canvas.create_text(x2 - OP_AMP_SIGN_PADDING,
+          y2 - OP_AMP_CONNECTOR_PADDING, text='+'))
+      self.parts.add(canvas.create_text(x3 - OP_AMP_SIGN_PADDING,
+          y3 + OP_AMP_CONNECTOR_PADDING, text='-'))
+    else: # OP_AMP_UP_VERTICES
+      self.parts.add(canvas.create_text(x2 + OP_AMP_CONNECTOR_PADDING,
+          y2 - OP_AMP_SIGN_PADDING, text='+'))
+      self.parts.add(canvas.create_text(x3 - OP_AMP_CONNECTOR_PADDING,
+          y3 - OP_AMP_SIGN_PADDING, text='-'))
+  def draw_connectors(self, canvas, offset=(0, 0)):
+    x1, y1, x2, y2, x3, y3 = self.vertices
+    ox, oy = offset
+    x1, x2, x3 = x1 + ox, x2 + ox, x3 + ox
+    y1, y2, y3 = y1 + oy, y2 + oy, y3 + oy
+    if self.vertices == OP_AMP_RIGHT_VERTICES:
+      self.plus_port = self._draw_connector(canvas, (x1,
+          y1 + OP_AMP_CONNECTOR_PADDING))
+      self.minus_port = self._draw_connector(canvas, (x2,
+          y2 - OP_AMP_CONNECTOR_PADDING))
+      self.out_port = self._draw_connector(canvas, (x3, y3))
+    elif self.vertices == OP_AMP_DOWN_VERTICES:
+      self.plus_port = self._draw_connector(canvas,
+          (x3 - OP_AMP_CONNECTOR_PADDING, y3))
+      self.minus_port = self._draw_connector(canvas,
+          (x1 + OP_AMP_CONNECTOR_PADDING, y1))
+      self.out_port = self._draw_connector(canvas, (x2, y2))
+    elif self.vertices == OP_AMP_LEFT_VERTICES:
+      self.plus_port = self._draw_connector(canvas, (x2,
+          y2 - OP_AMP_CONNECTOR_PADDING))
+      self.minus_port = self._draw_connector(canvas, (x3,
+          y3 + OP_AMP_CONNECTOR_PADDING))
+      self.out_port = self._draw_connector(canvas, (x1, y1))
+    else: # OP_AMP_UP_VERTICES
+      self.plus_port = self._draw_connector(canvas,
+          (x2 + OP_AMP_CONNECTOR_PADDING, y2))
+      self.minus_port = self._draw_connector(canvas,
+          (x3 - OP_AMP_CONNECTOR_PADDING, y3))
+      self.out_port = self._draw_connector(canvas, (x1, y1))
+  def rotated(self):
+    if self.vertices == OP_AMP_RIGHT_VERTICES:
+      return Op_Amp_Drawable(OP_AMP_DOWN_VERTICES)
+    elif self.vertices == OP_AMP_DOWN_VERTICES:
+      return Op_Amp_Drawable(OP_AMP_LEFT_VERTICES)
+    elif self.vertices == OP_AMP_LEFT_VERTICES:
+      return Op_Amp_Drawable(OP_AMP_UP_VERTICES)
+    else: # OP_AMP_UP_VERTICES
+      return Op_Amp_Drawable(OP_AMP_RIGHT_VERTICES)
 
 class Simulate_Run_Drawable(Run_Drawable):
   """

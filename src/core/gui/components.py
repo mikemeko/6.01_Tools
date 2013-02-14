@@ -76,12 +76,14 @@ class Drawable:
     """
     |point|: a tuple of the form (x, y) indicating where the connecter should
         be drawn.
-    Draws a connector for this Drawable at the indicated |point|.
+    Draws and returns a connector for this Drawable at the indicated |point|.
     """
     x, y = map(snap, point)
     canvas_id = create_circle(canvas, x, y, CONNECTOR_RADIUS,
         fill=CONNECTOR_COLOR, activewidth=2, tags=CONNECTOR_TAG)
-    self.connectors.add(Connector(canvas_id, (x, y), self))
+    connector = Connector(canvas_id, (x, y), self)
+    self.connectors.add(connector)
+    return connector
   def draw_connectors(self, canvas, offset=(0, 0)):
     """
     Draws the connectors for this Drawable on the given |canvas|, with the
