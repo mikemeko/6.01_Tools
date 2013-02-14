@@ -3,9 +3,10 @@ Representation for circuit components and circuits.
 Credit to ideas from MIT 6.01 Fall 2012 Software Lab 9.
 """
 
-from core.math.equation_solver import solve_equations
-
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
+
+from constants import K
+from core.math.equation_solver import solve_equations
 
 class One_Port:
   """
@@ -59,6 +60,48 @@ class Resistor(One_Port):
   def equation(self):
     # n1 - n2 = ir
     return [(1, self.n1), (-1, self.n2), (-self.r, self.i)]
+
+class Voltage_Sensor(One_Port):
+  """
+  TODO(mikemeko)
+  """
+  def equation(self):
+    # TODO(mikemeko): elaborate
+    return [(1, self.i)]
+
+class VCVS(One_Port):
+  """
+  TODO(mikemeko)
+  """
+  def __init__(self, voltage_sensor, n1, n2, i, K=K):
+    """
+    TODO(mikemeko)
+    """
+    assert isinstance(voltage_sensor, Voltage_Sensor), ('voltage_sensor must '
+        'be a Voltage_Sensor')
+    One_Port.__init__(self, n1, n2, i)
+    self.voltage_sensor = voltage_sensor
+    self.K = K
+  def equation(self):
+    # TODO(mikemeko): elaborate
+    return [(1, self.n1), (-1, self.n2), (self.K, self.voltage_sensor.n2),
+        (-self.K, self.voltage_sensor.n1)]
+
+class Op_Amp:
+  """
+  TODO(mikemeko)
+  """
+  def __init__(self, na1, na2, ia, nb1, nb2, ib, K=K):
+    """
+    TODO(mikemeko)
+    """
+    self.voltage_sensor = Voltage_Sensor(na1, na2, ia)
+    self.vcvs = VCVS(self.voltage_sensor, nb1, nb2, ib, K)
+  def parts(self):
+    """
+    TODO(mikemeko)
+    """
+    return (self.voltage_sensor, self.vcvs)
 
 class Circuit:
   """
