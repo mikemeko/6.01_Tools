@@ -8,10 +8,10 @@ from core.gui.constants import CONNECTOR_LEFT
 from core.gui.constants import CONNECTOR_RIGHT
 
 # colors
-NEGATIVE_COLOR = 'blue'
+NEGATIVE_COLOR = '#1531AE'
 PIN_OUTLINE = 'black'
 PIN_TEXT_COLOR = 'white'
-POSITIVE_COLOR = 'red'
+POSITIVE_COLOR = '#EF002A'
 RESISTOR_FILL = 'white'
 RESISTOR_OUTLINE = 'grey'
 
