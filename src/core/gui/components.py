@@ -87,7 +87,8 @@ class Drawable:
   def draw_connectors(self, canvas, offset=(0, 0)):
     """
     Draws the connectors for this Drawable on the given |canvas|, with the
-        Drawable drawn with the given |offset|.
+        Drawable drawn with the given |offset|. For specially located
+        connectors, subclasses may override this method.
     """
     x1, y1, x2, y2 = self.bounding_box(offset)
     if self.connector_flags & CONNECTOR_BOTTOM:

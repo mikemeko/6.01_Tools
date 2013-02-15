@@ -46,9 +46,6 @@ class Voltage_Source(One_Port):
   def equation(self):
     # n1 - n0 = v0
     return [(1, self.n1), (-1, self.n2), (-self.v0, None)]
-  def __str__(self):
-    return 'Voltage source n1=%s n2=%s i=%s v0=%s' % (self.n1, self.n2, self.i,
-        self.v0)
 
 class Resistor(One_Port):
   """
@@ -63,53 +60,56 @@ class Resistor(One_Port):
   def equation(self):
     # n1 - n2 = ir
     return [(1, self.n1), (-1, self.n2), (-self.r, self.i)]
-  def __str__(self):
-    return 'Resistor n1=%s n2=%s i=%s r=%s' % (self.n1, self.n2, self.i,
-        self.r)
 
 class Voltage_Sensor(One_Port):
   """
-  TODO(mikemeko)
+  Representation for a voltage sensor, to be used as a part of op amps.
   """
   def equation(self):
     # i = 0
     return [(1, self.i)]
-  def __str__(self):
-    return 'Voltage sensor n1=%s n2=%s i=%s' % (self.n1, self.n2, self.i)
 
 class VCVS(One_Port):
   """
-  TODO(mikemeko)
+  Representation for a voltage-controlled voltage source, to be used as a part
+      of op amps.
   """
-  def __init__(self, voltage_sensor, n1, n2, i, K):
+  def __init__(self, na1, na2, nb1, nb2, i, K):
     """
-    TODO(mikemeko)
+    |na1|, |na2|: input nodes.
+    |nb1|, |nb2|: output nodes.
+    |i|: current into node |nb1|.
+    |K|: VCVS constant of proportionality.
+    This component ensures the constraint |nb1| - |nb2| = |K|(|na1| - |na2|)
     """
-    assert isinstance(voltage_sensor, Voltage_Sensor), ('voltage_sensor must '
-        'be a Voltage_Sensor')
-    One_Port.__init__(self, n1, n2, i)
-    self.voltage_sensor = voltage_sensor
+    One_Port.__init__(self, nb1, nb2, i)
+    self.na1 = na1
+    self.na2 = na2
     self.K = K
   def equation(self):
-    # n1 - n2 = K(v1 - v2)
-    return [(1, self.n1), (-1, self.n2), (self.K, self.voltage_sensor.n2),
-        (-self.K, self.voltage_sensor.n1)]
-  def __str__(self):
-    return 'VCVS n1=%s n2=%s i=%s K=%s' % (self.n1, self.n2, self.i, self.K)
+    # nb1 - nb2 = K(na1 - na2)
+    return [(1, self.n1), (-1, self.n2), (self.K, self.na2),
+        (-self.K, self.na1)]
 
 class Op_Amp:
   """
-  TODO(mikemeko)
+  Representation for an op amp as a two port: composed of a voltage sensor and
+      a voltage-controlled voltage source.
+  TODO(mikemeko): detect positive feedback
   """
   def __init__(self, na1, na2, ia, nb1, nb2, ib, K=OP_AMP_K):
     """
-    TODO(mikemeko)
+    |na1|, |na2|: input nodes to the two port.
+    |ia1|: current into node |na1|.
+    |nb1|, |nb2|: output nodes of the two port.
+    |ib1|: current into node |nb1|.
+    |K|: VCVS constant of proportionality.
     """
     self.voltage_sensor = Voltage_Sensor(na1, na2, ia)
-    self.vcvs = VCVS(self.voltage_sensor, nb1, nb2, ib, K)
+    self.vcvs = VCVS(na1, na2, nb1, nb2, ib, K)
   def parts(self):
     """
-    TODO(mikemeko)
+    Returns a collection of the one-ports that constitute this op amp.
     """
     return (self.voltage_sensor, self.vcvs)
 
