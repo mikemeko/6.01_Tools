@@ -5,11 +5,13 @@ Contains the method to analyze the circuit drawn on a board.
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
 from circuit_drawables import Ground_Drawable
+from circuit_drawables import Op_Amp_Drawable
 from circuit_drawables import Power_Drawable
 from circuit_drawables import Probe_Minus_Drawable
 from circuit_drawables import Probe_Plus_Drawable
 from circuit_drawables import Resistor_Drawable
 from circuit_simulator.simulation.circuit import Circuit
+from circuit_simulator.simulation.circuit import Op_Amp
 from circuit_simulator.simulation.circuit import Resistor
 from circuit_simulator.simulation.circuit import Voltage_Source
 from constants import GROUND
@@ -118,6 +120,29 @@ def run_analysis(board, analyze):
       n1, n2 = map(maybe_rename_node, nodes)
       circuit_components.append(Resistor(n1, n2, current_name(drawable, n1,
           n2), r))
+    # op amp component
+    elif isinstance(drawable, Op_Amp_Drawable):
+      plus_nodes = [wire.label for wire in drawable.plus_port.wires()]
+      if len(plus_nodes) != 1:
+        board.display_message('Op amp + port must be connected to 1 wire',
+            ERROR)
+        return
+      minus_nodes = [wire.label for wire in drawable.minus_port.wires()]
+      if len(minus_nodes) != 1:
+        board.display_message('Op amp - port must be connected to 1 wire',
+            ERROR)
+        return
+      out_nodes = [wire.label for wire in drawable.out_port.wires()]
+      if len(out_nodes) != 1:
+        board.display_message('Op amp output port must be connected to 1 wire',
+            ERROR)
+        return
+      na1, na2, nb1, nb2 = map(maybe_rename_node, (plus_nodes[0],
+          minus_nodes[0], out_nodes[0], GROUND))
+      # TODO(mikemeko): current names are not quite right
+      op_amp = Op_Amp(na1, na2, current_name(drawable, na1, na2), nb1, nb2,
+          current_name(drawable, nb1, nb2))
+      circuit_components.extend(op_amp.parts())
   # make sure both of the probes are present
   if not probe_plus and not probe_minus:
     board.display_message('No probes', WARNING)

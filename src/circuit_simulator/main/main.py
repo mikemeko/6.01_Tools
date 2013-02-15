@@ -19,6 +19,7 @@ from core.gui.board import Board
 from core.gui.constants import INFO
 from core.gui.constants import LEFT
 from core.gui.constants import RIGHT
+from core.gui.constants import ERROR
 from core.gui.constants import WARNING
 from core.gui.palette import Palette
 from Tkinter import Tk
@@ -33,6 +34,9 @@ if __name__ == '__main__':
         nodes |probe_plus| and |probe_minus| of the given |circuit|.
     """
     assert probe_plus and probe_minus, 'need both +probe and -probs'
+    if not circuit.data:
+      board.display_message('Could not solve circuit', ERROR)
+      return
     if probe_plus not in circuit.data:
       board.display_message('+probe is disconnected from circuit', WARNING)
     elif probe_minus not in circuit.data:
