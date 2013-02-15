@@ -139,7 +139,6 @@ def run_analysis(board, analyze):
         return
       na1, na2, nb1, nb2 = map(maybe_rename_node, (plus_nodes[0],
           minus_nodes[0], out_nodes[0], GROUND))
-      # TODO(mikemeko): current names are not quite right
       op_amp = Op_Amp(na1, na2, current_name(drawable, na1, na2), nb1, nb2,
           current_name(drawable, nb1, nb2))
       circuit_components.extend(op_amp.parts())

@@ -164,11 +164,11 @@ class Resistor_Drawable(Drawable):
 
 class Op_Amp_Drawable(Drawable):
   """
-  TODO(mikemeko)
+  Drawable for op amps.
   """
   def __init__(self, vertices=OP_AMP_RIGHT_VERTICES):
     """
-    TODO(mikemeko)
+    |vertices|: the vertices of the triangle for this op amp.
     """
     assert vertices in (OP_AMP_RIGHT_VERTICES, OP_AMP_DOWN_VERTICES,
         OP_AMP_LEFT_VERTICES, OP_AMP_UP_VERTICES), 'invalid op amp vertices'
