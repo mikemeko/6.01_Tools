@@ -15,6 +15,8 @@ from circuit_drawables import Simulate_Run_Drawable
 from constants import APP_NAME
 from constants import DEV_STAGE
 from constants import PALETTE_HEIGHT
+from constants import PROBE_INIT_PADDING
+from constants import PROBE_SIZE
 from core.gui.board import Board
 from core.gui.constants import INFO
 from core.gui.constants import LEFT
@@ -47,6 +49,11 @@ if __name__ == '__main__':
           auto_remove=False)
   # create empty board
   board = Board(root, directed_wires=False)
+  # add probes to board
+  board.add_drawable(Probe_Plus_Drawable(), (PROBE_INIT_PADDING,
+      PROBE_INIT_PADDING))
+  board.add_drawable(Probe_Minus_Drawable(), (
+      PROBE_SIZE + 2 * PROBE_INIT_PADDING, PROBE_INIT_PADDING))
   # create palette
   palette = Palette(root, board, height=PALETTE_HEIGHT)
   # add circuit components to palette
@@ -55,10 +62,6 @@ if __name__ == '__main__':
   palette.add_drawable_type(Resistor_Drawable, LEFT, None,
       on_resistance_changed=lambda: board.set_changed(True))
   palette.add_drawable_type(Op_Amp_Drawable, LEFT, None)
-  palette.add_drawable_type(Probe_Plus_Drawable, LEFT, None,
-      disregard_location=True)
-  palette.add_drawable_type(Probe_Minus_Drawable, LEFT, None,
-      disregard_location=True)
   # add button to simulate circuit
   palette.add_drawable_type(Simulate_Run_Drawable, RIGHT,
       lambda event: run_analysis(board, analyze))
