@@ -7,6 +7,10 @@ __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 from constants import AXES_COLOR
 from constants import BACKGROUND_COLOR
 from constants import DEFAULT_WINDOW_SIZE
+from constants import LEGEND_POLE_ZERO_OFFSET
+from constants import LEGEND_POLES
+from constants import LEGEND_TEXT_OFFSET
+from constants import LEGEND_ZEROS
 from constants import POLE_COLOR
 from constants import POLE_ZERO_RADIUS
 from constants import TEXT_OFFSET
@@ -83,6 +87,21 @@ class Pole_Zero_Diagram(Frame):
           self.window_size / 2 - c.imag * unit_radius),
           POLE_ZERO_RADIUS * counts[c], color, complex_str(c))
       counts[c] -= 1
+  def _draw_legend(self, canvas):
+    """
+    Draws a legend to distinguish between poles and zeros.
+    """
+    # pole legend
+    self._draw_circle(canvas, (LEGEND_POLE_ZERO_OFFSET,
+        LEGEND_POLE_ZERO_OFFSET), POLE_ZERO_RADIUS, fill=POLE_COLOR)
+    canvas.create_text((LEGEND_TEXT_OFFSET, LEGEND_POLE_ZERO_OFFSET),
+        text=LEGEND_POLES)
+    # zero legend
+    self._draw_circle(canvas, (LEGEND_POLE_ZERO_OFFSET,
+        2 * LEGEND_POLE_ZERO_OFFSET + POLE_ZERO_RADIUS), POLE_ZERO_RADIUS,
+        fill=ZERO_COLOR)
+    canvas.create_text((LEGEND_TEXT_OFFSET,
+        2 * LEGEND_POLE_ZERO_OFFSET + POLE_ZERO_RADIUS), text=LEGEND_ZEROS)
   def _draw_poles_and_zeros(self):
     """
     Draws the poles and zeros of the underlying system on the diagram.
@@ -111,6 +130,8 @@ class Pole_Zero_Diagram(Frame):
     self._draw_items(canvas, unit_radius, zeros, ZERO_COLOR)
     # draw poles
     self._draw_items(canvas, unit_radius, poles, POLE_COLOR)
+    # draw legend
+    self._draw_legend(canvas)
     canvas.pack()
     self.configure(background=BACKGROUND_COLOR)
     self.pack()
