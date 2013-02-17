@@ -92,6 +92,8 @@ class Probe_Plus_Drawable(Pin_Drawable):
         PROBE_SIZE, connectors)
   def rotated(self):
     return Probe_Plus_Drawable(rotate_connector_flags(self.connector_flags))
+  def deletable(self):
+    return False
 
 class Probe_Minus_Drawable(Pin_Drawable):
   """
@@ -102,6 +104,8 @@ class Probe_Minus_Drawable(Pin_Drawable):
         PROBE_SIZE, connectors)
   def rotated(self):
     return Probe_Minus_Drawable(rotate_connector_flags(self.connector_flags))
+  def deletable(self):
+    return False
 
 class Resistor_Drawable(Drawable):
   """

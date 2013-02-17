@@ -323,16 +323,17 @@ class Board(Frame):
     """
     # delete a drawable item?
     drawable_to_delete = self._drawable_at((event.x, event.y))
+    if not drawable_to_delete:
+      connector_to_delete = self._connector_at((event.x, event.y))
+      if connector_to_delete:
+        # delete the drawable containing the connector
+        drawable_to_delete = connector_to_delete.drawable
     if drawable_to_delete:
-      drawable_to_delete.delete_from(self._canvas)
-      self.set_changed(True)
-      return
-    # delete a connector?
-    connector_to_delete = self._connector_at((event.x, event.y))
-    if connector_to_delete:
-      # delete the drawable containing the connector
-      connector_to_delete.drawable.delete_from(self._canvas)
-      self.set_changed(True)
+      if drawable_to_delete.deletable():
+        drawable_to_delete.delete_from(self._canvas)
+        self.set_changed(True)
+      else:
+        self.display_message('Item cannot be deleted', WARNING)
       return
     # delete a wire?
     canvas_id = self._canvas.find_closest(event.x, event.y)[0]
