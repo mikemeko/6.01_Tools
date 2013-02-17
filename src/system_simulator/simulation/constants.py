@@ -21,3 +21,10 @@ ZERO_COLOR = 'cyan'
 
 # unit sample response constants
 DEFAULT_NUM_SAMPLES = 50
+
+# frequency response constants
+NUM_FREQUENCY_RESPONSE_SAMPLES = 500
+FREQUENCY_RESPONSE_MAGNITUDE_LABEL = 'Magnitude'
+FREQUENCY_RESPONSE_PHASE_LABEL = 'Phase'
+FREQUENCY_RESPONSE_TITLE = 'Frequency Response'
+FREQUENCY_RESPONSE_X_LABEL = 'frequency'

@@ -22,11 +22,14 @@ from file_util import open_board
 from file_util import save_board
 from system_drawables import Adder_Drawable
 from system_drawables import Delay_Drawable
+from system_drawables import FR_Run_Drawable
 from system_drawables import Gain_Drawable
 from system_drawables import IO_X_Drawable
 from system_drawables import IO_Y_Drawable
 from system_drawables import PZD_Run_Drawable
 from system_drawables import USR_Run_Drawable
+from system_simulator.simulation.frequency_response import (
+    plot_frequency_response)
 from system_simulator.simulation.pole_zero_diagram import (
     plot_pole_zero_diagram)
 from system_simulator.simulation.unit_sample_response import (
@@ -131,15 +134,19 @@ if __name__ == '__main__':
       lambda event: run_analysis(board, plot_pole_zero_diagram))
   palette.add_drawable_type(USR_Run_Drawable, RIGHT,
       lambda event: run_analysis(board, plot_unit_sample_response))
+  palette.add_drawable_type(FR_Run_Drawable, RIGHT,
+      lambda event: run_analysis(board, plot_frequency_response))
   # shortcuts
+  board.add_key_binding('f', lambda: run_analysis(board,
+      plot_frequency_response))
+  board.add_key_binding('n', new_file, CTRL_DOWN)
+  board.add_key_binding('o', open_file, CTRL_DOWN)
   board.add_key_binding('p', lambda: run_analysis(board,
       plot_pole_zero_diagram))
+  board.add_key_binding('q', board.quit, CTRL_DOWN)
+  board.add_key_binding('s', save_file, CTRL_DOWN)
   board.add_key_binding('u', lambda: run_analysis(board,
       plot_unit_sample_response))
-  board.add_key_binding('s', save_file, CTRL_DOWN)
-  board.add_key_binding('o', open_file, CTRL_DOWN)
-  board.add_key_binding('n', new_file, CTRL_DOWN)
-  board.add_key_binding('q', board.quit, CTRL_DOWN)
   # menu
   menu = Menu(root, tearoff=0)
   file_menu = Menu(menu, tearoff=0)
@@ -150,6 +157,8 @@ if __name__ == '__main__':
   file_menu.add_command(label='Quit', command=board.quit, accelerator='Ctrl+Q')
   menu.add_cascade(label='File', menu=file_menu)
   analyze_menu = Menu(menu, tearoff=0)
+  analyze_menu.add_command(label='FR', command=lambda: run_analysis(board,
+      plot_frequency_response), accelerator='F')
   analyze_menu.add_command(label='PZD', command=lambda: run_analysis(board,
       plot_pole_zero_diagram), accelerator='P')
   analyze_menu.add_command(label='USR', command=lambda: run_analysis(board,

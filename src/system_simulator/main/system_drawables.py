@@ -14,6 +14,7 @@ from constants import DELAY_FILL
 from constants import DELAY_OUTLINE
 from constants import DELAY_SIZE
 from constants import DELAY_TEXT
+from constants import FR
 from constants import GAIN_DOWN_VERTICES
 from constants import GAIN_FILL
 from constants import GAIN_HORIZONTAL_CONNECTORS
@@ -188,3 +189,10 @@ class USR_Run_Drawable(Run_Drawable):
   """
   def __init__(self):
     Run_Drawable.__init__(self, USR)
+
+class FR_Run_Drawable(Run_Drawable):
+  """
+  Drawable to serve as a button to draw a frequency response.
+  """
+  def __init__(self):
+    Run_Drawable.__init__(self, FR)
