@@ -111,16 +111,15 @@ class Drawable:
     """
     Deletes this item from the |canvas|.
     """
-    if self.deletable():
-      assert self._live, 'this drawable has already been deleted'
-      # mark this drawable deleted
-      self._live = False
-      # delete all parts of this item
-      for part in self.parts:
-        canvas.delete(part)
-      # delete all connectors for this item
-      for connector in self.connectors:
-        connector.delete_from(canvas)
+    assert self._live, 'this drawable has already been deleted'
+    # mark this drawable deleted
+    self._live = False
+    # delete all parts of this item
+    for part in self.parts:
+      canvas.delete(part)
+    # delete all connectors for this item
+    for connector in self.connectors:
+      connector.delete_from(canvas)
   def move(self, canvas, dx, dy):
     """
     Moves this item by |dx| in the x direction and |dy| in the y direction on
