@@ -316,6 +316,11 @@ class Board(Frame):
     assert end_connector, 'There must be a connector at (x2, y2)'
     self._add_wire(create_wire(self._canvas, x1, y1, x2, y2,
         self._directed_wires), start_connector, end_connector, label)
+    # TODO(mikemeko): this is a temporary bug fix - if externally added wire
+    #     (from a saved file) has a higher label, this board should not create
+    #     wires that match externally added wire
+    if int(label) >= self._wire_labeler:
+      self._wire_labeler = int(label) + 1
   def _delete(self, event):
     """
     Callback for deleting an item on the board. Mark the board changed if
