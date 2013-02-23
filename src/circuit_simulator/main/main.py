@@ -18,6 +18,7 @@ from constants import PALETTE_HEIGHT
 from constants import PROBE_INIT_PADDING
 from constants import PROBE_SIZE
 from core.gui.board import Board
+from core.gui.constants import CTRL_DOWN
 from core.gui.constants import INFO
 from core.gui.constants import LEFT
 from core.gui.constants import RIGHT
@@ -67,6 +68,8 @@ if __name__ == '__main__':
       lambda event: run_analysis(board, analyze))
   # shortcuts
   board.add_key_binding('a', lambda: run_analysis(board, analyze))
+  board.add_key_binding('y', board.redo, CTRL_DOWN)
+  board.add_key_binding('z', board.undo, CTRL_DOWN)
   # set title
   root.title('%s (%s)' % (APP_NAME, DEV_STAGE))
   # run main loop

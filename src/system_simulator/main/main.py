@@ -147,6 +147,8 @@ if __name__ == '__main__':
   board.add_key_binding('s', save_file, CTRL_DOWN)
   board.add_key_binding('u', lambda: run_analysis(board,
       plot_unit_sample_response))
+  board.add_key_binding('y', board.redo, CTRL_DOWN)
+  board.add_key_binding('z', board.undo, CTRL_DOWN)
   # menu
   menu = Menu(root, tearoff=0)
   file_menu = Menu(menu, tearoff=0)

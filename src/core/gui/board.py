@@ -33,6 +33,8 @@ from constants import MESSAGE_WIDTH
 from constants import ROTATE_TAG
 from constants import SHIFT_DOWN
 from constants import WARNING
+from core.util.undo import Action
+from core.util.undo import Action_History
 from threading import Timer
 from Tkinter import ALL
 from Tkinter import Canvas
@@ -70,8 +72,11 @@ class Board(Frame):
     self._drawables = set()
     # TODO(mikemeko): consider making offset a Drawable attribute
     self._drawable_offsets = dict()
+    # undo / redo
+    self._action_history = Action_History()
     # state for dragging
     self._drag_item = None
+    self._drag_start_point = None
     self._drag_last_point = None
     # state for drawing wires
     self._wire_parts = None
@@ -157,13 +162,31 @@ class Board(Frame):
         if canvas_id in wire.parts:
           return wire
     return None
+  def _update_drawable_offset(self, drawable, dx, dy):
+    """
+    TODO(mikemeko)
+    """
+    assert drawable in self._drawable_offsets, 'drawable not on board'
+    x, y = self._drawable_offsets[drawable]
+    self._drawable_offsets[drawable] = x + dx, y + dy
+  def _move_drawable(self, drawable, dx, dy):
+    """
+    TODO(mikemeko)
+    """
+    # mark the board changed if so
+    if dx or dy:
+      self.set_changed(True)
+    # move the item being dragged
+    drawable.move(self._canvas, dx, dy)
+    # update offset of item being dragged
+    self._update_drawable_offset(drawable, dx, dy)
   def _drag_press(self, event):
     """
     Callback for when a drawable item is clicked. Updates drag state.
     """
     self._drag_item = self._drawable_at((event.x, event.y))
     if self._drag_item:
-      self._drag_last_point = (event.x, event.y)
+      self._drag_start_point = self._drag_last_point = (event.x, event.y)
   def _drag_move(self, event):
     """
     Callback for when a drawable item is being moved. Updates drag state.
@@ -172,22 +195,25 @@ class Board(Frame):
     last_x, last_y = self._drag_last_point
     dx = snap(event.x - last_x)
     dy = snap(event.y - last_y)
-    # mark the board changed if so
-    if dx or dy:
-      self.set_changed(True)
-    # move the item being dragged
-    self._drag_item.move(self._canvas, dx, dy)
+    self._move_drawable(self._drag_item, dx, dy)
     # update drag state
     self._drag_last_point = (last_x + dx, last_y + dy)
-    # update offset of item being dragged
-    x, y = self._drawable_offsets[self._drag_item]
-    self._drawable_offsets[self._drag_item] = x + dx, y + dy
   def _drag_release(self, event):
     """
     Callback for when a drawable item is released. Updates drag state.
     """
+    # TODO(mikemeko): comment
+    drawable = self._drag_item
+    start_x, start_y = self._drag_start_point
+    end_x, end_y = self._drag_last_point
+    dx = end_x - start_x
+    dy = end_y - start_y
+    self._action_history.record_action(Action(
+        lambda: self._move_drawable(drawable, dx, dy),
+        lambda: self._move_drawable(drawable, -dx, -dy)))
     # reset
     self._drag_item = None
+    self._drag_start_point = None
     self._drag_last_point = None
   def _straighten_wire(self):
     """
@@ -369,10 +395,6 @@ class Board(Frame):
       if (self._ctrl_pressed or not flags & CTRL_DOWN) and (
           self._shift_pressed or not flags & SHIFT_DOWN):
         callback()
-        # reset key-press flags and cursor
-        self.configure(cursor='arrow')
-        self._ctrl_pressed = False
-        self._shift_pressed = False
   def _key_release(self, event):
     """
     Callback for when a key is released.
@@ -536,3 +558,13 @@ class Board(Frame):
       drawable.delete_from(self._canvas)
     self._drawables.clear()
     self._drawable_offsets.clear()
+  def undo(self):
+    """
+    TODO(mikemeko)
+    """
+    self._action_history.undo()
+  def redo(self):
+    """
+    TODO(mikemeko)
+    """
+    self._action_history.redo()
