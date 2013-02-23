@@ -228,9 +228,9 @@ class Board(Frame):
         self._directed_wires)
     wire.redraw(self._canvas)
     start_connector.start_wires.add(wire)
-    start_connector.lift(self._canvas)
+    start_connector.redraw(self._canvas)
     end_connector.end_wires.add(wire)
-    end_connector.lift(self._canvas)
+    end_connector.redraw(self._canvas)
   def _new_wire_label(self):
     """
     Returns a new wire label that has not yet been used.

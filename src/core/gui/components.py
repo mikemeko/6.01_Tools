@@ -7,6 +7,7 @@ __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 from constants import CONNECTOR_BOTTOM
 from constants import CONNECTOR_CENTER
 from constants import CONNECTOR_COLOR
+from constants import CONNECTOR_EMPTY_COLOR
 from constants import CONNECTOR_LEFT
 from constants import CONNECTOR_RADIUS
 from constants import CONNECTOR_RIGHT
@@ -86,7 +87,7 @@ class Drawable:
     """
     x, y = map(snap, point)
     canvas_id = create_circle(canvas, x, y, CONNECTOR_RADIUS,
-        fill=CONNECTOR_COLOR, activewidth=2, tags=CONNECTOR_TAG)
+        fill=CONNECTOR_EMPTY_COLOR, activewidth=2, tags=CONNECTOR_TAG)
     connector = Connector(canvas_id, (x, y), self)
     self.connectors.add(connector)
     return connector
@@ -112,14 +113,14 @@ class Drawable:
     Deletes this item from the |canvas|.
     """
     assert self._live, 'this drawable has already been deleted'
-    # mark this drawable deleted
-    self._live = False
+    # delete all connectors for this drawable
+    for connector in self.connectors:
+      connector.delete_from(canvas)
     # delete all parts of this item
     for part in self.parts:
       canvas.delete(part)
-    # delete all connectors for this item
-    for connector in self.connectors:
-      connector.delete_from(canvas)
+    # mark this drawable deleted
+    self._live = False
   def move(self, canvas, dx, dy):
     """
     Moves this item by |dx| in the x direction and |dy| in the y direction on
@@ -163,28 +164,18 @@ class Connector:
     """
     Deletes this connector from the |canvas|.
     """
-    # delete this connector
-    canvas.delete(self.canvas_id)
     # delete all wires attached to this connector
     for wire in list(self.wires()):
       wire.delete_from(canvas)
-  def move(self, canvas, dx, dy):
-    """
-    Moves this connector by |dx| in the x direction and |dy| in the y
-        direction.
-    """
-    if dx != 0 or dy != 0:
-      x, y = self.center
-      self.center = (x + dx, y + dy)
-      canvas.move(self.canvas_id, dx, dy)
-      self.redraw_wires(canvas)
+    # delete this connector
+    canvas.delete(self.canvas_id)
   def lift(self, canvas):
     """
     Lifts (raises) this connector above the wires that are attached to it so
         that it is easy to draw more wires.
     """
     canvas.tag_raise(self.canvas_id)
-  def redraw_wires(self, canvas):
+  def _redraw_wires(self, canvas):
     """
     Redraws the wires for this connector.
     """
@@ -195,6 +186,27 @@ class Connector:
     for wire in self.end_wires:
       wire.redraw(canvas)
     self.lift(canvas)
+  def move(self, canvas, dx, dy):
+    """
+    Moves this connector by |dx| in the x direction and |dy| in the y
+        direction.
+    """
+    if dx != 0 or dy != 0:
+      x, y = self.center
+      self.center = (x + dx, y + dy)
+      canvas.move(self.canvas_id, dx, dy)
+      self._redraw_wires(canvas)
+  def redraw(self, canvas):
+    """
+    Redraws this connector, most importantly to mark it connected or not
+        connected.
+    """
+    canvas.delete(self.canvas_id)
+    x, y = self.center
+    # appropriately choose fill color
+    fill = CONNECTOR_COLOR if self.num_wires() else CONNECTOR_EMPTY_COLOR
+    self.canvas_id = create_circle(canvas, x, y, CONNECTOR_RADIUS, fill=fill,
+        activewidth=2, tags=CONNECTOR_TAG)
   def wires(self):
     """
     Returns a generator of the wires attached to this connector.
@@ -244,33 +256,34 @@ class Wire:
   def _maybe_delete_empty_wire_connector(self, canvas, connector):
     """
     Deletes |connector| if it is a wire connector and it is not connected to
-        any wires.
+        any wires. Returns True if |connector| is deleted, False otherwise.
     """
     if connector.num_wires() is 0 and isinstance(connector.drawable,
         Wire_Connector_Drawable) and connector.drawable.live():
       connector.drawable.delete_from(canvas)
+      return True
+    return False
   def delete_from(self, canvas):
     """
     Deletes this wire from the |canvas|.
     """
+    # remove this wire from the connectors' wire collections
+    self.start_connector.start_wires.remove(self)
+    self.end_connector.end_wires.remove(self)
+    for connector in (self.start_connector, self.end_connector):
+      if not self._maybe_delete_empty_wire_connector(canvas, connector):
+        connector.redraw(canvas)
     # delete the lines the wire is composed of
     for part in self.parts:
       canvas.delete(part)
-    # remove this wire from the connectors' wire lists
-    self.start_connector.start_wires.remove(self)
-    self._maybe_delete_empty_wire_connector(canvas, self.start_connector)
-    self.end_connector.end_wires.remove(self)
-    self._maybe_delete_empty_wire_connector(canvas, self.end_connector)
   def _draw_label(self, canvas):
     """
-    Draws the label of this wire. This is only done if the DISPLAY_WIRE_LABELS
-        flag is set, and may be useful for debugging.
+    Draws the label of this wire.
     """
-    if DISPLAY_WIRE_LABELS:
-      x1, y1 = self.start_connector.center
-      x2, y2 = self.end_connector.center
-      self.parts.append(canvas.create_text((x1 + x2) / 2, (y1 + y2) / 2,
-          text=self.label))
+    x1, y1 = self.start_connector.center
+    x2, y2 = self.end_connector.center
+    self.parts.append(canvas.create_text((x1 + x2) / 2, (y1 + y2) / 2,
+        text=self.label))
   def redraw(self, canvas):
     """
     Redraws this wire.
@@ -283,7 +296,8 @@ class Wire:
     x2, y2 = self.end_connector.center
     self.parts = create_wire(canvas, x1, y1, x2, y2, self.directed)
     # redraw label
-    self._draw_label(canvas)
+    if DISPLAY_WIRE_LABELS:
+      self._draw_label(canvas)
     # lift connectors to make it easy to draw other wires
     self.start_connector.lift(canvas)
     self.end_connector.lift(canvas)
