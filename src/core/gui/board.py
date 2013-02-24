@@ -208,9 +208,10 @@ class Board(Frame):
     end_x, end_y = self._drag_last_point
     dx = end_x - start_x
     dy = end_y - start_y
-    self._action_history.record_action(Action(
-        lambda: self._move_drawable(drawable, dx, dy),
-        lambda: self._move_drawable(drawable, -dx, -dy)))
+    if dx or dy:
+      self._action_history.record_action(Action(
+          lambda: self._move_drawable(drawable, dx, dy),
+          lambda: self._move_drawable(drawable, -dx, -dy)))
     # reset
     self._drag_item = None
     self._drag_start_point = None
@@ -419,9 +420,18 @@ class Board(Frame):
       rotated_drawable = drawable_to_rotate.rotated()
       if rotated_drawable is not drawable_to_rotate:
         offset = self._drawable_offsets[drawable_to_rotate]
-        drawable_to_rotate.delete_from(self._canvas)
-        self.add_drawable(rotated_drawable, offset)
-        self.set_changed(True)
+        def switch(remove, add):
+          """
+          TODO(mikemeko)
+          """
+          remove.delete_from(self._canvas)
+          self.add_drawable(add, offset)
+          add.set_live()
+          self.set_changed(True)
+        switch(drawable_to_rotate, rotated_drawable)
+        self._action_history.record_action(Action(
+            lambda: switch(drawable_to_rotate, rotated_drawable),
+            lambda: switch(rotated_drawable, drawable_to_rotate)))
   def quit(self):
     """
     Callback on exit.
@@ -541,7 +551,7 @@ class Board(Frame):
     Returns the live drawables on this board.
     """
     for drawable in self._drawables:
-      if drawable.live():
+      if drawable.is_live():
         yield drawable
   def get_drawable_offset(self, drawable):
     """

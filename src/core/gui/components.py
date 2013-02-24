@@ -59,12 +59,17 @@ class Drawable:
         result in this rotation. The default implementation is no rotation.
     """
     return self
-  def live(self):
+  def is_live(self):
     """
     Returns True if this drawable is still on the board, or False if it has
         been deleted.
     """
     return self._live
+  def set_live(self):
+    """
+    TODO(mikemeko)
+    """
+    self._live = True
   def deletable(self):
     """
     Returns True if user is allowed to delete this drawable, False otherwise.
