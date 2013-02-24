@@ -70,8 +70,6 @@ class Board(Frame):
         highlightthickness=0, background=BOARD_BACKGROUND_COLOR)
     # the drawables on this board, includes deleted drawables
     self._drawables = set()
-    # TODO(mikemeko): consider making offset a Drawable attribute
-    self._drawable_offsets = dict()
     # undo / redo
     self._action_history = Action_History()
     # state for dragging
@@ -136,8 +134,7 @@ class Board(Frame):
     TODO(mikemeko): should return the topmost such drawable.
     """
     for drawable in self.get_drawables():
-      if point_inside_bbox(point, drawable.bounding_box(
-          self._drawable_offsets[drawable])):
+      if point_inside_bbox(point, drawable.bounding_box(drawable.offset)):
         return drawable
     return None
   def _connector_at(self, point):
@@ -166,9 +163,9 @@ class Board(Frame):
     """
     TODO(mikemeko)
     """
-    assert drawable in self._drawable_offsets, 'drawable not on board'
-    x, y = self._drawable_offsets[drawable]
-    self._drawable_offsets[drawable] = x + dx, y + dy
+    assert drawable in self._drawables, 'drawable not on board'
+    x, y = drawable.offset
+    drawable.offset = x + dx, y + dy
   def _move_drawable(self, drawable, dx, dy):
     """
     TODO(mikemeko)
@@ -420,7 +417,7 @@ class Board(Frame):
       # remove current drawable and add rotated version
       rotated_drawable = drawable_to_rotate.rotated()
       if rotated_drawable is not drawable_to_rotate:
-        offset = self._drawable_offsets[drawable_to_rotate]
+        offset = drawable_to_rotate.offset
         def switch(remove, add):
           """
           TODO(mikemeko)
@@ -450,8 +447,7 @@ class Board(Frame):
     bbox = drawable.bounding_box(offset)
     for other in self.get_drawables():
       if (drawable.__class__ == other.__class__ and
-          (disregard_location or bbox == other.bounding_box(
-          self._drawable_offsets[other]))):
+          (disregard_location or bbox == other.bounding_box(other.offset))):
         return True
     return False
   def _cancel_message_remove_timer(self):
@@ -535,7 +531,8 @@ class Board(Frame):
     """
     # add it to the list of drawables on this board
     self._drawables.add(drawable)
-    self._drawable_offsets[drawable] = offset
+    # TODO(mikemeko)
+    drawable.offset = offset
     # draw it
     drawable.draw_on(self._canvas, offset)
     # draw its connectors
@@ -570,8 +567,8 @@ class Board(Frame):
     Returns the offset with which the given |drawable| is drawn. Assumes that
         the |drawable| is on this board.
     """
-    assert drawable in self._drawable_offsets, 'drawable must be on this board'
-    return self._drawable_offsets[drawable]
+    assert drawable in self._drawables, 'drawable must be on this board'
+    return drawable.offset
   def clear(self):
     """
     Removes all drawables from this board.
@@ -579,7 +576,6 @@ class Board(Frame):
     for drawable in self.get_drawables():
       drawable.delete_from(self._canvas)
     self._drawables.clear()
-    self._drawable_offsets.clear()
   def undo(self):
     """
     TODO(mikemeko)

@@ -108,6 +108,8 @@ if __name__ == '__main__':
     if new_file_name:
       # update to new file name
       file_name = new_file_name
+      # clear board undo / redo history
+      board.clear_action_history()
       # mark the board unchanged
       board.set_changed(False)
   def new_file():

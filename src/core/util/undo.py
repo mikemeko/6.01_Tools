@@ -63,5 +63,5 @@ class Action_History:
     self._redo_stack = []
     print self
   def __str__(self):
-    return '%s | %s' % (str(map(str, self._undo_stack)),
+    return '%s <|> %s' % (str(map(str, self._undo_stack)),
         str(map(str, reversed(self._redo_stack))))

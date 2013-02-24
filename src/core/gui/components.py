@@ -19,6 +19,7 @@ from constants import RUN_RECT_OUTLINE
 from constants import RUN_RECT_SIZE
 from constants import RUN_TEXT_ACTIVE_FILL
 from constants import RUN_TEXT_FILL
+from core.util.undo import Action
 from util import create_circle
 from util import create_wire
 from util import snap
@@ -113,6 +114,23 @@ class Drawable:
       self._draw_connector(canvas, (x2, (y1 + y2) / 2))
     if self.connector_flags & CONNECTOR_TOP:
       self._draw_connector(canvas, ((x1 + x2) / 2, y1))
+  def _delete_from(self, canvas):
+    """
+    TODO(mikemeko)
+    """
+    def delete():
+      """
+      TODO(mikemeko)
+      """
+      for part in self.parts:
+        canvas.delete(part)
+      self.parts.clear()
+    def undelete():
+      """
+      TODO(mikemeko)
+      """
+      self.draw_on(canvas, self.offset)
+      self.draw_connectors(canvas, self.offset)
   def delete_from(self, canvas):
     """
     Deletes this item from the |canvas|.
