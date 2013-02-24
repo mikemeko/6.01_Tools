@@ -176,10 +176,10 @@ class Board(Frame):
     # mark the board changed if so
     if dx or dy:
       self.set_changed(True)
-    # move the item being dragged
-    drawable.move(self._canvas, dx, dy)
-    # update offset of item being dragged
-    self._update_drawable_offset(drawable, dx, dy)
+      # move the item being dragged
+      drawable.move(self._canvas, dx, dy)
+      # update offset of item being dragged
+      self._update_drawable_offset(drawable, dx, dy)
   def _drag_press(self, event):
     """
     Callback for when a drawable item is clicked. Updates drag state.
@@ -211,7 +211,8 @@ class Board(Frame):
     if dx or dy:
       self._action_history.record_action(Action(
           lambda: self._move_drawable(drawable, dx, dy),
-          lambda: self._move_drawable(drawable, -dx, -dy)))
+          lambda: self._move_drawable(drawable, -dx, -dy),
+          'move'))
     # reset
     self._drag_item = None
     self._drag_start_point = None
@@ -425,13 +426,12 @@ class Board(Frame):
           TODO(mikemeko)
           """
           remove.delete_from(self._canvas)
-          self.add_drawable(add, offset)
-          add.set_live()
-          self.set_changed(True)
+          self._add_drawable(add, offset)
         switch(drawable_to_rotate, rotated_drawable)
         self._action_history.record_action(Action(
             lambda: switch(drawable_to_rotate, rotated_drawable),
-            lambda: switch(rotated_drawable, drawable_to_rotate)))
+            lambda: switch(rotated_drawable, drawable_to_rotate),
+            'rotate'))
   def quit(self):
     """
     Callback on exit.
@@ -529,11 +529,10 @@ class Board(Frame):
     self._changed = changed
     if self._on_changed:
       self._on_changed(changed)
-  def add_drawable(self, drawable, offset=(0, 0)):
+  def _add_drawable(self, drawable, offset):
     """
-    Adds the given |drawable| to this board at the given |offset|.
+    TODO(mikemeko)
     """
-    assert isinstance(drawable, Drawable), 'drawable must be a Drawable'
     # add it to the list of drawables on this board
     self._drawables.add(drawable)
     self._drawable_offsets[drawable] = offset
@@ -546,6 +545,19 @@ class Board(Frame):
       self._canvas.itemconfig(part, tags=(DRAG_TAG, ROTATE_TAG))
     # mark this board changed
     self.set_changed(True)
+    # TODO(mikemeko)
+    drawable.set_live()
+  def add_drawable(self, drawable, offset=(0, 0)):
+    """
+    Adds the given |drawable| to this board at the given |offset|.
+    """
+    assert isinstance(drawable, Drawable), 'drawable must be a Drawable'
+    self._add_drawable(drawable, offset)
+    # TODO(mikemeko)
+    self._action_history.record_action(Action(
+        lambda: self._add_drawable(drawable, offset),
+        lambda: drawable.delete_from(self._canvas),
+        'add_drawable'))
   def get_drawables(self):
     """
     Returns the live drawables on this board.
@@ -578,3 +590,8 @@ class Board(Frame):
     TODO(mikemeko)
     """
     self._action_history.redo()
+  def clear_action_history(self):
+    """
+    TODO(mikemeko)
+    """
+    self._action_history.clear()

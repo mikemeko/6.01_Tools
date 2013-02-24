@@ -60,6 +60,8 @@ if __name__ == '__main__':
     out = IO_Y_Drawable()
     board.add_drawable(out, (board.width - out.width - IO_PADDING,
         (board.height - out.height) / 2))
+    # clear board undo / redo history
+    board.clear_action_history()
     # mark the board unchanged
     board.set_changed(False)
   def on_changed(board_changed):

@@ -70,6 +70,8 @@ if __name__ == '__main__':
   board.add_key_binding('a', lambda: run_analysis(board, analyze))
   board.add_key_binding('y', board.redo, CTRL_DOWN)
   board.add_key_binding('z', board.undo, CTRL_DOWN)
+  # clear board undo / redo history
+  board.clear_action_history()
   # set title
   root.title('%s (%s)' % (APP_NAME, DEV_STAGE))
   # run main loop
