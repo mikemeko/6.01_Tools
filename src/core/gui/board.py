@@ -251,11 +251,22 @@ class Board(Frame):
     """
     wire = Wire(wire_parts, start_connector, end_connector, label,
         self._directed_wires)
-    wire.redraw(self._canvas)
-    start_connector.start_wires.add(wire)
-    start_connector.redraw(self._canvas)
-    end_connector.end_wires.add(wire)
-    end_connector.redraw(self._canvas)
+    def add_wire():
+      """
+      TODO(mikemeko)
+      """
+      wire.redraw(self._canvas)
+      start_connector.start_wires.add(wire)
+      start_connector.redraw(self._canvas)
+      end_connector.end_wires.add(wire)
+      end_connector.redraw(self._canvas)
+    def remove_wire():
+      """
+      TODO(mikemeko)
+      """
+      wire.delete_from(self._canvas)
+    add_wire()
+    self._action_history.record_action(Action(add_wire, remove_wire, 'wire'))
   def _new_wire_label(self):
     """
     Returns a new wire label that has not yet been used.
@@ -360,7 +371,8 @@ class Board(Frame):
         drawable_to_delete = connector_to_delete.drawable
     if drawable_to_delete:
       if drawable_to_delete.deletable():
-        drawable_to_delete.delete_from(self._canvas)
+        self._action_history.record_action(drawable_to_delete.delete_from(
+            self._canvas))
         self.set_changed(True)
       else:
         self.display_message('Item cannot be deleted', WARNING)
@@ -369,7 +381,8 @@ class Board(Frame):
     canvas_id = self._canvas.find_closest(event.x, event.y)[0]
     wire_to_delete = self._wire_with_id(canvas_id)
     if wire_to_delete:
-      wire_to_delete.delete_from(self._canvas)
+      self._action_history.record_action(wire_to_delete.delete_from(
+          self._canvas))
       # may need to relabel the wires, arbitrarily choose start connector
       self._update_labels(wire_to_delete.start_connector,
           self._new_wire_label())

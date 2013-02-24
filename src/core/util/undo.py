@@ -22,6 +22,33 @@ class Action:
   def __str__(self):
     return self.description
 
+class Multi_Action(Action):
+  """
+  TODO(mikemeko)
+  """
+  def __init__(self, actions, description='Multi_Action'):
+    """
+    TODO(mikemeko)
+    """
+    assert isinstance(actions, list)
+    assert all(isinstance(item, Action) for item in actions)
+    self.actions = actions
+    def do_actions():
+      """
+      TODO(mikemeko)
+      """
+      for action in actions:
+        action.do_action()
+    def undo_actions():
+      """
+      TODO(mikemeko)
+      """
+      for action in reversed(actions):
+        action.undo_action()
+    Action.__init__(self, do_actions, undo_actions, description)
+  def __str__(self):
+    return '(%s)' % ', '.join(map(str, self.actions))
+
 class Action_History:
   """
   TODO(mikemeko)
@@ -63,5 +90,5 @@ class Action_History:
     self._redo_stack = []
     print self
   def __str__(self):
-    return '%s <|> %s' % (str(map(str, self._undo_stack)),
-        str(map(str, reversed(self._redo_stack))))
+    return '%s <|> %s' % (', '.join(map(str, self._undo_stack)),
+        ', '.join(map(str, reversed(self._redo_stack))))

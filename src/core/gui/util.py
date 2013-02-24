@@ -7,8 +7,11 @@ __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 from constants import BOARD_GRID_SEPARATION
 from constants import CONNECTOR_BOTTOM
 from constants import CONNECTOR_CENTER
+from constants import CONNECTOR_EMPTY_COLOR
 from constants import CONNECTOR_LEFT
+from constants import CONNECTOR_RADIUS
 from constants import CONNECTOR_RIGHT
+from constants import CONNECTOR_TAG
 from constants import CONNECTOR_TOP
 from constants import WIRE_ARROW_LENGTH
 from constants import WIRE_COLOR
@@ -87,6 +90,13 @@ def create_circle(canvas, x, y, r, *args, **kwargs):
   """
   assert isinstance(canvas, Canvas), 'canvas must be a Canvas'
   return canvas.create_oval(x - r, y - r, x + r, y + r, *args, **kwargs)
+
+def create_connector(canvas, x, y, fill=CONNECTOR_EMPTY_COLOR):
+  """
+  TODO(mikemeko)
+  """
+  return create_circle(canvas, x, y, CONNECTOR_RADIUS, fill=fill,
+      activewidth=2, tags=CONNECTOR_TAG)
 
 def create_wire(canvas, x1, y1, x2, y2, directed=True):
   """
