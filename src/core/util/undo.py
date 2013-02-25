@@ -4,6 +4,7 @@ TODO(mikemeko)
 
 __author__ = 'mikemeko@mit.edu (Mihchael Mekonnen)'
 
+from constants import DEBUG_UNDO
 from core.util.util import is_callable
 
 class Action:
@@ -47,7 +48,7 @@ class Multi_Action(Action):
         action.undo_action()
     Action.__init__(self, do_actions, undo_actions, description)
   def __str__(self):
-    return '(%s)' % ', '.join(map(str, self.actions))
+    return '%s[%s]' % (self.description, ', '.join(map(str, self.actions)))
 
 class Action_History:
   """
@@ -63,7 +64,8 @@ class Action_History:
     assert isinstance(action, Action), 'action must be an Action'
     self._undo_stack.append(action)
     self._redo_stack = []
-    print self
+    if DEBUG_UNDO:
+      print self
   def undo(self):
     """
     TODO(mikemeko)
@@ -72,7 +74,10 @@ class Action_History:
       last_action = self._undo_stack.pop()
       last_action.undo_action()
       self._redo_stack.append(last_action)
-    print self
+      if DEBUG_UNDO:
+        print self
+      return True
+    return False
   def redo(self):
     """
     TODO(mikemeko)
@@ -81,14 +86,18 @@ class Action_History:
       next_action = self._redo_stack.pop()
       next_action.do_action()
       self._undo_stack.append(next_action)
-    print self
+      if DEBUG_UNDO:
+        print self
+      return True
+    return False
   def clear(self):
     """
     TODO(mikemeko)
     """
     self._undo_stack = []
     self._redo_stack = []
-    print self
+    if DEBUG_UNDO:
+      print self
   def __str__(self):
     return '%s <|> %s' % (', '.join(map(str, self._undo_stack)),
         ', '.join(map(str, reversed(self._redo_stack))))

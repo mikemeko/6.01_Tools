@@ -257,9 +257,12 @@ class Board(Frame):
       """
       wire.redraw(self._canvas)
       start_connector.start_wires.add(wire)
-      start_connector.redraw(self._canvas)
       end_connector.end_wires.add(wire)
-      end_connector.redraw(self._canvas)
+      for connector in (start_connector, end_connector):
+        if isinstance(connector.drawable, Wire_Connector_Drawable):
+          connector.drawable.redraw(self._canvas)
+        else:
+          connector.redraw(self._canvas)
     def remove_wire():
       """
       TODO(mikemeko)
@@ -325,7 +328,7 @@ class Board(Frame):
         # create a wire connector at the end of the new wire
         wire_connector_drawable = Wire_Connector_Drawable(label)
         # setup offset in an intuitive place based on how the wire was drawn
-        self.add_drawable(wire_connector_drawable, self._wire_end)
+        self._add_drawable(wire_connector_drawable, self._wire_end)
         end_connector = self._connector_at(self._wire_end)
       elif isinstance(end_connector.drawable, Wire_Connector_Drawable):
         # if an end connector is found, and it is a wire connector, we need to
@@ -565,7 +568,7 @@ class Board(Frame):
     self._add_drawable(drawable, offset)
     # TODO(mikemeko)
     self._action_history.record_action(Action(
-        lambda: self._add_drawable(drawable, offset),
+        lambda: drawable.redraw(self._canvas),
         lambda: drawable.delete_from(self._canvas),
         'add_drawable'))
   def get_drawables(self):
@@ -593,12 +596,14 @@ class Board(Frame):
     """
     TODO(mikemeko)
     """
-    self._action_history.undo()
+    if self._action_history.undo():
+      self.set_changed(True)
   def redo(self):
     """
     TODO(mikemeko)
     """
-    self._action_history.redo()
+    if self._action_history.redo():
+      self.set_changed(True)
   def clear_action_history(self):
     """
     TODO(mikemeko)
