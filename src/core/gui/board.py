@@ -2,6 +2,7 @@
 GUI tool on which several items may be drawn. Supports dragging the items
     around, connecting the items with wires, deleting items, rotating items,
     and displaying messages.
+TODO(mikemeko): relabel wires
 """
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
@@ -17,6 +18,7 @@ from constants import BOARD_WIDTH
 from constants import CONNECTOR_RADIUS
 from constants import CONNECTOR_TAG
 from constants import CTRL_DOWN
+from constants import DISPLAY_WIRE_LABELS
 from constants import DRAG_TAG
 from constants import ERROR
 from constants import INFO
@@ -80,7 +82,6 @@ class Board(Frame):
     self._wire_parts = None
     self._wire_start = None
     self._wire_end = None
-    self._wire_labeler = 0 # used to uniquely label wires
     # state for key-press callbacks
     self._ctrl_pressed = False
     self._shift_pressed = False
@@ -201,15 +202,16 @@ class Board(Frame):
     """
     # TODO(mikemeko): comment
     drawable = self._drag_item
-    start_x, start_y = self._drag_start_point
-    end_x, end_y = self._drag_last_point
-    dx = end_x - start_x
-    dy = end_y - start_y
-    if dx or dy:
-      self._action_history.record_action(Action(
-          lambda: self._move_drawable(drawable, dx, dy),
-          lambda: self._move_drawable(drawable, -dx, -dy),
-          'move'))
+    if drawable and self._drag_start_point:
+      start_x, start_y = self._drag_start_point
+      end_x, end_y = self._drag_last_point
+      dx = end_x - start_x
+      dy = end_y - start_y
+      if dx or dy:
+        self._action_history.record_action(Action(
+            lambda: self._move_drawable(drawable, dx, dy),
+            lambda: self._move_drawable(drawable, -dx, -dy),
+            'move'))
     # reset
     self._drag_item = None
     self._drag_start_point = None
@@ -242,14 +244,42 @@ class Board(Frame):
     x2, y2 = self._wire_end
     self._wire_parts = create_wire(self._canvas, x1, y1, x2, y2,
         self._directed_wires)
-  def _add_wire(self, wire_parts, start_connector, end_connector, label):
+  def _relabel_wires_from(self, drawable, relabeled_wires, label):
+    """
+    TODO(mikemeko)
+    """
+    max_label = label
+    for connector in drawable.connectors:
+      if connector.num_wires() and not isinstance(drawable,
+          Wire_Connector_Drawable):
+        label = max_label = max_label + 1
+      for wire in connector.wires():
+        if wire not in relabeled_wires or (isinstance(drawable,
+            Wire_Connector_Drawable) and wire.label != str(label)):
+          relabeled_wires.add(wire)
+          wire.label = str(label)
+          if DISPLAY_WIRE_LABELS:
+            wire.redraw(self._canvas)
+          next_drawable = wire.other_connector(connector).drawable
+          max_label = max(max_label,
+              self._relabel_wires_from(next_drawable, relabeled_wires, label))
+    return max_label
+  def _relabel_wires(self):
+    """
+    TODO(mikemeko)
+    """
+    relabeled_wires = set()
+    label = 0
+    for drawable in self.get_drawables():
+      label = self._relabel_wires_from(drawable, relabeled_wires, label)
+    print
+  def _add_wire(self, wire_parts, start_connector, end_connector):
     """
     Creates a Wire object using the given parameters. This method assumes that
         |start_connector| and |end_connector| are connectors on this board and
         that the wire has been drawn on the board with the given |wire_parts|.
-        The wire will have the given |label|.
     """
-    wire = Wire(wire_parts, start_connector, end_connector, label,
+    wire = Wire(wire_parts, start_connector, end_connector,
         self._directed_wires)
     def add_wire():
       """
@@ -263,33 +293,15 @@ class Board(Frame):
           connector.drawable.redraw(self._canvas)
         else:
           connector.redraw(self._canvas)
+      self._relabel_wires()
     def remove_wire():
       """
       TODO(mikemeko)
       """
       wire.delete_from(self._canvas)
+      self._relabel_wires()
     add_wire()
     self._action_history.record_action(Action(add_wire, remove_wire, 'wire'))
-  def _new_wire_label(self):
-    """
-    Returns a new wire label that has not yet been used.
-    """
-    label = str(self._wire_labeler)
-    self._wire_labeler += 1
-    return label
-  def _update_labels(self, connector, label):
-    """
-    If |connector| is a wire connector, this method updates the labels on
-        it and on all wires and wire connectors that are connected to it.
-    """
-    if isinstance(connector.drawable, Wire_Connector_Drawable) and (
-        connector.drawable.label is not label):
-      connector.drawable.label = label
-      for wire in connector.wires():
-        if wire.label is not label:
-          wire.label = label
-          wire.redraw(self._canvas)
-          self._update_labels(wire.other_connector(connector), label)
   def _wire_press(self, event):
     """
     Callback for when a connector is pressed to start creating a wire. Updates
@@ -311,55 +323,37 @@ class Board(Frame):
   def _wire_release(self, event):
     """
     Callback for when wire creation is complete. Updates wire data.
-    Appropriately updates wire labels.
     """
     if self._wire_parts:
       start_connector = self._connector_at(self._wire_start)
-      # find a label for the new wire
-      if isinstance(start_connector.drawable, Wire_Connector_Drawable):
-        # if drawing off of a wire connector, use its label for the new wire
-        label = start_connector.drawable.label
-      else:
-        # if drawing off of an item, assign a new label to the new wire
-        label = self._new_wire_label()
       end_connector = self._connector_at(self._wire_end)
       if not end_connector:
         # if no end connector is found when wire drawing is complete, then
         # create a wire connector at the end of the new wire
-        wire_connector_drawable = Wire_Connector_Drawable(label)
+        wire_connector_drawable = Wire_Connector_Drawable()
         # setup offset in an intuitive place based on how the wire was drawn
         self._add_drawable(wire_connector_drawable, self._wire_end)
         end_connector = self._connector_at(self._wire_end)
-      elif isinstance(end_connector.drawable, Wire_Connector_Drawable):
-        # if an end connector is found, and it is a wire connector, we need to
-        # update the labels of all wires and wire connectors attached to it
-        self._update_labels(end_connector, label)
       # create wire
-      self._add_wire(self._wire_parts, start_connector, end_connector,
-          label)
+      self._add_wire(self._wire_parts, start_connector, end_connector)
       # mark the board changed
       self.set_changed(True)
     # reset
     self._wire_parts = None
     self._wire_start = None
     self._wire_end = None
-  def add_wire(self, x1, y1, x2, y2, label):
+  def add_wire(self, x1, y1, x2, y2):
     """
-    Adds a wire to this board going from (|x1|, |y1|) to (|x2|, |y2|) and with
-        the given |label|. This method assumes that there are connectors on
-        this board at the given start and end locations of the wire.
+    Adds a wire to this board going from (|x1|, |y1|) to (|x2|, |y2|). This
+        method assumes that there are connectors on this board at the given
+        start and end locations of the wire.
     """
     start_connector = self._connector_at((x1, y1))
     assert start_connector, 'There must be a connector at (x1, y1)'
     end_connector = self._connector_at((x2, y2))
     assert end_connector, 'There must be a connector at (x2, y2)'
     self._add_wire(create_wire(self._canvas, x1, y1, x2, y2,
-        self._directed_wires), start_connector, end_connector, label)
-    # TODO(mikemeko): this is a temporary bug fix - if externally added wire
-    #     (from a saved file) has a higher label, this board should not create
-    #     wires that match externally added wire
-    if int(label) >= self._wire_labeler:
-      self._wire_labeler = int(label) + 1
+        self._directed_wires), start_connector, end_connector)
   def _delete(self, event):
     """
     Callback for deleting an item on the board. Mark the board changed if
@@ -386,9 +380,7 @@ class Board(Frame):
     if wire_to_delete:
       self._action_history.record_action(wire_to_delete.delete_from(
           self._canvas))
-      # may need to relabel the wires, arbitrarily choose start connector
-      self._update_labels(wire_to_delete.start_connector,
-          self._new_wire_label())
+      self._relabel_wires()
       self.set_changed(True)
   def add_key_binding(self, key, callback, flags=0):
     """

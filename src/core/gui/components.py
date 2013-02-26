@@ -273,12 +273,11 @@ class Wire:
   """
   Representation for a wire connecting Drawables via Connectors.
   """
-  def __init__(self, parts, start_connector, end_connector, label, directed):
+  def __init__(self, parts, start_connector, end_connector, directed):
     """
     |parts|: a list of the canvas ids of the lines the wire is composed of.
     |start_connector|: the start Connector for this wire.
     |end_connector|: the end Connector for this wire.
-    |label|: the label for this wire.
     |directed|: True if this wire is directed, False otherwise.
     """
     assert isinstance(start_connector, Connector), ('start_connector must be a'
@@ -288,8 +287,9 @@ class Wire:
     self.parts = parts
     self.start_connector = start_connector
     self.end_connector = end_connector
-    self.label = label
     self.directed = directed
+    # TODO(mikemeko)
+    self.label = None
   def other_connector(self, connector):
     """
     Returns the connector on this wire on the opposite end of the given
@@ -394,14 +394,9 @@ class Wire_Connector_Drawable(Drawable):
   Drawable to connect wires. This can be used to "bend" wires as well us as an
       ending to wires that outherwise would not have endings.
   """
-  def __init__(self, label):
-    """
-    |label|: the label for this connector, which should be the same as the
-        labels for all the wires that are attached to it.
-    """
+  def __init__(self):
     Drawable.__init__(self, CONNECTOR_RADIUS * 2, CONNECTOR_RADIUS * 2,
         CONNECTOR_CENTER)
-    self.label = label
   def draw_on(self, canvas, offset=(0, 0)):
     # nothing to draw
     pass

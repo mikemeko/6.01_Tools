@@ -146,7 +146,7 @@ class System:
     # eliminate one output variable at a time until all but self.Y are gone
     for component in self.components:
       out_var_to_eliminate = component.out_var
-      if out_var_to_eliminate is not self.Y:
+      if out_var_to_eliminate != self.Y:
         new_rep = self._solve_for_var(out_var_to_eliminate,
             out_var_reps.pop(out_var_to_eliminate))
         for out_var in out_var_reps:

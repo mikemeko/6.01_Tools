@@ -64,7 +64,7 @@ def serialize_system_drawable(drawable, offset):
     return '%s %s %s' % (IO_MARK, drawable.signal, str(offset))
   # wire connector
   elif isinstance(drawable, Wire_Connector_Drawable):
-    return '%s %s %s' % (WIRE_CONNECTOR_MARK, drawable.label, offset)
+    return '%s %s' % (WIRE_CONNECTOR_MARK, offset)
   else:
     # should never get here
     raise Exception('Unexpected Drawable type')
@@ -74,8 +74,8 @@ def serialize_wire(wire):
   Serializes the given |wire|.
   """
   assert isinstance(wire, Wire), 'wire must be a Wire'
-  return '%s %s %s %s' % (WIRE_MARK, wire.label,
-      str(wire.start_connector.center), str(wire.end_connector.center))
+  return '%s %s %s' % (WIRE_MARK, str(wire.start_connector.center),
+      str(wire.end_connector.center))
 
 def deserialize_item(item_str, board):
   """
@@ -122,23 +122,21 @@ def deserialize_item(item_str, board):
       raise Exception('Unexpected IO signal')
     return
   # wire connector
-  wire_connector_match = match(r'%s (\w+) %s' % (WIRE_CONNECTOR_MARK,
-      RE_INT_PAIR), item_str)
+  wire_connector_match = match(r'%s %s' % (WIRE_CONNECTOR_MARK, RE_INT_PAIR),
+      item_str)
   if wire_connector_match:
-    label = wire_connector_match.group(1)
-    ox, oy = map(int, wire_connector_match.groups()[1:])
-    board.add_drawable(Wire_Connector_Drawable(label), (ox, oy))
+    ox, oy = map(int, wire_connector_match.groups())
+    board.add_drawable(Wire_Connector_Drawable(), (ox, oy))
     return
   # wire
-  wire_match = match(r'%s (\w+) %s %s' % (WIRE_MARK, RE_INT_PAIR, RE_INT_PAIR),
+  wire_match = match(r'%s %s %s' % (WIRE_MARK, RE_INT_PAIR, RE_INT_PAIR),
       item_str)
   if wire_match:
-    label = wire_match.group(1)
-    x1, y1, x2, y2 = map(int, wire_match.groups()[1:])
-    board.add_wire(x1, y1, x2, y2, label)
+    x1, y1, x2, y2 = map(int, wire_match.groups())
+    board.add_wire(x1, y1, x2, y2)
     return
   # should never get here
-  raise Exception('Could not deserialize serialized item')
+  raise Exception('Could not deserialize serialized item: %s' % item_str)
 
 def get_board_rep(board):
   """
