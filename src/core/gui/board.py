@@ -134,7 +134,7 @@ class Board(Frame):
         item exists.
     TODO(mikemeko): should return the topmost such drawable.
     """
-    for drawable in self.get_drawables():
+    for drawable in self._get_drawables():
       if point_inside_bbox(point, drawable.bounding_box(drawable.offset)):
         return drawable
     return None
@@ -145,7 +145,7 @@ class Board(Frame):
         such connector exists.
     TODO(mikemeko): should return the topmost such connector.
     """
-    for drawable in self.get_drawables():
+    for drawable in self._get_drawables():
       for connector in drawable.connectors:
         cx, cy = connector.center
         if point_inside_circle(point, (cx, cy, CONNECTOR_RADIUS)):
@@ -155,7 +155,7 @@ class Board(Frame):
     """
     Returns the wire with id |canvas_id|, or None if no such wire exists.
     """
-    for drawable in self.get_drawables():
+    for drawable in self._get_drawables():
       for wire in drawable.wires():
         if canvas_id in wire.parts:
           return wire
@@ -244,35 +244,6 @@ class Board(Frame):
     x2, y2 = self._wire_end
     self._wire_parts = create_wire(self._canvas, x1, y1, x2, y2,
         self._directed_wires)
-  def _relabel_wires_from(self, drawable, relabeled_wires, label):
-    """
-    TODO(mikemeko)
-    """
-    max_label = label
-    for connector in drawable.connectors:
-      if connector.num_wires() and not isinstance(drawable,
-          Wire_Connector_Drawable):
-        label = max_label = max_label + 1
-      for wire in connector.wires():
-        if wire not in relabeled_wires or (isinstance(drawable,
-            Wire_Connector_Drawable) and wire.label != str(label)):
-          relabeled_wires.add(wire)
-          wire.label = str(label)
-          if DISPLAY_WIRE_LABELS:
-            wire.redraw(self._canvas)
-          next_drawable = wire.other_connector(connector).drawable
-          max_label = max(max_label,
-              self._relabel_wires_from(next_drawable, relabeled_wires, label))
-    return max_label
-  def _relabel_wires(self):
-    """
-    TODO(mikemeko)
-    """
-    relabeled_wires = set()
-    label = 0
-    for drawable in self.get_drawables():
-      label = self._relabel_wires_from(drawable, relabeled_wires, label)
-    print
   def _add_wire(self, wire_parts, start_connector, end_connector):
     """
     Creates a Wire object using the given parameters. This method assumes that
@@ -293,13 +264,11 @@ class Board(Frame):
           connector.drawable.redraw(self._canvas)
         else:
           connector.redraw(self._canvas)
-      self._relabel_wires()
     def remove_wire():
       """
       TODO(mikemeko)
       """
       wire.delete_from(self._canvas)
-      self._relabel_wires()
     add_wire()
     self._action_history.record_action(Action(add_wire, remove_wire, 'wire'))
   def _wire_press(self, event):
@@ -380,7 +349,6 @@ class Board(Frame):
     if wire_to_delete:
       self._action_history.record_action(wire_to_delete.delete_from(
           self._canvas))
-      self._relabel_wires()
       self.set_changed(True)
   def add_key_binding(self, key, callback, flags=0):
     """
@@ -453,7 +421,7 @@ class Board(Frame):
     """
     assert isinstance(drawable, Drawable), 'drawable must be a Drawable'
     bbox = drawable.bounding_box(offset)
-    for other in self.get_drawables():
+    for other in self._get_drawables():
       if (drawable.__class__ == other.__class__ and
           (disregard_location or bbox == other.bounding_box(other.offset))):
         return True
@@ -563,13 +531,47 @@ class Board(Frame):
         lambda: drawable.redraw(self._canvas),
         lambda: drawable.delete_from(self._canvas),
         'add_drawable'))
-  def get_drawables(self):
+  def _label_wires_from(self, drawable, relabeled_wires, label):
     """
-    Returns the live drawables on this board.
+    TODO(mikemeko)
+    """
+    max_label = label
+    for connector in drawable.connectors:
+      if connector.num_wires() and not isinstance(drawable,
+          Wire_Connector_Drawable):
+        label = max_label = max_label + 1
+      for wire in connector.wires():
+        if wire not in relabeled_wires or (isinstance(drawable,
+            Wire_Connector_Drawable) and wire.label != str(label)):
+          relabeled_wires.add(wire)
+          wire.label = str(label)
+          if DISPLAY_WIRE_LABELS:
+            wire.redraw(self._canvas)
+          next_drawable = wire.other_connector(connector).drawable
+          max_label = max(max_label,
+              self._label_wires_from(next_drawable, relabeled_wires, label))
+    return max_label
+  def _label_wires(self):
+    """
+    TODO(mikemeko)
+    """
+    relabeled_wires = set()
+    label = 0
+    for drawable in self._get_drawables():
+      label = self._label_wires_from(drawable, relabeled_wires, label) + 1
+  def _get_drawables(self):
+    """
+    TODO(mikemeko)
     """
     for drawable in self._drawables:
       if drawable.is_live():
         yield drawable
+  def get_drawables(self):
+    """
+    Returns the live drawables on this board.
+    """
+    self._label_wires()
+    return self._get_drawables()
   def get_drawable_offset(self, drawable):
     """
     Returns the offset with which the given |drawable| is drawn. Assumes that
@@ -581,7 +583,7 @@ class Board(Frame):
     """
     Removes all drawables from this board.
     """
-    for drawable in self.get_drawables():
+    for drawable in self._get_drawables():
       drawable.delete_from(self._canvas)
     self._drawables.clear()
   def undo(self):

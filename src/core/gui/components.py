@@ -318,6 +318,7 @@ class Wire:
       x1, y1 = self.start_connector.center
       x2, y2 = self.end_connector.center
       self.parts = create_wire(canvas, x1, y1, x2, y2, self.directed)
+      self.redraw(canvas)
     delete()
     return Action(delete, undelete, 'delete wire parts')
   def _remove_from_connectors(self, canvas):
