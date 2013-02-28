@@ -1,6 +1,7 @@
 """
 Runs system simulator.
 TODO(mikemeko): Ctrl-O, ctrl mark not released.
+TODO(mikemeko): bug: USR or FR blocks UI.
 """
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'

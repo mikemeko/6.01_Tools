@@ -2,7 +2,8 @@
 GUI tool on which several items may be drawn. Supports dragging the items
     around, connecting the items with wires, deleting items, rotating items,
     and displaying messages.
-TODO(mikemeko): relabel wires
+TODO(mikemeko): enable snapping wires onto other wires? enable starting drawing
+    wires from other wires?
 """
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'

@@ -1,5 +1,8 @@
 """
 Utility methods to save and open DT LTI system boards.
+TODO(mikemeko): refactor
+  serialize and deserialize should be supported by Drawable
+  file_util should be in core
 """
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
