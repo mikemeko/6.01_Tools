@@ -10,7 +10,7 @@ from unittest import TestCase
 
 class Equation_Solver_Test(TestCase):
   """
-  Tests for gui/math/equation_solver.
+  Tests for core/math/equation_solver.
   """
   def test_simple_equation(self):
     solution = solve_equations([[(1, 'x')]])
