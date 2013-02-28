@@ -1,5 +1,5 @@
 """
-TODO(mikemeko)
+Support for undo/redo.
 """
 
 __author__ = 'mikemeko@mit.edu (Mihchael Mekonnen)'
@@ -9,14 +9,16 @@ from core.util.util import is_callable
 
 class Action:
   """
-  TODO(mikemeko)
+  Representation for an action that can be done or undone.
   """
   def __init__(self, do_action, undo_action, description='Action'):
     """
-    TODO(mikemeko)
+    |do_action|: method to call to do the action.
+    |undo_action|: method to call to undo the action.
+    |description|: a description of this action (for debugging).
     """
-    assert is_callable(do_action)
-    assert is_callable(undo_action)
+    assert is_callable(do_action), 'do_action must be callable'
+    assert is_callable(undo_action), 'undo_action must be callable'
     self.do_action = do_action
     self.undo_action = undo_action
     self.description = description
@@ -25,24 +27,26 @@ class Action:
 
 class Multi_Action(Action):
   """
-  TODO(mikemeko)
+  Representation for an action composed of multiple small actions.
   """
   def __init__(self, actions, description='Multi_Action'):
     """
-    TODO(mikemeko)
+    |actions|: a list containing the small Actions of which this Multi_Action
+        is composed.
     """
-    assert isinstance(actions, list)
-    assert all(isinstance(item, Action) for item in actions)
+    assert isinstance(actions, list), 'actions must be a list'
+    assert all(isinstance(item, Action) for item in actions), (
+        'all sub-actions must be Actions')
     self.actions = actions
     def do_actions():
       """
-      TODO(mikemeko)
+      Does the actions in the given order.
       """
       for action in actions:
         action.do_action()
     def undo_actions():
       """
-      TODO(mikemeko)
+      Undoes the actions in the reverse order.
       """
       for action in reversed(actions):
         action.undo_action()
@@ -52,23 +56,27 @@ class Multi_Action(Action):
 
 class Action_History:
   """
-  TODO(mikemeko)
+  Data structure to record a history of actions.
   """
   def __init__(self):
     self._undo_stack = []
     self._redo_stack = []
+    if DEBUG_UNDO:
+      print 'empty Action_History created'
   def record_action(self, action):
     """
-    TODO(mikemeko)
+    Records the given |action| as the latest action done.
     """
     assert isinstance(action, Action), 'action must be an Action'
     self._undo_stack.append(action)
+    # clear redo stack since a new action has been performed
     self._redo_stack = []
     if DEBUG_UNDO:
       print self
   def undo(self):
     """
-    TODO(mikemeko)
+    If an action has been done since creation or last clear, undoes the latest
+        action and returns True. Otherwise returns False.
     """
     if self._undo_stack:
       last_action = self._undo_stack.pop()
@@ -80,7 +88,8 @@ class Action_History:
     return False
   def redo(self):
     """
-    TODO(mikemeko)
+    If an action has been undone since creation or last clear, does the latest
+        such action and returns True. Otherwise returns False.
     """
     if self._redo_stack:
       next_action = self._redo_stack.pop()
@@ -92,12 +101,12 @@ class Action_History:
     return False
   def clear(self):
     """
-    TODO(mikemeko)
+    Clears the history recorded so far.
     """
     self._undo_stack = []
     self._redo_stack = []
     if DEBUG_UNDO:
-      print self
+      print 'Action_History cleared'
   def __str__(self):
     return '%s <|> %s' % (', '.join(map(str, self._undo_stack)),
         ', '.join(map(str, reversed(self._redo_stack))))
