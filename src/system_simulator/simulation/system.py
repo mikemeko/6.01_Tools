@@ -131,7 +131,7 @@ class System:
     new_data = {}
     denominator = R_Ratio(R_Polynomial.one()) - poly.coeff(var)
     for v in poly.variables():
-      if v is not var:
+      if v != var:
         new_data[v] = poly.coeff(v) / denominator
     return Polynomial(new_data)
   def _solve_sf(self):

@@ -1,5 +1,6 @@
 """
 Runs system simulator.
+TODO(mikemeko): Ctrl-O, ctrl mark not released.
 """
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'

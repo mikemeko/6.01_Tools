@@ -535,29 +535,41 @@ class Board(Frame):
     """
     TODO(mikemeko)
     """
+    # maximum label that could have been used in this step of labeling
     max_label = label
     for connector in drawable.connectors:
-      if connector.num_wires() and not isinstance(drawable,
-          Wire_Connector_Drawable):
-        label = max_label = max_label + 1
       for wire in connector.wires():
-        if wire not in relabeled_wires or (isinstance(drawable,
-            Wire_Connector_Drawable) and wire.label != str(label)):
-          relabeled_wires.add(wire)
+        # if the drawable is a wire connector, then reuse the same label
+        # otherwise, use a new label for each wire
+        # Note: only wires that are connected by wire connectors can have the
+        #     same label
+        if not isinstance(drawable, Wire_Connector_Drawable):
+          label = max_label = max_label + 1
+        # only label a wire if it has not already been labeled
+        if wire not in relabeled_wires:
+          # label wire and mark it labeled
           wire.label = str(label)
+          relabeled_wires.add(wire)
+          # display label for debugging
           if DISPLAY_WIRE_LABELS:
             wire.redraw(self._canvas)
+          # propagate labeling if the other end of the wire is a wire connector
+          # use the same label for wires that follow
           next_drawable = wire.other_connector(connector).drawable
-          max_label = max(max_label,
-              self._label_wires_from(next_drawable, relabeled_wires, label))
+          if isinstance(next_drawable, Wire_Connector_Drawable):
+            max_label = max(max_label,
+                self._label_wires_from(next_drawable, relabeled_wires, label))
     return max_label
   def _label_wires(self):
     """
     TODO(mikemeko)
     """
+    # relabel all wires from scratch
     relabeled_wires = set()
     label = 0
     for drawable in self._get_drawables():
+      # increment label to pass to the next drawable so that disconnected wires
+      #     are never given the same label
       label = self._label_wires_from(drawable, relabeled_wires, label) + 1
   def _get_drawables(self):
     """
