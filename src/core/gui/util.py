@@ -93,7 +93,9 @@ def create_circle(canvas, x, y, r, *args, **kwargs):
 
 def create_connector(canvas, x, y, fill=CONNECTOR_EMPTY_COLOR):
   """
-  TODO(mikemeko)
+  Draws a connector centered at (|x|, |y|) on the |canvas| and with the given
+      |fill| color.
+  Returns the canvas id of the created object.
   """
   return create_circle(canvas, x, y, CONNECTOR_RADIUS, fill=fill,
       activewidth=2, tags=CONNECTOR_TAG)
