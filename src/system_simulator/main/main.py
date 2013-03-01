@@ -164,6 +164,10 @@ if __name__ == '__main__':
   file_menu.add_separator()
   file_menu.add_command(label='Quit', command=board.quit, accelerator='Ctrl+Q')
   menu.add_cascade(label='File', menu=file_menu)
+  edit_menu = Menu(menu, tearoff=0)
+  edit_menu.add_command(label='Undo', command=board.undo, accelerator='Ctrl+Z')
+  edit_menu.add_command(label='Redo', command=board.redo, accelerator='Ctrl+Y')
+  menu.add_cascade(label='Edit', menu=edit_menu)
   analyze_menu = Menu(menu, tearoff=0)
   analyze_menu.add_command(label='FR', command=lambda: run_analysis(board,
       plot_frequency_response), accelerator='F')
