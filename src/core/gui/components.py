@@ -29,7 +29,7 @@ from util import snap
 class Drawable:
   """
   An abstract class to represent an item that is drawn on the board. All
-      subclasses should impement the draw_on(canvas) method.
+      subclasses should impement the draw_on method.
   """
   def __init__(self, width, height, connector_flags=0):
     """
@@ -41,7 +41,7 @@ class Drawable:
     self.width = width
     self.height = height
     self.connector_flags = connector_flags
-    # canvas ids for the parts on this item, updated by draw_on(canvas)
+    # canvas ids for the parts on this item, should updated by draw_on
     self.parts = set()
     # connectors on this item, updated by board
     self.connectors = set()
@@ -53,7 +53,6 @@ class Drawable:
     Draws the parts of this item on the |canvas| at the given |offset|. Should
         add the canvas ids of all drawn objects to self.parts.
     All subclasses should implement this.
-    This method is called exactly once per Drawable.
     """
     raise NotImplementedError('subclasses should implement this')
   def rotated(self):
@@ -70,7 +69,7 @@ class Drawable:
     return self._live
   def set_live(self):
     """
-    TODO(mikemeko)
+    Sets (or resets) this drawable to be live. This is usefull for undo / redo.
     """
     self._live = True
   def deletable(self):
@@ -114,43 +113,53 @@ class Drawable:
       self._draw_connector(canvas, (x2, (y1 + y2) / 2))
     if self.connector_flags & CONNECTOR_TOP:
       self._draw_connector(canvas, ((x1 + x2) / 2, y1))
+  def attach_tags(self, canvas, tags=(DRAG_TAG, ROTATE_TAG)):
+    """
+    |tags|: a tuple of the tags to attach.
+    Attaches the given |tags| to every part of this drawable on the canvas.
+    """
+    for part in self.parts:
+      canvas.itemconfig(part, tags=tags)
   def redraw(self, canvas):
     """
-    TODO(mikemeko)
+    Redraws this drawable on the given |canvas|. If the drawable was previously
+        deleted, this method sets it live.
     """
-    # TODO(mikemeko): probably write a method to do all this work
-    # and use it in board._add_drawable
     self.draw_on(canvas, self.offset)
-    for part in self.parts:
-      canvas.itemconfig(part, tags=(DRAG_TAG, ROTATE_TAG))
+    self.attach_tags(canvas)
     for connector in self.connectors:
       connector.redraw(canvas)
-    # mark this drawable live
-    self._live = True
+    self.set_live()
   def _delete_from(self, canvas):
     """
-    TODO(mikemeko)
+    Deletes the parts of this drawable from the given |canvas|.
+    Returns an Action corresponding to the delete.
     """
     def delete():
       """
-      TODO(mikemeko)
+      Deletes the drawable.
       """
       for part in self.parts:
         canvas.delete(part)
       self.parts.clear()
       # mark this drawable deleted
       self._live = False
+    # do delete
     delete()
     return Action(delete, lambda: self.redraw(canvas), 'delete drawable parts')
   def delete_from(self, canvas):
     """
-    Deletes this item from the |canvas|.
+    Deletes all parts of this drawable as well as all connectors and wires
+        attached to it from the |canvas|.
+    Returns an Action corresponding to the collective delete.
     """
     assert self._live, 'this drawable has already been deleted'
-    # delete all connectors for this drawable
+    # track delete actions
     delete_actions = []
+    # first delete all the connectors for this drawable
     for connector in self.connectors:
       delete_actions.append(connector.delete_from(canvas))
+    # then delete all the parts of this drawable
     delete_actions.append(self._delete_from(canvas))
     return Multi_Action(delete_actions, 'delete drawable')
   def move(self, canvas, dx, dy):
@@ -158,7 +167,7 @@ class Drawable:
     Moves this item by |dx| in the x direction and |dy| in the y direction on
         the given |canvas|.
     """
-    if dx != 0 or dy != 0:
+    if dx or dy:
       # move all parts of this item
       for part in self.parts:
         canvas.move(part, dx, dy)
@@ -175,14 +184,14 @@ class Drawable:
 
 class Connector:
   """
-  Pieces used to connect items using wires.
+  Pieces used to connect drawables using wires.
   """
   def __init__(self, canvas_id, center, drawable):
     """
-    |canvas_id|: the canvas id of this connector.
+    |canvas_id|: the canvas id of the circle used to draw this connector.
     |center|: a tuple of the form (x, y) indicating the center of this
         connector.
-    |drawable|: the item to which this connector belongs.
+    |drawable|: the Drawable to which this connector belongs.
     """
     assert isinstance(drawable, Drawable), 'drawable must be a Drawable'
     self.canvas_id = canvas_id
@@ -194,28 +203,30 @@ class Connector:
     self.end_wires = set()
   def _delete_from(self, canvas):
     """
-    TODO(mikemeko)
+    Deletes this connector from the canvas.
+    Returns an Action corresponding to the delete.
     """
     def delete():
       """
-      TODO(mikemeko)
+      Deletes the connector circle from the canvas.
       """
       canvas.delete(self.canvas_id)
-    def undelete():
-      """
-      TODO(mikemeko)
-      """
-      self.redraw(canvas)
+    # do delete
     delete()
-    return Action(delete, undelete, 'delete connector parts')
+    return Action(delete, lambda: self.redraw(canvas),
+        'delete connector parts')
   def delete_from(self, canvas):
     """
-    Deletes this connector from the |canvas|.
+    Deletes this connector as well as all the wires attached to it from the
+        |canvas|.
+    Returns an Action corresponding to the collective delete.
     """
-    # delete all wires attached to this connector
+    # track delete actions
     delete_actions = []
+    # first delete all the wires attached to the connector
     for wire in list(self.wires()):
       delete_actions.append(wire.delete_from(canvas))
+    # then delete the connector circle
     delete_actions.append(self._delete_from(canvas))
     return Multi_Action(delete_actions, 'delete connector')
   def lift(self, canvas):
@@ -240,14 +251,14 @@ class Connector:
     Moves this connector by |dx| in the x direction and |dy| in the y
         direction.
     """
-    if dx != 0 or dy != 0:
+    if dx or dy:
       x, y = self.center
       self.center = (x + dx, y + dy)
       canvas.move(self.canvas_id, dx, dy)
       self._redraw_wires(canvas)
   def redraw(self, canvas):
     """
-    Redraws this connector, most importantly to mark it connected or not
+    Redraws this connector, most importantly to mark/color it connected or not
         connected.
     """
     canvas.delete(self.canvas_id)
@@ -288,7 +299,9 @@ class Wire:
     self.start_connector = start_connector
     self.end_connector = end_connector
     self.directed = directed
-    # TODO(mikemeko)
+    # wire starts unlabeld, but may be labeld by board when necessary
+    # wire labels are useful for applications
+    # see board._label_wires for details on wire labeling convention
     self.label = None
   def connectors(self):
     """
@@ -309,70 +322,74 @@ class Wire:
       raise Exception('Unexpected connector for this wire')
   def _delete_from(self, canvas):
     """
-    TODO(mikemeko)
+    Deletes the lines this wire is composed of from the |canvas|.
+    Returns an Action corresponding to the delete.
     """
     def delete():
       """
-      TODO(mikemeko)
+      Deletes the wire.
       """
       for part in self.parts:
         canvas.delete(part)
-    def undelete():
-      """
-      TODO(mikemeko)
-      """
-      x1, y1 = self.start_connector.center
-      x2, y2 = self.end_connector.center
-      self.parts = create_wire(canvas, x1, y1, x2, y2, self.directed)
-      self.redraw(canvas)
+      self.parts = []
+    # do delete
     delete()
-    return Action(delete, undelete, 'delete wire parts')
+    return Action(delete, lambda: self.redraw(canvas), 'delete wire parts')
   def _remove_from_connectors(self, canvas):
     """
-    TODO(mikemeko)
+    Removes this wire from its connectors.
+    Returns an Action corresponding to the removal.
     """
     def remove():
       """
-      TODO(mikemeko)
+      Removes the wire from its connectors.
       """
       self.start_connector.start_wires.remove(self)
+      self.start_connector.redraw(canvas)
       self.end_connector.end_wires.remove(self)
-      # TODO(mikemeko): self.connectors()
-      for connector in self.connectors():
-        connector.redraw(canvas)
+      self.end_connector.redraw(canvas)
     def unremove():
       """
-      TODO(mikemeko)
+      Adds this wire back to its connectors.
       """
       self.start_connector.start_wires.add(self)
+      self.start_connector.redraw(canvas)
       self.end_connector.end_wires.add(self)
-      for connector in self.connectors():
-        connector.redraw(canvas)
+      self.end_connector.redraw(canvas)
+    # do remove
     remove()
     return Action(remove, unremove, 'remove wire from connectors')
   def _maybe_delete_empty_wire_connector(self, canvas, connector):
     """
     Deletes |connector| if it is a wire connector and it is not connected to
-        any wires. Returns True if |connector| is deleted, False otherwise.
+        any wires. If the connector is deleted, returns an Action corresponding
+        to the delete. Returns None otherwise.
     """
     if not connector.num_wires() and isinstance(connector.drawable,
         Wire_Connector_Drawable) and connector.drawable.is_live():
       return connector.drawable.delete_from(canvas)
   def delete_from(self, canvas):
     """
-    Deletes this wire from the |canvas|.
+    Deletes this wire from the |canvas|. If any of its connectors ends up
+        being an empty wire connector, it gets deleted. Returns an Action
+        corresponding to the collective delete.
     """
-    delete_actions = [self._delete_from(canvas),
-        self._remove_from_connectors(canvas)]
-    for connector in (self.start_connector, self.end_connector):
-      delete_connector = self._maybe_delete_empty_wire_connector(canvas,
+    # track delete actions
+    delete_actions = []
+    # first delete wire parts
+    delete_actions.append(self._delete_from(canvas))
+    # then remove wire from connectors
+    delete_actions.append(self._remove_from_connectors(canvas))
+    # then delete connectors if they end up being empty wire connectors
+    for connector in self.connectors():
+      delete_connector_action = self._maybe_delete_empty_wire_connector(canvas,
           connector)
-      if delete_connector:
-        delete_actions.append(delete_connector)
+      if delete_connector_action:
+        delete_actions.append(delete_connector_action)
     return Multi_Action(delete_actions, 'delete wire')
   def _draw_label(self, canvas):
     """
-    Draws the label of this wire.
+    Draws the label of this wire at the middle of the wire.
     """
     x1, y1 = self.start_connector.center
     x2, y2 = self.end_connector.center

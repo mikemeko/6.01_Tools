@@ -265,16 +265,17 @@ class Board(Frame):
       Adds the wire to the board.
       """
       start_connector.start_wires.add(wire)
+      # in case the end_connector was created for the purpose of this wire,
+      # set it live since it will have been deleted on undo
+      # see self._wire_release
+      if isinstance(end_connector.drawable, Wire_Connector_Drawable):
+        end_connector.drawable.set_live()
       end_connector.end_wires.add(wire)
       wire.redraw(self._canvas)
-    def remove_wire():
-      """
-      Removes the wire from the board.
-      """
-      wire.delete_from(self._canvas)
     # do add wire
     add_wire()
-    self._action_history.record_action(Action(add_wire, remove_wire, 'wire'))
+    self._action_history.record_action(Action(add_wire,
+        lambda: wire.delete_from(self._canvas), 'wire'))
   def _wire_press(self, event):
     """
     Callback for when a connector is pressed to start creating a wire. Updates
@@ -518,8 +519,7 @@ class Board(Frame):
     # draw its connectors
     drawable.draw_connectors(self._canvas, offset)
     # attach drag tag
-    for part in drawable.parts:
-      self._canvas.itemconfig(part, tags=(DRAG_TAG, ROTATE_TAG))
+    drawable.attach_tags(self._canvas)
     # mark this board changed
     self.set_changed(True)
     # if this drawable had been deleted previously, set it live

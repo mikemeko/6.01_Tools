@@ -1,6 +1,6 @@
 """
 Utility methods to save and open DT LTI system boards.
-TODO(mikemeko): refactor
+TODO(mikemeko): refactor:
   serialize and deserialize should be supported by Drawable
   file_util should be in core
 """
