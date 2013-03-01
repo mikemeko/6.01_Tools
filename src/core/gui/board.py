@@ -4,6 +4,7 @@ GUI tool on which several items may be drawn. Supports dragging the items
     and displaying messages.
 TODO(mikemeko): enable snapping wires onto other wires? enable starting drawing
     wires from other wires?
+TODO(mikemeko): undo / redo for text changes (gain, resistor).
 """
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
