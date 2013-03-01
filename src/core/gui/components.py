@@ -290,6 +290,12 @@ class Wire:
     self.directed = directed
     # TODO(mikemeko)
     self.label = None
+  def connectors(self):
+    """
+    Returns a generator for the two connectors of this wire.
+    """
+    yield self.start_connector
+    yield self.end_connector
   def other_connector(self, connector):
     """
     Returns the connector on this wire on the opposite end of the given
@@ -332,7 +338,7 @@ class Wire:
       self.start_connector.start_wires.remove(self)
       self.end_connector.end_wires.remove(self)
       # TODO(mikemeko): self.connectors()
-      for connector in (self.start_connector, self.end_connector):
+      for connector in self.connectors():
         connector.redraw(canvas)
     def unremove():
       """
@@ -340,7 +346,7 @@ class Wire:
       """
       self.start_connector.start_wires.add(self)
       self.end_connector.end_wires.add(self)
-      for connector in (self.start_connector, self.end_connector):
+      for connector in self.connectors():
         connector.redraw(canvas)
     remove()
     return Action(remove, unremove, 'remove wire from connectors')
@@ -387,8 +393,8 @@ class Wire:
     if DISPLAY_WIRE_LABELS:
       self._draw_label(canvas)
     # lift connectors to make it easy to draw other wires
-    self.start_connector.lift(canvas)
-    self.end_connector.lift(canvas)
+    for connector in self.connectors():
+      connector.redraw(canvas)
 
 class Wire_Connector_Drawable(Drawable):
   """

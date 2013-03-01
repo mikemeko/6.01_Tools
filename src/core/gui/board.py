@@ -18,6 +18,7 @@ from constants import BOARD_GRID_SEPARATION
 from constants import BOARD_WIDTH
 from constants import CONNECTOR_RADIUS
 from constants import CONNECTOR_TAG
+from constants import CTRL_CURSOR
 from constants import CTRL_DOWN
 from constants import DISPLAY_WIRE_LABELS
 from constants import DRAG_TAG
@@ -34,10 +35,12 @@ from constants import MESSAGE_WARNING_COLOR
 from constants import MESSAGE_WARNING_DURATION
 from constants import MESSAGE_WIDTH
 from constants import ROTATE_TAG
+from constants import SHIFT_CURSOR
 from constants import SHIFT_DOWN
 from constants import WARNING
 from core.util.undo import Action
 from core.util.undo import Action_History
+from core.util.util import is_callable
 from threading import Timer
 from Tkinter import ALL
 from Tkinter import Canvas
@@ -163,21 +166,24 @@ class Board(Frame):
     return None
   def _update_drawable_offset(self, drawable, dx, dy):
     """
-    TODO(mikemeko)
+    Updates the offset of the given |drawable| by (|dx|, |dy|). Assumes that
+        |drawable| is on this board.
     """
-    assert drawable in self._drawables, 'drawable not on board'
+    assert drawable in self._drawables, 'drawable is not on board'
     x, y = drawable.offset
     drawable.offset = x + dx, y + dy
   def _move_drawable(self, drawable, dx, dy):
     """
-    TODO(mikemeko)
+    Moves the given |drawable| by (|dx|, |dy|). Assumes that |drawable| is on
+        this board.
     """
-    # mark the board changed if so
+    assert drawable in self._drawables, 'drawable is not on board'
     if dx or dy:
+      # mark the board changed
       self.set_changed(True)
-      # move the item being dragged
+      # move the drawable on the canvas
       drawable.move(self._canvas, dx, dy)
-      # update offset of item being dragged
+      # update the drawable's offset
       self._update_drawable_offset(drawable, dx, dy)
   def _drag_press(self, event):
     """
@@ -190,29 +196,30 @@ class Board(Frame):
     """
     Callback for when a drawable item is being moved. Updates drag state.
     """
-    assert self._drag_item, 'No item being dragged'
-    last_x, last_y = self._drag_last_point
-    dx = snap(event.x - last_x)
-    dy = snap(event.y - last_y)
-    self._move_drawable(self._drag_item, dx, dy)
-    # update drag state
-    self._drag_last_point = (last_x + dx, last_y + dy)
+    if self._drag_item:
+      # move the drawable being dragged
+      last_x, last_y = self._drag_last_point
+      dx = snap(event.x - last_x)
+      dy = snap(event.y - last_y)
+      self._move_drawable(self._drag_item, dx, dy)
+      # update drag state
+      self._drag_last_point = (last_x + dx, last_y + dy)
   def _drag_release(self, event):
     """
     Callback for when a drawable item is released. Updates drag state.
     """
-    # TODO(mikemeko): comment
-    drawable = self._drag_item
-    if drawable and self._drag_start_point:
+    if self._drag_item:
+      # save drag item to enable undo / redo
+      drawable = self._drag_item
       start_x, start_y = self._drag_start_point
       end_x, end_y = self._drag_last_point
       dx = end_x - start_x
       dy = end_y - start_y
       if dx or dy:
+        # +dx, +dy to do move, -dx, -dy to undo move
         self._action_history.record_action(Action(
             lambda: self._move_drawable(drawable, dx, dy),
-            lambda: self._move_drawable(drawable, -dx, -dy),
-            'move'))
+            lambda: self._move_drawable(drawable, -dx, -dy), 'move'))
     # reset
     self._drag_item = None
     self._drag_start_point = None
@@ -255,21 +262,17 @@ class Board(Frame):
         self._directed_wires)
     def add_wire():
       """
-      TODO(mikemeko)
+      Adds the wire to the board.
       """
-      wire.redraw(self._canvas)
       start_connector.start_wires.add(wire)
       end_connector.end_wires.add(wire)
-      for connector in (start_connector, end_connector):
-        if isinstance(connector.drawable, Wire_Connector_Drawable):
-          connector.drawable.redraw(self._canvas)
-        else:
-          connector.redraw(self._canvas)
+      wire.redraw(self._canvas)
     def remove_wire():
       """
-      TODO(mikemeko)
+      Removes the wire from the board.
       """
       wire.delete_from(self._canvas)
+    # do add wire
     add_wire()
     self._action_history.record_action(Action(add_wire, remove_wire, 'wire'))
   def _wire_press(self, event):
@@ -300,9 +303,7 @@ class Board(Frame):
       if not end_connector:
         # if no end connector is found when wire drawing is complete, then
         # create a wire connector at the end of the new wire
-        wire_connector_drawable = Wire_Connector_Drawable()
-        # setup offset in an intuitive place based on how the wire was drawn
-        self._add_drawable(wire_connector_drawable, self._wire_end)
+        self._add_drawable(Wire_Connector_Drawable(), self._wire_end)
         end_connector = self._connector_at(self._wire_end)
       # create wire
       self._add_wire(self._wire_parts, start_connector, end_connector)
@@ -326,7 +327,7 @@ class Board(Frame):
         self._directed_wires), start_connector, end_connector)
   def _delete(self, event):
     """
-    Callback for deleting an item on the board. Mark the board changed if
+    Callback for deleting an item on the board. Marks the board changed if
         any item is deleted.
     """
     # delete a drawable item?
@@ -355,6 +356,7 @@ class Board(Frame):
     """
     Adds a key-binding so that whenever |key| is pressed, |callback| is called.
     """
+    assert is_callable(callback), 'callback must be callable'
     self._key_press_callbacks[key.lower()] = (callback, flags)
   def _key_press(self, event):
     """
@@ -362,10 +364,10 @@ class Board(Frame):
     """
     if event.keysym in ('Control_L', 'Control_R'):
       self._ctrl_pressed = True
-      self.configure(cursor='pirate')
+      self.configure(cursor=CTRL_CURSOR)
     elif event.keysym in ('Shift_L', 'Shift_R'):
       self._shift_pressed = True
-      self.configure(cursor='exchange')
+      self.configure(cursor=SHIFT_CURSOR)
     elif event.keysym.lower() in self._key_press_callbacks:
       callback, flags = self._key_press_callbacks[event.keysym.lower()]
       if (self._ctrl_pressed or not flags & CTRL_DOWN) and (
@@ -389,23 +391,24 @@ class Board(Frame):
     if drawable_to_rotate:
       # make sure that it is not connected to other drawables
       if any(drawable_to_rotate.wires()):
-        self.display_message('Cannot rotate a connected item', ERROR)
+        self.display_message('Cannot rotate a connected item', WARNING)
         return
       # remove current drawable and add rotated version
       rotated_drawable = drawable_to_rotate.rotated()
       if rotated_drawable is not drawable_to_rotate:
+        # save offset for undo / redo
         offset = drawable_to_rotate.offset
         def switch(remove, add):
           """
-          TODO(mikemeko)
+          Removes |remove| and adds |add|.
           """
           remove.delete_from(self._canvas)
           self._add_drawable(add, offset)
+        # do rotation
         switch(drawable_to_rotate, rotated_drawable)
         self._action_history.record_action(Action(
             lambda: switch(drawable_to_rotate, rotated_drawable),
-            lambda: switch(rotated_drawable, drawable_to_rotate),
-            'rotate'))
+            lambda: switch(rotated_drawable, drawable_to_rotate), 'rotate'))
   def quit(self):
     """
     Callback on exit.
@@ -417,8 +420,8 @@ class Board(Frame):
   def is_duplicate(self, drawable, offset=(0, 0), disregard_location=False):
     """
     Returns True if the exact |drawable| at the given |offset| is already on
-        the board, False otherwise. If |disregard_location| is True, |drawable|
-        will be considered duplicate if its type is anywhere on the board.
+        the board, False otherwise. If |disregard_location| is True, the
+        |offset| will be ignored.
     """
     assert isinstance(drawable, Drawable), 'drawable must be a Drawable'
     bbox = drawable.bounding_box(offset)
@@ -452,8 +455,6 @@ class Board(Frame):
     """
     # remove current message, if any
     self.remove_message()
-    # cancel message remove timer
-    self._cancel_message_remove_timer()
     # message container
     if message_type is WARNING:
       fill = MESSAGE_WARNING_COLOR
@@ -465,6 +466,7 @@ class Board(Frame):
       # default is info
       fill = MESSAGE_INFO_COLOR
       duration = MESSAGE_INFO_DURATION
+    # message container
     self._message_parts.append(self._canvas.create_rectangle((self.width -
         MESSAGE_WIDTH - MESSAGE_PADDING, self.height - MESSAGE_HEIGHT -
         MESSAGE_PADDING, self.width -  MESSAGE_PADDING, self.height -
@@ -498,17 +500,18 @@ class Board(Frame):
     Sets the changed status of this board.
     """
     assert isinstance(changed, bool), 'changed must be a bool'
-    self.remove_message()
     self._changed = changed
     if self._on_changed:
       self._on_changed(changed)
+    # remove message since an action has resulted in a board change
+    self.remove_message()
   def _add_drawable(self, drawable, offset):
     """
-    TODO(mikemeko)
+    Adds the given |drawable| at the given |offset|.
     """
-    # add it to the list of drawables on this board
+    # add it to the set of drawables on this board
     self._drawables.add(drawable)
-    # TODO(mikemeko)
+    # set drawable offset (TODO(mikemeko): hacky, but convenient storage)
     drawable.offset = offset
     # draw it
     drawable.draw_on(self._canvas, offset)
@@ -519,22 +522,24 @@ class Board(Frame):
       self._canvas.itemconfig(part, tags=(DRAG_TAG, ROTATE_TAG))
     # mark this board changed
     self.set_changed(True)
-    # TODO(mikemeko)
+    # if this drawable had been deleted previously, set it live
     drawable.set_live()
   def add_drawable(self, drawable, offset=(0, 0)):
     """
-    Adds the given |drawable| to this board at the given |offset|.
+    Adds the given |drawable| to this board at the given |offset|. Records this
+        action in the action history.
     """
     assert isinstance(drawable, Drawable), 'drawable must be a Drawable'
     self._add_drawable(drawable, offset)
-    # TODO(mikemeko)
     self._action_history.record_action(Action(
         lambda: drawable.redraw(self._canvas),
-        lambda: drawable.delete_from(self._canvas),
-        'add_drawable'))
+        lambda: drawable.delete_from(self._canvas), 'add_drawable'))
   def _label_wires_from(self, drawable, relabeled_wires, label):
     """
-    TODO(mikemeko)
+    Labels wires starting from the given |drawable|. Labels all wires that are
+        not already |relabeled_wires|. |label| is the smallest possible label
+        to use. Recursively labels wire connected by wire connectors. Returns
+        the maximum label used in the process.
     """
     # maximum label that could have been used in this step of labeling
     max_label = label
@@ -563,7 +568,8 @@ class Board(Frame):
     return max_label
   def _label_wires(self):
     """
-    TODO(mikemeko)
+    Labels the wires on this board such that two wires have the same label if
+        and only if they are connected via wire connectors.
     """
     # relabel all wires from scratch
     relabeled_wires = set()
@@ -574,14 +580,15 @@ class Board(Frame):
       label = self._label_wires_from(drawable, relabeled_wires, label) + 1
   def _get_drawables(self):
     """
-    TODO(mikemeko)
+    Returns a generator for the live drawables on this board.
     """
     for drawable in self._drawables:
       if drawable.is_live():
         yield drawable
   def get_drawables(self):
     """
-    Returns the live drawables on this board.
+    Labels the wires and then returns a generator for the live drawables on
+        this board.
     """
     self._label_wires()
     return self._get_drawables()
@@ -601,18 +608,20 @@ class Board(Frame):
     self._drawables.clear()
   def undo(self):
     """
-    TODO(mikemeko)
+    Undoes the last action that was done, where an action is one of: adding a
+        drawable, deleting a drawable, moving a drawable, rotating a drawable,
+        and deleting a wire.
     """
     if self._action_history.undo():
       self.set_changed(True)
   def redo(self):
     """
-    TODO(mikemeko)
+    Does the last action that was undone
     """
     if self._action_history.redo():
       self.set_changed(True)
   def clear_action_history(self):
     """
-    TODO(mikemeko)
+    Clears the action history.
     """
     self._action_history.clear()

@@ -62,6 +62,10 @@ MESSAGE_WARNING_DURATION = 4 # seconds
 CTRL_DOWN =  2**0
 SHIFT_DOWN = 2**1
 
+# cursors
+CTRL_CURSOR = 'pirate'
+SHIFT_CURSOR = 'exchange'
+
 # tags
 CONNECTOR_TAG = 'connector_tag'
 DRAG_TAG = 'drag_tag'
