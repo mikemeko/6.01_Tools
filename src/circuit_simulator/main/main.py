@@ -25,6 +25,7 @@ from core.gui.constants import RIGHT
 from core.gui.constants import ERROR
 from core.gui.constants import WARNING
 from core.gui.palette import Palette
+from Tkinter import Menu
 from Tkinter import Tk
 
 if __name__ == '__main__':
@@ -68,8 +69,24 @@ if __name__ == '__main__':
       lambda event: run_analysis(board, analyze))
   # shortcuts
   board.add_key_binding('a', lambda: run_analysis(board, analyze))
+  board.add_key_binding('q', board.quit, CTRL_DOWN)
   board.add_key_binding('y', board.redo, CTRL_DOWN)
   board.add_key_binding('z', board.undo, CTRL_DOWN)
+  # menu
+  menu = Menu(root, tearoff=0)
+  file_menu = Menu(menu, tearoff=0)
+  file_menu.add_separator()
+  file_menu.add_command(label='Quit', command=board.quit, accelerator='Ctrl+Q')
+  menu.add_cascade(label='File', menu=file_menu)
+  edit_menu = Menu(menu, tearoff=0)
+  edit_menu.add_command(label='Undo', command=board.undo, accelerator='Ctrl+Z')
+  edit_menu.add_command(label='Redo', command=board.redo, accelerator='Ctrl+Y')
+  menu.add_cascade(label='Edit', menu=edit_menu)
+  analyze_menu = Menu(menu, tearoff=0)
+  analyze_menu.add_command(label='Analyze', command=lambda: run_analysis(board,
+      analyze), accelerator='A')
+  menu.add_cascade(label='Analyze', menu=analyze_menu)
+  root.config(menu=menu)
   # clear board undo / redo history
   board.clear_action_history()
   # set title
