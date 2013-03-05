@@ -5,7 +5,6 @@ TODO(mikemeko)
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
 from constants import WIRE_LENGTH_LIMIT
-from copy import deepcopy
 from core.search.search import a_star
 from core.search.search import Search_Node
 from proto_board import Proto_Board
@@ -17,10 +16,10 @@ class Proto_Board_Search_Node(Search_Node):
   def _get_new_node(self, proto_board, loc_pairs, current_wires, new_wire, i):
     loc_1, loc_2 = new_wire
     new_proto_board = proto_board.with_wire(loc_1, loc_2)
-    new_current_wires = deepcopy(current_wires)
-    new_current_wires[i].append(new_wire)
+    new_current_wires = list(current_wires)
+    new_current_wires[i] = tuple(list(new_current_wires[i]) + [new_wire])
     return Proto_Board_Search_Node(new_proto_board, loc_pairs,
-        new_current_wires, self)
+        tuple(new_current_wires), self)
   def get_children(self):
     children = []
     proto_board, loc_pairs, current_wires = self.state
@@ -50,5 +49,8 @@ def goal_test(state):
 
 def find_wiring(loc_pairs, start_proto_board=Proto_Board()):
   start_node = Proto_Board_Search_Node(start_proto_board, loc_pairs,
-      [[] for pair in loc_pairs])
+      tuple(() for pair in loc_pairs))
   return a_star(start_node, goal_test)
+
+if __name__ == '__main__':
+  print find_wiring((((2, 0), (2, 2)),))
