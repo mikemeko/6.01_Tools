@@ -15,3 +15,6 @@ TOP_SECTION = set(r for r in xrange(2, PROTO_BOARD_HEIGHT / 2))
 
 # wire constants
 WIRE_LENGTH_LIMIT = 5
+
+# heuristic constants
+CROSSING_WIRE_PENALTY = 1000

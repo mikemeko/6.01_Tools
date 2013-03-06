@@ -9,6 +9,7 @@ from constants import PROTO_BOARD_HEIGHT
 from constants import PROTO_BOARD_WIDTH
 from constants import TOP_SECTION
 from copy import deepcopy
+from util import wires_cross
 
 # currently assumes that no pwr gnd rail locations
 class Proto_Board:
@@ -17,13 +18,9 @@ class Proto_Board:
     self._wires = wires
   def get_wires(self):
     return self._wires
-  def _cross(self, wire_1, wire_2):
-    (x11, y11), (x12, y12) = wire_1
-    (x21, y21), (x22, y22) = wire_2
-    # TODO
-  def crossing_wires(self):
+  def any_crossing_wires(self):
     num_wires = len(self._wires)
-    return any(self._cross(self._wires[i], self._wires[j]) for i in
+    return any(wires_cross(self._wires[i], self._wires[j]) for i in
         xrange(num_wires) for j in xrange(i + 1, num_wires))
   def _connected(self, loc_1, loc_2, visited=set()):
     if loc_1 in visited:
@@ -56,7 +53,7 @@ class Proto_Board:
   def section_rows(self, r):
     return BOTTOM_SECTION if r in BOTTOM_SECTION else TOP_SECTION
   def opp_section_rows(self, r):
-    return BOTTOM_SECTION if r in TOP_SECTION else BOTTOM_SECTION
+    return BOTTOM_SECTION if r in TOP_SECTION else TOP_SECTION
   def __str__(self):
     return str(self._wires)
 
