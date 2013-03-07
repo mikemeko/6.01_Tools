@@ -10,6 +10,8 @@ from circuit_simulator.proto_board.constants import PROTO_BOARD_WIDTH
 # color
 BACKGROUND_COLOR = 'white'
 CONNECTOR_COLOR = 'grey'
+WIRE_COLOR = 'orange'
+WIRE_OUTLINE = 'black'
 
 # size
 CONNECTOR_SIZE = 4
