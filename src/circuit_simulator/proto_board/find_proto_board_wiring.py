@@ -11,9 +11,11 @@ from constants import WIRE_LENGTH_LIMIT
 from core.search.search import a_star
 from core.search.search import Search_Node
 from proto_board import Proto_Board
-from util import dist
+from util import body_opp_section_rows
 from util import is_body_loc
 from util import is_rail_loc
+from util import section_dist
+from util import section_locs
 from util import valid_loc
 # TODO: remove
 from Tkinter import mainloop
@@ -44,7 +46,7 @@ class Proto_Board_Search_Node(Search_Node):
     for l in range(1, WIRE_LENGTH_LIMIT):
       wire_ends.append((r, c - l))
       wire_ends.append((r, c + l))
-    for new_r in proto_board.body_opp_section_rows(r):
+    for new_r in body_opp_section_rows(r):
       wire_ends.append((new_r, c))
     for rail_r in RAIL_ROWS:
       wire_ends.append((rail_r, c))
@@ -55,7 +57,7 @@ class Proto_Board_Search_Node(Search_Node):
     for i, (loc_1, loc_2) in enumerate(loc_pairs):
       if not proto_board.connected(loc_1, loc_2):
         last_loc = current_ends[i]
-        for neighbor_loc in proto_board.section_locs(last_loc):
+        for neighbor_loc in section_locs(last_loc):
           if not proto_board.occupied(neighbor_loc):
             r, c = neighbor_loc
             wire_ends = (self._wire_ends_from_rail_loc(neighbor_loc,
@@ -77,11 +79,9 @@ def goal_test(state):
 
 def heuristic(state):
   proto_board, loc_pairs, current_ends = state
-  cost = sum(dist(loc_2, current_ends[i]) for i, (loc_1, loc_2) in
-      enumerate(loc_pairs))
-  if proto_board.any_crossing_wires():
-    cost += CROSSING_WIRE_PENALTY
-  return cost
+  return sum(section_dist(current_ends[i], loc_2) for i, (loc_1, loc_2) in
+      enumerate(loc_pairs)) + (proto_board.any_crossing_wires() *
+      CROSSING_WIRE_PENALTY) + len(proto_board.get_wires())
 
 def find_wiring(loc_pairs, start_proto_board=Proto_Board()):
   start_node = Proto_Board_Search_Node(start_proto_board, loc_pairs)
