@@ -12,9 +12,9 @@ from core.search.search import a_star
 from core.search.search import Search_Node
 from proto_board import Proto_Board
 from util import body_opp_section_rows
+from util import dist
 from util import is_body_loc
 from util import is_rail_loc
-from util import section_dist
 from util import section_locs
 from util import valid_loc
 
@@ -75,7 +75,7 @@ def goal_test(state):
 
 def heuristic(state):
   proto_board, loc_pairs, current_ends = state
-  return sum(section_dist(current_ends[i], loc_2) for i, (loc_1, loc_2) in
+  return sum(dist(current_ends[i], loc_2) for i, (loc_1, loc_2) in
       enumerate(loc_pairs)) + (proto_board.any_crossing_wires() *
       CROSSING_WIRE_PENALTY) + len(proto_board.get_wires())
 

@@ -43,9 +43,6 @@ def dist(loc_1, loc_2):
   r_2, c_2 = loc_2
   return abs(r_1 - r_2) + abs(c_1 - c_2)
 
-def section_dist(loc_1, loc_2):
-  return min(dist(loc_1, new_loc_2) for new_loc_2 in section_locs(loc_2))
-
 def wire_length(wire):
   (r_1, c_1), (r_2, c_2) = wire
   return abs(r_2 - r_1) + abs(c_2 - c_1)
