@@ -8,12 +8,13 @@ from circuit_simulator.proto_board.constants import PROTO_BOARD_HEIGHT
 from circuit_simulator.proto_board.constants import PROTO_BOARD_WIDTH
 
 # color
-BACKGROUND = 'white'
+BACKGROUND_COLOR = 'white'
+CONNECTOR_COLOR = 'grey'
 
 # size
 CONNECTOR_SIZE = 4
 CONNECTOR_SPACING = 8
-VERTICAL_SEPARATION = 40
+VERTICAL_SEPARATION = 30
 PADDING = 10
 HEIGHT = (PROTO_BOARD_HEIGHT * CONNECTOR_SIZE + (PROTO_BOARD_HEIGHT - 4) *
     CONNECTOR_SPACING + 3 * VERTICAL_SEPARATION + 2 * PADDING)
