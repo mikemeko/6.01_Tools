@@ -38,6 +38,7 @@ class Proto_Board:
   def with_wire(self, loc_1, loc_2):
     assert not self.occupied(loc_1)
     assert not self.occupied(loc_2)
+    assert loc_1 != loc_2
     new_wire_mappings = deepcopy(self._wire_mappings)
     new_wire_mappings[loc_1] = loc_2
     new_wire_mappings[loc_2] = loc_1

@@ -58,16 +58,17 @@ class Proto_Board_Search_Node(Search_Node):
         for neighbor_loc in proto_board.section_locs(last_loc):
           if not proto_board.occupied(neighbor_loc):
             r, c = neighbor_loc
-            new_wire_ends = (self._wire_ends_from_rail_loc(neighbor_loc,
+            wire_ends = (self._wire_ends_from_rail_loc(neighbor_loc,
                 proto_board) if is_rail_loc(neighbor_loc) else
                 self._wire_ends_from_body_loc(neighbor_loc, proto_board))
-            for new_wire_end in new_wire_ends:
-              new_proto_board = proto_board.with_wire(neighbor_loc,
-                  new_wire_end)
-              new_current_ends = list(current_ends)
-              new_current_ends[i] = new_wire_end
-              children.append(Proto_Board_Search_Node(new_proto_board,
-                  loc_pairs, tuple(new_current_ends), self))
+            for wire_end in wire_ends:
+              if wire_end != neighbor_loc:
+                new_proto_board = proto_board.with_wire(neighbor_loc,
+                    wire_end)
+                new_current_ends = list(current_ends)
+                new_current_ends[i] = wire_end
+                children.append(Proto_Board_Search_Node(new_proto_board,
+                    loc_pairs, tuple(new_current_ends), self))
     return children
 
 def goal_test(state):
@@ -76,10 +77,11 @@ def goal_test(state):
 
 def heuristic(state):
   proto_board, loc_pairs, current_ends = state
-  dist_from_targets = sum(dist(loc_2, current_ends[i]) for i, (loc_1, loc_2) in
+  cost = sum(dist(loc_2, current_ends[i]) for i, (loc_1, loc_2) in
       enumerate(loc_pairs))
-  return (dist_from_targets + CROSSING_WIRE_PENALTY if
-      proto_board.any_crossing_wires() else dist_from_targets)
+  if proto_board.any_crossing_wires():
+    cost += CROSSING_WIRE_PENALTY
+  return cost
 
 def find_wiring(loc_pairs, start_proto_board=Proto_Board()):
   start_node = Proto_Board_Search_Node(start_proto_board, loc_pairs)
