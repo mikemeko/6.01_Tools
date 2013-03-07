@@ -5,6 +5,7 @@ TODO(mikemeko)
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
 from constants import CROSSING_WIRE_PENALTY
+from constants import RAIL_ROWS
 from constants import ROWS
 from constants import WIRE_LENGTH_LIMIT
 from core.search.search import a_star
@@ -45,6 +46,8 @@ class Proto_Board_Search_Node(Search_Node):
       wire_ends.append((r, c + l))
     for new_r in proto_board.body_opp_section_rows(r):
       wire_ends.append((new_r, c))
+    for rail_r in RAIL_ROWS:
+      wire_ends.append((rail_r, c))
     return filter(self._valid_not_occupied_filter(proto_board), wire_ends)
   def get_children(self):
     children = []
@@ -85,6 +88,9 @@ def find_wiring(loc_pairs, start_proto_board=Proto_Board()):
 if __name__ == '__main__':
   root = Tk()
   vis = Proto_Board_Visualization(root)
-  prot = find_wiring([((0, 2), (8, 50))])[0]
+  prot = find_wiring([((0, 2), (8, 50)),
+                      ((5, 1), (10, 4)),
+                      ((3, 40), (9, 30)),
+                      ((10, 10), (1, 30))])[0]
   vis.display_proto_board(prot)
   mainloop()
