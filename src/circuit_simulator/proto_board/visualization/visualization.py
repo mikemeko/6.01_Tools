@@ -7,7 +7,6 @@ __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 from circuit_simulator.proto_board.constants import COLUMNS
 from circuit_simulator.proto_board.constants import PROTO_BOARD_HEIGHT
 from circuit_simulator.proto_board.constants import ROWS
-from circuit_simulator.proto_board.proto_board import Proto_Board
 from circuit_simulator.proto_board.util import valid_loc
 from constants import BACKGROUND_COLOR
 from constants import CONNECTOR_COLOR
@@ -24,16 +23,17 @@ from Tkinter import Frame
 from Tkinter import mainloop
 from Tkinter import Tk
 
-class Proto_Board_Visualization(Frame):
+class Proto_Board_Visualizer(Frame):
   """
   TODO(mikemeko)
   """
-  def __init__(self, parent):
+  def __init__(self, wires, parent=Tk()):
     Frame.__init__(self, parent, background=BACKGROUND_COLOR)
     self._canvas = Canvas(self, width=WIDTH, height=HEIGHT,
         background=BACKGROUND_COLOR)
-    self._wires = set()
+    self._wires = wires
     self._set_up()
+    self._display_wires()
   def _vertical_section(self, r):
     return sum (r >= barrier for barrier in (2, PROTO_BOARD_HEIGHT / 2,
         PROTO_BOARD_HEIGHT - 2))
@@ -52,21 +52,13 @@ class Proto_Board_Visualization(Frame):
               outline=CONNECTOR_COLOR)
     self._canvas.pack()
     self.pack()
-  def display_proto_board(self, proto_board):
-    assert isinstance(proto_board, Proto_Board)
-    self._wires.clear()
-    for ((r_1, c_1), (r_2, c_2)) in proto_board.get_wires():
+  def _display_wires(self):
+    for ((r_1, c_1), (r_2, c_2)) in self._wires:
       x_1, y_1 = self._rc_to_xy(r_1, c_1)
       x_2, y_2 = self._rc_to_xy(r_2, c_2)
       if x_1 > x_2 or y_1 > y_2:
         x_1, y_1, x_2, y_2 = x_2, y_2, x_1, y_1
-      self._wires.add(self._canvas.create_rectangle(x_1, y_1,
-          x_2 + CONNECTOR_SIZE, y_2 + CONNECTOR_SIZE, fill=WIRE_COLOR,
-          outline=WIRE_OUTLINE))
-
-if __name__ == '__main__':
-  root = Tk()
-  vis = Proto_Board_Visualization(root)
-  prot = Proto_Board().with_wire((2, 0), (2, 5)).with_wire((10, 10), (5, 10))
-  vis.display_proto_board(prot)
-  mainloop()
+      self._canvas.create_rectangle(x_1, y_1, x_2 + CONNECTOR_SIZE,
+          y_2 + CONNECTOR_SIZE, fill=WIRE_COLOR, outline=WIRE_OUTLINE)
+  def show(self):
+    mainloop()

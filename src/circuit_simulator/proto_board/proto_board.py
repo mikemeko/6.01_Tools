@@ -7,6 +7,7 @@ __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 from copy import deepcopy
 from util import section_locs
 from util import wires_cross
+from visualization.visualization import Proto_Board_Visualizer
 
 class Proto_Board:
   def __init__(self, wire_mappings={}, wires=()):
@@ -41,5 +42,8 @@ class Proto_Board:
     return Proto_Board(new_wire_mappings, new_wires)
   def occupied(self, loc):
     return loc in self._wire_mappings
+  def visualize(self):
+    visualizer = Proto_Board_Visualizer(self._wires)
+    visualizer.show()
   def __str__(self):
     return str(self._wires)
