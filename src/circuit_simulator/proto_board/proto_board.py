@@ -4,14 +4,13 @@ TODO(mikemeko)
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
-from constants import BOTTOM_SECTION
-from constants import PROTO_BOARD_HEIGHT
-from constants import PROTO_BOARD_WIDTH
-from constants import TOP_SECTION
+from constants import BODY_BOTTOM_ROWS
+from constants import BODY_TOP_ROWS
+from constants import RAIL_LEGAL_COLUMNS
 from copy import deepcopy
+from util import is_rail_loc
 from util import wires_cross
 
-# currently assumes that no pwr gnd rail locations
 class Proto_Board:
   def __init__(self, wire_mappings={}, wires=()):
     self._wire_mappings = wire_mappings
@@ -34,7 +33,8 @@ class Proto_Board:
     return self._connected(loc_1, loc_2)
   def section_locs(self, loc):
     r, c = loc
-    return ((new_r, c) for new_r in self.section_rows(r))
+    return (((r, new_c) for new_c in RAIL_LEGAL_COLUMNS) if is_rail_loc(loc)
+        else ((new_r, c) for new_r in self.body_section_rows(r)))
   def with_wire(self, loc_1, loc_2):
     assert not self.occupied(loc_1)
     assert not self.occupied(loc_2)
@@ -47,18 +47,9 @@ class Proto_Board:
     return Proto_Board(new_wire_mappings, new_wires)
   def occupied(self, loc):
     return loc in self._wire_mappings
-  def valid_loc(self, loc):
-    r, c = loc
-    return 0 <= r < PROTO_BOARD_HEIGHT and 0 <= c < PROTO_BOARD_WIDTH
-  def section_rows(self, r):
-    return BOTTOM_SECTION if r in BOTTOM_SECTION else TOP_SECTION
-  def opp_section_rows(self, r):
-    return BOTTOM_SECTION if r in TOP_SECTION else TOP_SECTION
+  def body_section_rows(self, r):
+    return BODY_BOTTOM_ROWS if r in BODY_BOTTOM_ROWS else BODY_TOP_ROWS
+  def body_opp_section_rows(self, r):
+    return BODY_BOTTOM_ROWS if r in BODY_TOP_ROWS else BODY_TOP_ROWS
   def __str__(self):
     return str(self._wires)
-
-if __name__ == '__main__':
-  proto_board = Proto_Board()
-  proto_board = proto_board.with_wire((2, 0), (2, 2))
-  proto_board = proto_board.with_wire((4, 2), (4, 10))
-  print proto_board.connected((2, 0), (4, 10))
