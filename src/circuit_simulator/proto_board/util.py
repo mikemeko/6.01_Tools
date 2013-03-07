@@ -10,6 +10,7 @@ from constants import BODY_ROWS
 from constants import BODY_TOP_ROWS
 from constants import RAIL_LEGAL_COLUMNS
 from constants import RAIL_ROWS
+from core.data_structures.union_find import UnionFind
 
 def valid_loc(loc):
   r, c = loc
@@ -56,3 +57,18 @@ def wire_points(wire):
 
 def wires_cross(wire_1, wire_2):
   return wire_points(wire_1) & wire_points(wire_2)
+
+def disjoint_wire_sets(wires):
+  union_find = UnionFind()
+  for (loc_1, loc_2) in wires:
+    locs_to_add = set(section_locs(loc_1)) | set(section_locs(loc_2))
+    union_find.insert_objects(locs_to_add)
+    for loc in locs_to_add:
+      union_find.union(loc_1, loc)
+  return union_find.disjoint_sets()
+
+def disjoint_set_containing_wire(disjoint_sets, wire):
+  for s in disjoint_sets:
+    if wire in s:
+      return s
+  return False
