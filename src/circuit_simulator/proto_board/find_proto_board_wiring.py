@@ -14,6 +14,10 @@ from util import dist
 from util import is_body_loc
 from util import is_rail_loc
 from util import valid_loc
+# TODO: remove
+from Tkinter import mainloop
+from Tkinter import Tk
+from visualization.visualization import Proto_Board_Visualization
 
 class Proto_Board_Search_Node(Search_Node):
   def __init__(self, proto_board, loc_pairs, current_ends=None, parent=None):
@@ -79,4 +83,8 @@ def find_wiring(loc_pairs, start_proto_board=Proto_Board()):
   return a_star(start_node, goal_test, heuristic)
 
 if __name__ == '__main__':
-  print find_wiring([((0, 2), (8, 10))])[0]
+  root = Tk()
+  vis = Proto_Board_Visualization(root)
+  prot = find_wiring([((0, 2), (8, 50))])[0]
+  vis.display_proto_board(prot)
+  mainloop()
