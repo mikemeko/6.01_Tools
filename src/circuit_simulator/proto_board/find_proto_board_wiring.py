@@ -5,6 +5,7 @@ TODO(mikemeko)
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
 from constants import CROSSING_WIRE_PENALTY
+from constants import MAYBE_ALLOW_CROSSING_WIRES
 from constants import RAIL_ROWS
 from constants import ROWS
 from constants import WIRE_LENGTH_LIMIT
@@ -19,10 +20,11 @@ from util import is_body_loc
 from util import is_rail_loc
 from util import section_locs
 from util import valid_loc
+from util import wires_cross
 
 class Proto_Board_Search_Node(Search_Node):
   def __init__(self, proto_board, loc_pairs, current_ends=None, num_wires=0,
-      parent=None):
+      parent=None, cost=0):
     assert isinstance(proto_board, Proto_Board)
     for loc_1, loc_2 in loc_pairs:
       assert valid_loc(loc_1)
@@ -30,7 +32,7 @@ class Proto_Board_Search_Node(Search_Node):
     if not current_ends:
       current_ends = tuple(loc_1 for loc_1, loc_2 in loc_pairs)
     Search_Node.__init__(self, (proto_board, tuple(loc_pairs), current_ends,
-        num_wires), parent)
+        num_wires), parent, cost)
   def _valid_not_occupied_filter(self, proto_board):
     return lambda loc: valid_loc(loc) and not proto_board.occupied(loc)
   def _wire_ends_from_rail_loc(self, loc, proto_board):
@@ -64,12 +66,18 @@ class Proto_Board_Search_Node(Search_Node):
                 self._wire_ends_from_body_loc(neighbor_loc, proto_board))
             for wire_end in wire_ends:
               if wire_end != neighbor_loc:
+                crossing_wire = any(wires_cross(wire, (neighbor_loc, wire_end))
+                    for wire in proto_board.get_wires())
+                if crossing_wire and not MAYBE_ALLOW_CROSSING_WIRES:
+                  continue
                 new_proto_board = proto_board.with_wire(neighbor_loc,
                     wire_end)
                 new_current_ends = list(current_ends)
                 new_current_ends[i] = wire_end
                 children.append(Proto_Board_Search_Node(new_proto_board,
-                    loc_pairs, tuple(new_current_ends), num_wires + 1, self))
+                    loc_pairs, tuple(new_current_ends), num_wires + 1, self,
+                    self.cost + crossing_wire * CROSSING_WIRE_PENALTY))
+    print len(children)
     return children
 
 def goal_test(state):
@@ -92,8 +100,7 @@ def goal_test(state):
 def heuristic(state):
   proto_board, loc_pairs, current_ends, num_wires = state
   return sum(dist(current_ends[i], loc_2) for i, (loc_1, loc_2) in
-      enumerate(loc_pairs)) + (proto_board.any_crossing_wires() *
-      CROSSING_WIRE_PENALTY) + num_wires
+      enumerate(loc_pairs)) + num_wires
 
 def find_wiring(loc_pairs, start_proto_board=Proto_Board()):
   start_node = Proto_Board_Search_Node(start_proto_board, loc_pairs)
@@ -101,6 +108,7 @@ def find_wiring(loc_pairs, start_proto_board=Proto_Board()):
 
 if __name__ == '__main__':
   wires = [((0, 2), (8, 50)), ((5, 1), (10, 4)), ((3, 40), (9, 30)),
-      ((10, 10), (1, 30))]
+      ((10, 10), (1, 30)), ((3, 3), (5, 5)), ((4, 4), (4, 7)),
+      ((5, 5), (0, 3)), ((2, 51), (2, 60)), ((13, 60), (12, 10))]
   prot = find_wiring(wires)[0]
   prot.visualize()

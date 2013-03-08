@@ -6,7 +6,6 @@ __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
 from copy import deepcopy
 from util import section_locs
-from util import wires_cross
 from visualization.visualization import Proto_Board_Visualizer
 
 class Proto_Board:
@@ -15,10 +14,6 @@ class Proto_Board:
     self._wires = wires
   def get_wires(self):
     return self._wires
-  def any_crossing_wires(self):
-    num_wires = len(self._wires)
-    return any(wires_cross(self._wires[i], self._wires[j]) for i in
-        xrange(num_wires) for j in xrange(i + 1, num_wires))
   def _connected(self, loc_1, loc_2, visited=set()):
     if loc_1 in visited:
       return False
