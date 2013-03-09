@@ -25,14 +25,10 @@ class Proto_Board:
   def connected(self, loc_1, loc_2):
     return self._connected(loc_1, loc_2)
   def with_wire(self, new_wire):
-    loc_1, loc_2 = new_wire
-    assert not self.occupied(loc_1)
-    assert not self.occupied(loc_2)
-    assert loc_1 != loc_2
     new_wire_mappings = self._wire_mappings.copy()
-    new_wire_mappings[loc_1] = loc_2
-    new_wire_mappings[loc_2] = loc_1
-    return Proto_Board(new_wire_mappings, self._wires + [(loc_1, loc_2)])
+    new_wire_mappings[new_wire.loc_1] = new_wire.loc_2
+    new_wire_mappings[new_wire.loc_2] = new_wire.loc_1
+    return Proto_Board(new_wire_mappings, self._wires + [new_wire])
   def occupied(self, loc):
     return loc in self._wire_mappings
   def visualize(self):

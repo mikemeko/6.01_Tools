@@ -53,9 +53,9 @@ class Proto_Board_Visualizer(Frame):
     self._canvas.pack()
     self.pack()
   def _display_wires(self):
-    for ((r_1, c_1), (r_2, c_2)) in self._wires:
-      x_1, y_1 = self._rc_to_xy(r_1, c_1)
-      x_2, y_2 = self._rc_to_xy(r_2, c_2)
+    for wire in self._wires:
+      x_1, y_1 = self._rc_to_xy(wire.r_1, wire.c_1)
+      x_2, y_2 = self._rc_to_xy(wire.r_2, wire.c_2)
       if x_1 > x_2 or y_1 > y_2:
         x_1, y_1, x_2, y_2 = x_2, y_2, x_1, y_1
       self._canvas.create_rectangle(x_1, y_1, x_2 + CONNECTOR_SIZE,

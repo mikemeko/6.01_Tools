@@ -14,6 +14,7 @@ from core.search.search import Search_Node
 from cProfile import run
 from proto_board import Proto_Board
 from util import body_opp_section_rows
+from util import disjoint_loc_pair_sets
 from util import disjoint_set_containing_wire
 from util import disjoint_wire_sets
 from util import dist
@@ -21,18 +22,14 @@ from util import is_body_loc
 from util import is_rail_loc
 from util import section_locs
 from util import valid_loc
-from util import wires_cross
+from wire import Wire
 
 class Proto_Board_Search_Node(Search_Node):
   def __init__(self, proto_board, loc_pairs, current_ends=None, num_wires=0,
       parent=None, cost=0):
-    assert isinstance(proto_board, Proto_Board)
-    for loc_1, loc_2 in loc_pairs:
-      assert valid_loc(loc_1)
-      assert valid_loc(loc_2)
     if not current_ends:
       current_ends = tuple(loc_1 for loc_1, loc_2 in loc_pairs)
-    Search_Node.__init__(self, (proto_board, tuple(loc_pairs), current_ends,
+    Search_Node.__init__(self, (proto_board, loc_pairs, current_ends,
         num_wires), parent, cost)
   def _valid_not_occupied_filter(self, proto_board):
     return lambda loc: valid_loc(loc) and not proto_board.occupied(loc)
@@ -58,18 +55,16 @@ class Proto_Board_Search_Node(Search_Node):
     proto_board, loc_pairs, current_ends, num_wires = self.state
     for i, (loc_1, loc_2) in enumerate(loc_pairs):
       if not proto_board.connected(loc_1, loc_2):
-        last_loc = current_ends[i]
-        for neighbor_loc in section_locs(last_loc):
+        for neighbor_loc in section_locs(current_ends[i]):
           if not proto_board.occupied(neighbor_loc):
-            r, c = neighbor_loc
             wire_ends = (self._wire_ends_from_rail_loc(neighbor_loc,
                 proto_board) if is_rail_loc(neighbor_loc) else
                 self._wire_ends_from_body_loc(neighbor_loc, proto_board))
             for wire_end in wire_ends:
               if wire_end != neighbor_loc:
-                new_wire = (neighbor_loc, wire_end)
-                crossing_wire = any(wires_cross(wire, new_wire)
-                    for wire in proto_board.get_wires())
+                new_wire = Wire(neighbor_loc, wire_end)
+                crossing_wire = any(wire.crosses(new_wire) for wire in
+                    proto_board.get_wires())
                 if crossing_wire and not MAYBE_ALLOW_CROSSING_WIRES:
                   continue
                 new_proto_board = proto_board.with_wire(new_wire)
@@ -83,7 +78,7 @@ class Proto_Board_Search_Node(Search_Node):
 def goal_test(state):
   proto_board, loc_pairs, current_ends, num_wires = state
   proto_board_disjoint_wire_sets = disjoint_wire_sets(proto_board.get_wires())
-  loc_pair_disjoint_wire_sets = disjoint_wire_sets(loc_pairs)
+  loc_pair_disjoint_wire_sets = disjoint_loc_pair_sets(loc_pairs)
   if len(proto_board_disjoint_wire_sets) != len(loc_pair_disjoint_wire_sets):
     return False
   for s in loc_pair_disjoint_wire_sets:
@@ -107,9 +102,10 @@ def find_wiring(loc_pairs, start_proto_board=Proto_Board()):
   return a_star(start_node, goal_test, heuristic)
 
 if __name__ == '__main__':
-  wires = [((0, 2), (8, 50)), ((5, 1), (10, 4)), ((3, 40), (9, 30)),
+  wires = (((0, 2), (8, 50)), ((5, 1), (10, 4)), ((3, 40), (9, 30)),
       ((10, 10), (1, 30)), ((3, 3), (5, 5)), ((4, 4), (4, 7)),
-      ((5, 5), (0, 3)), ((2, 51), (2, 60)), ((13, 60), (12, 10))]
+      ((5, 5), (0, 3)), ((2, 51), (2, 60)), ((13, 60), (12, 10)),
+      ((4, 45), (8, 47)), ((13, 4), (9, 52)))
   prot = None
   run('prot = find_wiring(wires)[0]')
   prot.visualize()
