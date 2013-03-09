@@ -11,6 +11,7 @@ from constants import ROWS
 from constants import WIRE_LENGTH_LIMIT
 from core.search.search import a_star
 from core.search.search import Search_Node
+from cProfile import run
 from proto_board import Proto_Board
 from util import body_opp_section_rows
 from util import disjoint_set_containing_wire
@@ -66,18 +67,17 @@ class Proto_Board_Search_Node(Search_Node):
                 self._wire_ends_from_body_loc(neighbor_loc, proto_board))
             for wire_end in wire_ends:
               if wire_end != neighbor_loc:
-                crossing_wire = any(wires_cross(wire, (neighbor_loc, wire_end))
+                new_wire = (neighbor_loc, wire_end)
+                crossing_wire = any(wires_cross(wire, new_wire)
                     for wire in proto_board.get_wires())
                 if crossing_wire and not MAYBE_ALLOW_CROSSING_WIRES:
                   continue
-                new_proto_board = proto_board.with_wire(neighbor_loc,
-                    wire_end)
+                new_proto_board = proto_board.with_wire(new_wire)
                 new_current_ends = list(current_ends)
                 new_current_ends[i] = wire_end
                 children.append(Proto_Board_Search_Node(new_proto_board,
                     loc_pairs, tuple(new_current_ends), num_wires + 1, self,
                     self.cost + crossing_wire * CROSSING_WIRE_PENALTY))
-    print len(children)
     return children
 
 def goal_test(state):
@@ -110,5 +110,6 @@ if __name__ == '__main__':
   wires = [((0, 2), (8, 50)), ((5, 1), (10, 4)), ((3, 40), (9, 30)),
       ((10, 10), (1, 30)), ((3, 3), (5, 5)), ((4, 4), (4, 7)),
       ((5, 5), (0, 3)), ((2, 51), (2, 60)), ((13, 60), (12, 10))]
-  prot = find_wiring(wires)[0]
+  prot = None
+  run('prot = find_wiring(wires)[0]')
   prot.visualize()

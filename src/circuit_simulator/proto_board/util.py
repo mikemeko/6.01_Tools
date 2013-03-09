@@ -48,15 +48,24 @@ def wire_length(wire):
   (r_1, c_1), (r_2, c_2) = wire
   return abs(r_2 - r_1) + abs(c_2 - c_1)
 
-def wire_points(wire):
+def row_support(wire):
   (r_1, c_1), (r_2, c_2) = wire
-  length = wire_length(wire)
-  dr = (r_2 - r_1) / length
-  dc = (c_2 - c_1) / length
-  return set((r_1 + i * dr, c_1 + i * dc) for i in xrange(length + 1))
+  return (min(r_1, r_2), max(r_1, r_2))
+
+def column_support(wire):
+  (r_1, c_1), (r_2, c_2) = wire
+  return (min(c_1, c_2), max(c_1, c_2))
+
+def supports_intersect(s_1, s_2):
+  m_1, M_1 = s_1
+  m_2, M_2 = s_2
+  if m_1 == M_1:
+    return m_2 <= m_1 <= M_2
+  return m_1 <= m_2 <= M_1 or m_1 <= M_2 <= M_1
 
 def wires_cross(wire_1, wire_2):
-  return wire_points(wire_1) & wire_points(wire_2)
+  return (supports_intersect(row_support(wire_1), row_support(wire_2)) and
+      supports_intersect(column_support(wire_1), column_support(wire_2)))
 
 def disjoint_wire_sets(wires):
   union_find = UnionFind()

@@ -4,16 +4,16 @@ TODO(mikemeko)
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
-from copy import deepcopy
 from util import section_locs
 from visualization.visualization import Proto_Board_Visualizer
 
 class Proto_Board:
-  def __init__(self, wire_mappings={}, wires=()):
+  def __init__(self, wire_mappings={}, wires=[]):
     self._wire_mappings = wire_mappings
     self._wires = wires
   def get_wires(self):
-    return self._wires
+    for wire in self._wires:
+      yield wire
   def _connected(self, loc_1, loc_2, visited=set()):
     if loc_1 in visited:
       return False
@@ -24,21 +24,17 @@ class Proto_Board:
         visited | group) for new_loc_1 in group_links)
   def connected(self, loc_1, loc_2):
     return self._connected(loc_1, loc_2)
-  def with_wire(self, loc_1, loc_2):
+  def with_wire(self, new_wire):
+    loc_1, loc_2 = new_wire
     assert not self.occupied(loc_1)
     assert not self.occupied(loc_2)
     assert loc_1 != loc_2
-    new_wire_mappings = deepcopy(self._wire_mappings)
+    new_wire_mappings = self._wire_mappings.copy()
     new_wire_mappings[loc_1] = loc_2
     new_wire_mappings[loc_2] = loc_1
-    new_wires = list(self._wires)
-    new_wires.append((loc_1, loc_2))
-    new_wires = tuple(new_wires)
-    return Proto_Board(new_wire_mappings, new_wires)
+    return Proto_Board(new_wire_mappings, self._wires + [(loc_1, loc_2)])
   def occupied(self, loc):
     return loc in self._wire_mappings
   def visualize(self):
     visualizer = Proto_Board_Visualizer(self._wires)
     visualizer.show()
-  def __str__(self):
-    return str(self._wires)
