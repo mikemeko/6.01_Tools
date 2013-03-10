@@ -1,5 +1,5 @@
 """
-TODO(mikemeko)
+Priority queue.
 """
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
@@ -9,19 +9,22 @@ from heapq import heappush
 
 class Priority_Queue:
   """
-  TODO(mikemeko)
+  Priority queue data structure.
   """
   def __init__(self):
     self.data = []
   def push(self, item, cost):
     """
-    TODO(mikemeko)
+    Adds the given |item| having the given |cost|.
     """
     heappush(self.data, (cost, item))
   def pop(self):
     """
-    TODO(mikemeko)
+    Removes and returns the item in this priority queue with the smallest cost,
+        or None if the queue is empty.
     """
+    if not self.data:
+      return None
     cost, item = heappop(self.data)
     return item
   def __bool__(self):

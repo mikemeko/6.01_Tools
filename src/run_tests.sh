@@ -1,4 +1,5 @@
 # Script to run tests.
+python -m tests.core.data_structures.priority_queue_test
 python -m tests.core.gui.util_test
 python -m tests.core.math.equation_solver_test
 python -m tests.core.search.search_test
