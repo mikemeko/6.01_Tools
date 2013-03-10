@@ -80,21 +80,4 @@ def disjoint_loc_pair_sets(loc_pairs):
     union_find.insert_objects(locs_to_add)
     for loc in locs_to_add:
       union_find.union(loc_1, loc)
-  return union_find.disjoint_sets()
-
-def disjoint_wire_sets(wires):
-  """
-  Returns a list of disjoint sets representing the grouping of locations given
-      the |wires| on a proto board.
-  """
-  return disjoint_loc_pair_sets((wire.loc_1, wire.loc_2) for wire in wires)
-
-def disjoint_set_containing_wire(disjoint_sets, wire):
-  """
-  Returns the group in |disjoint_sets| that contains |wire|, or None if no such
-      group exists.
-  """
-  for s in disjoint_sets:
-    if wire in s:
-      return s
-  return None
+  return union_find

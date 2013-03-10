@@ -1,5 +1,6 @@
 """
-TODO(mikemeko)
+Search to find proto board wiring to connect a given list of pairs of locations
+    on the proto board.
 """
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
@@ -15,8 +16,6 @@ from cProfile import run
 from proto_board import Proto_Board
 from util import body_opp_section_rows
 from util import disjoint_loc_pair_sets
-from util import disjoint_set_containing_wire
-from util import disjoint_wire_sets
 from util import dist
 from util import is_body_loc
 from util import is_rail_loc
@@ -25,6 +24,9 @@ from util import valid_loc
 from wire import Wire
 
 class Proto_Board_Search_Node(Search_Node):
+  """
+  Search_Node for proto board wiring problem.
+  """
   def __init__(self, proto_board, loc_pairs, current_ends=None, num_wires=0,
       parent=None, cost=0):
     if not current_ends:
@@ -68,6 +70,8 @@ class Proto_Board_Search_Node(Search_Node):
                 if crossing_wire and not MAYBE_ALLOW_CROSSING_WIRES:
                   continue
                 new_proto_board = proto_board.with_wire(new_wire)
+                if not new_proto_board:
+                  continue
                 new_current_ends = list(current_ends)
                 new_current_ends[i] = wire_end
                 children.append(Proto_Board_Search_Node(new_proto_board,
@@ -77,20 +81,7 @@ class Proto_Board_Search_Node(Search_Node):
 
 def goal_test(state):
   proto_board, loc_pairs, current_ends, num_wires = state
-  proto_board_disjoint_wire_sets = disjoint_wire_sets(proto_board.get_wires())
-  loc_pair_disjoint_wire_sets = disjoint_loc_pair_sets(loc_pairs)
-  if len(proto_board_disjoint_wire_sets) != len(loc_pair_disjoint_wire_sets):
-    return False
-  for s in loc_pair_disjoint_wire_sets:
-    wire = iter(s).next()
-    pair_s = disjoint_set_containing_wire(proto_board_disjoint_wire_sets, wire)
-    if not pair_s:
-      return False
-    for next_wire in s:
-      if not next_wire in pair_s:
-        return False
-    proto_board_disjoint_wire_sets.remove(pair_s)
-  return True
+  return all(proto_board.connected(loc_1, loc_2) for loc_1, loc_2 in loc_pairs)
 
 def heuristic(state):
   proto_board, loc_pairs, current_ends, num_wires = state
@@ -98,14 +89,16 @@ def heuristic(state):
       enumerate(loc_pairs)) + num_wires
 
 def find_wiring(loc_pairs, start_proto_board=Proto_Board()):
-  start_node = Proto_Board_Search_Node(start_proto_board, loc_pairs)
+  start_node = Proto_Board_Search_Node(
+      start_proto_board.with_disjoint_loc_sets(disjoint_loc_pair_sets(
+      loc_pairs)), loc_pairs)
   return a_star(start_node, goal_test, heuristic)
 
 if __name__ == '__main__':
   wires = (((0, 2), (8, 50)), ((5, 1), (10, 4)), ((3, 40), (9, 30)),
       ((10, 10), (1, 30)), ((3, 3), (5, 5)), ((4, 4), (4, 7)),
       ((5, 5), (0, 3)), ((2, 51), (2, 60)), ((13, 60), (12, 10)),
-      ((4, 45), (8, 47)), ((13, 4), (9, 52)))[:3]
+      ((4, 45), (8, 47)), ((13, 4), (9, 52)))[:10]
   prot = None
   run('prot = find_wiring(wires)[0]')
   prot.visualize()

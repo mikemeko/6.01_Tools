@@ -4,6 +4,7 @@ Representation for a proto board.
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
+from core.data_structures.union_find import UnionFind
 from util import section_locs
 from visualization.visualization import Proto_Board_Visualizer
 
@@ -11,14 +12,17 @@ class Proto_Board:
   """
   Proto board representation.
   """
-  def __init__(self, wire_mappings={}, wires=[]):
+  def __init__(self, wire_mappings={}, wires=[],
+      disjoint_loc_sets=UnionFind()):
     """
     |wire_mappings|: a dictionary mapping locations to other locations to which
         they are connected by a wire.
     |wires|: a list of the Wires on this proto board.
+    TODO(mikemeko)
     """
     self._wire_mappings = wire_mappings
     self._wires = wires
+    self._disjoint_loc_sets = disjoint_loc_sets
   def get_wires(self):
     """
     Returns a generator of the Wires on this proto board.
@@ -42,14 +46,30 @@ class Proto_Board:
         otherwise.
     """
     return self._connected(loc_1, loc_2)
+  def with_disjoint_loc_sets(self, disjoint_loc_sets):
+    """
+    TODO(mikemeko)
+    """
+    new_wire_mappings = self._wire_mappings.copy()
+    return Proto_Board(new_wire_mappings, self._wires[:], disjoint_loc_sets)
   def with_wire(self, new_wire):
     """
     Returns a new Proto_Board containing the |new_wire|.
     """
+    group_1 = self._disjoint_loc_sets.find(new_wire.loc_1)
+    group_2 = self._disjoint_loc_sets.find(new_wire.loc_2)
+    if group_1 and group_2 and group_1 != group_2:
+      return None
     new_wire_mappings = self._wire_mappings.copy()
     new_wire_mappings[new_wire.loc_1] = new_wire.loc_2
     new_wire_mappings[new_wire.loc_2] = new_wire.loc_1
-    return Proto_Board(new_wire_mappings, self._wires + [new_wire])
+    new_disjoint_loc_sets = self._disjoint_loc_sets.copy()
+    if bool(group_1) != bool(group_2):
+      new_disjoint_loc_sets.insert_object(new_wire.loc_1)
+      new_disjoint_loc_sets.insert_object(new_wire.loc_2)
+      new_disjoint_loc_sets.union(new_wire.loc_1, new_wire.loc_2)
+    return Proto_Board(new_wire_mappings, self._wires + [new_wire],
+        new_disjoint_loc_sets)
   def occupied(self, loc):
     """
     Returns True if the given |loc| is occupied, False otherwise.
