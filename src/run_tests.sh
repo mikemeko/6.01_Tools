@@ -1,5 +1,6 @@
 # Script to run tests.
 python -m tests.circuit_simulator.proto_board.proto_board_test
+python -m tests.circuit_simulator.proto_board.wire_test
 python -m tests.core.data_structures.priority_queue_test
 python -m tests.core.gui.util_test
 python -m tests.core.math.equation_solver_test
