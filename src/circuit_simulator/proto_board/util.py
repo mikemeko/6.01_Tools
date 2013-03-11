@@ -71,7 +71,7 @@ def dist(loc_1, loc_2):
 
 def loc_disjoint_set_forest(loc_pairs):
   """
-  Returns a forest of disjoint sets representing the grouping of locatings
+  Returns a forest of disjoint sets representing the grouping of locations
       given the pairs of locations in |loc_pairs|.
   """
   forest = Disjoint_Set_Forest()

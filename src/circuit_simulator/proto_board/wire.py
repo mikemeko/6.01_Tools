@@ -4,6 +4,8 @@ Representation for a wire on a proto board.
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
+from util import dist
+
 class Wire:
   """
   Wire representation.
@@ -37,3 +39,5 @@ class Wire:
         self._supports_intersect(self.column_support, other.column_support))
   def __hash__(self):
     return hash((self.loc_1, self.loc_2))
+  def __len__(self):
+    return dist(self.loc_1, self.loc_2)

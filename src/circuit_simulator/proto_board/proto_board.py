@@ -67,8 +67,13 @@ class Proto_Board:
     return board
   def with_wire(self, new_wire):
     """
-    Returns a new Proto_Board containing the |new_wire|.
+    Returns a new Proto_Board containing the |new_wire|. If the wire connects
+        nodes that are already connected, this method returns this proto board.
+        If the wire connects nodes that are meant not to be connected, as per
+        |self._loc_disjoint_set_forest|, this method returns None.
     """
+    if self.connected(new_wire.loc_1, new_wire.loc_2):
+      return self
     group_1 = self._loc_disjoint_set_forest.find_set(new_wire.loc_1)
     group_2 = self._loc_disjoint_set_forest.find_set(new_wire.loc_2)
     if group_1 and group_2 and group_1 != group_2:

@@ -27,23 +27,17 @@ class Proto_Board_Search_Node(Search_Node):
   """
   Search_Node for proto board wiring problem.
   """
-  def __init__(self, proto_board, loc_pairs, current_ends=None, parent=None,
-      cost=0):
+  def __init__(self, proto_board, loc_pairs, parent=None, cost=0):
     """
     |proto_board|: current Proto_Board in the search.
     |loc_pairs|: a tuple of the pairs of locations we are trying to connect.
-    |current_ends|: a tuple of the end locations of the last wires placed
-        for each of the location pairs we are trying to connect.
-    |parent|: this nodes parent node, or None if this is the root node.
+    |parent|: this node's parent node, or None if this is the root node.
     |cost|: the cost of getting from the root node to this node.
     """
-    if not current_ends:
-      current_ends = tuple(loc_1 for loc_1, loc_2 in loc_pairs)
-    state = (proto_board, loc_pairs, current_ends)
-    Search_Node.__init__(self, state, parent, cost)
+    Search_Node.__init__(self, (proto_board, loc_pairs), parent, cost)
   def _valid_not_occupied_filter(self, proto_board):
     """
-    Returns a filter for locations that are either valid or occupied on the
+    Returns a filter for locations that are valid and not occupied on the
         given |proto_board|.
     """
     return lambda loc: valid_loc(loc) and not proto_board.occupied(loc)
@@ -79,29 +73,30 @@ class Proto_Board_Search_Node(Search_Node):
     Returns the children of this Proto_Board_Search_Node.
     """
     children = []
-    proto_board, loc_pairs, current_ends = self.state
+    proto_board, loc_pairs = self.state
     for i, (loc_1, loc_2) in enumerate(loc_pairs):
       if not proto_board.connected(loc_1, loc_2):
-        for neighbor_loc in section_locs(current_ends[i]):
+        for neighbor_loc in section_locs(loc_1):
           if not proto_board.occupied(neighbor_loc):
             wire_ends = (self._wire_ends_from_rail_loc(neighbor_loc,
                 proto_board) if is_rail_loc(neighbor_loc) else
                 self._wire_ends_from_body_loc(neighbor_loc, proto_board))
             for wire_end in wire_ends:
-              if wire_end != neighbor_loc:
-                new_wire = Wire(neighbor_loc, wire_end)
-                crossing_wire = any(wire.crosses(new_wire) for wire in
-                    proto_board.get_wires())
-                if crossing_wire and not MAYBE_ALLOW_CROSSING_WIRES:
-                  continue
-                new_proto_board = proto_board.with_wire(new_wire)
-                if not new_proto_board:
-                  continue
-                new_current_ends = list(current_ends)
-                new_current_ends[i] = wire_end
-                children.append(Proto_Board_Search_Node(new_proto_board,
-                    loc_pairs, tuple(new_current_ends), self,
-                    self.cost + crossing_wire * CROSSING_WIRE_PENALTY))
+              new_wire = Wire(neighbor_loc, wire_end)
+              if len(new_wire) == 0:
+                continue
+              crossing_wire = any(wire.crosses(new_wire) for wire in
+                  proto_board.get_wires())
+              if crossing_wire and not MAYBE_ALLOW_CROSSING_WIRES:
+                continue
+              new_proto_board = proto_board.with_wire(new_wire)
+              if not new_proto_board or new_proto_board is proto_board:
+                continue
+              new_loc_pairs = list(loc_pairs)
+              new_loc_pairs[i] = (wire_end, loc_2)
+              children.append(Proto_Board_Search_Node(new_proto_board,
+                  tuple(new_loc_pairs), self,
+                  self.cost + crossing_wire * CROSSING_WIRE_PENALTY))
     return children
 
 def goal_test(state):
@@ -110,18 +105,18 @@ def goal_test(state):
       condition that all location pairs to be connected have been connected,
       False otherwise.
   """
-  proto_board, loc_pairs, current_ends = state
+  proto_board, loc_pairs = state
   return all(proto_board.connected(loc_1, loc_2) for loc_1, loc_2 in loc_pairs)
 
 def heuristic(state):
   """
-  Returns an estimate of the given Proto_Board_Search_Node |state| to a goal
-      state.
+  Returns an estimate of the distance between the given Proto_Board_Search_Node
+      |state| and a goal state.
   TODO(mikemeko): better heuristic, the right one might really do the trick :)
   """
-  proto_board, loc_pairs, current_ends = state
-  return sum(dist(current_ends[i], loc_2) for i, (loc_1, loc_2) in
-      enumerate(loc_pairs)) + proto_board.num_wires()
+  proto_board, loc_pairs = state
+  return sum(dist(loc_1, loc_2) for loc_1, loc_2 in loc_pairs) + (
+      proto_board.num_wires())
 
 def find_wiring(loc_pairs, start_proto_board=Proto_Board()):
   """
