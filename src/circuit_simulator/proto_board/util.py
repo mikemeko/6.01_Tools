@@ -10,7 +10,7 @@ from constants import BODY_ROWS
 from constants import BODY_TOP_ROWS
 from constants import RAIL_LEGAL_COLUMNS
 from constants import RAIL_ROWS
-from core.data_structures.union_find import UnionFind
+from core.data_structures.disjoint_set_forest import Disjoint_Set_Forest
 
 def valid_loc(loc):
   """
@@ -69,15 +69,18 @@ def dist(loc_1, loc_2):
   r_2, c_2 = loc_2
   return abs(r_1 - r_2) + abs(c_1 - c_2)
 
-def disjoint_loc_pair_sets(loc_pairs):
+def loc_disjoint_set_forest(loc_pairs):
   """
-  Returns a list of disjoint sets representing the grouping of locatings given
-      the pairs of locations in |loc_pairs|.
+  Returns a forest of disjoint sets representing the grouping of locatings
+      given the pairs of locations in |loc_pairs|.
   """
-  union_find = UnionFind()
+  forest = Disjoint_Set_Forest()
   for loc_1, loc_2 in loc_pairs:
-    locs_to_add = set(section_locs(loc_1)) | set(section_locs(loc_2))
-    union_find.insert_objects(locs_to_add)
-    for loc in locs_to_add:
-      union_find.union(loc_1, loc)
-  return union_find
+    forest.make_set(loc_1)
+    for loc in section_locs(loc_1):
+      forest.make_set(loc)
+      forest.union(loc_1, loc)
+    for loc in section_locs(loc_2):
+      forest.make_set(loc)
+      forest.union(loc_1, loc)
+  return forest
