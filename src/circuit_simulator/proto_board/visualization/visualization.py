@@ -21,24 +21,22 @@ from constants import WIRE_COLOR
 from constants import WIRE_OUTLINE
 from Tkinter import Canvas
 from Tkinter import Frame
-from Tkinter import mainloop
 from Tkinter import Tk
 
 class Proto_Board_Visualizer(Frame):
   """
   Tk Frame to visualize Proto boards.
   """
-  def __init__(self, wires, parent=Tk()):
+  def __init__(self, parent):
     """
     |wires|: a list of Wire objects to display on this proto board.
     """
-    Frame.__init__(self, parent, background=BACKGROUND_COLOR)
-    parent.title(WINDOW_TITLE)
+    self.parent = parent
+    Frame.__init__(self, self.parent, background=BACKGROUND_COLOR)
+    self.parent.title(WINDOW_TITLE)
     self._canvas = Canvas(self, width=WIDTH, height=HEIGHT,
         background=BACKGROUND_COLOR)
-    self._wires = wires
     self._set_up()
-    self._display_wires()
   def _vertical_section(self, r):
     """
     Returns the number of vertical separators that stand between the top of the
@@ -75,19 +73,22 @@ class Proto_Board_Visualizer(Frame):
         self._canvas.create_text(self._rc_to_xy(-1, c), text=c)
     self._canvas.pack()
     self.pack()
-  def _display_wires(self):
+  def visualize(self, proto_board):
     """
     Draws the wires on the proto board.
+    TODO(mikemeko): update
     """
-    for wire in self._wires:
+    for wire in proto_board.get_wires():
       x_1, y_1 = self._rc_to_xy(wire.r_1, wire.c_1)
       x_2, y_2 = self._rc_to_xy(wire.r_2, wire.c_2)
       if x_1 > x_2 or y_1 > y_2:
         x_1, y_1, x_2, y_2 = x_2, y_2, x_1, y_1
       self._canvas.create_rectangle(x_1, y_1, x_2 + CONNECTOR_SIZE,
           y_2 + CONNECTOR_SIZE, fill=WIRE_COLOR, outline=WIRE_OUTLINE)
-  def show(self):
-    """
-    Displays the proto board in a new window.
-    """
-    mainloop()
+    self.parent.mainloop()
+
+def visualize_proto_board(proto_board):
+  """
+  TODO(mikemeko)
+  """
+  Proto_Board_Visualizer(Tk()).visualize(proto_board)

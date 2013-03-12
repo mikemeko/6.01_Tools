@@ -27,3 +27,6 @@ WIRE_LENGTH_LIMIT = 10
 # heuristic constants
 MAYBE_ALLOW_CROSSING_WIRES = False
 CROSSING_WIRE_PENALTY = 10
+
+# debugging
+DEBUG = False

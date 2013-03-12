@@ -30,7 +30,8 @@ class Search_Node:
     """
     raise NotImplementedError('subclasses should implement this')
 
-def a_star(start_node, goal_test, heuristic=lambda state: 0):
+def a_star(start_node, goal_test, heuristic=lambda state: 0,
+    progress=lambda state, cost: None):
   """
   Runs an A* search starting at |start_node| until a node that satisfies the
       |goal_test| is found. |goal_test| should be a function that takes in a
@@ -40,6 +41,7 @@ def a_star(start_node, goal_test, heuristic=lambda state: 0):
       considerable speed-up! (See Chapter 7 of MIT 6.01 course notes for more.)
   Returns the state found that satisfies the |goal_test|, or None if no such
       state is found.
+  TODO(mikemeko): update
   """
   if goal_test(start_node.state):
     return start_node.state
@@ -47,7 +49,8 @@ def a_star(start_node, goal_test, heuristic=lambda state: 0):
   agenda.push(start_node, start_node.cost + heuristic(start_node.state))
   expanded = set()
   while agenda:
-    parent = agenda.pop()
+    parent, cost = agenda.pop()
+    progress(parent.state, cost)
     if parent.state not in expanded:
       expanded.add(parent.state)
       if goal_test(parent.state):

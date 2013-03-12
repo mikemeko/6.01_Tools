@@ -22,11 +22,12 @@ class Priority_Queue:
     """
     Removes and returns the item in this priority queue with the smallest cost,
         or None if the queue is empty.
+    TODO(mikemeko): update
     """
     if not self.data:
       return None
     cost, item = heappop(self.data)
-    return item
+    return item, cost
   def __bool__(self):
     return bool(self.data)
   def __len__(self):

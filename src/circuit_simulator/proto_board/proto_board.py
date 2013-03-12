@@ -5,7 +5,6 @@ Representation for a proto board.
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
 from util import section_locs
-from visualization.visualization import Proto_Board_Visualizer
 from core.data_structures.disjoint_set_forest import Disjoint_Set_Forest
 
 class Proto_Board:
@@ -93,9 +92,3 @@ class Proto_Board:
     Returns True if the given |loc| is occupied, False otherwise.
     """
     return loc in self._wire_mappings
-  def visualize(self):
-    """
-    Displays a window to visualize this proto board.
-    """
-    visualizer = Proto_Board_Visualizer(self._wires)
-    visualizer.show()

@@ -6,6 +6,7 @@ Search to find proto board wiring to connect a given list of pairs of locations
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
 from constants import CROSSING_WIRE_PENALTY
+from constants import DEBUG
 from constants import MAYBE_ALLOW_CROSSING_WIRES
 from constants import RAIL_ROWS
 from constants import ROWS
@@ -21,6 +22,7 @@ from util import is_rail_loc
 from util import loc_disjoint_set_forest
 from util import section_locs
 from util import valid_loc
+from visualization.visualization import visualize_proto_board
 from wire import Wire
 
 class Proto_Board_Search_Node(Search_Node):
@@ -94,9 +96,11 @@ class Proto_Board_Search_Node(Search_Node):
                 continue
               new_loc_pairs = list(loc_pairs)
               new_loc_pairs[i] = (wire_end, loc_2)
+              # TODO(mikemeko): include length of wire?
+              new_cost = (self.cost + len(new_wire) + 1 +
+                  crossing_wire * CROSSING_WIRE_PENALTY)
               children.append(Proto_Board_Search_Node(new_proto_board,
-                  tuple(new_loc_pairs), self,
-                  self.cost + crossing_wire * CROSSING_WIRE_PENALTY))
+                  tuple(new_loc_pairs), self, new_cost))
     return children
 
 def goal_test(state):
@@ -115,8 +119,17 @@ def heuristic(state):
   TODO(mikemeko): better heuristic, the right one might really do the trick :)
   """
   proto_board, loc_pairs = state
-  return sum(dist(loc_1, loc_2) for loc_1, loc_2 in loc_pairs) + (
-      proto_board.num_wires())
+  return sum(1000 + dist(loc_1, loc_2) for loc_1, loc_2 in loc_pairs if not
+      proto_board.connected(loc_1, loc_2))
+
+def progress(state, cost):
+  """
+  TODO(mikemeko)
+  """
+  if DEBUG:
+    proto_board, loc_pairs = state
+    print cost
+    visualize_proto_board(proto_board)
 
 def find_wiring(loc_pairs, start_proto_board=Proto_Board()):
   """
@@ -127,13 +140,13 @@ def find_wiring(loc_pairs, start_proto_board=Proto_Board()):
   start_node = Proto_Board_Search_Node(
       start_proto_board.with_loc_disjoint_set_forest(loc_disjoint_set_forest(
       loc_pairs)), loc_pairs)
-  return a_star(start_node, goal_test, heuristic)
+  return a_star(start_node, goal_test, heuristic, progress)
 
 if __name__ == '__main__':
   # test
   wires = (((0, 2), (8, 50)), ((5, 1), (10, 4)), ((3, 40), (9, 30)),
       ((10, 10), (1, 30)), ((3, 3), (5, 5)), ((4, 4), (4, 7)),
-      ((5, 5), (0, 3)), ((2, 51), (2, 60)), ((13, 60), (12, 10)))
-  prot = None
-  run('prot = find_wiring(wires)[0]')
-  prot.visualize()
+      ((5, 5), (0, 3)), ((2, 51), (2, 60)), ((13, 60), (12, 10)))[:]
+  board_with_wires = None
+  run('board_with_wires = find_wiring(wires)[0]')
+  visualize_proto_board(board_with_wires)
