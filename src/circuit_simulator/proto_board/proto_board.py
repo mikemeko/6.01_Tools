@@ -50,6 +50,7 @@ class Proto_Board:
     """
     Returns True if |loc_1| and |loc_2| are connected by wires, False
         otherwise.
+    TODO(mikemeko): make this more efficient
     """
     return self._connected(loc_1, loc_2)
   def with_loc_disjoint_set_forest(self, loc_disjoint_set_forest):
@@ -70,6 +71,7 @@ class Proto_Board:
         nodes that are already connected, this method returns this proto board.
         If the wire connects nodes that are meant not to be connected, as per
         |self._loc_disjoint_set_forest|, this method returns None.
+    TODO(mikemeko): can we do more here?
     """
     if self.connected(new_wire.loc_1, new_wire.loc_2):
       return self
@@ -82,9 +84,12 @@ class Proto_Board:
     new_wire_mappings[new_wire.loc_2] = new_wire.loc_1
     new_loc_disjoint_set_forest = self._loc_disjoint_set_forest.copy()
     if bool(group_1) != bool(group_2):
-      new_loc_disjoint_set_forest.make_set(new_wire.loc_1)
-      new_loc_disjoint_set_forest.make_set(new_wire.loc_2)
-      new_loc_disjoint_set_forest.union(new_wire.loc_1, new_wire.loc_2)
+      present_loc = new_wire.loc_1 if group_1 else new_wire.loc_2
+      absent_loc = new_wire.loc_1 if present_loc == new_wire.loc_2 else (
+          new_wire.loc_2)
+      for loc in section_locs(absent_loc):
+        new_loc_disjoint_set_forest.make_set(loc)
+        new_loc_disjoint_set_forest.union(present_loc, loc)
     return Proto_Board(new_wire_mappings, self._wires + [new_wire],
         new_loc_disjoint_set_forest)
   def occupied(self, loc):

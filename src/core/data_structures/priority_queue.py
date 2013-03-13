@@ -20,9 +20,8 @@ class Priority_Queue:
     heappush(self.data, (cost, item))
   def pop(self):
     """
-    Removes and returns the item in this priority queue with the smallest cost,
-        or None if the queue is empty.
-    TODO(mikemeko): update
+    Removes and returns the (item, cost) pair in this priority queue with the
+        smallest cost, or None if the queue is empty.
     """
     if not self.data:
       return None

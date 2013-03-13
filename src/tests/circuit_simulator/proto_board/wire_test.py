@@ -16,6 +16,7 @@ class Wire_Test(TestCase):
     assert Wire((3, 0), (3, 2)).crosses(Wire((2, 1), (4, 1)))
     assert Wire((2, 0), (2, 2)).crosses(Wire((2, 1), (4, 1)))
     assert Wire((2, 0), (2, 2)).crosses(Wire((2, 0), (4, 0)))
+    assert Wire((2, 0), (2, 3)).crosses(Wire((2, 1), (2, 2)))
     assert not Wire((2, 0), (2, 2)).crosses(Wire((3, 0), (4, 0)))
     assert not Wire((2, 0), (2, 2)).crosses(Wire((3, 0), (3, 2)))
 

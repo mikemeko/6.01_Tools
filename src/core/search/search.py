@@ -41,7 +41,9 @@ def a_star(start_node, goal_test, heuristic=lambda state: 0,
       considerable speed-up! (See Chapter 7 of MIT 6.01 course notes for more.)
   Returns the state found that satisfies the |goal_test|, or None if no such
       state is found.
-  TODO(mikemeko): update
+  For progress checks, everytime a node is popped out of the priority queue,
+      this methods calls |progress| with the state and cost of the node that
+      was just popped.
   """
   if goal_test(start_node.state):
     return start_node.state
