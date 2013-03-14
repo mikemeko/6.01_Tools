@@ -9,19 +9,22 @@ __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 from analyze_board import run_analysis
 from constants import APP_NAME
 from constants import DEV_STAGE
+from constants import FILE_EXTENSION
 from constants import INIT_UI_HELP
 from constants import IO_PADDING
 from constants import REQUEST_SAVE_MESSAGE
 from constants import REQUEST_SAVE_TITLE
 from core.gui.board import Board
+from core.gui.components import Wire
+from core.gui.components import Wire_Connector_Drawable
 from core.gui.constants import CTRL_DOWN
 from core.gui.constants import INFO
 from core.gui.constants import LEFT
 from core.gui.constants import RIGHT
 from core.gui.palette import Palette
-from core.util.io import strip_file_name
-from file_util import open_board
-from file_util import save_board
+from core.save.save import open_board
+from core.save.save import save_board
+from core.save.util import strip_file_name
 from system_drawables import Adder_Drawable
 from system_drawables import Delay_Drawable
 from system_drawables import FR_Run_Drawable
@@ -83,7 +86,7 @@ if __name__ == '__main__':
     global board
     global file_name
     # save board
-    saved_file_name = save_board(board, file_name)
+    saved_file_name = save_board(board, file_name, APP_NAME, FILE_EXTENSION)
     if saved_file_name:
       file_name = saved_file_name
     # mark the board unchanged
@@ -106,7 +109,11 @@ if __name__ == '__main__':
     # if the board has been changed, request save first
     request_save()
     # open a new board
-    new_file_name = open_board(board, file_name)
+    # deserialization
+    deserializers = (Adder_Drawable, Delay_Drawable, Gain_Drawable,
+        IO_X_Drawable, IO_Y_Drawable, Wire_Connector_Drawable, Wire)
+    new_file_name = open_board(board, file_name, deserializers, APP_NAME,
+        FILE_EXTENSION)
     if new_file_name:
       # update to new file name
       file_name = new_file_name

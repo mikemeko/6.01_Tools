@@ -20,8 +20,10 @@ from constants import RUN_RECT_OUTLINE
 from constants import RUN_RECT_SIZE
 from constants import RUN_TEXT_ACTIVE_FILL
 from constants import RUN_TEXT_FILL
+from core.save.constants import RE_INT_PAIR
 from core.util.undo import Action
 from core.util.undo import Multi_Action
+from re import match
 from util import create_connector
 from util import create_wire
 from util import snap
@@ -30,6 +32,7 @@ class Drawable:
   """
   An abstract class to represent an item that is drawn on the board. All
       subclasses should impement the draw_on method.
+  TODO(mikemeko): update
   """
   def __init__(self, width, height, connector_flags=0):
     """
@@ -61,6 +64,19 @@ class Drawable:
         result in this rotation. The default implementation is no rotation.
     """
     return self
+  @property
+  def serialize(self, offset):
+    """
+    TODO(mikemeko)
+    """
+    raise NotImplementedError('subclasses should implement this')
+  @property
+  @staticmethod
+  def deserialize(item_str):
+    """
+    TODO(mikemeko)
+    """
+    raise NotImplementedError('subclasses should implement this')
   def is_live(self):
     """
     Returns True if this drawable is still on the board, or False if it has
@@ -412,6 +428,23 @@ class Wire:
     # lift connectors to make it easy to draw other wires
     for connector in self.connectors():
       connector.redraw(canvas)
+  def serialize(self):
+    """
+    TODO(mikemeko)
+    """
+    return 'Wire %s %s' % (str(self.start_connector.center),
+      str(self.end_connector.center))
+  @staticmethod
+  def deserialize(item_str, board):
+    """
+    TODO(mikemeko)
+    """
+    m = match(r'Wire %s %s' % (RE_INT_PAIR, RE_INT_PAIR), item_str)
+    if m:
+      x1, y1, x2, y2 = map(int, m.groups())
+      board.add_wire(x1, y1, x2, y2)
+      return True
+    return False
 
 class Wire_Connector_Drawable(Drawable):
   """
@@ -424,6 +457,16 @@ class Wire_Connector_Drawable(Drawable):
   def draw_on(self, canvas, offset=(0, 0)):
     # nothing to draw
     pass
+  def serialize(self, offset):
+    return 'Wire connector %s' % str(offset)
+  @staticmethod
+  def deserialize(item_str, board):
+    m = match(r'Wire connector %s' % RE_INT_PAIR, item_str)
+    if m:
+      ox, oy = map(int, m.groups())
+      board.add_drawable(Wire_Connector_Drawable(), (ox, oy))
+      return True
+    return False
 
 class Run_Drawable(Drawable):
   """
@@ -439,3 +482,10 @@ class Run_Drawable(Drawable):
     self.parts.add(canvas.create_text(ox + RUN_RECT_SIZE / 2, oy +
         RUN_RECT_SIZE / 2, text=self.text, fill=RUN_TEXT_FILL,
         activefill=RUN_TEXT_ACTIVE_FILL))
+  def serialize(self, offset):
+    # TODO(mikemeko)
+    pass
+  @staticmethod
+  def deserialize(item_str, board):
+    # TODO(mikemeko)
+    return False

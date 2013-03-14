@@ -27,6 +27,7 @@ from constants import IO_FILL
 from constants import IO_OUTLINE
 from constants import IO_SIZE
 from constants import PZD
+from constants import RE_GAIN_VERTICES
 from constants import USR
 from constants import X_CONNECTORS
 from constants import Y_CONNECTORS
@@ -34,7 +35,10 @@ from core.gui.components import Drawable
 from core.gui.components import Run_Drawable
 from core.gui.util import create_editable_text
 from core.gui.util import rotate_connector_flags
+from core.save.constants import RE_INT
+from core.save.constants import RE_INT_PAIR
 from core.util.util import is_callable
+from re import match
 from system_simulator.simulation.constants import X
 from system_simulator.simulation.constants import Y
 
@@ -109,6 +113,20 @@ class Gain_Drawable(Drawable):
     else:
       # should never get here
       raise Exception('Unexpected triangle vertices')
+  def serialize(self, offset):
+    return 'Gain %s %s %s' % (self.get_K(), str(self.vertices), str(offset))
+  @staticmethod
+  def deserialize(item_str, board):
+    m = match(r'Gain (.+) %s %s' % (RE_GAIN_VERTICES, RE_INT_PAIR), item_str)
+    if m:
+      K = m.group(1)
+      x1, y1, x2, y2, x3, y3, ox, oy = map(int, m.groups()[1:])
+      gain_drawable = Gain_Drawable(on_gain_changed=lambda: board.set_changed(
+          True), vertices=(x1, y1, x2, y2, x3, y3))
+      board.add_drawable(gain_drawable, (ox, oy))
+      gain_drawable.set_K(K)
+      return True
+    return False
 
 class Delay_Drawable(Drawable):
   """
@@ -124,6 +142,16 @@ class Delay_Drawable(Drawable):
         oy + DELAY_SIZE / 2), text=DELAY_TEXT))
   def rotated(self):
     return Delay_Drawable(rotate_connector_flags(self.connector_flags))
+  def serialize(self, offset):
+    return 'Delay %d %s' % (self.connector_flags, str(offset))
+  @staticmethod
+  def deserialize(item_str, board):
+    m = match(r'Delay %s %s' % (RE_INT, RE_INT_PAIR), item_str)
+    if m:
+      connector_flags, ox, oy = map(int, m.groups())
+      board.add_drawable(Delay_Drawable(connector_flags), (ox, oy))
+      return True
+    return False
 
 class Adder_Drawable(Drawable):
   """
@@ -144,10 +172,20 @@ class Adder_Drawable(Drawable):
         ox + r + ADDER_SEGMENT_SIZE / 2, oy + r))
   def rotated(self):
     return Adder_Drawable(rotate_connector_flags(self.connector_flags))
+  def serialize(self, offset):
+    return 'Adder %d %s' % (self.connector_flags, str(offset))
+  @staticmethod
+  def deserialize(item_str, board):
+    m = match(r'Adder %s %s' % (RE_INT, RE_INT_PAIR), item_str)
+    if m:
+      connector_flags, ox, oy = map(int, m.groups())
+      board.add_drawable(Adder_Drawable(connector_flags), (ox, oy))
+      return True
+    return False
 
 class IO_Drawable(Drawable):
   """
-  Drawable for input (X) and output (Y) signals.
+  Abstract Drawable for input (X) and output (Y) signals.
   """
   def __init__(self, signal, connectors):
     """
@@ -170,6 +208,16 @@ class IO_X_Drawable(IO_Drawable):
   """
   def __init__(self):
     IO_Drawable.__init__(self, X, X_CONNECTORS)
+  def serialize(self, offset):
+    return 'IO_X %s' % str(offset)
+  @staticmethod
+  def deserialize(item_str, board):
+    m = match(r'IO_X %s' % RE_INT_PAIR, item_str)
+    if m:
+      ox, oy = map(int, m.groups())
+      board.add_drawable(IO_X_Drawable(), (ox, oy))
+      return True
+    return False
 
 class IO_Y_Drawable(IO_Drawable):
   """
@@ -177,6 +225,16 @@ class IO_Y_Drawable(IO_Drawable):
   """
   def __init__(self):
     IO_Drawable.__init__(self, Y, Y_CONNECTORS)
+  def serialize(self, offset):
+    return 'IO_Y %s' % str(offset)
+  @staticmethod
+  def deserialize(item_str, board):
+    m = match(r'IO_Y %s' % RE_INT_PAIR, item_str)
+    if m:
+      ox, oy = map(int, m.groups())
+      board.add_drawable(IO_Y_Drawable(), (ox, oy))
+      return True
+    return False
 
 class PZD_Run_Drawable(Run_Drawable):
   """

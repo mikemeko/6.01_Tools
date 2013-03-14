@@ -1,8 +1,8 @@
 """
-Utility methods to aid IO, saving/opening files, etc.
+TODO(mikemeko)
 """
 
-__author__ = 'mikemeko@mit.edu (Mike Mekonnen)'
+__author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
 from os.path import isdir
 from os.path import isfile
