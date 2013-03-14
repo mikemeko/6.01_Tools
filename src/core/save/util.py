@@ -1,5 +1,5 @@
 """
-TODO(mikemeko)
+Utility methods for file saving.
 """
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'

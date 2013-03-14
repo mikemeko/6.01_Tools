@@ -31,8 +31,8 @@ from util import snap
 class Drawable:
   """
   An abstract class to represent an item that is drawn on the board. All
-      subclasses should impement the draw_on method.
-  TODO(mikemeko): update
+      subclasses should impement the draw_on method with appropriate look for
+      the drawable, and the serialize and deserialize methods for file saving.
   """
   def __init__(self, width, height, connector_flags=0):
     """
@@ -67,14 +67,19 @@ class Drawable:
   @property
   def serialize(self, offset):
     """
-    TODO(mikemeko)
+    Should return a string representation of this drawable at the given
+        |offset|. Will typically contain a special marker for the specific type
+        of Drawable.
+    All subclasses should implement this.
     """
     raise NotImplementedError('subclasses should implement this')
   @property
   @staticmethod
-  def deserialize(item_str):
+  def deserialize(item_str, board):
     """
-    TODO(mikemeko)
+    If possible, deserializes |item_str| and adds the appropriate Drawable to
+        the given |board|. Should return True on success and False on failure.
+    All subclasses should implement this.
     """
     raise NotImplementedError('subclasses should implement this')
   def is_live(self):
@@ -430,14 +435,15 @@ class Wire:
       connector.redraw(canvas)
   def serialize(self):
     """
-    TODO(mikemeko)
+    Returns a string representing this wire at it's current location.
     """
     return 'Wire %s %s' % (str(self.start_connector.center),
       str(self.end_connector.center))
   @staticmethod
   def deserialize(item_str, board):
     """
-    TODO(mikemeko)
+    If possible, deserializes |item_str| and adds the appropriate wire to the
+        given |board|. Returns True on success, and False on failure.
     """
     m = match(r'Wire %s %s' % (RE_INT_PAIR, RE_INT_PAIR), item_str)
     if m:
@@ -483,9 +489,9 @@ class Run_Drawable(Drawable):
         RUN_RECT_SIZE / 2, text=self.text, fill=RUN_TEXT_FILL,
         activefill=RUN_TEXT_ACTIVE_FILL))
   def serialize(self, offset):
-    # TODO(mikemeko)
-    pass
+    # should never be needed
+    return ''
   @staticmethod
   def deserialize(item_str, board):
-    # TODO(mikemeko)
+    # should never be needed
     return False

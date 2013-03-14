@@ -41,26 +41,14 @@ IO_PADDING = 40
 IO_SIZE = 20
 
 # text
-ADDER_MARK = 'Adder'
 APP_NAME = 'System Simulator'
-DELAY_MARK = 'Delay'
 DELAY_TEXT = 'R'
 DEV_STAGE = 'Pre-alpha'
 FILE_EXTENSION = '.sysim'
 FR = 'FR' # frequency response
-GAIN_MARK = 'Gain'
 INIT_UI_HELP = 'Ctrl-click to delete.\nShift-click to rotate.'
-IO_MARK = 'IO'
-OPEN_FILE_TITLE = 'Open file ...'
 PZD = 'PZD' # pole-zero diagram
-REQUEST_SAVE_MESSAGE = 'System has been changed, save first?'
-REQUEST_SAVE_TITLE = 'Save?'
-SAVE_AS_TITLE = 'Save file as ...'
 USR = 'USR' # unit sample response
-WIRE_CONNECTOR_MARK = 'Wire connector'
-WIRE_MARK = 'Wire'
 
 # regular expressions
 RE_GAIN_VERTICES = r'\((\d+), (\d+), (\d+), (\d+), (\d+), (\d+)\)'
-RE_INT = r'(\d+)'
-RE_INT_PAIR = r'\((\d+), (\d+)\)'

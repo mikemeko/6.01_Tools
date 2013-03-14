@@ -380,11 +380,11 @@ class Board(Frame):
     Callback for when a key is released.
     """
     if event.keysym in ('Control_L', 'Control_R'):
-      self.configure(cursor='arrow')
       self._ctrl_pressed = False
-    elif event.keysym in ('Shift_L', 'Shift_R'):
       self.configure(cursor='arrow')
+    elif event.keysym in ('Shift_L', 'Shift_R'):
       self._shift_pressed = False
+      self.configure(cursor='arrow')
   def _rotate(self, event):
     """
     Callback for item rotation. Marks the board changed if any item is rotated.
@@ -397,7 +397,9 @@ class Board(Frame):
         return
       # remove current drawable and add rotated version
       rotated_drawable = drawable_to_rotate.rotated()
-      if rotated_drawable is not drawable_to_rotate:
+      if rotated_drawable is drawable_to_rotate:
+        self.display_message('Item cannot be rotated', WARNING)
+      else:
         # save offset for undo / redo
         offset = drawable_to_rotate.offset
         def switch(remove, add):
@@ -626,3 +628,16 @@ class Board(Frame):
     Clears the action history.
     """
     self._action_history.clear()
+  def reset(self):
+    """
+    Resets this board by clearing the action history, setting the board to be
+        unchanged, and clearing any recorded key press state.
+    """
+    # clear board undo / redo history
+    self.clear_action_history()
+    # mark the board unchanged
+    self.set_changed(False)
+    # return cursor to normal state
+    self._ctrl_pressed = False
+    self._shift_pressed = False
+    self.configure(cursor='arrow')

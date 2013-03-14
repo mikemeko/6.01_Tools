@@ -1,6 +1,5 @@
 """
 Runs system simulator.
-TODO(mikemeko): Ctrl-O, ctrl mark not released.
 TODO(mikemeko): bug: USR or FR blocks UI.
 """
 
@@ -12,8 +11,6 @@ from constants import DEV_STAGE
 from constants import FILE_EXTENSION
 from constants import INIT_UI_HELP
 from constants import IO_PADDING
-from constants import REQUEST_SAVE_MESSAGE
-from constants import REQUEST_SAVE_TITLE
 from core.gui.board import Board
 from core.gui.components import Wire
 from core.gui.components import Wire_Connector_Drawable
@@ -23,6 +20,7 @@ from core.gui.constants import LEFT
 from core.gui.constants import RIGHT
 from core.gui.palette import Palette
 from core.save.save import open_board
+from core.save.save import request_save_board
 from core.save.save import save_board
 from core.save.util import strip_file_name
 from system_drawables import Adder_Drawable
@@ -39,7 +37,6 @@ from system_simulator.simulation.pole_zero_diagram import (
     plot_pole_zero_diagram)
 from system_simulator.simulation.unit_sample_response import (
     plot_unit_sample_response)
-from tkMessageBox import askquestion
 from Tkinter import Menu
 from Tkinter import Tk
 
@@ -52,7 +49,7 @@ if __name__ == '__main__':
   global file_name
   # no opened file initially
   file_name = None
-  def reset_board():
+  def init_board():
     """
     Clears the board and puts the the input (X) and output (Y) drawables.
     """
@@ -65,10 +62,7 @@ if __name__ == '__main__':
     out = IO_Y_Drawable()
     board.add_drawable(out, (board.width - out.width - IO_PADDING,
         (board.height - out.height) / 2))
-    # clear board undo / redo history
-    board.clear_action_history()
-    # mark the board unchanged
-    board.set_changed(False)
+    board.reset()
   def on_changed(board_changed):
     """
     This will be called every time the board is changed. |board_changed| is
@@ -96,10 +90,8 @@ if __name__ == '__main__':
     Checks if the board has been changed, and asks the user to save the file.
     """
     global board
-    if board.changed():
-      if askquestion(title=REQUEST_SAVE_TITLE,
-          message=REQUEST_SAVE_MESSAGE) == 'yes':
-        save_file()
+    if board.changed() and request_save_board():
+      save_file()
   def open_file():
     """
     Opens a saved board.
@@ -109,7 +101,6 @@ if __name__ == '__main__':
     # if the board has been changed, request save first
     request_save()
     # open a new board
-    # deserialization
     deserializers = (Adder_Drawable, Delay_Drawable, Gain_Drawable,
         IO_X_Drawable, IO_Y_Drawable, Wire_Connector_Drawable, Wire)
     new_file_name = open_board(board, file_name, deserializers, APP_NAME,
@@ -117,10 +108,6 @@ if __name__ == '__main__':
     if new_file_name:
       # update to new file name
       file_name = new_file_name
-      # clear board undo / redo history
-      board.clear_action_history()
-      # mark the board unchanged
-      board.set_changed(False)
   def new_file():
     """
     Opens a new board.
@@ -131,10 +118,10 @@ if __name__ == '__main__':
     # update to no file name
     file_name = None
     # reset to empty board
-    reset_board()
+    init_board()
   # create empty board
   board = Board(root, on_changed=on_changed, on_exit=request_save)
-  reset_board()
+  init_board()
   # create palette
   palette = Palette(root, board)
   # add DT LTI system components to palette
