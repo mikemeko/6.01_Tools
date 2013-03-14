@@ -73,8 +73,10 @@ class Proto_Board:
         |self._loc_disjoint_set_forest|, this method returns None.
     TODO(mikemeko): can we do more here?
     """
+    # if locations are already connected, no need for the wire
     if self.connected(new_wire.loc_1, new_wire.loc_2):
       return self
+    # if the wire results in a short, no new proto board
     group_1 = self._loc_disjoint_set_forest.find_set(new_wire.loc_1)
     group_2 = self._loc_disjoint_set_forest.find_set(new_wire.loc_2)
     if group_1 and group_2 and group_1 != group_2:
@@ -83,6 +85,7 @@ class Proto_Board:
     new_wire_mappings[new_wire.loc_1] = new_wire.loc_2
     new_wire_mappings[new_wire.loc_2] = new_wire.loc_1
     new_loc_disjoint_set_forest = self._loc_disjoint_set_forest.copy()
+    # update to avoid shorts that may result via the new wire
     if bool(group_1) != bool(group_2):
       present_loc = new_wire.loc_1 if group_1 else new_wire.loc_2
       absent_loc = new_wire.loc_1 if present_loc == new_wire.loc_2 else (
