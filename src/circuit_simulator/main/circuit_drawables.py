@@ -24,6 +24,7 @@ from constants import POWER_VOLTS
 from constants import PROBE_MINUS
 from constants import PROBE_PLUS
 from constants import PROBE_SIZE
+from constants import RE_OP_AMP_VERTICES
 from constants import RESISTOR_FILL
 from constants import RESISTOR_HORIZONTAL_CONNECTORS
 from constants import RESISTOR_HORIZONTAL_HEIGHT
@@ -36,12 +37,15 @@ from core.gui.components import Drawable
 from core.gui.components import Run_Drawable
 from core.gui.util import create_editable_text
 from core.gui.util import rotate_connector_flags
+from core.save.constants import RE_INT
+from core.save.constants import RE_INT_PAIR
 from core.util.util import is_callable
+from re import match
 from Tkinter import CENTER
 
 class Pin_Drawable(Drawable):
   """
-  Drawable to represent pins: power, ground, and probes.
+  Abstract Drawable to represent pins: power, ground, and probes.
   """
   def __init__(self, text, fill, width, height, connectors):
     """
@@ -70,6 +74,18 @@ class Power_Drawable(Pin_Drawable):
   def rotated(self):
     return Power_Drawable(self.height, self.width,
         rotate_connector_flags(self.connector_flags))
+  def serialize(self, offset):
+    return 'Power %d %d %d %s' % (self.width, self.height,
+        self.connector_flags, str(offset))
+  @staticmethod
+  def deserialize(item_str, board):
+    m = match(r'Power %s %s %s %s' % (RE_INT, RE_INT, RE_INT, RE_INT_PAIR),
+        item_str)
+    if m:
+      width, height, connectors, ox, oy = map(int, m.groups())
+      board.add_drawable(Power_Drawable(width, height, connectors), (ox, oy))
+      return True
+    return False
 
 class Ground_Drawable(Pin_Drawable):
   """
@@ -82,6 +98,18 @@ class Ground_Drawable(Pin_Drawable):
   def rotated(self):
     return Ground_Drawable(self.height, self.width,
         rotate_connector_flags(self.connector_flags))
+  def serialize(self, offset):
+    return 'Ground %d %d %d %s' % (self.width, self.height,
+        self.connector_flags, str(offset))
+  @staticmethod
+  def deserialize(item_str, board):
+    m = match(r'Ground %s %s %s %s' % (RE_INT, RE_INT, RE_INT, RE_INT_PAIR),
+        item_str)
+    if m:
+      width, height, connectors, ox, oy = map(int, m.groups())
+      board.add_drawable(Ground_Drawable(width, height, connectors), (ox, oy))
+      return True
+    return False
 
 class Probe_Plus_Drawable(Pin_Drawable):
   """
@@ -94,6 +122,16 @@ class Probe_Plus_Drawable(Pin_Drawable):
     return Probe_Plus_Drawable(rotate_connector_flags(self.connector_flags))
   def deletable(self):
     return False
+  def serialize(self, offset):
+    return 'Probe_Plus %d %s' % (self.connector_flags, str(offset))
+  @staticmethod
+  def deserialize(item_str, board):
+    m = match(r'Probe_Plus %s %s' % (RE_INT, RE_INT_PAIR), item_str)
+    if m:
+      connectors, ox, oy = map(int, m.groups())
+      board.add_drawable(Probe_Plus_Drawable(connectors), (ox, oy))
+      return True
+    return False
 
 class Probe_Minus_Drawable(Pin_Drawable):
   """
@@ -105,6 +143,16 @@ class Probe_Minus_Drawable(Pin_Drawable):
   def rotated(self):
     return Probe_Minus_Drawable(rotate_connector_flags(self.connector_flags))
   def deletable(self):
+    return False
+  def serialize(self, offset):
+    return 'Probe_Minus %d %s' % (self.connector_flags, str(offset))
+  @staticmethod
+  def deserialize(item_str, board):
+    m = match(r'Probe_Minus %s %s' % (RE_INT, RE_INT_PAIR), item_str)
+    if m:
+      connectors, ox, oy = map(int, m.groups())
+      board.add_drawable(Probe_Minus_Drawable(connectors), (ox, oy))
+      return True
     return False
 
 class Resistor_Drawable(Drawable):
@@ -165,6 +213,20 @@ class Resistor_Drawable(Drawable):
     return Resistor_Drawable(self.on_resistance_changed, self.height,
         self.width, rotate_connector_flags(self.connector_flags),
         self.get_resistance())
+  def serialize(self, offset):
+    return 'Resistor %s %d %d %d %s' % (self.get_resistance(), self.width,
+        self.height, self.connector_flags, str(offset))
+  @staticmethod
+  def deserialize(item_str, board):
+    m = match(r'Resistor (.+) %s %s %s %s' % (RE_INT, RE_INT, RE_INT,
+        RE_INT_PAIR), item_str)
+    if m:
+      r = m.group(1)
+      width, height, connectors, ox, oy = map(int, m.groups()[1:])
+      board.add_drawable(Resistor_Drawable(lambda: board.set_changed(True),
+          width, height, connectors, r), (ox, oy))
+      return True
+    return False
 
 class Op_Amp_Drawable(Drawable):
   """
@@ -246,6 +308,16 @@ class Op_Amp_Drawable(Drawable):
       return Op_Amp_Drawable(OP_AMP_UP_VERTICES)
     else: # OP_AMP_UP_VERTICES
       return Op_Amp_Drawable(OP_AMP_RIGHT_VERTICES)
+  def serialize(self, offset):
+    return 'Op amp %s %s' % (str(self.vertices), str(offset))
+  @staticmethod
+  def deserialize(item_str, board):
+    m = match(r'Op amp %s %s' % (RE_OP_AMP_VERTICES, RE_INT_PAIR), item_str)
+    if m:
+      x1, y1, x2, y2, x3, y3, ox, oy = map(int, m.groups())
+      board.add_drawable(Op_Amp_Drawable((x1, y1, x2, y2, x3, y3)), (ox, oy))
+      return True
+    return False
 
 class Simulate_Run_Drawable(Run_Drawable):
   """

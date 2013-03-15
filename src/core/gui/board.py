@@ -628,6 +628,13 @@ class Board(Frame):
     Clears the action history.
     """
     self._action_history.clear()
+  def reset_cursor_state(self):
+    """
+    Clears any recorded key press state and returns to original cursor look.
+    """
+    self._ctrl_pressed = False
+    self._shift_pressed = False
+    self.configure(cursor='arrow')
   def reset(self):
     """
     Resets this board by clearing the action history, setting the board to be
@@ -638,6 +645,4 @@ class Board(Frame):
     # mark the board unchanged
     self.set_changed(False)
     # return cursor to normal state
-    self._ctrl_pressed = False
-    self._shift_pressed = False
-    self.configure(cursor='arrow')
+    self.reset_cursor_state()

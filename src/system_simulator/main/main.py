@@ -113,7 +113,7 @@ if __name__ == '__main__':
     Opens a new board.
     """
     global file_name
-    # if the baord has been changed, request save first
+    # if the board has been changed, request save first
     request_save()
     # update to no file name
     file_name = None

@@ -13,3 +13,6 @@ OPEN_FILE_TITLE = 'Open file ...'
 REQUEST_SAVE_MESSAGE = 'File has been changed, save first?'
 REQUEST_SAVE_TITLE = 'Save?'
 SAVE_AS_TITLE = 'Save file as ...'
+
+# debugging
+DEBUG = False

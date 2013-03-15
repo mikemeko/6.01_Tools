@@ -90,13 +90,6 @@ class Gain_Drawable(Drawable):
       """
       return canvas.itemcget(gain_text, 'text')
     self.get_K = get_K
-    def set_K(K):
-      """
-      Sets the constant for this gain. This is used for deserializing gain
-          components (see main/filesave.py).
-      """
-      canvas.itemconfig(gain_text, text=K)
-    self.set_K = set_K
   def rotated(self):
     if self.vertices == GAIN_RIGHT_VERTICES:
       return Gain_Drawable(self.on_gain_changed, GAIN_DOWN_VERTICES,
@@ -121,10 +114,8 @@ class Gain_Drawable(Drawable):
     if m:
       K = m.group(1)
       x1, y1, x2, y2, x3, y3, ox, oy = map(int, m.groups()[1:])
-      gain_drawable = Gain_Drawable(on_gain_changed=lambda: board.set_changed(
-          True), vertices=(x1, y1, x2, y2, x3, y3))
-      board.add_drawable(gain_drawable, (ox, oy))
-      gain_drawable.set_K(K)
+      board.add_drawable(Gain_Drawable(lambda: board.set_changed(True),
+          (x1, y1, x2, y2, x3, y3), K), (ox, oy))
       return True
     return False
 

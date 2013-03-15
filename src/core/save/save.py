@@ -4,6 +4,7 @@ Methods to save and open boards.
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
+from constants import DEBUG
 from constants import OPEN_FILE_TITLE
 from constants import REQUEST_SAVE_MESSAGE
 from constants import REQUEST_SAVE_TITLE
@@ -45,6 +46,7 @@ def save_board(board, file_name, file_type, file_extension):
     # if valid file name is not provided, ask for one
     file_name = asksaveasfilename(title=SAVE_AS_TITLE,
         filetypes=[('%s files' % file_type, file_extension)])
+    board.reset_cursor_state()
     # ensure extension is tagged
     if file_name and not file_name.endswith(file_extension):
       file_name += file_extension
@@ -87,6 +89,9 @@ def open_board(board, current_file_name, deserializers, file_type,
       for deserializer in deserializers:
         if deserializer.deserialize(line, board):
           break
+      else:
+        if DEBUG:
+          print 'Could not deserialize:', line
     open_file.close()
     board.reset()
   return file_name

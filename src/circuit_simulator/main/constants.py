@@ -46,8 +46,12 @@ RESISTOR_TEXT_PADDING = 10
 # text
 APP_NAME = 'Circuit Simulator'
 DEV_STAGE = 'Pre-alpha'
+FILE_EXTENSION = '.circsim'
 GROUND = 'gnd'
 POWER = 'pwr'
 PROBE_MINUS = '-p'
 PROBE_PLUS = '+p'
 SIMULATE = 'Sim'
+
+# regular expressions
+RE_OP_AMP_VERTICES = r'\((\d+), (\d+), (\d+), (\d+), (\d+), (\d+)\)'
