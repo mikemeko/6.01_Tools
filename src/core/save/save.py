@@ -79,6 +79,7 @@ def open_board(board, current_file_name, deserializers, file_type,
       filetypes=[('%s files' % file_type, file_extension)],
       initialfile=strip_file_name(current_file_name),
       initialdir=strip_dir(current_file_name))
+  board.reset_cursor_state()
   if file_name:
     assert file_name.endswith(file_extension), 'invalid file type'
     # clear board
