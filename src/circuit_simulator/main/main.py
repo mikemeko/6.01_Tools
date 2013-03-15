@@ -79,9 +79,8 @@ if __name__ == '__main__':
     saved_file_name = save_board(board, file_name, APP_NAME, FILE_EXTENSION)
     if saved_file_name:
       file_name = saved_file_name
-    # mark the board unchanged
-    board.set_changed(False)
-    board.reset_cursor_state()
+      # mark the board unchanged
+      board.set_changed(False)
   def request_save():
     """
     Checks if the board has been changed, and asks the user to save the file.
