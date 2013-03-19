@@ -106,5 +106,6 @@ def visualize_proto_board(proto_board):
   Displays a nice window portraying the given |proto_board|.
   """
   root = Tk()
+  root.resizable(0, 0)
   Proto_Board_Visualizer(root, proto_board)
   root.mainloop()

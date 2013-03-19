@@ -8,6 +8,12 @@ from visualization.constants import CONNECTOR_SIZE
 from visualization.constants import CONNECTOR_SPACING
 from visualization.constants import VERTICAL_SEPARATION
 
+# TODO: move somewhere else
+def overlap(interval_1, interval_2):
+  min_1, max_1 = interval_1
+  min_2, max_2 = interval_2
+  return max(0, 1 + min(max_1, max_2) - max(min_1, min_2))
+
 class Circuit_Piece:
   """
   TODO(mikemeko)
@@ -33,6 +39,18 @@ class Circuit_Piece:
         self.width- 1)
     rect_height = VERTICAL_SEPARATION + 2 * CONNECTOR_SIZE
     canvas.create_rectangle(x, y, x + rect_width, y + rect_height, fill='#BBB')
+  def crossed_by(self, wire):
+    # TODO
+    # TODO: define a between function
+    assert self.top_left_loc
+    r_min, c_min = self.top_left_loc
+    r_max, c_max = r_min + self.height - 1, c_min + self.width - 1
+    wire_r_min = min(wire.r_1, wire.r_2)
+    wire_r_max = max(wire.r_1, wire.r_2)
+    wire_c_min = min(wire.c_1, wire.c_2)
+    wire_c_max = max(wire.c_1, wire.c_2)
+    return (overlap((r_min, r_max), (wire_r_min, wire_r_max)) and
+        overlap((c_min, c_max), (wire_c_min, wire_c_max)))
 
 class Op_Amp_Piece(Circuit_Piece):
   """
@@ -40,7 +58,7 @@ class Op_Amp_Piece(Circuit_Piece):
   """
   def __init__(self, n_1, n_2, n_3, n_4, n_5, n_6, n_7, n_8, dot_bottom_left):
     Circuit_Piece.__init__(self, set(filter(bool, [n_1, n_2, n_3, n_4, n_5,
-        n_6, n_7, n_8])), 4, 1)
+        n_6, n_7, n_8])), 4, 2)
     self.n_1 = n_1
     self.n_2 = n_2
     self.n_3 = n_3
@@ -91,7 +109,7 @@ class Resistor_Piece(Circuit_Piece):
   def __init__(self, n_1, n_2):
     assert n_1
     assert n_2
-    Circuit_Piece.__init__(self, set([n_1, n_2]), 1, 1)
+    Circuit_Piece.__init__(self, set([n_1, n_2]), 1, 2)
     self.n_1 = n_1
     self.n_2 = n_2
   def all_locs(self):

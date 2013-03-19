@@ -68,7 +68,7 @@ class Proto_Board_Search_Node(Search_Node):
     # can draw horizontal wires to locations to the left and right of |loc|
     # note that we limit the lengh of these horizontal wires (can technically
     #     be very big, but considering all gets us a huge branching factor)
-    for l in range(1, WIRE_LENGTH_LIMIT):
+    for l in range(1, WIRE_LENGTH_LIMIT + 1):
       wire_ends.append((r, c - l))
       wire_ends.append((r, c + l))
     # can draw vertical wires to the opposite half
@@ -101,10 +101,14 @@ class Proto_Board_Search_Node(Search_Node):
               # make sure that there is a wire to draw
               if len(new_wire) == 0:
                 continue
-              crossing_wire = any(wire.crosses(new_wire) for wire in
+              # TODO(mikemeko)
+              if any(piece.crossed_by(new_wire) for piece in
+                  proto_board.get_pieces()):
+                continue
+              crosses_wires = any(wire.crosses(new_wire) for wire in
                   proto_board.get_wires())
               # continue if we do not want to allow crossing wires
-              if crossing_wire and not MAYBE_ALLOW_CROSSING_WIRES:
+              if crosses_wires and not MAYBE_ALLOW_CROSSING_WIRES:
                 continue
               new_proto_board = proto_board.with_wire(new_wire)
               # make sure that the wire doesn't (1) connect things we want to
@@ -116,7 +120,7 @@ class Proto_Board_Search_Node(Search_Node):
               new_loc_pairs = list(loc_pairs)
               new_loc_pairs[i] = (wire_end, loc_2)
               # TODO(mikemeko): consider wire length in cost?
-              new_cost = self.cost + crossing_wire * CROSSING_WIRE_PENALTY
+              new_cost = self.cost + crosses_wires * CROSSING_WIRE_PENALTY
               children.append(Proto_Board_Search_Node(new_proto_board,
                   tuple(new_loc_pairs), self, new_cost))
     return children
