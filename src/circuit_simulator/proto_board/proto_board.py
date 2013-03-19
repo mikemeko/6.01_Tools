@@ -11,7 +11,7 @@ class Proto_Board:
   """
   Proto board representation.
   """
-  def __init__(self, wire_mappings={}, wires=[],
+  def __init__(self, wire_mappings={}, wires=[], pieces=set(),
       loc_disjoint_set_forest=Disjoint_Set_Forest()):
     """
     |wire_mappings|: a dictionary mapping locations to other locations to which
@@ -20,9 +20,11 @@ class Proto_Board:
     |loc_disjoint_set_forest|: an instance of Disjoint_Set_Forest representing
         disjoint sets of locations on the proto board that should alwas remain
         disconnected. This is used to avoid shorts.
+    TODO: update
     """
     self._wire_mappings = wire_mappings
     self._wires = wires
+    self._pieces = pieces
     self._loc_disjoint_set_forest = loc_disjoint_set_forest
   def get_wires(self):
     """
@@ -35,6 +37,12 @@ class Proto_Board:
     Returns the number of wires on this proto board.
     """
     return len(self._wires)
+  def get_pieces(self):
+    """
+    TODO(mikemeko)
+    """
+    for piece in self._pieces:
+      yield piece
   def _connected(self, loc_1, loc_2, visited=set()):
     """
     Helper for self.connected, see below.
@@ -60,6 +68,8 @@ class Proto_Board:
         raises and Exception.
     """
     board = Proto_Board(loc_disjoint_set_forest=loc_disjoint_set_forest)
+    for piece in self._pieces:
+      board = board.with_piece(piece)
     for wire in self._wires:
       board = board.with_wire(wire)
       if board is None:
@@ -94,9 +104,19 @@ class Proto_Board:
         new_loc_disjoint_set_forest.make_set(loc)
         new_loc_disjoint_set_forest.union(present_loc, loc)
     return Proto_Board(new_wire_mappings, self._wires + [new_wire],
-        new_loc_disjoint_set_forest)
+        self._pieces.copy(), new_loc_disjoint_set_forest)
+  def with_piece(self, piece):
+    """
+    TODO(mikemeko)
+    """
+    # TODO: check some stuff
+    new_pieces = self._pieces.copy()
+    new_pieces.add(piece)
+    return Proto_Board(self._wire_mappings.copy(), self._wires[:], new_pieces,
+        self._loc_disjoint_set_forest.copy())
   def occupied(self, loc):
     """
     Returns True if the given |loc| is occupied, False otherwise.
     """
-    return loc in self._wire_mappings
+    return loc in self._wire_mappings or any(loc in piece.all_locs() for piece
+        in self._pieces)

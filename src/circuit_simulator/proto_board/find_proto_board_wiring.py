@@ -158,7 +158,8 @@ def find_wiring(loc_pairs, start_proto_board=Proto_Board()):
   start_node = Proto_Board_Search_Node(
       start_proto_board.with_loc_disjoint_set_forest(loc_disjoint_set_forest(
       loc_pairs)), loc_pairs)
-  return a_star(start_node, goal_test, heuristic, progress)
+  proto_board, loc_pairs =  a_star(start_node, goal_test, heuristic, progress)
+  return proto_board
 
 if __name__ == '__main__':
   # test
@@ -167,5 +168,5 @@ if __name__ == '__main__':
       ((5, 5), (0, 3)), ((2, 50), (2, 60)), ((13, 60), (12, 10)),
       ((4, 51), (8, 53)), ((5, 6), (5, 20)), ((9, 10), (11, 11)))
   board_with_wires = None
-  run('board_with_wires = find_wiring(wires)[0]')
+  run('board_with_wires = find_wiring(wires)')
   visualize_proto_board(board_with_wires)

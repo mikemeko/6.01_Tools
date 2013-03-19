@@ -107,6 +107,10 @@ class Op_Amp:
     """
     self.voltage_sensor = Voltage_Sensor(na1, na2, ia)
     self.vcvs = VCVS(na1, na2, nb1, nb2, ib, K)
+    self.na1 = na1
+    self.na2 = na2
+    self.nb1 = nb1
+    self.nb2 = nb2
   def parts(self):
     """
     Returns a collection of the one-ports that constitute this op amp.
@@ -122,13 +126,26 @@ class Circuit:
     |components|: a list of the components (one ports) in this circuit.
     |gnd|: the ground node in this circuit.
     """
-    assert all(isinstance(c, One_Port) for c in components), ('all components '
-        'must be one ports')
+    # TODO(mikemeko)
+    #assert all(isinstance(c, One_Port) for c in components), ('all components '
+    #    'must be one ports')
     self.components = components
+    self.flattened_components = self._compute_flattened_components(components)
     self.gnd = gnd
     # self.data contains all values of the currents and voltages in this
     #     circuit, if solved correctly, None otherwise
     self.data = self._solve()
+  def _compute_flattened_components(self, components):
+    """
+    TODO(mikemeko)
+    """
+    flattened = []
+    for component in components:
+      if isinstance(component, Op_Amp):
+        flattened.extend(component.parts())
+      else:
+        flattened.append(component)
+    return flattened
   def _solve(self):
     """
     Solves this circuit and returns a dictionary mapping all the variables (
@@ -137,10 +154,11 @@ class Circuit:
     """
     # accumulate and solve system of equations
     # component equations
-    equations = [component.equation() for component in self.components]
+    equations = [component.equation() for component in
+        self.flattened_components]
     # one KCL equation per node in the circuit (excluding ground node)
     KCL = {}
-    for component in self.components:
+    for component in self.flattened_components:
       KCL[component.n1] = KCL.get(component.n1, []) + [(1, component.i)]
       KCL[component.n2] = KCL.get(component.n2, []) + [(-1, component.i)]
     equations.extend([KCL[n] for n in KCL if n is not self.gnd])
