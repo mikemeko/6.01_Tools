@@ -21,7 +21,6 @@ from constants import WIRE_COLOR
 from constants import WIRE_OUTLINE
 from Tkinter import Canvas
 from Tkinter import Frame
-from Tkinter import Tk
 
 class Proto_Board_Visualizer(Frame):
   """
@@ -101,11 +100,8 @@ class Proto_Board_Visualizer(Frame):
     for piece in self._proto_board.get_pieces():
       self._display_piece(piece)
 
-def visualize_proto_board(proto_board):
+def visualize_proto_board(proto_board, toplevel):
   """
   Displays a nice window portraying the given |proto_board|.
   """
-  root = Tk()
-  root.resizable(0, 0)
-  Proto_Board_Visualizer(root, proto_board)
-  root.mainloop()
+  Proto_Board_Visualizer(toplevel, proto_board)

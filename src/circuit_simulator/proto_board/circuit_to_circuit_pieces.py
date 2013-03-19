@@ -5,6 +5,7 @@ TODO(mikemeko)
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
 from circuit_piece_placement import find_placement
+from circuit_piece_placement import loc_pairs_to_connect
 from circuit_pieces import Op_Amp_Piece
 from circuit_pieces import Resistor_Piece
 from circuit_simulator.simulation.circuit import Circuit
@@ -15,7 +16,6 @@ from itertools import combinations
 from proto_board import Proto_Board
 from visualization.visualization import visualize_proto_board
 from sys import maxint
-from util import dist
 
 def same_groupings(grouping_1, grouping_2):
   return set(grouping_1) == set(grouping_2)
@@ -85,26 +85,6 @@ def get_piece_placement(circuit):
         best_placement = placement
         best_placement_cost = cost
   return best_placement
-
-# TODO: put in another file
-# TODO: is this as good as it can be?
-def loc_pairs_to_connect(placement):
-  loc_pairs = []
-  handled_locs = set()
-  for piece in placement:
-    for node in piece.nodes:
-      for loc_1 in piece.locs_for(node):
-        if loc_1 in handled_locs:
-          continue
-        handled_locs.add(loc_1)
-        other_locs = reduce(lambda l_1, l_2: l_1 + l_2, (
-            other_piece.locs_for(node) for other_piece in placement))
-        other_locs.remove(loc_1)
-        if other_locs:
-          loc_2 = min(other_locs, key=lambda loc: dist(loc_1, loc))
-          loc_pairs.append((loc_1, loc_2))
-          handled_locs.add(loc_2)
-  return tuple(loc_pairs)
 
 if __name__ == '__main__':
   circuit = Circuit([Resistor('a', 'c', 'i', 1),

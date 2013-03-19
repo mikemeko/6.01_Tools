@@ -15,10 +15,10 @@ from circuit_drawables import Probe_Plus_Drawable
 from circuit_drawables import Proto_Board_Run_Drawable
 from circuit_drawables import Resistor_Drawable
 from circuit_drawables import Simulate_Run_Drawable
+from circuit_simulator.proto_board.circuit_piece_placement import (
+    loc_pairs_to_connect)
 from circuit_simulator.proto_board.circuit_to_circuit_pieces import (
     get_piece_placement)
-from circuit_simulator.proto_board.circuit_to_circuit_pieces import (
-    loc_pairs_to_connect)
 from circuit_simulator.proto_board.find_proto_board_wiring import find_wiring
 from circuit_simulator.proto_board.proto_board import Proto_Board
 from circuit_simulator.proto_board.visualization.visualization import (
@@ -45,6 +45,7 @@ from core.save.save import save_board
 from core.save.util import strip_file_name
 from Tkinter import Menu
 from Tkinter import Tk
+from Tkinter import Toplevel
 
 if __name__ == '__main__':
   # create root
@@ -151,7 +152,7 @@ if __name__ == '__main__':
     for piece in placement:
       board = board.with_piece(piece)
     board = find_wiring(loc_pairs_to_connect(placement), board)
-    visualize_proto_board(board)
+    visualize_proto_board(board, Toplevel())
   # create empty board
   board = Board(root, directed_wires=False, on_changed=on_changed,
       on_exit=request_save)

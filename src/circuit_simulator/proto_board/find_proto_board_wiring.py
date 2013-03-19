@@ -17,6 +17,7 @@ from core.search.search import a_star
 from core.search.search import Search_Node
 from cProfile import run
 from proto_board import Proto_Board
+from Tkinter import Tk
 from util import body_opp_section_rows
 from util import dist
 from util import is_body_loc
@@ -170,7 +171,9 @@ if __name__ == '__main__':
   wires = (((0, 2), (8, 50)), ((5, 1), (10, 4)), ((3, 40), (9, 30)),
       ((10, 10), (1, 30)), ((3, 3), (5, 5)), ((4, 4), (4, 7)),
       ((5, 5), (0, 3)), ((2, 50), (2, 60)), ((13, 60), (12, 10)),
-      ((4, 51), (8, 53)), ((5, 6), (5, 20)), ((9, 10), (11, 11)))
+      ((4, 51), (8, 53)), ((5, 6), (5, 20)), ((9, 10), (11, 11)))[:2]
   board_with_wires = None
   run('board_with_wires = find_wiring(wires)')
-  visualize_proto_board(board_with_wires)
+  root = Tk()
+  visualize_proto_board(board_with_wires, root)
+  root.mainloop()

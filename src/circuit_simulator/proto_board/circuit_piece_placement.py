@@ -8,6 +8,26 @@ from copy import deepcopy
 from sys import maxint
 from util import dist
 
+# TODO: put in another file
+# TODO: is this as good as it can be?
+def loc_pairs_to_connect(placement):
+  loc_pairs = []
+  handled_locs = set()
+  for piece in placement:
+    for node in piece.nodes:
+      for loc_1 in piece.locs_for(node):
+        if loc_1 in handled_locs:
+          continue
+        handled_locs.add(loc_1)
+        other_locs = reduce(lambda l_1, l_2: l_1 + l_2, (
+            other_piece.locs_for(node) for other_piece in placement))
+        other_locs.remove(loc_1)
+        if other_locs:
+          loc_2 = min(other_locs, key=lambda loc: dist(loc_1, loc))
+          loc_pairs.append((loc_1, loc_2))
+          handled_locs.add(loc_2)
+  return tuple(loc_pairs)
+
 def set_locations(pieces):
   # starting col
   col = 28 - sum(piece.width + 2 for piece in pieces) / 2
@@ -19,18 +39,8 @@ def cost(placement):
   """
   TODO(mikemeko)
   """
-  cost = 0
   set_locations(placement)
-  for piece in placement:
-    for node in piece.nodes:
-      piece_node_locs = piece.locs_for(node)
-      other_node_locs = reduce(lambda l_1, l_2: l_1 + l_2,
-          (other_piece.locs_for(node) for other_piece in placement if
-          other_piece != piece), [])
-      if other_node_locs:
-        cost += min(dist(loc_1, loc_2) for loc_1 in piece_node_locs for
-            loc_2 in other_node_locs)
-  return cost
+  return sum(dist(*loc_pair) for loc_pair in loc_pairs_to_connect(placement))
 
 def find_placement(pieces):
   """
