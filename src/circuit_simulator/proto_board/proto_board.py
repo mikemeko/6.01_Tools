@@ -11,8 +11,8 @@ class Proto_Board:
   """
   Proto board representation.
   """
-  def __init__(self, wire_mappings={}, wires=[], pieces=set(),
-      loc_disjoint_set_forest=Disjoint_Set_Forest()):
+  def __init__(self, wire_mappings=None, wires=None, pieces=set(),
+      loc_disjoint_set_forest=None):
     """
     |wire_mappings|: a dictionary mapping locations to other locations to which
         they are connected by a wire.
@@ -22,10 +22,11 @@ class Proto_Board:
         disconnected. This is used to avoid shorts.
     TODO: update
     """
-    self._wire_mappings = wire_mappings
-    self._wires = wires
+    self._wire_mappings = wire_mappings if wire_mappings is not None else {}
+    self._wires = wires if wires is not None else []
     self._pieces = pieces
-    self._loc_disjoint_set_forest = loc_disjoint_set_forest
+    self._loc_disjoint_set_forest = (loc_disjoint_set_forest if
+        loc_disjoint_set_forest is not None else Disjoint_Set_Forest())
   def get_wires(self):
     """
     Returns a generator of the Wires on this proto board.

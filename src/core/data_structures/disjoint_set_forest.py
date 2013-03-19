@@ -9,13 +9,13 @@ class Disjoint_Set_Forest:
   """
   Disjoint set forest data structure.
   """
-  def __init__(self, parent={}, rank={}):
+  def __init__(self, parent=None, rank=None):
     """
     |parent|: stores parent pointers.
     |rank|: stores node ranks.
     """
-    self._parent = parent
-    self._rank = rank
+    self._parent = parent if parent is not None else {}
+    self._rank = rank if rank is not None else {}
   def make_set(self, x):
     """
     Makes a new set containing just |x|, if a set containing |x| does not

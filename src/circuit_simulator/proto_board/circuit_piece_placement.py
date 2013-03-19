@@ -5,28 +5,35 @@ TODO(mikemeko)
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
 from copy import deepcopy
+from core.data_structures.disjoint_set_forest import Disjoint_Set_Forest
 from sys import maxint
 from util import dist
 
-# TODO: put in another file
-# TODO: is this as good as it can be?
+def loc_pairs_for_node(node_locs):
+  all_loc_pairs = [(loc_1, loc_2) for i, loc_1 in enumerate(node_locs) for
+      loc_2 in node_locs[i + 1:]]
+  all_loc_pairs.sort(key=lambda loc_pair: dist(*loc_pair))
+  disjoint_loc_pair_sets = Disjoint_Set_Forest()
+  for loc in node_locs:
+    disjoint_loc_pair_sets.make_set(loc)
+  mst_loc_pairs = []
+  for (loc_1, loc_2) in all_loc_pairs:
+    if (disjoint_loc_pair_sets.find_set(loc_1) !=
+        disjoint_loc_pair_sets.find_set(loc_2)):
+      disjoint_loc_pair_sets.union(loc_1, loc_2)
+      mst_loc_pairs.append((loc_1, loc_2))
+  return mst_loc_pairs
+
+def locs_for_node(placement, node):
+  return reduce(list.__add__, (piece.locs_for(node) for piece in placement),
+      [])
+
+def all_nodes(placement):
+  return reduce(set.union, (piece.nodes for piece in placement), set())
+
 def loc_pairs_to_connect(placement):
-  loc_pairs = []
-  handled_locs = set()
-  for piece in placement:
-    for node in piece.nodes:
-      for loc_1 in piece.locs_for(node):
-        if loc_1 in handled_locs:
-          continue
-        handled_locs.add(loc_1)
-        other_locs = reduce(lambda l_1, l_2: l_1 + l_2, (
-            other_piece.locs_for(node) for other_piece in placement))
-        other_locs.remove(loc_1)
-        if other_locs:
-          loc_2 = min(other_locs, key=lambda loc: dist(loc_1, loc))
-          loc_pairs.append((loc_1, loc_2))
-          handled_locs.add(loc_2)
-  return tuple(loc_pairs)
+  return tuple(reduce(list.__add__, (loc_pairs_for_node(locs_for_node(
+      placement, node)) for node in all_nodes(placement))))
 
 def set_locations(pieces):
   # starting col

@@ -32,6 +32,7 @@ class Proto_Board_Visualizer(Frame):
     """
     Frame.__init__(self, parent, background=BACKGROUND_COLOR)
     parent.title(WINDOW_TITLE)
+    parent.resizable(0, 0)
     self._proto_board = proto_board
     self._canvas = Canvas(self, width=WIDTH, height=HEIGHT,
         background=BACKGROUND_COLOR)
