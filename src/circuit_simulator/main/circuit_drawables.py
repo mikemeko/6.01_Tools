@@ -325,3 +325,11 @@ class Simulate_Run_Drawable(Run_Drawable):
   """
   def __init__(self):
     Run_Drawable.__init__(self, SIMULATE)
+
+class Proto_Board_Run_Drawable(Run_Drawable):
+  """
+  TODO(mikemeko)
+  """
+  def __init__(self):
+    # TODO: constant
+    Run_Drawable.__init__(self, 'PB')

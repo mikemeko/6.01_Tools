@@ -139,9 +139,8 @@ def run_analysis(board, analyze):
         return
       na1, na2, nb1, nb2 = map(maybe_rename_node, (plus_nodes[0],
           minus_nodes[0], out_nodes[0], GROUND))
-      op_amp = Op_Amp(na1, na2, current_name(drawable, na1, na2), nb1, nb2,
-          current_name(drawable, nb1, nb2))
-      circuit_components.extend(op_amp.parts())
+      circuit_components.append(Op_Amp(na1, na2, current_name(drawable, na1,
+          na2), nb1, nb2, current_name(drawable, nb1, nb2)))
   # make sure both of the probes are present
   if not probe_plus and not probe_minus:
     board.display_message('No probes', WARNING)

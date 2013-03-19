@@ -9,8 +9,11 @@ from sys import maxint
 from util import dist
 
 def set_locations(pieces):
+  # starting col
+  col = 28 - sum(piece.width + 2 for piece in pieces) / 2
   for i, piece in enumerate(pieces):
-    piece.top_left_loc = (6, i * 4)
+    piece.top_left_loc = (6, col)
+    col += piece.width + 2
 
 def cost(placement):
   """

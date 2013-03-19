@@ -12,8 +12,17 @@ from circuit_drawables import Op_Amp_Drawable
 from circuit_drawables import Power_Drawable
 from circuit_drawables import Probe_Minus_Drawable
 from circuit_drawables import Probe_Plus_Drawable
+from circuit_drawables import Proto_Board_Run_Drawable
 from circuit_drawables import Resistor_Drawable
 from circuit_drawables import Simulate_Run_Drawable
+from circuit_simulator.proto_board.circuit_to_circuit_pieces import (
+    get_piece_placement)
+from circuit_simulator.proto_board.circuit_to_circuit_pieces import (
+    loc_pairs_to_connect)
+from circuit_simulator.proto_board.find_proto_board_wiring import find_wiring
+from circuit_simulator.proto_board.proto_board import Proto_Board
+from circuit_simulator.proto_board.visualization.visualization import (
+    visualize_proto_board)
 from constants import APP_NAME
 from constants import DEV_STAGE
 from constants import FILE_EXTENSION
@@ -116,7 +125,7 @@ if __name__ == '__main__':
     file_name = None
     # reset to empty board
     init_board()
-  def analyze(circuit, probe_plus, probe_minus):
+  def simulate(circuit, probe_plus, probe_minus):
     """
     Displays a message on the board showing the voltage difference between
         nodes |probe_plus| and |probe_minus| of the given |circuit|.
@@ -133,6 +142,16 @@ if __name__ == '__main__':
       probe_difference = circuit.data[probe_plus] - circuit.data[probe_minus]
       board.display_message('%.3f V' % probe_difference, message_type=INFO,
           auto_remove=False)
+  def proto_board_layout(circuit, probe_plus, probe_minus):
+    """
+    TODO(mikemeko)
+    """
+    placement = get_piece_placement(circuit)
+    board = Proto_Board()
+    for piece in placement:
+      board = board.with_piece(piece)
+    board = find_wiring(loc_pairs_to_connect(placement), board)
+    visualize_proto_board(board)
   # create empty board
   board = Board(root, directed_wires=False, on_changed=on_changed,
       on_exit=request_save)
@@ -147,9 +166,11 @@ if __name__ == '__main__':
   palette.add_drawable_type(Op_Amp_Drawable, LEFT, None)
   # add button to simulate circuit
   palette.add_drawable_type(Simulate_Run_Drawable, RIGHT,
-      lambda event: run_analysis(board, analyze))
+      lambda event: run_analysis(board, simulate))
+  palette.add_drawable_type(Proto_Board_Run_Drawable, RIGHT,
+      lambda event: run_analysis(board, proto_board_layout))
   # shortcuts
-  board.add_key_binding('a', lambda: run_analysis(board, analyze))
+  board.add_key_binding('a', lambda: run_analysis(board, simulate))
   board.add_key_binding('n', new_file, CTRL_DOWN)
   board.add_key_binding('o', open_file, CTRL_DOWN)
   board.add_key_binding('q', board.quit, CTRL_DOWN)
@@ -171,7 +192,7 @@ if __name__ == '__main__':
   menu.add_cascade(label='Edit', menu=edit_menu)
   analyze_menu = Menu(menu, tearoff=0)
   analyze_menu.add_command(label='Analyze', command=lambda: run_analysis(board,
-      analyze), accelerator='A')
+      simulate), accelerator='A')
   menu.add_cascade(label='Analyze', menu=analyze_menu)
   root.config(menu=menu)
   # clear board undo / redo history
