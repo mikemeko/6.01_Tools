@@ -53,6 +53,7 @@ class Circuit_Piece:
         overlap((c_min, c_max), (wire_c_min, wire_c_max)))
 
 class Op_Amp_Piece(Circuit_Piece):
+  # TODO: picture
   """
   TODO(mikemeko)
   """

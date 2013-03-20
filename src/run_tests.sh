@@ -1,4 +1,5 @@
 # Script to run tests.
+python -m tests.circuit_simulator.proto_board.circuit_to_circuit_pieces_test
 python -m tests.circuit_simulator.proto_board.proto_board_test
 python -m tests.circuit_simulator.proto_board.util_test
 python -m tests.circuit_simulator.proto_board.wire_test
