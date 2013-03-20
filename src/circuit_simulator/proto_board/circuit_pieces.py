@@ -42,6 +42,7 @@ class Circuit_Piece:
   def crossed_by(self, wire):
     # TODO
     # TODO: define a between function
+    # TODO: assign different colors for different nodes
     assert self.top_left_loc
     r_min, c_min = self.top_left_loc
     r_max, c_max = r_min + self.height - 1, c_min + self.width - 1

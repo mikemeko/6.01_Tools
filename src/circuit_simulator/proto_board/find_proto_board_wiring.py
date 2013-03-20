@@ -100,9 +100,9 @@ class Proto_Board_Search_Node(Search_Node):
             for wire_end in wire_ends:
               new_wire = Wire(neighbor_loc, wire_end)
               # make sure that there is a wire to draw
-              if len(new_wire) == 0:
+              if new_wire.length() == 0:
                 continue
-              # TODO(mikemeko)
+              # make sure that the wire does not cross any piece
               if any(piece.crossed_by(new_wire) for piece in
                   proto_board.get_pieces()):
                 continue
@@ -117,7 +117,7 @@ class Proto_Board_Search_Node(Search_Node):
               #     connected
               if not new_proto_board or new_proto_board is proto_board:
                 continue
-              # we have a candidate proto board, update state and cost
+              # we have a candidate proto board, compute state and cost
               new_loc_pairs = list(loc_pairs)
               new_loc_pairs[i] = (wire_end, loc_2)
               # TODO(mikemeko): consider wire length in cost?

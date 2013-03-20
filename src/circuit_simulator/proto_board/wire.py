@@ -37,7 +37,10 @@ class Wire:
     assert isinstance(other, Wire), 'other must be a Wire'
     return (self._supports_intersect(self.row_support, other.row_support) and
         self._supports_intersect(self.column_support, other.column_support))
+  def length(self):
+    """
+    Returns the length of this wire.
+    """
+    return dist(self.loc_1, self.loc_2)
   def __hash__(self):
     return hash((self.loc_1, self.loc_2))
-  def __len__(self):
-    return dist(self.loc_1, self.loc_2)

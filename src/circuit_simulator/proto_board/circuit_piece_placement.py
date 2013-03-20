@@ -23,7 +23,6 @@ def loc_pairs_for_node(node_locs):
   # find all possible pairs of locations
   all_loc_pairs = [(loc_1, loc_2) for i, loc_1 in enumerate(node_locs) for
       loc_2 in node_locs[i + 1:]]
-  # Kruska's algorithm
   # sort in increasing order of loc pair distance
   all_loc_pairs.sort(key=lambda loc_pair: dist(*loc_pair))
   disjoint_loc_pair_sets = Disjoint_Set_Forest()
