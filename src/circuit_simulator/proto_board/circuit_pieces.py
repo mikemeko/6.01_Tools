@@ -158,11 +158,13 @@ class Op_Amp_Piece(Circuit_Piece):
     # body
     width = 4 * CONNECTOR_SIZE + 3 * CONNECTOR_SPACING
     height = 2 * CONNECTOR_SIZE + VERTICAL_SEPARATION
-    canvas.create_rectangle(x, y + CONNECTOR_SIZE / 2, x + width,
-        y + height - CONNECTOR_SIZE / 2, fill=OP_AMP_BODY_COLOR)
+    h_offset = 2
+    v_offset = 2 * CONNECTOR_SIZE / 3
+    canvas.create_rectangle(x - h_offset, y + v_offset, x + width + h_offset,
+        y + height - v_offset, fill=OP_AMP_BODY_COLOR)
     # dot
-    dot_dx = OP_AMP_DOT_OFFSET if self.dot_bottom_left else (
-        width - OP_AMP_DOT_OFFSET)
+    dot_dx = (OP_AMP_DOT_OFFSET - h_offset) if self.dot_bottom_left else (
+        width - OP_AMP_DOT_OFFSET + h_offset)
     dot_dy = ((height - OP_AMP_DOT_OFFSET - CONNECTOR_SIZE / 2) if
         self.dot_bottom_left else (OP_AMP_DOT_OFFSET + CONNECTOR_SIZE / 2))
     create_circle(canvas, x + dot_dx, y + dot_dy, OP_AMP_DOT_RADIUS,
