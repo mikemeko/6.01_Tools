@@ -145,14 +145,13 @@ if __name__ == '__main__':
           auto_remove=False)
   def proto_board_layout(circuit, probe_plus, probe_minus):
     """
-    TODO(mikemeko)
+    Finds a way to layout the given |circuit| on a proto board and displays the
+        discovered proto board.
     """
     placement = get_piece_placement(circuit)
     board = Proto_Board()
     for piece in placement:
       board = board.with_piece(piece)
-    print map(str, placement)
-    print loc_pairs_to_connect(placement)
     board = find_wiring(loc_pairs_to_connect(placement), board)
     visualize_proto_board(board, Toplevel())
   # create empty board
@@ -167,7 +166,7 @@ if __name__ == '__main__':
   palette.add_drawable_type(Resistor_Drawable, LEFT, None,
       on_resistance_changed=lambda: board.set_changed(True))
   palette.add_drawable_type(Op_Amp_Drawable, LEFT, None)
-  # add button to simulate circuit
+  # add buttons to analyze circuit
   palette.add_drawable_type(Simulate_Run_Drawable, RIGHT,
       lambda event: run_analysis(board, simulate))
   palette.add_drawable_type(Proto_Board_Run_Drawable, RIGHT,
@@ -176,6 +175,7 @@ if __name__ == '__main__':
   board.add_key_binding('a', lambda: run_analysis(board, simulate))
   board.add_key_binding('n', new_file, CTRL_DOWN)
   board.add_key_binding('o', open_file, CTRL_DOWN)
+  board.add_key_binding('p', lambda: run_analysis(board, proto_board_layout))
   board.add_key_binding('q', board.quit, CTRL_DOWN)
   board.add_key_binding('s', save_file, CTRL_DOWN)
   board.add_key_binding('y', board.redo, CTRL_DOWN)
@@ -196,6 +196,8 @@ if __name__ == '__main__':
   analyze_menu = Menu(menu, tearoff=0)
   analyze_menu.add_command(label='Analyze', command=lambda: run_analysis(board,
       simulate), accelerator='A')
+  analyze_menu.add_command(label='Proto Board', command=lambda: run_analysis(
+      board, proto_board_layout), accelerator='P')
   menu.add_cascade(label='Analyze', menu=analyze_menu)
   root.config(menu=menu)
   # clear board undo / redo history

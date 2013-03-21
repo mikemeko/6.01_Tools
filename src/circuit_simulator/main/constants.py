@@ -51,7 +51,8 @@ GROUND = 'gnd'
 POWER = 'pwr'
 PROBE_MINUS = '-p'
 PROBE_PLUS = '+p'
-SIMULATE = 'Sim'
+PROTO_BOARD = 'PB'
+SIMULATE = 'SIM'
 
 # regular expressions
 RE_OP_AMP_VERTICES = r'\((\d+), (\d+), (\d+), (\d+), (\d+), (\d+)\)'

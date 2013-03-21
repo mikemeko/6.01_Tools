@@ -24,6 +24,7 @@ from constants import POWER_VOLTS
 from constants import PROBE_MINUS
 from constants import PROBE_PLUS
 from constants import PROBE_SIZE
+from constants import PROTO_BOARD
 from constants import RE_OP_AMP_VERTICES
 from constants import RESISTOR_FILL
 from constants import RESISTOR_HORIZONTAL_CONNECTORS
@@ -328,8 +329,7 @@ class Simulate_Run_Drawable(Run_Drawable):
 
 class Proto_Board_Run_Drawable(Run_Drawable):
   """
-  TODO(mikemeko)
+  Drawable to surve as button to display proto board layout.
   """
   def __init__(self):
-    # TODO: constant
-    Run_Drawable.__init__(self, 'PB')
+    Run_Drawable.__init__(self, PROTO_BOARD)
