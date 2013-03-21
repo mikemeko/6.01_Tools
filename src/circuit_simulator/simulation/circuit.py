@@ -126,18 +126,15 @@ class Circuit:
     |components|: a list of the components (one ports) in this circuit.
     |gnd|: the ground node in this circuit.
     """
-    # TODO(mikemeko)
-    #assert all(isinstance(c, One_Port) for c in components), ('all components '
-    #    'must be one ports')
     self.components = components
-    self.flattened_components = self._compute_flattened_components(components)
+    self.flattened_components = self._flatten(components)
     self.gnd = gnd
     # self.data contains all values of the currents and voltages in this
     #     circuit, if solved correctly, None otherwise
     self.data = self._solve()
-  def _compute_flattened_components(self, components):
+  def _flatten(self, components):
     """
-    TODO(mikemeko)
+    Returns a list of One_Ports by flattening any Op_Amps in |components|.
     """
     flattened = []
     for component in components:
