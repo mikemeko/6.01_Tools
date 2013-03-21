@@ -39,19 +39,30 @@ class Circuit_Piece:
         self.width- 1)
     rect_height = VERTICAL_SEPARATION + 2 * CONNECTOR_SIZE
     canvas.create_rectangle(x, y, x + rect_width, y + rect_height, fill='#BBB')
+  def bbox(self):
+    # TODO
+    assert self.top_left_loc
+    r_min, c_min = self.top_left_loc
+    r_max, c_max = r_min + self.height - 1, c_min + self.width - 1
+    return r_min, c_min, r_max, c_max
   def crossed_by(self, wire):
     # TODO
     # TODO: define a between function
     # TODO: assign different colors for different nodes
     assert self.top_left_loc
-    r_min, c_min = self.top_left_loc
-    r_max, c_max = r_min + self.height - 1, c_min + self.width - 1
+    r_min, c_min, r_max, c_max = self.bbox()
     wire_r_min = min(wire.r_1, wire.r_2)
     wire_r_max = max(wire.r_1, wire.r_2)
     wire_c_min = min(wire.c_1, wire.c_2)
     wire_c_max = max(wire.c_1, wire.c_2)
     return (overlap((r_min, r_max), (wire_r_min, wire_r_max)) and
         overlap((c_min, c_max), (wire_c_min, wire_c_max)))
+  def intersects_with(self, other):
+    # TODO
+    self_r_min, self_c_min, self_r_max, self_c_max = self.bbox()
+    other_r_min, other_c_min, other_r_max, other_c_max = other.bbox()
+    return (overlap((self_r_min, self_r_max), (other_r_min, other_r_max)) and
+        overlap((self_c_min, self_c_max), (other_c_min, other_c_max)))
 
 class Op_Amp_Piece(Circuit_Piece):
   # TODO: picture

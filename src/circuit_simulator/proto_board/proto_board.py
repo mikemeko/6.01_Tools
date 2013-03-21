@@ -17,10 +17,10 @@ class Proto_Board:
     |wire_mappings|: a dictionary mapping locations to other locations to which
         they are connected by a wire.
     |wires|: a list of the Wires on this proto board.
+    |pieces|: a set of the Circuit_Pieces on this proto board.
     |loc_disjoint_set_forest|: an instance of Disjoint_Set_Forest representing
         disjoint sets of locations on the proto board that should alwas remain
         disconnected. This is used to avoid shorts.
-    TODO: update
     """
     self._wire_mappings = wire_mappings if wire_mappings is not None else {}
     self._wires = wires if wires is not None else []
@@ -29,7 +29,7 @@ class Proto_Board:
         loc_disjoint_set_forest is not None else Disjoint_Set_Forest())
   def get_wires(self):
     """
-    Returns a generator of the Wires on this proto board.
+    Returns a generator for the Wires on this proto board.
     """
     for wire in self._wires:
       yield wire
@@ -40,7 +40,7 @@ class Proto_Board:
     return len(self._wires)
   def get_pieces(self):
     """
-    TODO(mikemeko)
+    Returns a generator for the Circuit_Pieces on this proto board.
     """
     for piece in self._pieces:
       yield piece
@@ -108,9 +108,14 @@ class Proto_Board:
         self._pieces.copy(), new_loc_disjoint_set_forest)
   def with_piece(self, piece):
     """
-    TODO(mikemeko)
+    Returns a new Proto_Board containing the given |piece|. If the piece
+        collides with another object on the board, this method returns None.
     """
-    # TODO: check some stuff
+    # check for intersections with current objects on the board
+    if any(piece.crossed_by(wire) for wire in self._wires) or any(
+        piece.intersects_with(other_piece) for other_piece in self._pieces):
+      return None
+    # add new piece to pieces
     new_pieces = self._pieces.copy()
     new_pieces.add(piece)
     return Proto_Board(self._wire_mappings.copy(), self._wires[:], new_pieces,
