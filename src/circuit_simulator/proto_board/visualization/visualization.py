@@ -48,7 +48,6 @@ class Proto_Board_Visualizer(Frame):
   def _rc_to_xy(self, loc):
     """
     Returns the top left corner of the connector located at row |r| column |c|.
-    TODO: update
     """
     r, c = loc
     x = c * (CONNECTOR_SIZE + CONNECTOR_SPACING) + PADDING
@@ -78,7 +77,7 @@ class Proto_Board_Visualizer(Frame):
     self.pack()
   def _display_wire(self, wire):
     """
-    TODO(mikemeko)
+    Displays the given |wire| on the canvas.
     """
     x_1, y_1 = self._rc_to_xy(wire.loc_1)
     x_2, y_2 = self._rc_to_xy(wire.loc_2)
@@ -88,10 +87,9 @@ class Proto_Board_Visualizer(Frame):
         y_2 + CONNECTOR_SIZE, fill=WIRE_COLOR, outline=WIRE_OUTLINE)
   def _display_piece(self, piece):
     """
-    TODO(mikemeko)
+    Displays the given circuit |piece| on the canvas.
     """
-    x, y = self._rc_to_xy(piece.top_left_loc)
-    piece.draw_on(self._canvas, (x, y))
+    piece.draw_on(self._canvas, self._rc_to_xy(piece.top_left_loc))
   def _display_proto_board(self):
     """
     Visualizes the given |proto_board|.

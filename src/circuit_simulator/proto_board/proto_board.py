@@ -109,12 +109,13 @@ class Proto_Board:
   def with_piece(self, piece):
     """
     Returns a new Proto_Board containing the given |piece|. If the piece
-        collides with another object on the board, this method returns None.
+        collides with another object on the board, this method returns raises
+        an Exception.
     """
     # check for intersections with current objects on the board
     if any(piece.crossed_by(wire) for wire in self._wires) or any(
         piece.overlaps_with(other_piece) for other_piece in self._pieces):
-      return None
+      raise Exception('new piece overlaps with existing piece')
     # add new piece to pieces
     new_pieces = self._pieces.copy()
     new_pieces.add(piece)
