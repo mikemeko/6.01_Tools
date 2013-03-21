@@ -4,6 +4,14 @@ Proto board constants.
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
+# gui constants
+OP_AMP_BODY_COLOR = '#999'
+OP_AMP_DOT_COLOR = '#CCC'
+OP_AMP_DOT_OFFSET = 6
+OP_AMP_DOT_RADIUS = 4
+RESISTOR_INNER_COLOR = '#777'
+RESISTOR_OUTER_COLOR = '#5DCFC3'
+
 # dimension constants
 PROTO_BOARD_HEIGHT = 14 # should be even
 PROTO_BOARD_WIDTH = 63

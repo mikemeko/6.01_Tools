@@ -95,8 +95,8 @@ def find_placement(pieces):
   pieces.sort(key=lambda piece: -len(piece.nodes))
   queue = Queue()
   def add_to_queue(piece):
-    queue.push(piece)
     if piece in pieces:
+      queue.push(piece)
       pieces.remove(piece)
   placement = []
   placement_cost = maxint

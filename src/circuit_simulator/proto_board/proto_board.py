@@ -113,7 +113,7 @@ class Proto_Board:
     """
     # check for intersections with current objects on the board
     if any(piece.crossed_by(wire) for wire in self._wires) or any(
-        piece.intersects_with(other_piece) for other_piece in self._pieces):
+        piece.overlaps_with(other_piece) for other_piece in self._pieces):
       return None
     # add new piece to pieces
     new_pieces = self._pieces.copy()

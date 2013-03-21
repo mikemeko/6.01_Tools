@@ -151,6 +151,7 @@ if __name__ == '__main__':
     board = Proto_Board()
     for piece in placement:
       board = board.with_piece(piece)
+    print map(str, placement)
     print loc_pairs_to_connect(placement)
     board = find_wiring(loc_pairs_to_connect(placement), board)
     visualize_proto_board(board, Toplevel())

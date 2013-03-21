@@ -1,75 +1,112 @@
 """
-TODO(mikemeko)
+Representations for objects that can be placed on the proto board: op amps,
+    resistors, ... TODO(mikemeko).
 """
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
+from constants import OP_AMP_BODY_COLOR
+from constants import OP_AMP_DOT_COLOR
+from constants import OP_AMP_DOT_OFFSET
+from constants import OP_AMP_DOT_RADIUS
+from constants import RESISTOR_INNER_COLOR
+from constants import RESISTOR_OUTER_COLOR
+from core.gui.util import create_circle
+from util import rects_overlap
 from visualization.constants import CONNECTOR_SIZE
 from visualization.constants import CONNECTOR_SPACING
 from visualization.constants import VERTICAL_SEPARATION
-
-# TODO: move somewhere else
-def overlap(interval_1, interval_2):
-  min_1, max_1 = interval_1
-  min_2, max_2 = interval_2
-  return max(0, 1 + min(max_1, max_2) - max(min_1, min_2))
+from wire import Wire
 
 class Circuit_Piece:
   """
-  TODO(mikemeko)
+  Abstract class to represent all objects that can be placed on the proto
+      board. All subclasses should implement all_locs, locs_for, inverted,
+      and draw_on.
   """
   def __init__(self, nodes, width, height):
+    """
+    |nodes|: a set of the nodes this piece is connected to.
+    |width|: the width of this piece (in number of columns).
+    |height|: the height of this piece (in number of rows).
+    """
     self.nodes = nodes
     self.width = width
     self.height = height
+    # the (r, c) location of the top left corner of this piece
+    # this is set (and possibly reset) during the piece placement process, see
+    #     circuit_piece_placement.py
     self.top_left_loc = None
   def all_locs(self):
-    # TODO
-    pass
+    """
+    Should return a list of all the locations on the proto board occupied by
+        this piece. All subclasses should implement this.
+    """
+    raise NotImplementedError('subclasses should implement this')
   def locs_for(self, node):
-    # TODO
-    pass
+    """
+    Should return a list of all the locations of this piece associated with the
+        given |node|. All subclasses should implement this.
+    """
+    raise NotImplementedError('subclasses should implement this')
   def inverted(self):
-    # TODO
-    pass
+    """
+    Should return a new Circuit_Piece representing this piece inverted
+        up-side-down. All subclasses should implement this.
+    """
+    raise NotImplementedError('subclasses should implement this')
   def draw_on(self, canvas, top_left):
-    # TODO: override
-    x, y = top_left
-    rect_width = CONNECTOR_SIZE * self.width + CONNECTOR_SPACING * (
-        self.width- 1)
-    rect_height = VERTICAL_SEPARATION + 2 * CONNECTOR_SIZE
-    canvas.create_rectangle(x, y, x + rect_width, y + rect_height, fill='#BBB')
+    """
+    Should draw this piece on the given |canvas|, assuming the given coordinate
+        |top_left| to be the place to locate its top left corner. All
+        subclasses should implement this.
+    """
+    raise NotImplementedError('subclasses should implement this')
+  def _assert_top_left_loc_set(self):
+    """
+    Ensures that top_left_loc is set, or throws an Exeption.
+    """
+    assert self.top_left_loc, 'top left location has not been set'
   def bbox(self):
-    # TODO
-    assert self.top_left_loc
+    """
+    Returns the bounding box of this piece in the form (r_min, c_min, r_max,
+        c_max).
+    """
+    self._assert_top_left_loc_set()
     r_min, c_min = self.top_left_loc
     r_max, c_max = r_min + self.height - 1, c_min + self.width - 1
     return r_min, c_min, r_max, c_max
   def crossed_by(self, wire):
-    # TODO
-    # TODO: define a between function
-    # TODO: assign different colors for different nodes
-    assert self.top_left_loc
+    """
+    Returns True if the given |wire| crosses this piece, False otherwise.
+    """
+    assert isinstance(wire, Wire), 'wire must be a Wire'
     r_min, c_min, r_max, c_max = self.bbox()
     wire_r_min = min(wire.r_1, wire.r_2)
     wire_r_max = max(wire.r_1, wire.r_2)
     wire_c_min = min(wire.c_1, wire.c_2)
     wire_c_max = max(wire.c_1, wire.c_2)
-    return (overlap((r_min, r_max), (wire_r_min, wire_r_max)) and
-        overlap((c_min, c_max), (wire_c_min, wire_c_max)))
-  def intersects_with(self, other):
-    # TODO
-    self_r_min, self_c_min, self_r_max, self_c_max = self.bbox()
-    other_r_min, other_c_min, other_r_max, other_c_max = other.bbox()
-    return (overlap((self_r_min, self_r_max), (other_r_min, other_r_max)) and
-        overlap((self_c_min, self_c_max), (other_c_min, other_c_max)))
+    return rects_overlap(self.bbox(), (wire_r_min, wire_c_min, wire_r_max,
+        wire_c_max))
+  def overlaps_with(self, other):
+    """
+    Returns True if the given |other| piece overlaps with this piece, False
+        otherwise.
+    """
+    assert isinstance(other, Circuit_Piece), 'other must be a Circuit_Piece'
+    return rects_overlap(self.bbox(), other.bbox())
 
 class Op_Amp_Piece(Circuit_Piece):
-  # TODO: picture
   """
-  TODO(mikemeko)
+  Representation for the op amp piece.
+  See: http://mit.edu/6.01/www/circuits/opAmpCkt.jpg
   """
   def __init__(self, n_1, n_2, n_3, n_4, n_5, n_6, n_7, n_8, dot_bottom_left):
+    """
+    |n_1|, ..., |n_8|: the nodes for this op amp piece, see image linked above.
+    |dot_bottom_left|: boolean indicating whether the dot is bottom left or
+        top right (indicates orientation of piece).
+    """
     Circuit_Piece.__init__(self, set(filter(bool, [n_1, n_2, n_3, n_4, n_5,
         n_6, n_7, n_8])), 4, 2)
     self.n_1 = n_1
@@ -82,12 +119,11 @@ class Op_Amp_Piece(Circuit_Piece):
     self.n_8 = n_8
     self.dot_bottom_left = dot_bottom_left
   def all_locs(self):
-    assert self.top_left_loc
+    self._assert_top_left_loc_set()
     r, c = self.top_left_loc
-    return set([(r, c), (r, c + 1), (r, c + 2), (r, c + 3), (r + 1, c),
-        (r + 1, c + 1), (r + 1, c + 2), (r + 1, c + 3)])
+    return set((r + i, c + j) for i in xrange(2) for j in xrange(4))
   def locs_for(self, node):
-    assert self.top_left_loc
+    self._assert_top_left_loc_set()
     r, c = self.top_left_loc
     locs = []
     if node == self.n_1:
@@ -110,27 +146,47 @@ class Op_Amp_Piece(Circuit_Piece):
   def inverted(self):
     return Op_Amp_Piece(self.n_1, self.n_2, self.n_3, self.n_4, self.n_5,
         self.n_6, self.n_7, self.n_8, not self.dot_bottom_left)
-  def __str__(self):
-    return '%s %s %s %s %s %s %s %s %s %s' % (self.n_1, self.n_2, self.n_3,
-        self.n_4, self.n_5, self.n_6, self.n_7, self.n_8, self.top_left_loc,
-        self.dot_bottom_left)
+  def draw_on(self, canvas, top_left):
+    x, y = top_left
+    # pins
+    for r in xrange(2):
+      for c in xrange(4):
+        pin_x = x + c * (CONNECTOR_SIZE + CONNECTOR_SPACING)
+        pin_y = y + r * (CONNECTOR_SIZE + VERTICAL_SEPARATION)
+        canvas.create_rectangle(pin_x, pin_y, pin_x + CONNECTOR_SIZE,
+            pin_y + CONNECTOR_SIZE, fill='black')
+    # body
+    width = 4 * CONNECTOR_SIZE + 3 * CONNECTOR_SPACING
+    height = 2 * CONNECTOR_SIZE + VERTICAL_SEPARATION
+    canvas.create_rectangle(x, y + CONNECTOR_SIZE / 2, x + width,
+        y + height - CONNECTOR_SIZE / 2, fill=OP_AMP_BODY_COLOR)
+    # dot
+    dot_dx = OP_AMP_DOT_OFFSET if self.dot_bottom_left else (
+        width - OP_AMP_DOT_OFFSET)
+    dot_dy = ((height - OP_AMP_DOT_OFFSET - CONNECTOR_SIZE / 2) if
+        self.dot_bottom_left else (OP_AMP_DOT_OFFSET + CONNECTOR_SIZE / 2))
+    create_circle(canvas, x + dot_dx, y + dot_dy, OP_AMP_DOT_RADIUS,
+        fill=OP_AMP_DOT_COLOR)
 
 class Resistor_Piece(Circuit_Piece):
   """
-  TODO(mikemeko)
+  Representation for the resistor piece.
   """
   def __init__(self, n_1, n_2):
-    assert n_1
-    assert n_2
+    """
+    |n_1|, |n_2|: the two nodes of the resistor.
+    """
+    assert n_1, 'invalid n_1'
+    assert n_2, 'invalid n_2'
     Circuit_Piece.__init__(self, set([n_1, n_2]), 1, 2)
     self.n_1 = n_1
     self.n_2 = n_2
   def all_locs(self):
-    assert self.top_left_loc
+    self._assert_top_left_loc_set()
     r, c = self.top_left_loc
     return set([(r, c), (r + 1, c)])
   def locs_for(self, node):
-    assert self.top_left_loc
+    self._assert_top_left_loc_set()
     r, c = self.top_left_loc
     locs = []
     if node == self.n_1:
@@ -140,5 +196,14 @@ class Resistor_Piece(Circuit_Piece):
     return locs
   def inverted(self):
     return Resistor_Piece(self.n_2, self.n_1)
-  def __str__(self):
-    return '%s %s %s' % (self.n_1, self.n_2, self.top_left_loc)
+  def draw_on(self, canvas, top_left):
+    x, y = top_left
+    # inner rectangle, i.e. the thin one that is partially covered
+    canvas.create_rectangle(x, y, x + CONNECTOR_SIZE,
+        y + VERTICAL_SEPARATION + 2 * CONNECTOR_SIZE,
+        fill=RESISTOR_INNER_COLOR)
+    # outer rectangle, i.e. the fat, short one on top
+    dx = (CONNECTOR_SPACING - CONNECTOR_SIZE) / 2
+    canvas.create_rectangle(x - dx, y + CONNECTOR_SIZE,
+        x + CONNECTOR_SIZE + dx, y + VERTICAL_SEPARATION + CONNECTOR_SIZE,
+        fill=RESISTOR_OUTER_COLOR)
