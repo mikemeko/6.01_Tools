@@ -10,7 +10,7 @@ Terms used in this file:
         [(i_0, i_1), (i_2), (i_3)] (canonical grouping). Another possible
         grouping is [(i_0, i_2), (i_1), (i_3)]. Yet another different grouping
         is [(i_1, i_0), (i_2), (i_3)], i.e. subcollection order matters.
-    In the representation used below, the subcollections are python sets.
+    In the representation used below, the subcollections are python tuples.
 """
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
