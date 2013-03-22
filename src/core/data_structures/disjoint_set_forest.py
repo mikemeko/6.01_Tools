@@ -58,3 +58,12 @@ class Disjoint_Set_Forest:
     Returns a copy of this forest.
     """
     return Disjoint_Set_Forest(self._parent.copy(), self._rank.copy())
+  def __str__(self):
+    disjoint_sets = {}
+    for x in self._parent:
+      parent = self.find_set(x)
+      if parent in disjoint_sets:
+        disjoint_sets[parent].append(x)
+      else:
+        disjoint_sets[parent] = [x]
+    return '\n'.join(map(str, disjoint_sets.values()))

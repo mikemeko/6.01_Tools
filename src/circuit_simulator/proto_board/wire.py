@@ -44,3 +44,5 @@ class Wire:
     return dist(self.loc_1, self.loc_2)
   def __hash__(self):
     return hash((self.loc_1, self.loc_2))
+  def __str__(self):
+    return '%s-%s' % (self.loc_1, self.loc_2)

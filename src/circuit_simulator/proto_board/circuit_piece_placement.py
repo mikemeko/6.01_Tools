@@ -87,7 +87,7 @@ def set_locations(pieces):
       leaves a space of 2 columns between each consecuitive pair of pieces.
   TODO(mikemeko): can we do better?
   """
-  col = 28 - sum(piece.width + 2 for piece in pieces) / 2
+  col = (PROTO_BOARD_WIDTH - sum(piece.width + 2 for piece in pieces)) / 2 + 1
   for piece in pieces:
     piece.top_left_loc = (6, col)
     col += piece.width + 2
