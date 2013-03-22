@@ -8,6 +8,7 @@ __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 from constants import CROSSING_WIRE_PENALTY
 from constants import DEBUG
 from constants import DEBUG_SHOW_COST
+from constants import DEBUG_SHOW_PROFILE
 from constants import DEBUG_SHOW_PROTO_BOARD
 from constants import MAYBE_ALLOW_CROSSING_WIRES
 from constants import RAIL_ROWS
@@ -15,9 +16,8 @@ from constants import ROWS
 from constants import WIRE_LENGTH_LIMIT
 from core.search.search import a_star
 from core.search.search import Search_Node
-from cProfile import run
+from cProfile import runctx
 from proto_board import Proto_Board
-from Tkinter import Tk
 from util import body_opp_section_rows
 from util import dist
 from util import is_body_loc
@@ -163,17 +163,13 @@ def find_wiring(loc_pairs, start_proto_board=Proto_Board()):
   start_node = Proto_Board_Search_Node(
       start_proto_board.with_loc_disjoint_set_forest(loc_disjoint_set_forest(
       loc_pairs)), loc_pairs)
-  proto_board, loc_pairs =  a_star(start_node, goal_test, heuristic, progress)
+  global proto_board
+  def run_search():
+    global proto_board
+    proto_board, loc_pairs = a_star(start_node, goal_test, heuristic, progress)
+    return proto_board
+  if DEBUG & DEBUG_SHOW_PROFILE:
+    runctx('proto_board = run_search()', globals(), locals())
+  else:
+    proto_board = run_search()
   return proto_board
-
-if __name__ == '__main__':
-  # test
-  wires = (((0, 2), (8, 50)), ((5, 1), (10, 4)), ((3, 40), (9, 30)),
-      ((10, 10), (1, 30)), ((3, 3), (5, 5)), ((4, 4), (4, 7)),
-      ((5, 5), (0, 3)), ((2, 50), (2, 60)), ((13, 60), (12, 10)),
-      ((4, 51), (8, 53)), ((5, 6), (5, 20)), ((9, 10), (11, 11)))[:2]
-  board_with_wires = None
-  run('board_with_wires = find_wiring(wires)')
-  root = Tk()
-  visualize_proto_board(board_with_wires, root)
-  root.mainloop()
