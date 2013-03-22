@@ -41,14 +41,13 @@ class Proto_Board_Visualizer(Frame):
     self._proto_board = proto_board
     self._canvas = Canvas(self, width=WIDTH, height=HEIGHT,
         background=BACKGROUND_COLOR)
-    self._set_up()
     self._display_proto_board()
   def _vertical_section(self, r):
     """
     Returns the number of vertical separators that stand between the top of the
         proto board and the given row |r|.
     """
-    return sum (r >= barrier for barrier in (2, PROTO_BOARD_HEIGHT / 2,
+    return sum(r >= barrier for barrier in (2, PROTO_BOARD_HEIGHT / 2,
         PROTO_BOARD_HEIGHT - 2))
   def _rc_to_xy(self, loc):
     """
@@ -59,40 +58,100 @@ class Proto_Board_Visualizer(Frame):
     y = r * (CONNECTOR_SIZE + CONNECTOR_SPACING) + PADDING + (
         self._vertical_section(r) * (VERTICAL_SEPARATION - CONNECTOR_SPACING))
     return x, y
-  def _set_up(self):
+  def _draw_connector(self, x, y, fill=CONNECTOR_COLOR,
+      outline=CONNECTOR_COLOR):
     """
-    Draws the connectors as well as labels for the rows and columns.
+    Draws a connector at the given coordinate and with the given colors.
     """
-    # connectors
+    self._canvas.create_rectangle(x, y, x + CONNECTOR_SIZE, y + CONNECTOR_SIZE,
+        fill=fill, outline=outline)
+  def _display_connectors(self):
+    """
+    Draws the connectors on the proto board.
+    """
     for r in ROWS:
       for c in COLUMNS:
         if valid_loc((r, c)):
-          x, y = self._rc_to_xy((r, c))
-          self._canvas.create_rectangle(x, y, x + CONNECTOR_SIZE,
-              y + CONNECTOR_SIZE, fill=CONNECTOR_COLOR,
-              outline=CONNECTOR_COLOR)
+          self._draw_connector(*self._rc_to_xy((r, c)))
+  def _display_bus_line(self, y, color):
+    """
+    Displays a bus line at the given horizontal position |y| and with the given
+        |color|.
+    """
+    x_1 = self._rc_to_xy((0, 1))[0]
+    x_2 = self._rc_to_xy((0, PROTO_BOARD_WIDTH - 1))[0]
+    self._canvas.create_line(x_1, y, x_2, y, fill=color)
+  def _display_bus_lines(self):
+    """
+    Displays all four bus lines on the proto board.
+    """
+    offset = 10
+    self._display_bus_line(self._rc_to_xy((0, 0))[1] - offset, NEGATIVE_COLOR)
+    self._display_bus_line(self._rc_to_xy((1, 0))[1] + CONNECTOR_SIZE + offset,
+        POSITIVE_COLOR)
+    self._display_bus_line(self._rc_to_xy((PROTO_BOARD_HEIGHT - 2, 0))[1] - (
+        offset), NEGATIVE_COLOR)
+    self._display_bus_line(self._rc_to_xy((PROTO_BOARD_HEIGHT - 1, 0))[1] + (
+        CONNECTOR_SIZE + offset), POSITIVE_COLOR)
+  def _display_labels(self):
+    """
+    Displays the row and column labels.
+    """
     # row labels
-    for r in ROWS:
-      self._canvas.create_text(self._rc_to_xy((r, -1)), text=r)
+    row_labels = dict(zip(range(11, 1, -1), ['A', 'B', 'C', 'D', 'E', 'F', 'G',
+        'H', 'I', 'J']))
+    for r in filter(lambda r: r in row_labels, ROWS):
+      self._canvas.create_text(self._rc_to_xy((r, -1)), text=row_labels[r])
+      x, y = self._rc_to_xy((r, PROTO_BOARD_WIDTH))
+      self._canvas.create_text(x + CONNECTOR_SIZE, y, text=row_labels[r])
     # columns labels
-    for c in COLUMNS:
-      if c % 5 == 0:
-        self._canvas.create_text(self._rc_to_xy((-1, c)), text=c)
-    self._canvas.pack()
-    self.pack()
+    h_offset = 2
+    v_offset = 10
+    for c in filter(lambda c: c == 0 or (c + 1) % 5 == 0, COLUMNS):
+      x_1, y_1 = self._rc_to_xy((2, c))
+      self._canvas.create_text(x_1 + h_offset, y_1 - v_offset, text=(c + 1))
+      x_2, y_2 = self._rc_to_xy((PROTO_BOARD_HEIGHT - 3, c))
+      self._canvas.create_text(x_2 + h_offset, y_2 + CONNECTOR_SIZE + v_offset,
+          text=(c + 1))
   def _display_gnd_pwr_pins(self):
     """
     Displays pins to show the ground and power rails.
     """
-    offset = 1
+    # pin positions
     g_x, g_y = self._rc_to_xy((GROUND_RAIL, PROTO_BOARD_WIDTH - 3))
-    self._canvas.create_rectangle(g_x - offset, g_y - offset,
-        g_x + CONNECTOR_SIZE + offset, g_y + CONNECTOR_SIZE + offset,
-        fill=NEGATIVE_COLOR)
     p_x, p_y = self._rc_to_xy((POWER_RAIL, PROTO_BOARD_WIDTH - 3))
-    self._canvas.create_rectangle(p_x - offset, p_y - offset,
-        p_x + CONNECTOR_SIZE + offset, p_y + CONNECTOR_SIZE + offset,
+    # big rectangles
+    large_h_offset = 3 * CONNECTOR_SIZE + 2 * CONNECTOR_SPACING
+    small_h_offset = 2
+    large_v_offset = 7
+    small_v_offset = 3
+    self._canvas.create_rectangle(g_x - small_h_offset, g_y - large_v_offset,
+        g_x + large_h_offset, g_y + CONNECTOR_SIZE + small_v_offset,
+        fill=NEGATIVE_COLOR)
+    self._canvas.create_rectangle(p_x - small_h_offset, p_y - small_v_offset,
+        p_x + large_h_offset, p_y + CONNECTOR_SIZE + large_v_offset,
         fill=POSITIVE_COLOR)
+    # connectors
+    self._draw_connector(g_x, g_y, outline='black')
+    self._draw_connector(p_x, p_y, outline='black')
+    # text
+    text_v_offset = 2
+    text_h_offset = 17
+    self._canvas.create_text(g_x + text_h_offset, g_y - text_v_offset,
+        text='gnd', fill='white')
+    self._canvas.create_text(p_x + text_h_offset, p_y + text_v_offset,
+        text='+10', fill='white')
+  def _display_piece(self, piece):
+    """
+    Displays the given circuit |piece| on the canvas.
+    """
+    piece.draw_on(self._canvas, self._rc_to_xy(piece.top_left_loc))
+  def _display_pieces(self):
+    """
+    Displays all the pieces on the proto board.
+    """
+    for piece in self._proto_board.get_pieces():
+      self._display_piece(piece)
   def _display_wire(self, wire):
     """
     Displays the given |wire| on the canvas.
@@ -103,20 +162,24 @@ class Proto_Board_Visualizer(Frame):
       x_1, y_1, x_2, y_2 = x_2, y_2, x_1, y_1
     self._canvas.create_rectangle(x_1, y_1, x_2 + CONNECTOR_SIZE,
         y_2 + CONNECTOR_SIZE, fill=WIRE_COLOR, outline=WIRE_OUTLINE)
-  def _display_piece(self, piece):
+  def _display_wires(self):
     """
-    Displays the given circuit |piece| on the canvas.
+    Displays all the wires on the proto board.
     """
-    piece.draw_on(self._canvas, self._rc_to_xy(piece.top_left_loc))
-  def _display_proto_board(self):
-    """
-    Visualizes the given |proto_board|.
-    """
-    self._display_gnd_pwr_pins()
     for wire in self._proto_board.get_wires():
       self._display_wire(wire)
-    for piece in self._proto_board.get_pieces():
-      self._display_piece(piece)
+  def _display_proto_board(self):
+    """
+    Displays the given |proto_board|.
+    """
+    self._display_connectors()
+    self._display_bus_lines()
+    self._display_labels()
+    self._display_gnd_pwr_pins()
+    self._display_pieces()
+    self._display_wires()
+    self._canvas.pack()
+    self.pack()
 
 def visualize_proto_board(proto_board, toplevel):
   """
