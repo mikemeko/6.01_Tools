@@ -5,7 +5,6 @@ Search to find proto board wiring to connect a given list of pairs of locations
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
-from constants import CROSSING_WIRE_PENALTY
 from constants import DEBUG
 from constants import DEBUG_SHOW_COST
 from constants import DEBUG_SHOW_PROFILE
@@ -120,8 +119,18 @@ class Proto_Board_Search_Node(Search_Node):
               # we have a candidate proto board, compute state and cost
               new_loc_pairs = list(loc_pairs)
               new_loc_pairs[i] = (wire_end, loc_2)
-              # TODO(mikemeko): consider wire length in cost?
-              new_cost = self.cost + crosses_wires * CROSSING_WIRE_PENALTY
+              # TODO(mikemeko): this can probably be improved, along with
+              #     heuristic :)
+              new_cost = self.cost
+              # favor connectedness a lot
+              if new_proto_board.connected(loc_1, loc_2):
+                new_cost -= 100
+              # penalize long wires
+              new_cost += 5 * new_wire.length()
+              # penalize many wires
+              new_cost += 10
+              # penalize crossing wires (if allowed at all)
+              new_cost += 10 * crosses_wires
               children.append(Proto_Board_Search_Node(new_proto_board,
                   tuple(new_loc_pairs), self, new_cost))
     return children
