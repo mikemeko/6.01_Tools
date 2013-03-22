@@ -18,6 +18,9 @@ __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 from circuit_piece_placement import find_placement
 from circuit_pieces import Op_Amp_Piece
 from circuit_pieces import Resistor_Piece
+# TODO(mikemeko): this is kind of hacky, coupled with board parsing
+from circuit_simulator.main.constants import GROUND
+from circuit_simulator.main.constants import POWER
 from circuit_simulator.simulation.circuit import Circuit
 from circuit_simulator.simulation.circuit import Op_Amp
 from circuit_simulator.simulation.circuit import Resistor
@@ -77,14 +80,17 @@ def op_amp_piece_from_op_amp(op_amp_set):
   assert 1 <= len(op_amp_set) <= 2, 'op_amp_set should have 1 or 2 items'
   assert all(isinstance(obj, Op_Amp) for obj in op_amp_set), ('all items in '
       'op_amp_set must be Op_Amps')
+  # if only one of the two op amps is used, tie unused op amp negative input
+  #     to output (pins 3 and 5), and tie positive input to ground (pin 6)
+  unused_op_amp_node = str(id(op_amp_set))
   op_amp_1 = op_amp_set[0]
   op_amp_2 = op_amp_set[1] if len(op_amp_set) == 2 else None
   n_1 = op_amp_1.nb1
-  n_2 = None
-  n_3 = op_amp_2.nb1 if op_amp_2 else None
-  n_4 = None
-  n_5 = op_amp_2.na2 if op_amp_2 else None
-  n_6 = op_amp_2.na1 if op_amp_2 else None
+  n_2 = POWER
+  n_3 = op_amp_2.nb1 if op_amp_2 else unused_op_amp_node
+  n_4 = GROUND
+  n_5 = op_amp_2.na2 if op_amp_2 else unused_op_amp_node
+  n_6 = op_amp_2.na1 if op_amp_2 else GROUND
   n_7 = op_amp_1.na1
   n_8 = op_amp_1.na2
   return Op_Amp_Piece(n_1, n_2, n_3, n_4, n_5, n_6, n_7, n_8, True)

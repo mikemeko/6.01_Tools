@@ -6,19 +6,28 @@ Tools to figure out a good placement of circuit pieces on the proto board given
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
 from circuit_pieces import Circuit_Piece
+# TODO(mikemeko): this is kind of hacky, coupled with board parsing
+from circuit_simulator.main.constants import GROUND
+from circuit_simulator.main.constants import POWER
+from constants import GROUND_RAIL
+from constants import POWER_RAIL
+from constants import PROTO_BOARD_WIDTH
+from constants import RAIL_ILLEGAL_COLUMNS
 from copy import deepcopy
 from core.data_structures.disjoint_set_forest import Disjoint_Set_Forest
 from core.data_structures.queue import Queue
 from sys import maxint
 from util import dist
 
-def loc_pairs_for_node(node_locs):
+def loc_pairs_for_node(node_locs, node):
   """
   Returns a list of pairs of nodes to connect so that all of the locations in
       |node_locs| are connected. This is essentially an MST problem where the
       locations are the nodes and the weight of an edge between two locations
       is the distance (manhattan) between the two locations. We use Kruskal's
-      greedy algorithm.
+      greedy algorithm. |node| is the corresponding node in for the locations
+      in the circuit, it is used to connect power and ground nodes to the
+      appropriate rail on the proto board.
   """
   # find all possible pairs of locations
   all_loc_pairs = [(loc_1, loc_2) for i, loc_1 in enumerate(node_locs) for
@@ -37,6 +46,16 @@ def loc_pairs_for_node(node_locs):
         disjoint_loc_pair_sets.find_set(loc_2)):
       disjoint_loc_pair_sets.union(loc_1, loc_2)
       mst_loc_pairs.append((loc_1, loc_2))
+  # connect nodes with ground or power rail if necessary
+  if node == GROUND or node == POWER:
+    lazy_loc = min(node_locs, key=lambda loc: sum((loc in loc_pair) for
+        loc_pair in mst_loc_pairs))
+    r, c = lazy_loc
+    # if c is not a valid rail column, add or subtract 1 from it
+    if c in RAIL_ILLEGAL_COLUMNS:
+      c += 2 * (c < PROTO_BOARD_WIDTH / 2) - 1
+    mst_loc_pairs.append((lazy_loc, (GROUND_RAIL if node == GROUND else
+        POWER_RAIL, c)))
   return mst_loc_pairs
 
 def locs_for_node(pieces, node):
@@ -59,7 +78,7 @@ def loc_pairs_to_connect(pieces):
       appropriately connected.
   """
   return tuple(reduce(list.__add__, (loc_pairs_for_node(locs_for_node(pieces,
-      node)) for node in all_nodes(pieces))))
+      node), node) for node in all_nodes(pieces))))
 
 def set_locations(pieces):
   """
@@ -69,7 +88,7 @@ def set_locations(pieces):
   TODO(mikemeko): can we do better?
   """
   col = 28 - sum(piece.width + 2 for piece in pieces) / 2
-  for i, piece in enumerate(pieces):
+  for piece in pieces:
     piece.top_left_loc = (6, col)
     col += piece.width + 2
 
@@ -116,7 +135,7 @@ def find_placement(pieces):
           new_placement.insert(i, piece)
           new_placement_cost = cost(new_placement)
           if new_placement_cost < best_placement_cost:
-            best_placement = new_placement
+            best_placement = deepcopy(new_placement)
             best_placement_cost = new_placement_cost
       placement = best_placement
       placement_cost = best_placement_cost

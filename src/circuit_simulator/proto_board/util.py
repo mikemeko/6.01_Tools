@@ -43,14 +43,14 @@ def body_section_rows(r):
   """
   Returns the set of rows physically connected to the given row |r|.
   """
-  assert r in BODY_ROWS, 'r must be a body row'
+  assert r in BODY_ROWS, 'r must be a body row %s' % r
   return BODY_BOTTOM_ROWS if r in BODY_BOTTOM_ROWS else BODY_TOP_ROWS
 
 def body_opp_section_rows(r):
   """
   Returns the set of rows on the opposite body side of the given row |r|.
   """
-  assert r in BODY_ROWS, 'r must be a body row'
+  assert r in BODY_ROWS, 'r must be a body row %s' % r
   return BODY_BOTTOM_ROWS if r in BODY_TOP_ROWS else BODY_TOP_ROWS
 
 def section_locs(loc):

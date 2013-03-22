@@ -4,8 +4,13 @@ Proto board visualization.
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
+from circuit_simulator.main.constants import NEGATIVE_COLOR
+from circuit_simulator.main.constants import POSITIVE_COLOR
 from circuit_simulator.proto_board.constants import COLUMNS
+from circuit_simulator.proto_board.constants import GROUND_RAIL
+from circuit_simulator.proto_board.constants import POWER_RAIL
 from circuit_simulator.proto_board.constants import PROTO_BOARD_HEIGHT
+from circuit_simulator.proto_board.constants import PROTO_BOARD_WIDTH
 from circuit_simulator.proto_board.constants import ROWS
 from circuit_simulator.proto_board.util import valid_loc
 from constants import BACKGROUND_COLOR
@@ -75,6 +80,19 @@ class Proto_Board_Visualizer(Frame):
         self._canvas.create_text(self._rc_to_xy((-1, c)), text=c)
     self._canvas.pack()
     self.pack()
+  def _display_gnd_pwr_pins(self):
+    """
+    Displays pins to show the ground and power rails.
+    """
+    offset = 1
+    g_x, g_y = self._rc_to_xy((GROUND_RAIL, PROTO_BOARD_WIDTH - 3))
+    self._canvas.create_rectangle(g_x - offset, g_y - offset,
+        g_x + CONNECTOR_SIZE + offset, g_y + CONNECTOR_SIZE + offset,
+        fill=NEGATIVE_COLOR)
+    p_x, p_y = self._rc_to_xy((POWER_RAIL, PROTO_BOARD_WIDTH - 3))
+    self._canvas.create_rectangle(p_x - offset, p_y - offset,
+        p_x + CONNECTOR_SIZE + offset, p_y + CONNECTOR_SIZE + offset,
+        fill=POSITIVE_COLOR)
   def _display_wire(self, wire):
     """
     Displays the given |wire| on the canvas.
@@ -94,6 +112,7 @@ class Proto_Board_Visualizer(Frame):
     """
     Visualizes the given |proto_board|.
     """
+    self._display_gnd_pwr_pins()
     for wire in self._proto_board.get_wires():
       self._display_wire(wire)
     for piece in self._proto_board.get_pieces():
