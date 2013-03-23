@@ -19,6 +19,14 @@ class Util_Test(TestCase):
     assert dist((2, 0), (2, 2)) == 2
     assert dist((2, 0), (4, 0)) == 2
     assert dist((2, 0), (4, 2)) == 4
+    assert dist((0, 2), (1, 2)) == 1
+    assert dist((0, 2), (2, 2)) == 4
+    assert dist((0, 2), (6, 2)) == 8
+    assert dist((0, 2), (7, 2)) == 11
+    assert dist((0, 2), (11, 2)) == 15
+    assert dist((0, 2), (12, 2)) == 18
+    assert dist((0, 2), (13, 2)) == 19
+    assert dist((0, 2), (13, 5)) == 22
   def test_overlap(self):
     assert not overlap((1, 2), (3, 4))
     assert not overlap((3, 4), (1, 2))

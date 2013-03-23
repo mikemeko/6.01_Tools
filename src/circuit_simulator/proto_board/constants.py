@@ -31,6 +31,8 @@ RAIL_ROWS = set([0, 1, PROTO_BOARD_HEIGHT - 2, PROTO_BOARD_HEIGHT - 1])
 # default power and ground rails
 POWER_RAIL = PROTO_BOARD_HEIGHT - 1
 GROUND_RAIL = PROTO_BOARD_HEIGHT - 2
+# vertical separations
+NUM_ROWS_PER_VERTICAL_SEPARATION = 2
 
 # wire constants
 MAYBE_ALLOW_CROSSING_WIRES = False

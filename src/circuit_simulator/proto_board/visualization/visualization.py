@@ -12,6 +12,7 @@ from circuit_simulator.proto_board.constants import POWER_RAIL
 from circuit_simulator.proto_board.constants import PROTO_BOARD_HEIGHT
 from circuit_simulator.proto_board.constants import PROTO_BOARD_WIDTH
 from circuit_simulator.proto_board.constants import ROWS
+from circuit_simulator.proto_board.util import num_vertical_separators
 from circuit_simulator.proto_board.util import valid_loc
 from constants import BACKGROUND_COLOR
 from constants import CONNECTOR_COLOR
@@ -22,7 +23,7 @@ from constants import PADDING
 from constants import VERTICAL_SEPARATION
 from constants import WIDTH
 from constants import WINDOW_TITLE
-from constants import WIRE_COLOR
+from constants import WIRE_COLORS
 from constants import WIRE_OUTLINE
 from Tkinter import Canvas
 from Tkinter import Frame
@@ -42,13 +43,7 @@ class Proto_Board_Visualizer(Frame):
     self._canvas = Canvas(self, width=WIDTH, height=HEIGHT,
         background=BACKGROUND_COLOR)
     self._display_proto_board()
-  def _vertical_section(self, r):
-    """
-    Returns the number of vertical separators that stand between the top of the
-        proto board and the given row |r|.
-    """
-    return sum(r >= barrier for barrier in (2, PROTO_BOARD_HEIGHT / 2,
-        PROTO_BOARD_HEIGHT - 2))
+
   def _rc_to_xy(self, loc):
     """
     Returns the top left corner of the connector located at row |r| column |c|.
@@ -56,7 +51,7 @@ class Proto_Board_Visualizer(Frame):
     r, c = loc
     x = c * (CONNECTOR_SIZE + CONNECTOR_SPACING) + PADDING
     y = r * (CONNECTOR_SIZE + CONNECTOR_SPACING) + PADDING + (
-        self._vertical_section(r) * (VERTICAL_SEPARATION - CONNECTOR_SPACING))
+        num_vertical_separators(r) * (VERTICAL_SEPARATION - CONNECTOR_SPACING))
     return x, y
   def _draw_connector(self, x, y, fill=CONNECTOR_COLOR,
       outline=CONNECTOR_COLOR):
@@ -160,8 +155,14 @@ class Proto_Board_Visualizer(Frame):
     x_2, y_2 = self._rc_to_xy(wire.loc_2)
     if x_1 > x_2 or y_1 > y_2:
       x_1, y_1, x_2, y_2 = x_2, y_2, x_1, y_1
+    length = wire.length()
+    fill = 'white'
+    if length < 10:
+      fill = WIRE_COLORS[length]
+    elif length < 50:
+      fill = WIRE_COLORS[(length + 9) / 10]
     self._canvas.create_rectangle(x_1, y_1, x_2 + CONNECTOR_SIZE,
-        y_2 + CONNECTOR_SIZE, fill=WIRE_COLOR, outline=WIRE_OUTLINE)
+        y_2 + CONNECTOR_SIZE, fill=fill, outline=WIRE_OUTLINE)
   def _display_wires(self):
     """
     Displays all the wires on the proto board.

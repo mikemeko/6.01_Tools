@@ -8,6 +8,8 @@ from constants import BODY_BOTTOM_ROWS
 from constants import BODY_LEGAL_COLUMNS
 from constants import BODY_ROWS
 from constants import BODY_TOP_ROWS
+from constants import NUM_ROWS_PER_VERTICAL_SEPARATION
+from constants import PROTO_BOARD_HEIGHT
 from constants import RAIL_LEGAL_COLUMNS
 from constants import RAIL_ROWS
 from core.data_structures.disjoint_set_forest import Disjoint_Set_Forest
@@ -61,13 +63,24 @@ def section_locs(loc):
   return (((r, new_c) for new_c in RAIL_LEGAL_COLUMNS) if is_rail_loc(loc)
       else ((new_r, c) for new_r in body_section_rows(r)))
 
+def num_vertical_separators(r):
+  """
+  Returns the number of vertical separators that stand between the top of the
+      proto board and the given row |r|.
+  """
+  return sum(r >= barrier for barrier in (2, PROTO_BOARD_HEIGHT / 2,
+      PROTO_BOARD_HEIGHT - 2))
+
 def dist(loc_1, loc_2):
   """
   Returns the Manhattan distance between |loc_1| and |loc_2|.
   """
   r_1, c_1 = loc_1
   r_2, c_2 = loc_2
-  return abs(r_1 - r_2) + abs(c_1 - c_2)
+  vertical_separators = num_vertical_separators(max(r_1, r_2)) - (
+      num_vertical_separators(min(r_1, r_2)))
+  return abs(r_1 - r_2) + abs(c_1 - c_2) + (
+      vertical_separators * NUM_ROWS_PER_VERTICAL_SEPARATION)
 
 def loc_disjoint_set_forest(loc_pairs):
   """
