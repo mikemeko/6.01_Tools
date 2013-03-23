@@ -157,9 +157,9 @@ class Proto_Board_Visualizer(Frame):
       x_1, y_1, x_2, y_2 = x_2, y_2, x_1, y_1
     length = wire.length()
     fill = 'white'
-    if length < 10:
+    if 1 < length < 10:
       fill = WIRE_COLORS[length]
-    elif length < 50:
+    elif 10 <= length < 50:
       fill = WIRE_COLORS[(length + 9) / 10]
     self._canvas.create_rectangle(x_1, y_1, x_2 + CONNECTOR_SIZE,
         y_2 + CONNECTOR_SIZE, fill=fill, outline=WIRE_OUTLINE)
