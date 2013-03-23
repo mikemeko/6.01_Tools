@@ -149,11 +149,11 @@ if __name__ == '__main__':
         discovered proto board.
     """
     placement = get_piece_placement(circuit)
-    board = Proto_Board()
+    proto_board = Proto_Board()
     for piece in placement:
-      board = board.with_piece(piece)
-    board = find_wiring(loc_pairs_to_connect(placement), board)
-    visualize_proto_board(board, Toplevel())
+      proto_board = proto_board.with_piece(piece)
+    proto_board = find_wiring(loc_pairs_to_connect(placement), proto_board)
+    visualize_proto_board(proto_board, Toplevel())
   # create empty board
   board = Board(root, directed_wires=False, on_changed=on_changed,
       on_exit=request_save)
