@@ -15,13 +15,18 @@ class Wire:
     """
     |loc_1|, |loc_2|: start end end locations of this wire.
     """
+    r_1, c_1 = loc_1
+    r_2, c_2 = loc_2
+    assert r_1 == r_2 or c_1 == c_2, 'wire must be horizontal or vertical'
     self.loc_1 = loc_1
     self.loc_2 = loc_2
-    self.r_1, self.c_1 = loc_1
-    self.r_2, self.c_2 = loc_2
+    self.r_1 = r_1
+    self.c_1 = c_1
+    self.r_2 = r_2
+    self.c_2 = c_2
     # row and column supports, i.e. min's and max's
-    self.row_support = min(self.r_1, self.r_2), max(self.r_1, self.r_2)
-    self.column_support = min(self.c_1, self.c_2), max(self.c_1, self.c_2)
+    self.row_support = min(r_1, r_2), max(r_1, r_2)
+    self.column_support = min(c_1, c_2), max(c_1, c_2)
   def crosses(self, other):
     """
     Returns True if this wire and the |other| wire intersect, False otherwise.
@@ -34,6 +39,11 @@ class Wire:
     Returns the length of this wire.
     """
     return dist(self.loc_1, self.loc_2)
+  def vertical(self):
+    """
+    Returns True if this wire is vertical, or False if it is horizontal.
+    """
+    return self.c_1 == self.c_2
   def __hash__(self):
     return hash((self.loc_1, self.loc_2))
   def __str__(self):

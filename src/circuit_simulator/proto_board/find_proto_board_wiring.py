@@ -8,7 +8,6 @@ __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 from constants import DEBUG
 from constants import DEBUG_SHOW_COST
 from constants import DEBUG_SHOW_PROFILE
-from constants import DEBUG_SHOW_PROTO_BOARD
 from constants import MAYBE_ALLOW_CROSSING_WIRES
 from constants import RAIL_ROWS
 from constants import ROWS
@@ -24,7 +23,6 @@ from util import is_rail_loc
 from util import loc_disjoint_set_forest
 from util import section_locs
 from util import valid_loc
-from visualization.visualization import visualize_proto_board
 from wire import Wire
 
 class Proto_Board_Search_Node(Search_Node):
@@ -159,9 +157,6 @@ def progress(state, cost):
   """
   if DEBUG & DEBUG_SHOW_COST:
     print cost
-  if DEBUG & DEBUG_SHOW_PROTO_BOARD:
-    proto_board, loc_pairs = state
-    visualize_proto_board(proto_board)
 
 def find_wiring(loc_pairs, start_proto_board=Proto_Board()):
   """
