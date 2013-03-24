@@ -5,6 +5,8 @@ Credit to Introduction to Algorithms (CLRS) Chapter 21.
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
+from collections import defaultdict
+
 class Disjoint_Set_Forest:
   """
   Disjoint set forest data structure.
@@ -59,11 +61,7 @@ class Disjoint_Set_Forest:
     """
     return Disjoint_Set_Forest(self._parent.copy(), self._rank.copy())
   def __str__(self):
-    disjoint_sets = {}
+    disjoint_sets = defaultdict(list)
     for x in self._parent:
-      parent = self.find_set(x)
-      if parent in disjoint_sets:
-        disjoint_sets[parent].append(x)
-      else:
-        disjoint_sets[parent] = [x]
+      disjoint_sets[self.find_set(x)].append(x)
     return '\n'.join(map(str, disjoint_sets.values()))
