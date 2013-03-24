@@ -87,6 +87,7 @@ def set_locations(pieces):
       leaves a space of 2 columns between each consecuitive pair of pieces.
   TODO(mikemeko): can we do better?
   """
+  # put the pieces as much at the center of the proto board as possible
   col = (PROTO_BOARD_WIDTH - sum(piece.width + 2 for piece in pieces)) / 2 + 1
   for piece in pieces:
     piece.top_left_loc = (6, col)
@@ -143,4 +144,4 @@ def find_placement(pieces):
       for piece in reduce(list.__add__, [[piece for piece in pieces if node
           in piece.nodes] for node in current_piece.nodes], []):
         add_to_queue(piece)
-    return placement, placement_cost
+  return placement, placement_cost
