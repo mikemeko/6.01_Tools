@@ -39,6 +39,7 @@ from system_simulator.simulation.unit_sample_response import (
     plot_unit_sample_response)
 from Tkinter import Menu
 from Tkinter import Tk
+from Tkinter import Toplevel
 
 if __name__ == '__main__':
   # create root
@@ -119,6 +120,11 @@ if __name__ == '__main__':
     file_name = None
     # reset to empty board
     init_board()
+  def pzd(system):
+    """
+    Plots the pole-zero diagram of the given |system|.
+    """
+    plot_pole_zero_diagram(system, Toplevel())
   # create empty board
   board = Board(root, on_changed=on_changed, on_exit=request_save)
   init_board()
@@ -131,7 +137,7 @@ if __name__ == '__main__':
   palette.add_drawable_type(Adder_Drawable, LEFT, None)
   # add buttons to create PZR and USR
   palette.add_drawable_type(PZD_Run_Drawable, RIGHT,
-      lambda event: run_analysis(board, plot_pole_zero_diagram))
+      lambda event: run_analysis(board, pzd))
   palette.add_drawable_type(USR_Run_Drawable, RIGHT,
       lambda event: run_analysis(board, plot_unit_sample_response))
   palette.add_drawable_type(FR_Run_Drawable, RIGHT,
@@ -141,8 +147,7 @@ if __name__ == '__main__':
       plot_frequency_response))
   board.add_key_binding('n', new_file, CTRL_DOWN)
   board.add_key_binding('o', open_file, CTRL_DOWN)
-  board.add_key_binding('p', lambda: run_analysis(board,
-      plot_pole_zero_diagram))
+  board.add_key_binding('p', lambda: run_analysis(board, pzd))
   board.add_key_binding('q', board.quit, CTRL_DOWN)
   board.add_key_binding('s', save_file, CTRL_DOWN)
   board.add_key_binding('u', lambda: run_analysis(board,
@@ -166,7 +171,7 @@ if __name__ == '__main__':
   analyze_menu.add_command(label='FR', command=lambda: run_analysis(board,
       plot_frequency_response), accelerator='F')
   analyze_menu.add_command(label='PZD', command=lambda: run_analysis(board,
-      plot_pole_zero_diagram), accelerator='P')
+      pzd), accelerator='P')
   analyze_menu.add_command(label='USR', command=lambda: run_analysis(board,
       plot_unit_sample_response), accelerator='U')
   menu.add_cascade(label='Analyze', menu=analyze_menu)
