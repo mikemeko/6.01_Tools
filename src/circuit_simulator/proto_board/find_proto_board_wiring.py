@@ -127,7 +127,7 @@ class Proto_Board_Search_Node(Search_Node):
             # penalize long wires
             new_cost += 5 * new_wire.length()
             # penalize many wires
-            new_cost += 20
+            new_cost += 10
             # penalize crossing wires (if allowed at all)
             new_cost += 80 * crosses_wires
             # favor keeping horizontal wires close to circuit pieces
