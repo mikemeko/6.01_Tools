@@ -9,6 +9,7 @@ from constants import DEBUG
 from constants import DEBUG_SHOW_COST
 from constants import DEBUG_SHOW_PROFILE
 from constants import MAYBE_ALLOW_CROSSING_WIRES
+from constants import PROTO_BOARD_MIDDLE
 from constants import RAIL_ROWS
 from constants import ROWS
 from constants import WIRE_LENGTH_LIMIT
@@ -83,54 +84,57 @@ class Proto_Board_Search_Node(Search_Node):
     children = []
     proto_board, loc_pairs = self.state
     for i, (loc_1, loc_2) in enumerate(loc_pairs):
-      # if |loc_1| and |loc_2| are already connected, we're all set
-      if not proto_board.connected(loc_1, loc_2):
-        # can extend a wire from |loc_1| towards |loc_2| from any of the
-        #     the locations |loc_1| is internally connected to
-        for neighbor_loc in section_locs(loc_1):
-          # make sure that the candidate start location is not occupied
-          if not proto_board.occupied(neighbor_loc):
-            # get candidate end locations for the new wire to draw
-            wire_ends = (self._wire_ends_from_rail_loc(neighbor_loc,
-                proto_board) if is_rail_loc(neighbor_loc) else
-                self._wire_ends_from_body_loc(neighbor_loc, proto_board))
-            for wire_end in wire_ends:
-              new_wire = Wire(neighbor_loc, wire_end)
-              # make sure that there is a wire to draw
-              if new_wire.length() == 0:
-                continue
-              # make sure that the wire does not cross any piece
-              if any(piece.crossed_by(new_wire) for piece in
-                  proto_board.get_pieces()):
-                continue
-              crosses_wires = any(wire.crosses(new_wire) for wire in
-                  proto_board.get_wires())
-              # continue if we do not want to allow crossing wires
-              if crosses_wires and not MAYBE_ALLOW_CROSSING_WIRES:
-                continue
-              new_proto_board = proto_board.with_wire(new_wire)
-              # make sure that the wire doesn't (1) connect things we want to
-              #     keep disconnected or (2) connect things that are already
-              #     connected
-              if not new_proto_board or new_proto_board is proto_board:
-                continue
-              # we have a candidate proto board, compute state and cost
-              new_loc_pairs = list(loc_pairs)
-              new_loc_pairs[i] = (wire_end, loc_2)
-              # TODO(mikemeko): this can probably be improved, along with
-              #     heuristic :)
-              new_cost = self.cost
+      # can extend a wire from |loc_1| towards |loc_2| from any of the
+      #     the locations |loc_1| is internally connected to
+      for neighbor_loc in section_locs(loc_1):
+        # make sure that the candidate start location is not occupied
+        if not proto_board.occupied(neighbor_loc):
+          # get candidate end locations for the new wire to draw
+          wire_ends = (self._wire_ends_from_rail_loc(neighbor_loc,
+              proto_board) if is_rail_loc(neighbor_loc) else
+              self._wire_ends_from_body_loc(neighbor_loc, proto_board))
+          for wire_end in wire_ends:
+            new_wire = Wire(neighbor_loc, wire_end)
+            # make sure that there is a wire to draw
+            if new_wire.length() == 0:
+              continue
+            # make sure that the wire does not cross any piece
+            if any(piece.crossed_by(new_wire) for piece in
+                proto_board.get_pieces()):
+              continue
+            crosses_wires = any(wire.crosses(new_wire) for wire in
+                proto_board.get_wires())
+            # continue if we do not want to allow crossing wires
+            if crosses_wires and not MAYBE_ALLOW_CROSSING_WIRES:
+              continue
+            new_proto_board = proto_board.with_wire(new_wire)
+            # make sure that the wire doesn't (1) connect things we want to
+            #     keep disconnected or (2) connect things that are already
+            #     connected
+            if not new_proto_board or new_proto_board is proto_board:
+              continue
+            # we have a candidate proto board, compute state and cost
+            new_loc_pairs = list(loc_pairs)
+            # TODO(mikemeko): this can probably be improved, along with
+            #     heuristic :)
+            new_cost = self.cost
+            if new_proto_board.connected(loc_1, loc_2):
+              new_loc_pairs.pop(i)
               # favor connectedness a lot
-              if new_proto_board.connected(loc_1, loc_2):
-                new_cost -= 100
-              # penalize long wires
-              new_cost += 5 * new_wire.length()
-              # penalize many wires
-              new_cost += 10
-              # penalize crossing wires (if allowed at all)
-              new_cost += 10 * crosses_wires
-              children.append(Proto_Board_Search_Node(new_proto_board,
-                  tuple(new_loc_pairs), self, new_cost))
+              new_cost -= 100
+            else:
+              new_loc_pairs[i] = (wire_end, loc_2)
+            # penalize long wires
+            new_cost += 5 * new_wire.length()
+            # penalize many wires
+            new_cost += 20
+            # penalize crossing wires (if allowed at all)
+            new_cost += 80 * crosses_wires
+            # favor keeping horizontal wires close to circuit pieces
+            new_cost += new_wire.horizontal() * abs(new_wire.r_1 -
+                PROTO_BOARD_MIDDLE)
+            children.append(Proto_Board_Search_Node(new_proto_board,
+                tuple(new_loc_pairs), self, new_cost))
     return children
 
 def goal_test(state):

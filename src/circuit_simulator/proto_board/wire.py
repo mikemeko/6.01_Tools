@@ -39,6 +39,11 @@ class Wire:
     Returns the length of this wire.
     """
     return dist(self.loc_1, self.loc_2)
+  def horizontal(self):
+    """
+    Returns True if this wire is horizontal, or False if it is vertical.
+    """
+    return not self.vertical()
   def vertical(self):
     """
     Returns True if this wire is vertical, or False if it is horizontal.
