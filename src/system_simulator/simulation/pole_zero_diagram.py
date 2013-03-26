@@ -44,6 +44,7 @@ class Pole_Zero_Diagram(Frame):
     assert self.sf is not None, 'sf cannot be None'
     Frame.__init__(self, parent)
     parent.title('H(R) = %s' % str(self.sf))
+    parent.resizable(0, 0)
     self.window_size = window_size
     self._draw_poles_and_zeros()
   def _visible_poles(self):
@@ -136,13 +137,8 @@ class Pole_Zero_Diagram(Frame):
     self.configure(background=BACKGROUND_COLOR)
     self.pack()
 
-def plot_pole_zero_diagram(sys, mainloop=False):
+def plot_pole_zero_diagram(sys, toplevel):
   """
   Plots the pole-zero diagram of the given system.
-  |mainloop|: if True, this method calls Tk.mainloop().
   """
-  root = Tk()
-  root.resizable(0, 0)
-  Pole_Zero_Diagram(root, sys)
-  if mainloop:
-    root.mainloop()
+  Pole_Zero_Diagram(toplevel, sys)
