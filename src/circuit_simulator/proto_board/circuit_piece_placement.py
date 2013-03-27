@@ -80,8 +80,8 @@ def loc_pairs_to_connect(pieces):
   Returns a tuple of the locations pairs to connect so that the |pieces| are
       appropriately connected.
   """
-  return tuple(reduce(list.__add__, (loc_pairs_for_node(locs_for_node(pieces,
-      node), node) for node in all_nodes(pieces))))
+  return reduce(list.__add__, (loc_pairs_for_node(locs_for_node(pieces,
+      node), node) for node in all_nodes(pieces)))
 
 def set_locations(pieces):
   """

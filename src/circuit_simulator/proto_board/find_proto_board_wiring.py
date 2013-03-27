@@ -168,6 +168,7 @@ def find_wiring(loc_pairs, start_proto_board=Proto_Board()):
       properly connected, or None if no such Proto_Board can be found. Search
       starts from |start_proto_board|.
   """
+  loc_pairs = tuple(sorted(loc_pairs, key=lambda loc_pair: -dist(*loc_pair)))
   start_node = Proto_Board_Search_Node(
       start_proto_board.with_loc_disjoint_set_forest(loc_disjoint_set_forest(
       loc_pairs)), loc_pairs)
