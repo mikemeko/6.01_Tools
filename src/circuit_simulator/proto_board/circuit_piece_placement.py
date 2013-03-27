@@ -48,8 +48,11 @@ def loc_pairs_for_node(node_locs, node):
       mst_loc_pairs.append((loc_1, loc_2))
   # connect nodes with ground or power rail if necessary
   if node == GROUND or node == POWER:
+    # pick a location to connect to the appropriate rail
+    # prefer a location that doesn't have many connactions and that has a
+    #     direct path to the rail (instead of requiring 2 wires)
     lazy_loc = min(node_locs, key=lambda loc: sum((loc in loc_pair) for
-        loc_pair in mst_loc_pairs))
+        loc_pair in mst_loc_pairs) + 10 * (loc[1] in RAIL_ILLEGAL_COLUMNS))
     r, c = lazy_loc
     # if c is not a valid rail column, add or subtract 1 from it
     if c in RAIL_ILLEGAL_COLUMNS:
