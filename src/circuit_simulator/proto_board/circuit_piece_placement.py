@@ -100,6 +100,9 @@ def cost(placement):
   """
   Returns a heuristic cost of the given |placement| - the sum of the distances
       between the loc pairs that would need to be connected.
+  TODO(mikemeko): here, the concept of distance should take into account the
+      presence of the circuit pieces, i.e. it should factor having to wire
+      around the pieces.
   """
   set_locations(placement)
   return sum(dist(*loc_pair) for loc_pair in loc_pairs_to_connect(placement))

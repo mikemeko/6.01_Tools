@@ -129,7 +129,7 @@ class Proto_Board_Search_Node(Search_Node):
             # penalize many wires
             new_cost += 10
             # penalize crossing wires (if allowed at all)
-            new_cost += 80 * crosses_wires
+            new_cost += 60 * crosses_wires
             # favor keeping horizontal wires close to circuit pieces
             new_cost += new_wire.horizontal() * abs(new_wire.r_1 -
                 PROTO_BOARD_MIDDLE)
@@ -160,7 +160,8 @@ def progress(state, cost):
   Displays some debug information to better understand search process.
   """
   if DEBUG & DEBUG_SHOW_COST:
-    print cost
+    proto_board, loc_pairs = state
+    print cost, '%d to connect' % len(loc_pairs)
 
 def find_wiring(loc_pairs, start_proto_board=Proto_Board()):
   """

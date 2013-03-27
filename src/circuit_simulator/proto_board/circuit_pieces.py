@@ -169,6 +169,9 @@ class Op_Amp_Piece(Circuit_Piece):
         self.dot_bottom_left else (OP_AMP_DOT_OFFSET + CONNECTOR_SIZE / 2))
     create_circle(canvas, x + dot_dx, y + dot_dy, OP_AMP_DOT_RADIUS,
         fill=OP_AMP_DOT_COLOR)
+  def __str__(self):
+    return 'Op_Amp_Piece %s %s' % (str([self.n_1, self.n_2, self.n_3, self.n_4,
+        self.n_5, self.n_6, self.n_7, self.n_8]), self.dot_bottom_left)
 
 class Resistor_Piece(Circuit_Piece):
   """
@@ -209,3 +212,5 @@ class Resistor_Piece(Circuit_Piece):
     canvas.create_rectangle(x - dx, y + CONNECTOR_SIZE,
         x + CONNECTOR_SIZE + dx, y + VERTICAL_SEPARATION + CONNECTOR_SIZE,
         fill=RESISTOR_OUTER_COLOR)
+  def __str__(self):
+    return 'Resistor_Piece %s' % str([self.n_1, self.n_2])
