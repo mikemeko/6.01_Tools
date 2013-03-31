@@ -5,7 +5,9 @@ Credit to ideas from MIT 6.01 Fall 2012 Software Lab 9.
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
+from constants import NUM_SAMPLES
 from constants import OP_AMP_K
+from constants import T
 from core.math.equation_solver import solve_equations
 
 class One_Port:
@@ -23,13 +25,13 @@ class One_Port:
     self.n2 = n2
     self.i = i
   @property
-  def equation(self):
+  def equation(self, t):
     """
     Returns an equation representing the constraint that needs to be satisfied
-        for this one port. An equation should be given in the form of a list of
-        terms summing to 0, where a term is a tuple of the form (coeff, var),
-        where coeff is a number and var is a variable. Constants can be
-        represented by (const, None).
+        for this one port at the given time |t|. An equation should be given in
+        the form of a list of terms summing to 0, where a term is a tuple of
+        the form (coeff, var), where coeff is a number and var is a variable.
+        Constants can be represented by (const, None).
     """
     raise Exception('subclasses should implement this')
 
@@ -43,7 +45,7 @@ class Voltage_Source(One_Port):
     """
     One_Port.__init__(self, n1, n2, i)
     self.v0 = v0
-  def equation(self):
+  def equation(self, t):
     # n1 - n0 = v0
     return [(1, self.n1), (-1, self.n2), (-self.v0, None)]
 
@@ -57,7 +59,7 @@ class Resistor(One_Port):
     """
     One_Port.__init__(self, n1, n2, i)
     self.r = r
-  def equation(self):
+  def equation(self, t):
     # n1 - n2 = ir
     return [(1, self.n1), (-1, self.n2), (-self.r, self.i)]
 
@@ -65,7 +67,7 @@ class Voltage_Sensor(One_Port):
   """
   Representation for a voltage sensor, to be used as a part of op amps.
   """
-  def equation(self):
+  def equation(self, t):
     # i = 0
     return [(1, self.i)]
 
@@ -86,7 +88,7 @@ class VCVS(One_Port):
     self.na1 = na1
     self.na2 = na2
     self.K = K
-  def equation(self):
+  def equation(self, t):
     # nb1 - nb2 = K(na1 - na2)
     return [(1, self.n1), (-1, self.n2), (self.K, self.na2),
         (-self.K, self.na1)]
@@ -123,15 +125,16 @@ class Circuit:
   """
   def __init__(self, components, gnd):
     """
-    |components|: a list of the components (one ports) in this circuit.
+    |components|: a list of the components in this circuit.
     |gnd|: the ground node in this circuit.
     """
     self.components = components
     self.flattened_components = self._flatten(components)
     self.gnd = gnd
-    # self.data contains all values of the currents and voltages in this
-    #     circuit, if solved correctly, None otherwise
-    self.data = self._solve()
+    try:
+      self._solve()
+    except:
+      self.data = None
   def _flatten(self, components):
     """
     Returns a list of One_Ports by flattening any Op_Amps in |components|.
@@ -145,23 +148,26 @@ class Circuit:
     return flattened
   def _solve(self):
     """
-    Solves this circuit and returns a dictionary mapping all the variables (
-        i.e. voltages and currents) to their respective values. If circuit
-        cannot be solved, returns None.
+    Solves this circuit and returns a dictionary mapping all the sampled times
+        to the respective dictionary mapping all the variables (i.e. voltages
+        and currents) to their respective values. Raises an Exception if
+        circuit cannot be solved.
     """
-    # accumulate and solve system of equations
-    # component equations
-    equations = [component.equation() for component in
-        self.flattened_components]
-    # one KCL equation per node in the circuit (excluding ground node)
-    KCL = {}
-    for component in self.flattened_components:
-      KCL[component.n1] = KCL.get(component.n1, []) + [(1, component.i)]
-      KCL[component.n2] = KCL.get(component.n2, []) + [(-1, component.i)]
-    equations.extend([KCL[n] for n in KCL if n is not self.gnd])
-    # assert that ground voltage is 0
-    equations.append([(1, self.gnd)])
-    try:
-      return solve_equations(equations)
-    except:
-      return None
+    self.data = {}
+    for n in xrange(NUM_SAMPLES):
+      # accumulate and solve system of equations
+      # component equations
+      equations = [component.equation(n * T) for component in
+          self.flattened_components]
+      # one KCL equation per node in the circuit (excluding ground node)
+      KCL = {}
+      for component in self.flattened_components:
+        KCL[component.n1] = KCL.get(component.n1, []) + [(1, component.i)]
+        KCL[component.n2] = KCL.get(component.n2, []) + [(-1, component.i)]
+      equations.extend([KCL[node] for node in KCL if node is not self.gnd])
+      # assert that ground voltage is 0
+      equations.append([(1, self.gnd)])
+      try:
+        self.data[n * T] = solve_equations(equations)
+      except:
+        raise Exception('could not solve circuit at time %s' % (n * T))

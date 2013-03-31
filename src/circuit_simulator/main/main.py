@@ -33,7 +33,6 @@ from core.gui.board import Board
 from core.gui.components import Wire
 from core.gui.components import Wire_Connector_Drawable
 from core.gui.constants import CTRL_DOWN
-from core.gui.constants import INFO
 from core.gui.constants import LEFT
 from core.gui.constants import RIGHT
 from core.gui.constants import ERROR
@@ -43,6 +42,10 @@ from core.save.save import open_board
 from core.save.save import request_save_board
 from core.save.save import save_board
 from core.save.util import strip_file_name
+from pylab import show
+from pylab import stem
+from pylab import xlabel
+from pylab import ylabel
 from Tkinter import Menu
 from Tkinter import Tk
 from Tkinter import Toplevel
@@ -128,21 +131,31 @@ if __name__ == '__main__':
     init_board()
   def simulate(circuit, probe_plus, probe_minus):
     """
-    Displays a message on the board showing the voltage difference between
-        nodes |probe_plus| and |probe_minus| of the given |circuit|.
+    Displays a stem plot showing the voltage difference between nodes
+        |probe_plus| and |probe_minus| of the given |circuit|.
     """
     assert probe_plus and probe_minus, 'need both +probe and -probs'
+    # ensure that circuit was successfully solved
     if not circuit.data:
       board.display_message('Could not solve circuit', ERROR)
       return
-    if probe_plus not in circuit.data:
-      board.display_message('+probe is disconnected from circuit', WARNING)
-    elif probe_minus not in circuit.data:
-      board.display_message('-probe is disconnected from circuit', WARNING)
-    else:
-      probe_difference = circuit.data[probe_plus] - circuit.data[probe_minus]
-      board.display_message('%.3f V' % probe_difference, message_type=INFO,
-          auto_remove=False)
+    # record samples of the voltage difference accross the probes
+    t_samples, probe_samples = [], []
+    for t, solution in circuit.data.items():
+      # ensure that the probes are in the solved circuits
+      if probe_plus not in solution:
+        board.display_message('+probe is disconnected from circuit', WARNING)
+        return
+      elif probe_minus not in solution:
+        board.display_message('-probe is disconnected from circuit', WARNING)
+        return
+      t_samples.append(t)
+      probe_samples.append(solution[probe_plus] - solution[probe_minus])
+    # show stem plot
+    stem(t_samples, probe_samples)
+    xlabel('t = nT')
+    ylabel('Probe Voltage Difference')
+    show()
   def proto_board_layout(circuit, probe_plus, probe_minus):
     """
     Finds a way to layout the given |circuit| on a proto board and displays the
