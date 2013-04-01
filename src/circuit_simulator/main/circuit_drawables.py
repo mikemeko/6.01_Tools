@@ -20,18 +20,21 @@ from constants import PIN_OUTLINE
 from constants import PIN_RIGHT_CONNECTORS
 from constants import PIN_TEXT_COLOR
 from constants import POSITIVE_COLOR
+from constants import POT_ALPHA_FILL
+from constants import POT_ALPHA_HEIGHT
+from constants import POT_ALPHA_OUTLINE
+from constants import POT_ALPHA_TEXT
+from constants import POT_ALPHA_WIDTH
+from constants import POT_UP_CONNECTORS
 from constants import POWER_VOLTS
 from constants import PROBE_MINUS
 from constants import PROBE_PLUS
 from constants import PROBE_SIZE
 from constants import PROTO_BOARD
 from constants import RE_OP_AMP_VERTICES
-from constants import RESISTOR_FILL
 from constants import RESISTOR_HORIZONTAL_CONNECTORS
 from constants import RESISTOR_HORIZONTAL_HEIGHT
 from constants import RESISTOR_HORIZONTAL_WIDTH
-from constants import RESISTOR_NUM_ZIG_ZAGS
-from constants import RESISTOR_OUTLINE
 from constants import RESISTOR_TEXT_PADDING
 from constants import SIMULATE
 from core.gui.components import Drawable
@@ -43,6 +46,7 @@ from core.save.constants import RE_INT_PAIR
 from core.util.util import is_callable
 from re import match
 from Tkinter import CENTER
+from util import draw_resistor_zig_zags
 
 class Pin_Drawable(Drawable):
   """
@@ -175,30 +179,12 @@ class Resistor_Drawable(Drawable):
   def draw_on(self, canvas, offset=(0, 0)):
     ox, oy = offset
     w, h = self.width, self.height
-    self.parts.add(canvas.create_rectangle(ox, oy, ox + w, oy + h,
-        fill=RESISTOR_FILL, outline=RESISTOR_OUTLINE))
+    self.parts |= draw_resistor_zig_zags(canvas, ox, oy, w, h)
     if w > h: # horizontal
-      s = w / (2 * RESISTOR_NUM_ZIG_ZAGS)
-      self.parts.add(canvas.create_line(ox, oy + h / 2, ox + s, oy))
-      for i in xrange(1, RESISTOR_NUM_ZIG_ZAGS):
-        self.parts.add(canvas.create_line(ox + (2 * i - 1) * s, oy,
-            ox + 2 * i * s, oy + h))
-        self.parts.add(canvas.create_line(ox + (2 * i + 1) * s, oy,
-            ox + 2 * i * s, oy + h))
-      self.parts.add(canvas.create_line(ox + w, oy  + h / 2, ox + w - s, oy))
       resistor_text = create_editable_text(canvas, ox + w / 2,
           oy - RESISTOR_TEXT_PADDING, text=self.init_resistance,
           on_text_changed=self.on_resistance_changed)
     else: # vertical
-      s = h / (2 * RESISTOR_NUM_ZIG_ZAGS)
-      self.parts.add(canvas.create_line(ox + w / 2, oy, ox + w, oy + s))
-      for i in xrange(1, RESISTOR_NUM_ZIG_ZAGS):
-        self.parts.add(canvas.create_line(ox, oy + 2 * i * s, ox + w,
-            oy + (2 * i - 1) * s))
-        self.parts.add(canvas.create_line(ox, oy + 2 * i * s, ox + w,
-            oy + (2 * i + 1) * s))
-      self.parts.add(canvas.create_line(ox + w / 2, oy + h, ox + w,
-          oy + h - s))
       resistor_text = create_editable_text(canvas,
           ox + w + RESISTOR_TEXT_PADDING, oy + h / 2,
           text=self.init_resistance,
@@ -318,6 +304,39 @@ class Op_Amp_Drawable(Drawable):
       x1, y1, x2, y2, x3, y3, ox, oy = map(int, m.groups())
       board.add_drawable(Op_Amp_Drawable((x1, y1, x2, y2, x3, y3)), (ox, oy))
       return True
+    return False
+
+class Pot_Drawable(Drawable):
+  """
+  Drawable for pots.
+  """
+  def __init__(self, width=RESISTOR_HORIZONTAL_WIDTH,
+      height=RESISTOR_HORIZONTAL_HEIGHT, connectors=POT_UP_CONNECTORS):
+    """
+    TODO(mikemeko)
+    """
+    Drawable.__init__(self, width, height, connectors)
+  def draw_on(self, canvas, offset=(0, 0)):
+    ox, oy = offset
+    w, h = self.width, self.height
+    self.parts |= draw_resistor_zig_zags(canvas, ox, oy, w, h)
+    pot_alpha_window = canvas.create_rectangle(ox + (w - POT_ALPHA_WIDTH) / 2,
+        oy + (h - POT_ALPHA_HEIGHT) / 2, ox + (w + POT_ALPHA_WIDTH) / 2,
+        oy + (h + POT_ALPHA_HEIGHT) / 2, fill=POT_ALPHA_FILL,
+        outline = POT_ALPHA_OUTLINE)
+    pot_alpha_text = canvas.create_text(ox + w / 2, oy + h / 2,
+        text=POT_ALPHA_TEXT, justify=CENTER)
+    self.parts.add(pot_alpha_window)
+    self.parts.add(pot_alpha_text)
+  def rotated(self):
+    return Pot_Drawable(self.height, self.width, rotate_connector_flags(
+        self.connector_flags))
+  def serialize(self, offset):
+    # TODO(mikemeko)
+    return 'Pot'
+  @staticmethod
+  def deserialize(item_str, board):
+    # TODO(mikemeko)
     return False
 
 class Simulate_Run_Drawable(Run_Drawable):

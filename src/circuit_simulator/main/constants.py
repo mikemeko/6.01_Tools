@@ -6,6 +6,7 @@ __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
 from core.gui.constants import CONNECTOR_LEFT
 from core.gui.constants import CONNECTOR_RIGHT
+from core.gui.constants import CONNECTOR_TOP
 
 # colors
 NEGATIVE_COLOR = '#1531AE'
@@ -14,11 +15,14 @@ OP_AMP_OUTLINE = 'black'
 PIN_OUTLINE = 'black'
 PIN_TEXT_COLOR = 'white'
 POSITIVE_COLOR = '#EF002A'
+POT_ALPHA_FILL = '#63AFD0'
+POT_ALPHA_OUTLINE = '#BBB'
 RESISTOR_FILL = 'white'
 RESISTOR_OUTLINE = 'grey'
 
 # connector flags for circuit drawable components
 PIN_RIGHT_CONNECTORS = CONNECTOR_RIGHT
+POT_UP_CONNECTORS = CONNECTOR_LEFT | CONNECTOR_TOP | CONNECTOR_RIGHT
 RESISTOR_HORIZONTAL_CONNECTORS = CONNECTOR_LEFT | CONNECTOR_RIGHT
 
 # circuit drawable component constants
@@ -35,6 +39,8 @@ OP_AMP_SIGN_PADDING = 10
 PALETTE_HEIGHT = 80
 PIN_HORIZONTAL_HEIGHT = 20
 PIN_HORIZONTAL_WIDTH = 40
+POT_ALPHA_WIDTH = 12
+POT_ALPHA_HEIGHT = 12
 POWER_VOLTS = 10
 PROBE_SIZE = 20
 PROBE_INIT_PADDING = 10
@@ -48,6 +54,7 @@ APP_NAME = 'Circuit Simulator'
 DEV_STAGE = 'Pre-alpha'
 FILE_EXTENSION = '.circsim'
 GROUND = 'gnd'
+POT_ALPHA_TEXT = u'\u03B1'
 POWER = 'pwr'
 PROBE_MINUS = '-p'
 PROBE_PLUS = '+p'
