@@ -39,8 +39,8 @@ from constants import ROTATE_TAG
 from constants import SHIFT_CURSOR
 from constants import SHIFT_DOWN
 from constants import WARNING
-from core.util.undo import Action
-from core.util.undo import Action_History
+from core.undo.undo import Action
+from core.undo.undo import Action_History
 from core.util.util import is_callable
 from threading import Timer
 from Tkinter import ALL

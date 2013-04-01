@@ -8,7 +8,7 @@ python -m tests.core.data_structures.priority_queue_test
 python -m tests.core.gui.util_test
 python -m tests.core.math.equation_solver_test
 python -m tests.core.search.search_test
-python -m tests.core.util.undo_test
+python -m tests.core.undo.undo_test
 python -m tests.core.util.util_test
 python -m tests.system_simulator.simulation.poly_test
 python -m tests.system_simulator.simulation.system_function_test

@@ -21,8 +21,8 @@ from constants import RUN_RECT_SIZE
 from constants import RUN_TEXT_ACTIVE_FILL
 from constants import RUN_TEXT_FILL
 from core.save.constants import RE_INT_PAIR
-from core.util.undo import Action
-from core.util.undo import Multi_Action
+from core.undo.undo import Action
+from core.undo.undo import Multi_Action
 from re import match
 from util import create_connector
 from util import create_wire

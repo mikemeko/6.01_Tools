@@ -5,15 +5,15 @@ TODO(mikemeko): better test for Multi_Action.
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonne)'
 
-from core.util.undo import Action
-from core.util.undo import Action_History
-from core.util.undo import Multi_Action
+from core.undo.undo import Action
+from core.undo.undo import Action_History
+from core.undo.undo import Multi_Action
 from unittest import main
 from unittest import TestCase
 
 class Undo_Test(TestCase):
   """
-  Tests for core/util/undo.py.
+  Tests for core/undo/undo.py.
   """
   def setUp(self):
     self._action_history = Action_History()
