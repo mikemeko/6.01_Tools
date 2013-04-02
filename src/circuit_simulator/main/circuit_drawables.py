@@ -14,17 +14,21 @@ from constants import OP_AMP_OUTLINE
 from constants import OP_AMP_RIGHT_VERTICES
 from constants import OP_AMP_SIGN_PADDING
 from constants import OP_AMP_UP_VERTICES
+from constants import OPEN_POT_SIGNAL_FILE_TITLE
 from constants import PIN_HORIZONTAL_HEIGHT
 from constants import PIN_HORIZONTAL_WIDTH
 from constants import PIN_OUTLINE
 from constants import PIN_RIGHT_CONNECTORS
 from constants import PIN_TEXT_COLOR
 from constants import POSITIVE_COLOR
+from constants import POT_ALPHA_EMPTY_FILL
 from constants import POT_ALPHA_FILL
 from constants import POT_ALPHA_HEIGHT
 from constants import POT_ALPHA_OUTLINE
 from constants import POT_ALPHA_TEXT
 from constants import POT_ALPHA_WIDTH
+from constants import POT_SIGNAL_FILE_EXTENSION
+from constants import POT_SIGNAL_FILE_TYPE
 from constants import POT_UP_CONNECTORS
 from constants import POWER_VOLTS
 from constants import PROBE_MINUS
@@ -45,6 +49,7 @@ from core.save.constants import RE_INT
 from core.save.constants import RE_INT_PAIR
 from core.util.util import is_callable
 from re import match
+from tkFileDialog import askopenfilename
 from Tkinter import CENTER
 from util import draw_resistor_zig_zags
 
@@ -311,23 +316,36 @@ class Pot_Drawable(Drawable):
   Drawable for pots.
   """
   def __init__(self, width=RESISTOR_HORIZONTAL_WIDTH,
-      height=RESISTOR_HORIZONTAL_HEIGHT, connectors=POT_UP_CONNECTORS):
+      height=RESISTOR_HORIZONTAL_HEIGHT, connectors=POT_UP_CONNECTORS,
+      signal_file=None):
     """
     TODO(mikemeko)
     """
     Drawable.__init__(self, width, height, connectors)
+    self.signal_file = signal_file
   def draw_on(self, canvas, offset=(0, 0)):
     ox, oy = offset
     w, h = self.width, self.height
     self.parts |= draw_resistor_zig_zags(canvas, ox, oy, w, h)
     pot_alpha_window = canvas.create_rectangle(ox + (w - POT_ALPHA_WIDTH) / 2,
         oy + (h - POT_ALPHA_HEIGHT) / 2, ox + (w + POT_ALPHA_WIDTH) / 2,
-        oy + (h + POT_ALPHA_HEIGHT) / 2, fill=POT_ALPHA_FILL,
-        outline = POT_ALPHA_OUTLINE)
+        oy + (h + POT_ALPHA_HEIGHT) / 2, fill=POT_ALPHA_EMPTY_FILL,
+        outline=POT_ALPHA_OUTLINE)
     pot_alpha_text = canvas.create_text(ox + w / 2, oy + h / 2,
         text=POT_ALPHA_TEXT, justify=CENTER)
-    self.parts.add(pot_alpha_window)
-    self.parts.add(pot_alpha_text)
+    def set_signal_file(event):
+      """
+      TODO(mikemeko)
+      """
+      new_signal_file = askopenfilename(title=OPEN_POT_SIGNAL_FILE_TITLE,
+          filetypes=[('%s files' % POT_SIGNAL_FILE_TYPE,
+          POT_SIGNAL_FILE_EXTENSION)])
+      if new_signal_file:
+        self.signal_file = new_signal_file
+        canvas.itemconfig(pot_alpha_window, fill=POT_ALPHA_FILL)
+    for pot_alpha_part in (pot_alpha_window, pot_alpha_text):
+      self.parts.add(pot_alpha_part)
+      canvas.tag_bind(pot_alpha_part, '<Double-Button-1>', set_signal_file)
   def rotated(self):
     return Pot_Drawable(self.height, self.width, rotate_connector_flags(
         self.connector_flags))

@@ -16,8 +16,10 @@ class CT_Signal:
         should implement this method.
     """
     raise NotImplementedError('subclasses should implement this.')
+  def __call__(self, t):
+    return self.sample(t)
 
-class Function_CT_Signal:
+class Function_CT_Signal(CT_Signal):
   """
   CT signal with samples based on an underlying function.
   """
@@ -25,7 +27,6 @@ class Function_CT_Signal:
     """
     |f|: function used to produce samples.
     """
-    CT_Signal.__init__(self)
     self.f = f
   def sample(self, t):
     return self.f(t)
