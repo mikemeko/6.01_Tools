@@ -4,11 +4,17 @@ Proto board constants.
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
+from circuit_simulator.main.constants import POT_ALPHA_FILL
+
 # gui constants
 OP_AMP_BODY_COLOR = '#999'
 OP_AMP_DOT_COLOR = '#CCC'
 OP_AMP_DOT_OFFSET = 6
 OP_AMP_DOT_RADIUS = 4
+POT_CIRCLE_FILL = '#EEE'
+POT_CIRCLE_RADIUS = 8
+POT_FILL = POT_ALPHA_FILL
+POT_OUTLINE = 'black'
 RESISTOR_INNER_COLOR = '#777'
 RESISTOR_OUTER_COLOR = '#5DCFC3'
 

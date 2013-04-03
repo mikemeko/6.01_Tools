@@ -1,6 +1,6 @@
 """
 Representations for objects that can be placed on the proto board: op amps,
-    resistors, ... TODO(mikemeko).
+    resistors, pots ... TODO(mikemeko).
 """
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
@@ -9,6 +9,10 @@ from constants import OP_AMP_BODY_COLOR
 from constants import OP_AMP_DOT_COLOR
 from constants import OP_AMP_DOT_OFFSET
 from constants import OP_AMP_DOT_RADIUS
+from constants import POT_CIRCLE_FILL
+from constants import POT_CIRCLE_RADIUS
+from constants import POT_FILL
+from constants import POT_OUTLINE
 from constants import RESISTOR_INNER_COLOR
 from constants import RESISTOR_OUTER_COLOR
 from core.gui.util import create_circle
@@ -24,6 +28,8 @@ class Circuit_Piece:
       board. All subclasses should implement all_locs, locs_for, inverted,
       and draw_on.
   """
+  # top left location row, subclasses can changes this as needed
+  row = 6
   def __init__(self, nodes, width, height):
     """
     |nodes|: a set of the nodes this piece is connected to.
@@ -37,12 +43,6 @@ class Circuit_Piece:
     # this is set (and possibly reset) during the piece placement process, see
     #     circuit_piece_placement.py
     self.top_left_loc = None
-  def all_locs(self):
-    """
-    Should return a list of all the locations on the proto board occupied by
-        this piece. All subclasses should implement this.
-    """
-    raise NotImplementedError('subclasses should implement this')
   def locs_for(self, node):
     """
     Should return a list of all the locations of this piece associated with the
@@ -67,6 +67,15 @@ class Circuit_Piece:
     Ensures that top_left_loc is set, or throws an Exeption.
     """
     assert self.top_left_loc, 'top left location has not been set'
+  def all_locs(self):
+    """
+    Return a set of all the locations on the proto board occupied by this
+        piece.
+    """
+    self._assert_top_left_loc_set()
+    r, c = self.top_left_loc
+    return set((r + i, c + j) for i in xrange(self.height) for j in xrange(
+        self.width))
   def bbox(self):
     """
     Returns the bounding box of this piece in the form (r_min, c_min, r_max,
@@ -101,7 +110,8 @@ class Op_Amp_Piece(Circuit_Piece):
   Representation for the op amp piece.
   See: http://mit.edu/6.01/www/circuits/opAmpCkt.jpg
   """
-  def __init__(self, n_1, n_2, n_3, n_4, n_5, n_6, n_7, n_8, dot_bottom_left):
+  def __init__(self, n_1, n_2, n_3, n_4, n_5, n_6, n_7, n_8,
+      dot_bottom_left=True):
     """
     |n_1|, ..., |n_8|: the nodes for this op amp piece, see image linked above.
     |dot_bottom_left|: boolean indicating whether the dot is bottom left or
@@ -118,10 +128,6 @@ class Op_Amp_Piece(Circuit_Piece):
     self.n_7 = n_7
     self.n_8 = n_8
     self.dot_bottom_left = dot_bottom_left
-  def all_locs(self):
-    self._assert_top_left_loc_set()
-    r, c = self.top_left_loc
-    return set((r + i, c + j) for i in xrange(2) for j in xrange(4))
   def locs_for(self, node):
     self._assert_top_left_loc_set()
     r, c = self.top_left_loc
@@ -186,10 +192,6 @@ class Resistor_Piece(Circuit_Piece):
     Circuit_Piece.__init__(self, set([n_1, n_2]), 1, 2)
     self.n_1 = n_1
     self.n_2 = n_2
-  def all_locs(self):
-    self._assert_top_left_loc_set()
-    r, c = self.top_left_loc
-    return set([(r, c), (r + 1, c)])
   def locs_for(self, node):
     self._assert_top_left_loc_set()
     r, c = self.top_left_loc
@@ -214,3 +216,55 @@ class Resistor_Piece(Circuit_Piece):
         fill=RESISTOR_OUTER_COLOR)
   def __str__(self):
     return 'Resistor_Piece %s' % str([self.n_1, self.n_2])
+
+class Pot_Piece(Circuit_Piece):
+  """
+  Representation for the pot piece.
+  """
+  # top left location row
+  row = 8
+  def __init__(self, n_top, n_middle, n_bottom, directed_up=True):
+    """
+    |n_top|, |n_middle|, |n_bottom|: the terminal nodes for this pot.
+    |directed_up|: True if this pot is placed with the middle terminal facing
+        up, False otherwise (facing down).
+    """
+    assert n_top, 'invalid n_top'
+    assert n_middle, 'invalid n_middle'
+    assert n_bottom, 'invalid n_bottom'
+    Circuit_Piece.__init__(self, set([n_top, n_middle, n_bottom]), 3, 3)
+    self.n_top = n_top
+    self.n_middle = n_middle
+    self.n_bottom = n_bottom
+    self.directed_up = directed_up
+  def locs_for(self, node):
+    self._assert_top_left_loc_set()
+    r, c = self.top_left_loc
+    locs = []
+    if node == self.n_top:
+      locs.append((r + 2, c) if self.directed_up else (r, c + 2))
+    if node == self.n_middle:
+      locs.append((r, c + 1) if self.directed_up else (r + 2, c + 1))
+    if node == self.n_bottom:
+      locs.append((r + 2, c + 2) if self.directed_up else (r, c))
+    return locs
+  def inverted(self):
+    return Pot_Piece(self.n_top, self.n_middle, self.n_bottom,
+        not self.directed_up)
+  def draw_on(self, canvas, top_left):
+    x, y = top_left
+    size = 3 * CONNECTOR_SIZE + 2 * CONNECTOR_SPACING
+    offset = 2
+    canvas.create_rectangle(x - offset, y - offset, x + size + offset,
+        y + size + offset, fill=POT_FILL, outline=POT_OUTLINE)
+    create_circle(canvas, x + size / 2, y + size / 2, POT_CIRCLE_RADIUS,
+        fill=POT_CIRCLE_FILL)
+    for (r, c) in ([(0, 1), (2, 0), (2, 2)] if self.directed_up else [(0, 0),
+        (0, 2), (2, 1)]):
+      pin_x = x + c * (CONNECTOR_SIZE + CONNECTOR_SPACING)
+      pin_y = y + r * (CONNECTOR_SIZE + CONNECTOR_SPACING)
+      canvas.create_rectangle(pin_x, pin_y, pin_x + CONNECTOR_SIZE,
+          pin_y + CONNECTOR_SIZE, fill='#777', outline='black')
+  def __str__(self):
+    return 'Pot_Piece %s %s' % (str([self.n_top, self.n_middle,
+        self.n_bottom]), self.directed_up)

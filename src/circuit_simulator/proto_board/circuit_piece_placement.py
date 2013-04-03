@@ -93,7 +93,7 @@ def set_locations(pieces):
   # put the pieces as much at the center of the proto board as possible
   col = (PROTO_BOARD_WIDTH - sum(piece.width + 2 for piece in pieces)) / 2 + 1
   for piece in pieces:
-    piece.top_left_loc = (6, col)
+    piece.top_left_loc = (piece.row, col)
     col += piece.width + 2
 
 def cost(placement):
