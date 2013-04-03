@@ -12,6 +12,8 @@ def draw_resistor_zig_zags(canvas, ox, oy, w, h):
   """
   Draws resistor zig zags on the given |canvas| at the given offset (|ox|,
       |oy|). The width |w| and height |h| are used to determine orientation.
+  Returns a set containing the canvas ids of the lines used to draw the zig
+      zag.
   """
   parts = set()
   parts.add(canvas.create_rectangle(ox, oy, ox + w, oy + h, fill=RESISTOR_FILL,

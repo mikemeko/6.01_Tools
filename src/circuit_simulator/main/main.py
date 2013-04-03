@@ -112,13 +112,15 @@ if __name__ == '__main__':
     request_save()
     # open a new board
     deserializers = (Power_Drawable, Ground_Drawable, Probe_Plus_Drawable,
-        Probe_Minus_Drawable, Resistor_Drawable, Op_Amp_Drawable,
+        Probe_Minus_Drawable, Resistor_Drawable, Op_Amp_Drawable, Pot_Drawable,
         Wire_Connector_Drawable, Wire)
     new_file_name = open_board(board, file_name, deserializers, APP_NAME,
         FILE_EXTENSION)
     if new_file_name:
       # update to new file name
       file_name = new_file_name
+      # TODO(mikemeko): this is a bit hacky, put here to update the title
+      on_changed(False)
   def new_file():
     """
     Opens a new board.
@@ -154,7 +156,7 @@ if __name__ == '__main__':
       probe_samples.append(solution[probe_plus] - solution[probe_minus])
     # show stem plot
     stem(t_samples, probe_samples)
-    xlabel('t = nT')
+    xlabel('t')
     ylabel('Probe Voltage Difference')
     show()
   def proto_board_layout(circuit, probe_plus, probe_minus):
@@ -179,7 +181,8 @@ if __name__ == '__main__':
   palette.add_drawable_type(Ground_Drawable, LEFT, None)
   palette.add_drawable_type(Resistor_Drawable, LEFT, None,
       on_resistance_changed=lambda: board.set_changed(True))
-  palette.add_drawable_type(Pot_Drawable, LEFT, None)
+  palette.add_drawable_type(Pot_Drawable, LEFT, None,
+      on_signal_file_changed=lambda: board.set_changed(True))
   palette.add_drawable_type(Op_Amp_Drawable, LEFT, None)
   # add buttons to analyze circuit
   palette.add_drawable_type(Simulate_Run_Drawable, RIGHT,

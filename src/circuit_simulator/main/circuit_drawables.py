@@ -27,9 +27,12 @@ from constants import POT_ALPHA_HEIGHT
 from constants import POT_ALPHA_OUTLINE
 from constants import POT_ALPHA_TEXT
 from constants import POT_ALPHA_WIDTH
+from constants import POT_DIRECTION_DOWN
+from constants import POT_DIRECTION_LEFT
+from constants import POT_DIRECTION_RIGHT
+from constants import POT_DIRECTION_UP
 from constants import POT_SIGNAL_FILE_EXTENSION
 from constants import POT_SIGNAL_FILE_TYPE
-from constants import POT_UP_CONNECTORS
 from constants import POWER_VOLTS
 from constants import PROBE_MINUS
 from constants import PROBE_PLUS
@@ -48,6 +51,7 @@ from core.gui.util import rotate_connector_flags
 from core.save.constants import RE_INT
 from core.save.constants import RE_INT_PAIR
 from core.util.util import is_callable
+from os.path import isfile
 from re import match
 from tkFileDialog import askopenfilename
 from Tkinter import CENTER
@@ -315,46 +319,95 @@ class Pot_Drawable(Drawable):
   """
   Drawable for pots.
   """
-  def __init__(self, width=RESISTOR_HORIZONTAL_WIDTH,
-      height=RESISTOR_HORIZONTAL_HEIGHT, connectors=POT_UP_CONNECTORS,
+  def __init__(self, on_signal_file_changed, width=RESISTOR_HORIZONTAL_WIDTH,
+      height=RESISTOR_HORIZONTAL_HEIGHT, direction=POT_DIRECTION_UP,
       signal_file=None):
     """
-    TODO(mikemeko)
+    |on_signal_file_changed|: function to be called when pot signal file is
+        changed.
+    |direction|: the direction of this pot, one of POT_DIRECTION_DOWN,
+        POT_DIRECTION_LEFT, POT_DIRECTION_RIGHT, or POT_DIRECTION_UP.
+    |signal_file|: the signal file associated with this pot.
     """
-    Drawable.__init__(self, width, height, connectors)
+    assert is_callable(on_signal_file_changed), ('on_signal_file_changed must '
+        'callable')
+    Drawable.__init__(self, width, height)
+    self.on_signal_file_changed = on_signal_file_changed
+    self.direction = direction
     self.signal_file = signal_file
   def draw_on(self, canvas, offset=(0, 0)):
     ox, oy = offset
     w, h = self.width, self.height
     self.parts |= draw_resistor_zig_zags(canvas, ox, oy, w, h)
+    # create button that lets user select a signal file for this pot when
+    #     right-clicked
     pot_alpha_window = canvas.create_rectangle(ox + (w - POT_ALPHA_WIDTH) / 2,
         oy + (h - POT_ALPHA_HEIGHT) / 2, ox + (w + POT_ALPHA_WIDTH) / 2,
-        oy + (h + POT_ALPHA_HEIGHT) / 2, fill=POT_ALPHA_EMPTY_FILL,
-        outline=POT_ALPHA_OUTLINE)
-    pot_alpha_text = canvas.create_text(ox + w / 2, oy + h / 2,
-        text=POT_ALPHA_TEXT, justify=CENTER)
+        oy + (h + POT_ALPHA_HEIGHT) / 2, fill=POT_ALPHA_FILL if
+        self.signal_file else POT_ALPHA_EMPTY_FILL, outline=POT_ALPHA_OUTLINE)
+    pot_alpha_text = canvas.create_text(ox + w / 2, oy + h / 2 - 1,
+        text=POT_ALPHA_TEXT, justify=CENTER, fill='white' if self.signal_file
+        else 'black')
     def set_signal_file(event):
       """
-      TODO(mikemeko)
+      Opens a window to let the user choose a signal file for this pot.
       """
       new_signal_file = askopenfilename(title=OPEN_POT_SIGNAL_FILE_TITLE,
           filetypes=[('%s files' % POT_SIGNAL_FILE_TYPE,
-          POT_SIGNAL_FILE_EXTENSION)])
-      if new_signal_file:
+          POT_SIGNAL_FILE_EXTENSION)], initialfile=self.signal_file)
+      if new_signal_file and new_signal_file != self.signal_file:
         self.signal_file = new_signal_file
         canvas.itemconfig(pot_alpha_window, fill=POT_ALPHA_FILL)
+        canvas.itemconfig(pot_alpha_text, fill='white')
+        self.on_signal_file_changed()
     for pot_alpha_part in (pot_alpha_window, pot_alpha_text):
       self.parts.add(pot_alpha_part)
-      canvas.tag_bind(pot_alpha_part, '<Double-Button-1>', set_signal_file)
+      canvas.tag_bind(pot_alpha_part, '<Button-3>', set_signal_file)
+  def draw_connectors(self, canvas, offset=(0, 0)):
+    ox, oy = offset
+    w, h = self.width, self.height
+    if self.direction == POT_DIRECTION_UP:
+      self.top_connector = self._draw_connector(canvas, (ox, oy + h / 2))
+      self.middle_connector = self._draw_connector(canvas, (ox + w / 2, oy))
+      self.bottom_connector = self._draw_connector(canvas, (ox + w,
+          oy + h / 2))
+    elif self.direction == POT_DIRECTION_RIGHT:
+      self.top_connector = self._draw_connector(canvas, (ox + w / 2, oy))
+      self.middle_connector = self._draw_connector(canvas, (ox + w,
+          oy + h / 2))
+      self.bottom_connector = self._draw_connector(canvas, (ox + w / 2,
+          oy + h))
+    elif self.direction == POT_DIRECTION_DOWN:
+      self.top_connector = self._draw_connector(canvas, (ox + w,
+          oy + h / 2))
+      self.middle_connector = self._draw_connector(canvas, (ox + w / 2,
+          oy + h))
+      self.bottom_connector = self._draw_connector(canvas, (ox, oy + h / 2))
+    elif self.direction == POT_DIRECTION_LEFT:
+      self.top_connector = self._draw_connector(canvas, (ox + w / 2, oy + h))
+      self.middle_connector = self._draw_connector(canvas, (ox, oy + h / 2))
+      self.bottom_connector = self._draw_connector(canvas, (ox + w / 2, oy))
+    else:
+      # should never get here
+      raise Exception('Invalid pot direction %s' % self.direction)
   def rotated(self):
-    return Pot_Drawable(self.height, self.width, rotate_connector_flags(
-        self.connector_flags))
+    return Pot_Drawable(self.on_signal_file_changed, self.height, self.width,
+        (self.direction + 1) % 4, self.signal_file)
   def serialize(self, offset):
-    # TODO(mikemeko)
-    return 'Pot'
+    return 'Pot %s %d %d %d %s' % (self.signal_file, self.width, self.height,
+        self.direction, str(offset))
   @staticmethod
   def deserialize(item_str, board):
-    # TODO(mikemeko)
+    m = match(r'Pot (.+) %s %s %s %s' % (RE_INT, RE_INT, RE_INT, RE_INT_PAIR),
+        item_str)
+    if m:
+      signal_file = m.group(1)
+      if not isfile(signal_file):
+        signal_file = None
+      width, height, direction, ox, oy = map(int, m.groups()[1:])
+      board.add_drawable(Pot_Drawable(lambda: board.set_changed(True), width,
+          height, direction, signal_file), (ox, oy))
+      return True
     return False
 
 class Simulate_Run_Drawable(Run_Drawable):

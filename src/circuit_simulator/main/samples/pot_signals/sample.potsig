@@ -1,9 +1,0 @@
-"""
-Sample pot signal file.
-"""
-
-from core.math.CT_signal import Function_CT_Signal
-from math import cos
-
-pot_signal = Function_CT_Signal(lambda t: cos(t))
-

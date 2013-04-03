@@ -4,20 +4,36 @@ Representation for Continuous Time (CT) signals.
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
+from core.util.util import is_callable
+from core.util.util import is_number
+
 class CT_Signal:
   """
   Representation for CT signals.
+  TODO(mikemeko): create nice means of combining CT_Signals, adding, etc.
   """
-  # TODO(mikemeko): means of combination
   @property
   def sample(t):
     """
     Returns the value of this signal at the given time |t|. Every subclass
         should implement this method.
     """
-    raise NotImplementedError('subclasses should implement this.')
+    raise NotImplementedError('subclasses should implement this')
   def __call__(self, t):
     return self.sample(t)
+
+class Constant_CT_Signal(CT_Signal):
+  """
+  Constant CT signal.
+  """
+  def __init__(self, k):
+    """
+    |k|: constant value.
+    """
+    assert is_number(k), 'k must be a number'
+    self.k = k
+  def sample(self, t):
+    return self.k
 
 class Function_CT_Signal(CT_Signal):
   """
@@ -27,6 +43,7 @@ class Function_CT_Signal(CT_Signal):
     """
     |f|: function used to produce samples.
     """
+    assert is_callable(f), 'f must be callable'
     self.f = f
   def sample(self, t):
     return self.f(t)

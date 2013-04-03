@@ -4,6 +4,7 @@ Unittests for util.py.
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonne)'
 
+from core.util.util import clip
 from core.util.util import empty
 from core.util.util import in_bounds
 from core.util.util import is_number
@@ -14,6 +15,12 @@ class Util_Test(TestCase):
   """
   Tests for util.py.
   """
+  def test_clip(self):
+    assert clip(-1, 0, 2) == 0
+    assert clip(0, 0, 2) == 0
+    assert clip(1, 0, 2) == 1
+    assert clip(2, 0, 2) == 2
+    assert clip(3, 0, 2) == 2
   def test_empty(self):
     assert empty([])
     assert not empty([22])

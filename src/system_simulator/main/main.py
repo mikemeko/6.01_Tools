@@ -109,6 +109,8 @@ if __name__ == '__main__':
     if new_file_name:
       # update to new file name
       file_name = new_file_name
+      # TODO(mikemeko): this is a bit hacky, put here to update the title
+      on_changed(False)
   def new_file():
     """
     Opens a new board.

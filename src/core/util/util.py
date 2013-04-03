@@ -4,6 +4,12 @@ Miscellaneous utility methods.
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
+def clip(val, m, M):
+  """
+  Clips |val| between minimum |m| and maximum |M|.
+  """
+  return min(max(val, m), M)
+
 def empty(items):
   """
   Returns True if |items| is empty, False otherwise.

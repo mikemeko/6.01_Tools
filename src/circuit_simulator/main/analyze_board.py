@@ -6,12 +6,14 @@ __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
 from circuit_drawables import Ground_Drawable
 from circuit_drawables import Op_Amp_Drawable
+from circuit_drawables import Pot_Drawable
 from circuit_drawables import Power_Drawable
 from circuit_drawables import Probe_Minus_Drawable
 from circuit_drawables import Probe_Plus_Drawable
 from circuit_drawables import Resistor_Drawable
 from circuit_simulator.simulation.circuit import Circuit
 from circuit_simulator.simulation.circuit import Op_Amp
+from circuit_simulator.simulation.circuit import Pot
 from circuit_simulator.simulation.circuit import Resistor
 from circuit_simulator.simulation.circuit import Voltage_Source
 from constants import GROUND
@@ -141,6 +143,36 @@ def run_analysis(board, analyze):
           minus_nodes[0], out_nodes[0], GROUND))
       circuit_components.append(Op_Amp(na1, na2, current_name(drawable, na1,
           na2), nb1, nb2, current_name(drawable, nb1, nb2)))
+    # pot component
+    elif isinstance(drawable, Pot_Drawable):
+      if not drawable.signal_file:
+        board.display_message('No signal file loaded for Pot', ERROR)
+        return
+      pot_variables = {'pot_r': None, 'pot_signal': None}
+      execfile(drawable.signal_file, pot_variables)
+      if not pot_variables['pot_r'] or not pot_variables['pot_signal']:
+        board.display_message('Invalid Pot signal file', ERROR)
+        return
+      top_nodes = [wire.label for wire in drawable.top_connector.wires()]
+      if len(top_nodes) != 1:
+        board.display_message('Pot top node must be connected to 1 wire',
+            ERROR)
+        return
+      middle_nodes = [wire.label for wire in drawable.middle_connector.wires()]
+      if len(middle_nodes) != 1:
+        board.display_message('Pot middle node must be connected to 1 wire',
+            ERROR)
+        return
+      bottom_nodes = [wire.label for wire in drawable.bottom_connector.wires()]
+      if len(bottom_nodes) != 1:
+        board.display_message('Pot bottom node must be connected to 1 wire',
+            ERROR)
+        return
+      n_top, n_middle, n_bottom = map(maybe_rename_node, (top_nodes[0],
+          middle_nodes[0], bottom_nodes[0]))
+      circuit_components.append(Pot(n_top, n_middle, n_bottom, current_name(
+          drawable, n_top, n_middle), current_name(drawable, n_middle,
+          n_bottom), pot_variables['pot_r'], pot_variables['pot_signal']))
   # make sure both of the probes are present
   if not probe_plus and not probe_minus:
     board.display_message('No probes', WARNING)
