@@ -160,8 +160,15 @@ class Proto_Board_Visualizer(Frame):
       fill = WIRE_COLORS[length]
     elif 10 <= length < 50:
       fill = WIRE_COLORS[(length + 9) / 10]
-    self._canvas.create_rectangle(x_1, y_1, x_2 + CONNECTOR_SIZE,
-        y_2 + CONNECTOR_SIZE, fill=fill, outline=WIRE_OUTLINE)
+    def draw_wire(wire_id=None):
+      if wire_id:
+        self._canvas.delete(wire_id)
+      new_wire_id = self._canvas.create_rectangle(x_1, y_1,
+          x_2 + CONNECTOR_SIZE, y_2 + CONNECTOR_SIZE, fill=fill,
+          outline=WIRE_OUTLINE)
+      self._canvas.tag_bind(new_wire_id, '<Button-1>', lambda event: draw_wire(
+        new_wire_id))
+    draw_wire()
   def _draw_wires(self):
     """
     Draws all the wires on the proto board.
