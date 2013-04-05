@@ -13,6 +13,7 @@ from constants import POT_CIRCLE_FILL
 from constants import POT_CIRCLE_RADIUS
 from constants import POT_FILL
 from constants import POT_OUTLINE
+from constants import PROTO_BOARD_HEIGHT
 from constants import RESISTOR_INNER_COLOR
 from constants import RESISTOR_OUTER_COLOR
 from core.gui.util import create_circle
@@ -29,7 +30,7 @@ class Circuit_Piece:
       and draw_on.
   """
   # top left location row, subclasses can changes this as needed
-  row = 6
+  row = PROTO_BOARD_HEIGHT / 2 - 1
   def __init__(self, nodes, width, height):
     """
     |nodes|: a set of the nodes this piece is connected to.
@@ -222,7 +223,7 @@ class Pot_Piece(Circuit_Piece):
   Representation for the pot piece.
   """
   # top left location row
-  row = 8
+  row = PROTO_BOARD_HEIGHT / 2 + 1
   def __init__(self, n_top, n_middle, n_bottom, directed_up=True):
     """
     |n_top|, |n_middle|, |n_bottom|: the terminal nodes for this pot.
