@@ -5,10 +5,10 @@ Search to find proto board wiring to connect a given list of pairs of locations
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
+from constants import ALLOW_CROSSING_WIRES
 from constants import DEBUG
 from constants import DEBUG_SHOW_COST
 from constants import DEBUG_SHOW_PROFILE
-from constants import MAYBE_ALLOW_CROSSING_WIRES
 from constants import PROTO_BOARD_MIDDLE
 from constants import RAIL_ROWS
 from constants import ROWS
@@ -105,7 +105,7 @@ class Proto_Board_Search_Node(Search_Node):
             crosses_wires = any(wire.crosses(new_wire) for wire in
                 proto_board.get_wires())
             # continue if we do not want to allow crossing wires
-            if crosses_wires and not MAYBE_ALLOW_CROSSING_WIRES:
+            if crosses_wires and not ALLOW_CROSSING_WIRES:
               continue
             new_proto_board = proto_board.with_wire(new_wire)
             # make sure that the wire doesn't (1) connect things we want to
@@ -115,8 +115,6 @@ class Proto_Board_Search_Node(Search_Node):
               continue
             # we have a candidate proto board, compute state and cost
             new_loc_pairs = list(loc_pairs)
-            # TODO(mikemeko): this can probably be improved, along with
-            #     heuristic :)
             new_cost = self.cost
             if new_proto_board.connected(loc_1, loc_2):
               new_loc_pairs.pop(i)
@@ -127,9 +125,13 @@ class Proto_Board_Search_Node(Search_Node):
             # penalize long wires
             new_cost += 5 * new_wire.length()
             # penalize many wires
-            new_cost += 10
+            new_cost += 1
             # penalize crossing wires (if allowed at all)
-            new_cost += 60 * crosses_wires
+            # TODO(mikemeko): prefer certain kinds of crossings over others?
+            new_cost += 100 * crosses_wires
+            # favor wires that get us close to the goal, and penalize wires
+            #     that get us farther away
+            new_cost += dist(wire_end, loc_2) - dist(loc_1, loc_2)
             # favor keeping horizontal wires close to circuit pieces
             new_cost += new_wire.horizontal() * abs(new_wire.r_1 -
                 PROTO_BOARD_MIDDLE)
@@ -150,7 +152,6 @@ def heuristic(state):
   """
   Returns an estimate of the distance between the given Proto_Board_Search_Node
       |state| and a goal state.
-  TODO(mikemeko): better heuristic, the right one might really do the trick :)
   """
   proto_board, loc_pairs = state
   return sum(dist(loc_1, loc_2) for loc_1, loc_2 in loc_pairs)

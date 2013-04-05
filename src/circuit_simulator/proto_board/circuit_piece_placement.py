@@ -9,6 +9,7 @@ from circuit_pieces import Circuit_Piece
 # TODO(mikemeko): this is kind of hacky, coupled with board parsing
 from circuit_simulator.main.constants import GROUND
 from circuit_simulator.main.constants import POWER
+from constants import CIRCUIT_PIECE_SEPARATION
 from constants import GROUND_RAIL
 from constants import POWER_RAIL
 from constants import PROTO_BOARD_WIDTH
@@ -91,10 +92,11 @@ def set_locations(pieces):
   TODO(mikemeko): can we do better?
   """
   # put the pieces as much at the center of the proto board as possible
-  col = (PROTO_BOARD_WIDTH - sum(piece.width + 2 for piece in pieces)) / 2 + 1
+  col = (PROTO_BOARD_WIDTH - sum(piece.width + CIRCUIT_PIECE_SEPARATION for
+      piece in pieces)) / 2 + 1
   for piece in pieces:
     piece.top_left_loc = (piece.row, col)
-    col += piece.width + 2
+    col += piece.width + CIRCUIT_PIECE_SEPARATION
 
 def cost(placement):
   """
