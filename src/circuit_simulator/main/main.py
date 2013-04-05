@@ -39,7 +39,8 @@ from core.gui.constants import RIGHT
 from core.gui.constants import ERROR
 from core.gui.constants import WARNING
 from core.gui.palette import Palette
-from core.save.save import open_board
+from core.save.save import get_board_file_name
+from core.save.save import open_board_from_file
 from core.save.save import request_save_board
 from core.save.save import save_board
 from core.save.util import strip_file_name
@@ -47,6 +48,7 @@ from pylab import show
 from pylab import stem
 from pylab import xlabel
 from pylab import ylabel
+from sys import argv
 from Tkinter import Menu
 from Tkinter import Tk
 from Tkinter import Toplevel
@@ -102,7 +104,7 @@ if __name__ == '__main__':
     global board
     if board.changed() and request_save_board():
       save_file()
-  def open_file():
+  def open_file(new_file_name=None):
     """
     Opens a saved board.
     """
@@ -110,16 +112,17 @@ if __name__ == '__main__':
     global file_name
     # if the board has been changed, request save first
     request_save()
-    # open a new board
+    # get a new file name if not given
+    new_file_name = new_file_name or get_board_file_name(file_name,
+        APP_NAME, FILE_EXTENSION)
+    # open a new board with the new file name
     deserializers = (Power_Drawable, Ground_Drawable, Probe_Plus_Drawable,
-        Probe_Minus_Drawable, Resistor_Drawable, Op_Amp_Drawable, Pot_Drawable,
-        Wire_Connector_Drawable, Wire)
-    new_file_name = open_board(board, file_name, deserializers, APP_NAME,
-        FILE_EXTENSION)
-    if new_file_name:
+        Probe_Minus_Drawable, Resistor_Drawable, Op_Amp_Drawable,
+        Pot_Drawable, Wire_Connector_Drawable, Wire)
+    if open_board_from_file(board, new_file_name, deserializers,
+        FILE_EXTENSION):
       # update to new file name
       file_name = new_file_name
-      # TODO(mikemeko): this is a bit hacky, put here to update the title
       on_changed(False)
   def new_file():
     """
@@ -222,5 +225,8 @@ if __name__ == '__main__':
   board.clear_action_history()
   # set title
   root.title('%s (%s)' % (APP_NAME, DEV_STAGE))
+  # open starting file, if given
+  if len(argv) > 1:
+    open_file(argv[1])
   # run main loop
   root.mainloop()

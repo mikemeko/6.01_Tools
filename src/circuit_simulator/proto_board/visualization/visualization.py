@@ -167,7 +167,7 @@ class Proto_Board_Visualizer(Frame):
           x_2 + CONNECTOR_SIZE, y_2 + CONNECTOR_SIZE, fill=fill,
           outline=WIRE_OUTLINE)
       self._canvas.tag_bind(new_wire_id, '<Button-1>', lambda event: draw_wire(
-        new_wire_id))
+          new_wire_id))
     draw_wire()
   def _draw_wires(self):
     """
