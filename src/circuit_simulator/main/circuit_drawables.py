@@ -52,6 +52,7 @@ from core.save.constants import RE_INT
 from core.save.constants import RE_INT_PAIR
 from core.util.util import is_callable
 from os.path import isfile
+from os.path import relpath
 from re import match
 from tkFileDialog import askopenfilename
 from Tkinter import CENTER
@@ -356,7 +357,7 @@ class Pot_Drawable(Drawable):
           filetypes=[('%s files' % POT_SIGNAL_FILE_TYPE,
           POT_SIGNAL_FILE_EXTENSION)], initialfile=self.signal_file)
       if new_signal_file and new_signal_file != self.signal_file:
-        self.signal_file = new_signal_file
+        self.signal_file = relpath(new_signal_file)
         canvas.itemconfig(pot_alpha_window, fill=POT_ALPHA_FILL)
         canvas.itemconfig(pot_alpha_text, fill='white')
         self.on_signal_file_changed()
