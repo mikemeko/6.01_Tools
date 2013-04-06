@@ -13,12 +13,21 @@ from constants import CIRCUIT_PIECE_SEPARATION
 from constants import GROUND_RAIL
 from constants import POWER_RAIL
 from constants import PROTO_BOARD_WIDTH
-from constants import RAIL_ILLEGAL_COLUMNS
+from constants import RAIL_LEGAL_COLUMNS
+from constants import RAIL_ROWS
 from copy import deepcopy
 from core.data_structures.disjoint_set_forest import Disjoint_Set_Forest
 from core.data_structures.queue import Queue
 from sys import maxint
 from util import dist
+
+def closest_rail_loc(loc, rail_r):
+  """
+  Returns the closest rail location in row |rail_r| to the location |loc|.
+  """
+  assert rail_r in RAIL_ROWS, 'rail_r must be a rail row'
+  r, c = loc
+  return (rail_r, min(RAIL_LEGAL_COLUMNS, key=lambda col: abs(c - col)))
 
 def loc_pairs_for_node(node_locs, node):
   """
@@ -30,6 +39,9 @@ def loc_pairs_for_node(node_locs, node):
       in the circuit, it is used to connect power and ground nodes to the
       appropriate rail on the proto board.
   """
+  if node == GROUND or node == POWER:
+    return [(loc, closest_rail_loc(loc, GROUND_RAIL if node == GROUND else
+        POWER_RAIL)) for loc in node_locs]
   # find all possible pairs of locations
   all_loc_pairs = [(loc_1, loc_2) for i, loc_1 in enumerate(node_locs) for
       loc_2 in node_locs[i + 1:]]
@@ -47,19 +59,6 @@ def loc_pairs_for_node(node_locs, node):
         disjoint_loc_pair_sets.find_set(loc_2)):
       disjoint_loc_pair_sets.union(loc_1, loc_2)
       mst_loc_pairs.append((loc_1, loc_2))
-  # connect nodes with ground or power rail if necessary
-  if node == GROUND or node == POWER:
-    # pick a location to connect to the appropriate rail
-    # prefer a location that doesn't have many connactions and that has a
-    #     direct path to the rail (instead of requiring 2 wires)
-    lazy_loc = min(node_locs, key=lambda loc: sum((loc in loc_pair) for
-        loc_pair in mst_loc_pairs) + 10 * (loc[1] in RAIL_ILLEGAL_COLUMNS))
-    r, c = lazy_loc
-    # if c is not a valid rail column, add or subtract 1 from it
-    if c in RAIL_ILLEGAL_COLUMNS:
-      c += 2 * (c < PROTO_BOARD_WIDTH / 2) - 1
-    mst_loc_pairs.append((lazy_loc, (GROUND_RAIL if node == GROUND else
-        POWER_RAIL, c)))
   return mst_loc_pairs
 
 def locs_for_node(pieces, node):
