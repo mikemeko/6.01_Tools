@@ -29,8 +29,9 @@ class Circuit_Piece:
       board. All subclasses should implement all_locs, locs_for, inverted,
       and draw_on.
   """
-  # top left location row, subclasses can changes this as needed
-  row = PROTO_BOARD_HEIGHT / 2 - 1
+  # top left location row possibilities, subclasses can changes this as needed
+  # default puts piece in the middle strip of the proto board
+  possible_top_left_rows = [PROTO_BOARD_HEIGHT / 2 - 1]
   def __init__(self, nodes, width, height):
     """
     |nodes|: a set of the nodes this piece is connected to.
@@ -222,8 +223,7 @@ class Pot_Piece(Circuit_Piece):
   """
   Representation for the pot piece.
   """
-  # top left location row
-  row = PROTO_BOARD_HEIGHT / 2 + 1
+  possible_top_left_rows = [3, PROTO_BOARD_HEIGHT / 2 + 1]
   def __init__(self, n_top, n_middle, n_bottom, directed_up=True):
     """
     |n_top|, |n_middle|, |n_bottom|: the terminal nodes for this pot.

@@ -94,7 +94,7 @@ def set_locations(pieces):
   col = (PROTO_BOARD_WIDTH - sum(piece.width + CIRCUIT_PIECE_SEPARATION for
       piece in pieces)) / 2 + 1
   for piece in pieces:
-    piece.top_left_loc = (piece.row, col)
+    piece.top_left_loc = (piece.top_left_row, col)
     col += piece.width + CIRCUIT_PIECE_SEPARATION
 
 def cost(placement):
@@ -112,7 +112,7 @@ def find_placement(pieces):
   """
   Given a list of |pieces|, returns a placement of the pieces that requires
       comparatively small wiring. Finding the absolute best placement is too
-      expensive. All pieces are placed in the middle strip of the proto board.
+      expensive.
   """
   assert isinstance(pieces, list), 'pieces must be a list'
   assert all(isinstance(piece, Circuit_Piece) for piece in pieces), ('all '
@@ -139,12 +139,14 @@ def find_placement(pieces):
       for i in xrange(len(placement) + 1):
         # both regular and inverted piece
         for piece in [current_piece, current_piece.inverted()]:
-          new_placement = deepcopy(placement)
-          new_placement.insert(i, piece)
-          new_placement_cost = cost(new_placement)
-          if new_placement_cost < best_placement_cost:
-            best_placement = deepcopy(new_placement)
-            best_placement_cost = new_placement_cost
+          for top_left_row in piece.possible_top_left_rows:
+            piece.top_left_row = top_left_row
+            new_placement = deepcopy(placement)
+            new_placement.insert(i, piece)
+            new_placement_cost = cost(new_placement)
+            if new_placement_cost < best_placement_cost:
+              best_placement = deepcopy(new_placement)
+              best_placement_cost = new_placement_cost
       placement = best_placement
       placement_cost = best_placement_cost
       # add pieces connected to this piece to the queue
