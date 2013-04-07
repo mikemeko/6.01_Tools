@@ -1,6 +1,8 @@
 """
 Search to find proto board wiring to connect a given list of pairs of locations
     on the proto board.
+TODO(mikemeko): certain wire crossings (basically same shape crossings) should
+    probably not be allowed at all.
 """
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'

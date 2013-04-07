@@ -44,24 +44,23 @@ class Proto_Board:
     """
     for piece in self._pieces:
       yield piece
-  def _connected(self, loc_1, loc_2, visited=set()):
+  def _connected(self, loc_1, loc_2, visited):
     """
     Helper for self.connected, see below.
     """
     if loc_1 in visited:
       return False
     group = set(section_locs(loc_1))
-    group_links = set(self._wire_mappings[loc] for loc in group
-        if loc in self._wire_mappings)
-    return loc_2 in group or any(self._connected(new_loc_1, loc_2,
-        visited | group) for new_loc_1 in group_links)
+    new_visited = visited | group
+    return loc_2 in group or any(map(lambda new_loc_1: self._connected(
+        new_loc_1, loc_2, new_visited), (self._wire_mappings[loc] for loc in
+        group if loc in self._wire_mappings)))
   def connected(self, loc_1, loc_2):
     """
     Returns True if |loc_1| and |loc_2| are connected by wires, False
         otherwise.
-    TODO(mikemeko): make this more efficient
     """
-    return self._connected(loc_1, loc_2)
+    return self._connected(loc_1, loc_2, set())
   def with_loc_disjoint_set_forest(self, loc_disjoint_set_forest):
     """
     Returns a copy of this board with a new forest of disjoint location sets to
