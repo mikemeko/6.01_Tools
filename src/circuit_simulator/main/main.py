@@ -26,6 +26,8 @@ from circuit_simulator.proto_board.proto_board import Proto_Board
 from circuit_simulator.proto_board.visualization.visualization import (
     visualize_proto_board)
 from constants import APP_NAME
+from constants import BOARD_HEIGHT
+from constants import BOARD_WIDTH
 from constants import DEV_STAGE
 from constants import FILE_EXTENSION
 from constants import PALETTE_HEIGHT
@@ -175,11 +177,11 @@ if __name__ == '__main__':
     proto_board = find_wiring(loc_pairs_to_connect(placement), proto_board)
     visualize_proto_board(proto_board, Toplevel())
   # create empty board
-  board = Board(root, directed_wires=False, on_changed=on_changed,
-      on_exit=request_save)
+  board = Board(root, width=BOARD_WIDTH, height=BOARD_HEIGHT,
+      directed_wires=False, on_changed=on_changed, on_exit=request_save)
   init_board()
   # create palette
-  palette = Palette(root, board, height=PALETTE_HEIGHT)
+  palette = Palette(root, board, width=BOARD_WIDTH, height=PALETTE_HEIGHT)
   # add circuit components to palette
   palette.add_drawable_type(Power_Drawable, LEFT, None)
   palette.add_drawable_type(Ground_Drawable, LEFT, None)

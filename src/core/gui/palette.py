@@ -6,6 +6,7 @@ __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
 from board import Board
 from components import Drawable
+from constants import BOARD_GRID_SEPARATION
 from constants import PALETTE_BACKGROUND_COLOR
 from constants import PALETTE_HEIGHT
 from constants import PALETTE_PADDING
@@ -92,6 +93,8 @@ class Palette(Frame):
       offset_x = self.current_left_x + PALETTE_PADDING
       self.current_left_x += PALETTE_PADDING + display.width + PALETTE_PADDING
     offset_y = (self.height - display.height) / 2
+    if offset_y % BOARD_GRID_SEPARATION:
+      offset_y = (offset_y / BOARD_GRID_SEPARATION) * BOARD_GRID_SEPARATION
     offset = (offset_x, offset_y)
     display.draw_on(self.canvas, offset)
     display.draw_connectors(self.canvas, offset)
