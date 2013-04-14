@@ -75,5 +75,8 @@ BOARD_WIDTH = 800
 BOARD_HEIGHT = 500
 PALETTE_HEIGHT = 100
 
+# physical constants
+MOTOR_RESISTANCE = 5 # TODO(mikemeko): verify this with measurements
+
 # regular expressions
 RE_OP_AMP_VERTICES = r'\((\d+), (\d+), (\d+), (\d+), (\d+), (\d+)\)'

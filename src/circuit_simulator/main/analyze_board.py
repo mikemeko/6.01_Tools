@@ -5,6 +5,7 @@ Contains the method to analyze the circuit drawn on a board.
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
 from circuit_drawables import Ground_Drawable
+from circuit_drawables import Motor_Connector_Drawable
 from circuit_drawables import Op_Amp_Drawable
 from circuit_drawables import Pot_Drawable
 from circuit_drawables import Power_Drawable
@@ -16,13 +17,86 @@ from circuit_simulator.simulation.circuit import Op_Amp
 from circuit_simulator.simulation.circuit import Pot
 from circuit_simulator.simulation.circuit import Resistor
 from circuit_simulator.simulation.circuit import Voltage_Source
+from circuit_simulator.simulation.constants import T
 from constants import GROUND
+from constants import MOTOR_RESISTANCE
 from constants import POWER
 from constants import POWER_VOLTS
 from core.gui.board import Board
 from core.gui.constants import ERROR
 from core.gui.constants import WARNING
-from core.util.util import is_callable
+from pylab import figure
+from pylab import show
+from pylab import stem
+from pylab import xlabel
+from pylab import ylabel
+
+class Plotter:
+  """
+  TODO(mikemeko)
+  """
+  def plot(self, board, data):
+    """
+    TODO(mikemeko)
+    """
+    raise NotImplementedError('subclasses should implement this')
+
+class Probe_Plotter:
+  """
+  TODO(mikemeko)
+  """
+  def __init__(self, probe_plus, probe_minus):
+    """
+    TODO(mikemeko)
+    """
+    self.probe_plus = probe_plus
+    self.probe_minus = probe_minus
+  def plot(self, board, data):
+    # record samples of the voltage difference accross the probes
+    t_samples, probe_samples = [], []
+    for t, solution in data.items():
+      # ensure that the probes are in the solved circuits
+      if self.probe_plus not in solution:
+        board.display_message('+probe is disconnected from circuit', WARNING)
+        return
+      elif self.probe_minus not in solution:
+        board.display_message('-probe is disconnected from circuit', WARNING)
+        return
+      t_samples.append(t)
+      probe_samples.append(
+          solution[self.probe_plus] - solution[self.probe_minus])
+    # show stem plot
+    xlabel('t')
+    ylabel('Probe Voltage Difference')
+    stem(t_samples, probe_samples)
+
+class Motor_Plotter:
+  """
+  TODO(mikemeko)
+  """
+  def __init__(self, n1, n2):
+    """
+    TODO(mikemeko)
+    """
+    self.n1 = n1
+    self.n2 = n2
+  def plot(self, board, data):
+    t_samples, angle_samples, velocity_samples = [], [0], []
+    for t, solution in sorted(data.items(), key=lambda (t, sol): t):
+      if self.n1 not in solution or self.n2 not in solution:
+        board.display_message('Motor resistor disconnected from circuit',
+            ERROR)
+        return
+      t_samples.append(t)
+      velocity_samples.append(solution[self.n1] - solution[self.n2])
+      angle_samples.append(angle_samples[-1] + T * velocity_samples[-1])
+    xlabel('t')
+    ylabel('Motor angle')
+    stem(t_samples, angle_samples[:-1])
+    figure()
+    xlabel('t')
+    ylabel('Motor velocity')
+    stem(t_samples, velocity_samples)
 
 def current_name(drawable, n1, n2):
   """
@@ -31,19 +105,21 @@ def current_name(drawable, n1, n2):
   """
   return '%d %s->%s' % (id(drawable), n1, n2)
 
-def run_analysis(board, analyze):
+def run_analysis(board):
   """
   Extracts a Circuit object from what is drawn on the given |board| and calls
       the given function |analyze| on it. The funtion |analyze| should take as
       arguments the circuit, as well as the labels for the positive and
       negative probe, in that order.
+  TODO(mikemeko): update
   """
   assert isinstance(board, Board), 'board must be a Board'
-  assert is_callable(analyze), 'analyze must be callable'
   # remove current message on board, if any
   board.remove_message()
   # components in the circuit
   circuit_components = []
+  # analysis plotters
+  plotters = []
   # first identify all power and ground nodes and use the same name for all
   #     power nodes, as well as the same name for all ground nodes
   power_nodes, ground_nodes = set(), set()
@@ -173,6 +249,22 @@ def run_analysis(board, analyze):
       circuit_components.append(Pot(n_top, n_middle, n_bottom, current_name(
           drawable, n_top, n_middle), current_name(drawable, n_middle,
           n_bottom), pot_variables['pot_r'], pot_variables['pot_signal']))
+    # motor connector component
+    elif isinstance(drawable, Motor_Connector_Drawable):
+      pin_5_nodes = [wire.label for wire in drawable.n_connectors[4].wires()]
+      if len(pin_5_nodes) != 1:
+        board.display_message('Motor connector pin 5 must be connected to 1 '
+            'wire', ERROR)
+        return
+      pin_6_nodes = [wire.label for wire in drawable.n_connectors[5].wires()]
+      if len(pin_6_nodes) != 1:
+        board.display_message('Motor connector pin 6 must be connected to 1 '
+            'wire', ERROR)
+        return
+      n1, n2 = map(maybe_rename_node, (pin_5_nodes[0], pin_6_nodes[0]))
+      circuit_components.append(Resistor(n1, n2, current_name(drawable, n1,
+          n2), MOTOR_RESISTANCE))
+      plotters.append(Motor_Plotter(n1, n2))
   # make sure both of the probes are present
   if not probe_plus and not probe_minus:
     board.display_message('No probes', WARNING)
@@ -181,6 +273,16 @@ def run_analysis(board, analyze):
   elif not probe_minus:
     board.display_message('No -probe', WARNING)
   else:
-    # create and analyze circuit
+    # create circuit
     circuit = Circuit(circuit_components, GROUND)
-    analyze(circuit, probe_plus, probe_minus)
+    # ensure that circuit was successfully solved
+    if circuit.data:
+      # add probe plotter to list of plotters
+      plotters.append(Probe_Plotter(probe_plus, probe_minus))
+      # show analysis plots
+      for i, plotter in enumerate(plotters):
+        figure()
+        plotter.plot(board, circuit.data)
+      show()
+    else:
+      board.display_message('Could not solve circuit', ERROR)

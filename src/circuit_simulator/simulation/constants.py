@@ -8,8 +8,8 @@ __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 OP_AMP_K = 1000000000
 
 # sampling constants
-NUM_SAMPLES = 50
-T = 1 # sampling periond
+NUM_SAMPLES = 80
+T = 0.01 # sampling periond
 
 # debugging
 DEBUG = True
