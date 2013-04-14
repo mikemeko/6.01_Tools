@@ -73,6 +73,8 @@ class Probe_Plotter:
 class Motor_Plotter:
   """
   TODO(mikemeko)
+  TODO(mikemeko): calibrate correctly with measurements. Don't forget to cap
+      minimum and maximum possible motor angle.
   """
   def __init__(self, n1, n2):
     """

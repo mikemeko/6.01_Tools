@@ -491,11 +491,15 @@ class Motor_Connector_Drawable(N_Pin_Connector_Drawable):
   def rotated(self):
     return Motor_Connector_Drawable(direction=(self.direction + 1) % 4)
   def serialize(self, offset):
-    # TODO(mikemeko)
-    pass
+    return 'Motor connector %d %s' % (self.direction, str(offset))
+  @staticmethod
   def deserialize(item_str, board):
-    # TODO(mikemeko)
-    pass
+    m = match(r'Motor connector %s %s' % (RE_INT, RE_INT_PAIR), item_str)
+    if m:
+      direction, ox, oy = map(int, m.groups())
+      board.add_drawable(Motor_Connector_Drawable(direction), (ox, oy))
+      return True
+    return False
 
 class Simulate_Run_Drawable(Run_Drawable):
   """

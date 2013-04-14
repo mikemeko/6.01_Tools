@@ -115,7 +115,7 @@ if __name__ == '__main__':
     # open a new board with the new file name
     deserializers = (Power_Drawable, Ground_Drawable, Probe_Plus_Drawable,
         Probe_Minus_Drawable, Resistor_Drawable, Op_Amp_Drawable,
-        Pot_Drawable, Wire_Connector_Drawable, Wire)
+        Pot_Drawable, Motor_Connector_Drawable, Wire_Connector_Drawable, Wire)
     if open_board_from_file(board, new_file_name, deserializers,
         FILE_EXTENSION):
       # update to new file name
