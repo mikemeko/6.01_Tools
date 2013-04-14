@@ -330,8 +330,8 @@ class Pot_Drawable(Drawable):
     """
     |on_signal_file_changed|: function to be called when pot signal file is
         changed.
-    |direction|: the direction of this pot, one of POT_DIRECTION_DOWN,
-        POT_DIRECTION_LEFT, POT_DIRECTION_RIGHT, or POT_DIRECTION_UP.
+    |direction|: the direction of this pot, one of DIRECTION_DOWN,
+        DIRECTION_LEFT, DIRECTION_RIGHT, or DIRECTION_UP.
     |signal_file|: the signal file associated with this pot.
     """
     assert is_callable(on_signal_file_changed), ('on_signal_file_changed must '
@@ -417,15 +417,23 @@ class Pot_Drawable(Drawable):
 
 class N_Pin_Connector_Drawable(Drawable):
   """
-  TODO(mikemeko)
+  Abstract Drawable for n-pin connectors.
+  TODO(mikemeko): consider "disabeling" the the connectors that are not meant
+      to be used.
   """
   def __init__(self, short_name, long_name, n, direction):
     """
-    TODO(mikemeko)
+    |short_name|, |long_name|: names, short and long, to identify this n-pin
+        connector. Two versions needed for different orientations.
+    |n|: a positive integer, the number of pins on this connector.
+    |direction|: the direction of this n-pin connector, one of DIRECTION_DOWN,
+        DIRECTION_LEFT, DIRECTION_RIGHT, or DIRECTION_UP.
     """
     assert isinstance(n, int) and n > 0, 'n must be a positive integer'
+    # width and height assuming horizontal orientation
     width = N_PIN_CONNECTOR_TEXT_SIZE + N_PIN_CONNECTOR_PER_CONNECTOR
     height = (n + 1) * N_PIN_CONNECTOR_PER_CONNECTOR
+    # switch if orientation is vertical
     if direction in (DIRECTION_UP, DIRECTION_DOWN):
       width, height = height, width
     Drawable.__init__(self, width, height)
@@ -474,16 +482,18 @@ class N_Pin_Connector_Drawable(Drawable):
     else:
       # should never get here
       raise Exception ('Invalid direction %s' % self.direction)
+    # store ordered list of connectors for easy pin lookup at analysis time
     self.n_connectors = []
     for i in xrange(self.n):
       x, y = sx + i * dx, sy + i * dy
       self.n_connectors.append(self._draw_connector(canvas, (x, y)))
+      # label pin
       self.parts.add(canvas.create_text(x + text_dx, y + text_dy,
           text=str(i + 1)))
 
 class Motor_Connector_Drawable(N_Pin_Connector_Drawable):
   """
-  TODO(mikemeko)
+  Drawable for Motor Connector.
   """
   def __init__(self, direction=DIRECTION_RIGHT):
     N_Pin_Connector_Drawable.__init__(self, 'MC', 'Motor Connector', 6,
