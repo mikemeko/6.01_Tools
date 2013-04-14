@@ -8,6 +8,7 @@ __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
 from analyze_board import run_analysis
 from circuit_drawables import Ground_Drawable
+from circuit_drawables import Motor_Connector_Drawable
 from circuit_drawables import Op_Amp_Drawable
 from circuit_drawables import Pot_Drawable
 from circuit_drawables import Power_Drawable
@@ -187,6 +188,7 @@ if __name__ == '__main__':
   palette.add_drawable_type(Pot_Drawable, LEFT, None,
       on_signal_file_changed=lambda: board.set_changed(True))
   palette.add_drawable_type(Op_Amp_Drawable, LEFT, None)
+  palette.add_drawable_type(Motor_Connector_Drawable, LEFT, None)
   # add buttons to analyze circuit
   palette.add_drawable_type(Simulate_Run_Drawable, RIGHT,
       lambda event: run_analysis(board, simulate))

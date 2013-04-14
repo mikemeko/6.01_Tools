@@ -4,7 +4,15 @@ All the Drawables for the circuit simulator.
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
+from constants import DIRECTION_DOWN
+from constants import DIRECTION_LEFT
+from constants import DIRECTION_RIGHT
+from constants import DIRECTION_UP
 from constants import GROUND
+from constants import N_PIN_CONNECTOR_FILL
+from constants import N_PIN_CONNECTOR_OUTLINE
+from constants import N_PIN_CONNECTOR_PER_CONNECTOR
+from constants import N_PIN_CONNECTOR_TEXT_SIZE
 from constants import NEGATIVE_COLOR
 from constants import OP_AMP_CONNECTOR_PADDING
 from constants import OP_AMP_DOWN_VERTICES
@@ -27,10 +35,6 @@ from constants import POT_ALPHA_HEIGHT
 from constants import POT_ALPHA_OUTLINE
 from constants import POT_ALPHA_TEXT
 from constants import POT_ALPHA_WIDTH
-from constants import POT_DIRECTION_DOWN
-from constants import POT_DIRECTION_LEFT
-from constants import POT_DIRECTION_RIGHT
-from constants import POT_DIRECTION_UP
 from constants import POT_SIGNAL_FILE_EXTENSION
 from constants import POT_SIGNAL_FILE_TYPE
 from constants import POWER_VOLTS
@@ -321,7 +325,7 @@ class Pot_Drawable(Drawable):
   Drawable for pots.
   """
   def __init__(self, on_signal_file_changed, width=RESISTOR_HORIZONTAL_WIDTH,
-      height=RESISTOR_HORIZONTAL_HEIGHT, direction=POT_DIRECTION_UP,
+      height=RESISTOR_HORIZONTAL_HEIGHT, direction=DIRECTION_UP,
       signal_file=None):
     """
     |on_signal_file_changed|: function to be called when pot signal file is
@@ -367,24 +371,24 @@ class Pot_Drawable(Drawable):
   def draw_connectors(self, canvas, offset=(0, 0)):
     ox, oy = offset
     w, h = self.width, self.height
-    if self.direction == POT_DIRECTION_UP:
+    if self.direction == DIRECTION_UP:
       self.top_connector = self._draw_connector(canvas, (ox, oy + h / 2))
       self.middle_connector = self._draw_connector(canvas, (ox + w / 2, oy))
       self.bottom_connector = self._draw_connector(canvas, (ox + w,
           oy + h / 2))
-    elif self.direction == POT_DIRECTION_RIGHT:
+    elif self.direction == DIRECTION_RIGHT:
       self.top_connector = self._draw_connector(canvas, (ox + w / 2, oy))
       self.middle_connector = self._draw_connector(canvas, (ox + w,
           oy + h / 2))
       self.bottom_connector = self._draw_connector(canvas, (ox + w / 2,
           oy + h))
-    elif self.direction == POT_DIRECTION_DOWN:
+    elif self.direction == DIRECTION_DOWN:
       self.top_connector = self._draw_connector(canvas, (ox + w,
           oy + h / 2))
       self.middle_connector = self._draw_connector(canvas, (ox + w / 2,
           oy + h))
       self.bottom_connector = self._draw_connector(canvas, (ox, oy + h / 2))
-    elif self.direction == POT_DIRECTION_LEFT:
+    elif self.direction == DIRECTION_LEFT:
       self.top_connector = self._draw_connector(canvas, (ox + w / 2, oy + h))
       self.middle_connector = self._draw_connector(canvas, (ox, oy + h / 2))
       self.bottom_connector = self._draw_connector(canvas, (ox + w / 2, oy))
@@ -410,6 +414,55 @@ class Pot_Drawable(Drawable):
           height, direction, signal_file), (ox, oy))
       return True
     return False
+
+class N_Pin_Connector_Drawable(Drawable):
+  """
+  TODO(mikemeko)
+  """
+  def __init__(self, short_name, long_name, n, direction):
+    """
+    TODO(mikemeko)
+    """
+    assert isinstance(n, int) and n > 0, 'n must be a positive integer'
+    width = N_PIN_CONNECTOR_TEXT_SIZE + N_PIN_CONNECTOR_PER_CONNECTOR
+    height = n * N_PIN_CONNECTOR_PER_CONNECTOR
+    if direction not in (DIRECTION_UP, DIRECTION_DOWN):
+      width, height = height, width
+    Drawable.__init__(self, width, height)
+    self.short_name = short_name
+    self.long_name = long_name
+    self.n = n
+    self.direction = direction
+  def draw_on(self, canvas, offset=(0, 0)):
+    ox, oy = offset
+    w, h = self.width, self.height
+    self.parts.add(canvas.create_rectangle(ox, oy, ox + w, oy + h,
+        fill=N_PIN_CONNECTOR_FILL, outline=N_PIN_CONNECTOR_OUTLINE))
+    text = self.short_name if self.direction in (DIRECTION_LEFT,
+        DIRECTION_RIGHT) else self.long_name
+    text_dx = ((self.direction == DIRECTION_LEFT) - (self.direction ==
+        DIRECTION_RIGHT)) * N_PIN_CONNECTOR_PER_CONNECTOR
+    text_dy = ((self.direction == DIRECTION_UP) - (self.direction ==
+        DIRECTION_DOWN)) * N_PIN_CONNECTOR_PER_CONNECTOR
+    self.parts.add(canvas.create_text(ox + w / 2 + text_dx,
+        oy + h / 2 + text_dy, text=text, justify=CENTER,
+        width=N_PIN_CONNECTOR_TEXT_SIZE))
+  def draw_connectors(self, canvas, offset=(0, 0)):
+    pass
+
+class Motor_Connector_Drawable(N_Pin_Connector_Drawable):
+  """
+  TODO(mikemeko)
+  """
+  def __init__(self, direction=DIRECTION_RIGHT):
+    N_Pin_Connector_Drawable.__init__(self, 'MC', 'Motor Connector', 6,
+        direction)
+  def rotated(self):
+    return Motor_Connector_Drawable(direction=(self.direction + 1) % 4)
+  def serialize(self, offset):
+    pass
+  def deserialize(item_str, board):
+    pass
 
 class Simulate_Run_Drawable(Run_Drawable):
   """
