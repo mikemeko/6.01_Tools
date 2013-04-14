@@ -26,33 +26,37 @@ from core.gui.board import Board
 from core.gui.constants import ERROR
 from core.gui.constants import WARNING
 from pylab import figure
-from pylab import show
 from pylab import stem
 from pylab import xlabel
 from pylab import ylabel
 
 class Plotter:
   """
-  TODO(mikemeko)
+  Abstract data structure that supports a |plot| method that, given a Board and
+      the data for a particular circuit, plots something meaningful about the
+      circuit, or displays the errors on the Board, if any.
   """
   def plot(self, board, data):
     """
-    TODO(mikemeko)
+    |board|: the Board containing the circuit. This can be used to display any
+        messages.
+    |data|: the data corresponding to the solved circuit.
+    All subclasses should implement this.
     """
     raise NotImplementedError('subclasses should implement this')
 
 class Probe_Plotter:
   """
-  TODO(mikemeko)
+  Plotter that shows the voltage difference accross probes with respect to
+      time.
   """
   def __init__(self, probe_plus, probe_minus):
     """
-    TODO(mikemeko)
+    |probe_plus|, |probe_minus|: probed nodes.
     """
     self.probe_plus = probe_plus
     self.probe_minus = probe_minus
   def plot(self, board, data):
-    # record samples of the voltage difference accross the probes
     t_samples, probe_samples = [], []
     for t, solution in data.items():
       # ensure that the probes are in the solved circuits
@@ -65,26 +69,27 @@ class Probe_Plotter:
       t_samples.append(t)
       probe_samples.append(
           solution[self.probe_plus] - solution[self.probe_minus])
-    # show stem plot
     xlabel('t')
     ylabel('Probe Voltage Difference')
     stem(t_samples, probe_samples)
 
 class Motor_Plotter:
   """
-  TODO(mikemeko)
+  Plotter that shows motor angle and velocity with respect to time.
   TODO(mikemeko): calibrate correctly with measurements. Don't forget to cap
       minimum and maximum possible motor angle.
   """
   def __init__(self, n1, n2):
     """
-    TODO(mikemeko)
+    |n1|: Motor + termina.
+    |n2|: Motor - terminal.
     """
     self.n1 = n1
     self.n2 = n2
   def plot(self, board, data):
     t_samples, angle_samples, velocity_samples = [], [0], []
     for t, solution in sorted(data.items(), key=lambda (t, sol): t):
+      # ensure that motor terminals are in the solved circuits
       if self.n1 not in solution or self.n2 not in solution:
         board.display_message('Motor resistor disconnected from circuit',
             ERROR)
@@ -92,9 +97,11 @@ class Motor_Plotter:
       t_samples.append(t)
       velocity_samples.append(solution[self.n1] - solution[self.n2])
       angle_samples.append(angle_samples[-1] + T * velocity_samples[-1])
+    # plot time versus motor angle
     xlabel('t')
     ylabel('Motor angle')
     stem(t_samples, angle_samples[:-1])
+    # plot time versus motor velocity
     figure()
     xlabel('t')
     ylabel('Motor velocity')
@@ -107,7 +114,7 @@ def current_name(drawable, n1, n2):
   """
   return '%d %s->%s' % (id(drawable), n1, n2)
 
-def run_analysis(board):
+def run_analysis(board, analyze):
   """
   Extracts a Circuit object from what is drawn on the given |board| and calls
       the given function |analyze| on it. The funtion |analyze| should take as
@@ -275,16 +282,8 @@ def run_analysis(board):
   elif not probe_minus:
     board.display_message('No -probe', WARNING)
   else:
-    # create circuit
+    # add probe plotter to list of plotters
+    plotters.append(Probe_Plotter(probe_plus, probe_minus))
+    # create and analyze circuit
     circuit = Circuit(circuit_components, GROUND)
-    # ensure that circuit was successfully solved
-    if circuit.data:
-      # add probe plotter to list of plotters
-      plotters.append(Probe_Plotter(probe_plus, probe_minus))
-      # show analysis plots
-      for i, plotter in enumerate(plotters):
-        figure()
-        plotter.plot(board, circuit.data)
-      show()
-    else:
-      board.display_message('Could not solve circuit', ERROR)
+    analyze(circuit, plotters)

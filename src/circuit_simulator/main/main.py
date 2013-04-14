@@ -39,12 +39,15 @@ from core.gui.components import Wire_Connector_Drawable
 from core.gui.constants import CTRL_DOWN
 from core.gui.constants import LEFT
 from core.gui.constants import RIGHT
+from core.gui.constants import ERROR
 from core.gui.palette import Palette
 from core.save.save import get_board_file_name
 from core.save.save import open_board_from_file
 from core.save.save import request_save_board
 from core.save.save import save_board
 from core.save.util import strip_file_name
+from pylab import figure
+from pylab import show
 from sys import argv
 from Tkinter import Menu
 from Tkinter import Tk
@@ -132,10 +135,26 @@ if __name__ == '__main__':
     file_name = None
     # reset to empty board
     init_board()
-  def proto_board_layout(circuit, probe_plus, probe_minus):
+  def simulate(circuit, plotters):
+    """
+    Displays a stem plot showing the voltage difference between nodes
+        |probe_plus| and |probe_minus| of the given |circuit|.
+    TODO(mikemeko): update
+    """
+    # ensure that circuit was successfully solved
+    if circuit.data:
+      # show analysis plots
+      for i, plotter in enumerate(plotters):
+        figure()
+        plotter.plot(board, circuit.data)
+      show()
+    else:
+      board.display_message('Could not solve circuit', ERROR)
+  def proto_board_layout(circuit, plotters):
     """
     Finds a way to layout the given |circuit| on a proto board and displays the
         discovered proto board.
+    TODO(mikemeko): update
     """
     placement = get_piece_placement(circuit)
     proto_board = Proto_Board()
@@ -160,11 +179,11 @@ if __name__ == '__main__':
   palette.add_drawable_type(Motor_Connector_Drawable, LEFT, None)
   # add buttons to analyze circuit
   palette.add_drawable_type(Simulate_Run_Drawable, RIGHT,
-      lambda event: run_analysis(board))
+      lambda event: run_analysis(board, simulate))
   palette.add_drawable_type(Proto_Board_Run_Drawable, RIGHT,
       lambda event: run_analysis(board, proto_board_layout))
   # shortcuts
-  board.add_key_binding('a', lambda: run_analysis(board))
+  board.add_key_binding('a', lambda: run_analysis(board, simulate))
   board.add_key_binding('n', new_file, CTRL_DOWN)
   board.add_key_binding('o', open_file, CTRL_DOWN)
   board.add_key_binding('p', lambda: run_analysis(board, proto_board_layout))
@@ -186,8 +205,8 @@ if __name__ == '__main__':
   edit_menu.add_command(label='Redo', command=board.redo, accelerator='Ctrl+Y')
   menu.add_cascade(label='Edit', menu=edit_menu)
   analyze_menu = Menu(menu, tearoff=0)
-  analyze_menu.add_command(label='Analyze', command=lambda: run_analysis(
-      board), accelerator='A')
+  analyze_menu.add_command(label='Analyze', command=lambda: run_analysis(board,
+      simulate), accelerator='A')
   analyze_menu.add_command(label='Proto Board', command=lambda: run_analysis(
       board, proto_board_layout), accelerator='P')
   menu.add_cascade(label='Analyze', menu=analyze_menu)
