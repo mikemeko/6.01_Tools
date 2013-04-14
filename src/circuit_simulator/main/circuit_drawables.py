@@ -394,7 +394,7 @@ class Pot_Drawable(Drawable):
       self.bottom_connector = self._draw_connector(canvas, (ox + w / 2, oy))
     else:
       # should never get here
-      raise Exception('Invalid pot direction %s' % self.direction)
+      raise Exception('Invalid direction %s' % self.direction)
   def rotated(self):
     return Pot_Drawable(self.on_signal_file_changed, self.height, self.width,
         (self.direction + 1) % 4, self.signal_file)
@@ -425,8 +425,8 @@ class N_Pin_Connector_Drawable(Drawable):
     """
     assert isinstance(n, int) and n > 0, 'n must be a positive integer'
     width = N_PIN_CONNECTOR_TEXT_SIZE + N_PIN_CONNECTOR_PER_CONNECTOR
-    height = n * N_PIN_CONNECTOR_PER_CONNECTOR
-    if direction not in (DIRECTION_UP, DIRECTION_DOWN):
+    height = (n + 1) * N_PIN_CONNECTOR_PER_CONNECTOR
+    if direction in (DIRECTION_UP, DIRECTION_DOWN):
       width, height = height, width
     Drawable.__init__(self, width, height)
     self.short_name = short_name
@@ -448,7 +448,38 @@ class N_Pin_Connector_Drawable(Drawable):
         oy + h / 2 + text_dy, text=text, justify=CENTER,
         width=N_PIN_CONNECTOR_TEXT_SIZE))
   def draw_connectors(self, canvas, offset=(0, 0)):
-    pass
+    ox, oy = offset
+    text_delta = 9
+    sx, sy, dx, dy, text_dx, text_dy = ox, oy, 0, 0, 0, 0
+    if self.direction == DIRECTION_UP:
+      sx += N_PIN_CONNECTOR_PER_CONNECTOR
+      sy += N_PIN_CONNECTOR_PER_CONNECTOR
+      dx = N_PIN_CONNECTOR_PER_CONNECTOR
+      text_dy = text_delta
+    elif self.direction == DIRECTION_RIGHT:
+      sx += self.width - N_PIN_CONNECTOR_PER_CONNECTOR
+      sy += N_PIN_CONNECTOR_PER_CONNECTOR
+      dy = N_PIN_CONNECTOR_PER_CONNECTOR
+      text_dx = -text_delta
+    elif self.direction == DIRECTION_DOWN:
+      sx += self.width - N_PIN_CONNECTOR_PER_CONNECTOR
+      sy += self.height - N_PIN_CONNECTOR_PER_CONNECTOR
+      dx = -N_PIN_CONNECTOR_PER_CONNECTOR
+      text_dy = -text_delta
+    elif self.direction == DIRECTION_LEFT:
+      sx += N_PIN_CONNECTOR_PER_CONNECTOR
+      sy += self.height - N_PIN_CONNECTOR_PER_CONNECTOR
+      dy = -N_PIN_CONNECTOR_PER_CONNECTOR
+      text_dx = text_delta
+    else:
+      # should never get here
+      raise Exception ('Invalid direction %s' % self.direction)
+    self.n_connectors = []
+    for i in xrange(self.n):
+      x, y = sx + i * dx, sy + i * dy
+      self.n_connectors.append(self._draw_connector(canvas, (x, y)))
+      self.parts.add(canvas.create_text(x + text_dx, y + text_dy,
+          text=str(i + 1)))
 
 class Motor_Connector_Drawable(N_Pin_Connector_Drawable):
   """
@@ -460,8 +491,10 @@ class Motor_Connector_Drawable(N_Pin_Connector_Drawable):
   def rotated(self):
     return Motor_Connector_Drawable(direction=(self.direction + 1) % 4)
   def serialize(self, offset):
+    # TODO(mikemeko)
     pass
   def deserialize(item_str, board):
+    # TODO(mikemeko)
     pass
 
 class Simulate_Run_Drawable(Run_Drawable):
