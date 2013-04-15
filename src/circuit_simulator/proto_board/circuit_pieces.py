@@ -5,6 +5,8 @@ Representations for objects that can be placed on the proto board: op amps,
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
+from constants import N_PIN_CONNECTOR_FILL
+from constants import N_PIN_CONNECTOR_OUTLINE
 from constants import OP_AMP_BODY_COLOR
 from constants import OP_AMP_DOT_COLOR
 from constants import OP_AMP_DOT_OFFSET
@@ -17,6 +19,7 @@ from constants import PROTO_BOARD_HEIGHT
 from constants import RESISTOR_INNER_COLOR
 from constants import RESISTOR_OUTER_COLOR
 from core.gui.util import create_circle
+from Tkinter import CENTER
 from util import rects_overlap
 from visualization.constants import CONNECTOR_SIZE
 from visualization.constants import CONNECTOR_SPACING
@@ -26,8 +29,7 @@ from wire import Wire
 class Circuit_Piece:
   """
   Abstract class to represent all objects that can be placed on the proto
-      board. All subclasses should implement all_locs, locs_for, inverted,
-      and draw_on.
+      board. All subclasses should implement locs_for, inverted, and draw_on.
   """
   # top left location row possibilities, subclasses can changes this as needed
   # default puts piece in the middle strip of the proto board
@@ -269,3 +271,85 @@ class Pot_Piece(Circuit_Piece):
   def __str__(self):
     return 'Pot_Piece %s %s' % (str([self.n_top, self.n_middle,
         self.n_bottom]), self.directed_up)
+
+class N_Pin_Connector_Piece(Circuit_Piece):
+  """
+  Abstract
+  TODO(mikemeko)
+  """
+  possible_top_left_rows = [0, PROTO_BOARD_HEIGHT - 3]
+  def __init__(self, n, nodes, name):
+    """
+    TODO(mikemeko)
+    """
+    Circuit_Piece.__init__(self, nodes, n + 2, 3)
+    self.n = n
+    self.name = name
+  def loc_for_pin(self, i):
+    """
+    TODO(mikemeko)
+    """
+    assert 1 <= i <= self.n, 'i must be between 1 and %d' % self.n
+    self._assert_top_left_loc_set()
+    r, c = self.top_left_loc
+    assert r in self.possible_top_left_rows, 'invalid top left row'
+    return (2, c + self.n + 1 - i) if r == 0 else (r, c + i)
+  def inverted(self):
+    # TODO(mikemeko): better infrastructure to avoid doing this
+    return self
+  def draw_on(self, canvas, top_left):
+    self._assert_top_left_loc_set()
+    r, c = self.top_left_loc
+    assert r in self.possible_top_left_rows, 'invalid top left row'
+    x, y = top_left
+    padding = 4
+    width = (self.n + 2) * CONNECTOR_SIZE + (self.n + 1) * CONNECTOR_SPACING
+    if r == 0:
+      offset_top = CONNECTOR_SIZE + 2 * CONNECTOR_SPACING
+      offset_bottom = 5 * CONNECTOR_SIZE + 4 * CONNECTOR_SPACING
+      canvas.create_rectangle(x - padding, y - offset_top - padding,
+          x + width + padding, y + offset_bottom + padding,
+          fill=N_PIN_CONNECTOR_FILL, outline=N_PIN_CONNECTOR_OUTLINE)
+    else:
+      offset_top = 0
+      offset_bottom = 6 * CONNECTOR_SIZE + 6 * CONNECTOR_SPACING
+      canvas.create_rectangle(x - padding, y - offset_top - padding,
+          x + width + padding, y + offset_bottom + padding,
+          fill=N_PIN_CONNECTOR_FILL, outline=N_PIN_CONNECTOR_OUTLINE)
+    for i in xrange(1, self.n + 1):
+      cr, cc = self.loc_for_pin(i)
+      pin_x = x + (cc - c) * (CONNECTOR_SIZE + CONNECTOR_SPACING)
+      pin_y = y + (cr - r + 2 * (r == 0)) * (CONNECTOR_SIZE +
+          CONNECTOR_SPACING)
+      canvas.create_rectangle(pin_x, pin_y, pin_x + CONNECTOR_SIZE,
+          pin_y + CONNECTOR_SIZE, fill='#777', outline='black')
+      canvas.create_text(pin_x + 3, pin_y + (-CONNECTOR_SIZE - 5 if r == 0 else
+          2 * CONNECTOR_SIZE + 5), text=str(i), fill='white')
+    canvas.create_text(x + width / 2, y + (r != 0) * 4 * (CONNECTOR_SIZE +
+        CONNECTOR_SPACING), text=self.name, width=width, fill='white',
+        justify=CENTER)
+
+class Motor_Connector_Piece(N_Pin_Connector_Piece):
+  """
+  TODO(mikemeko)
+  """
+  def __init__(self, n_pin_5, n_pin_6):
+    """
+    TODO(mikemeko)
+    """
+    assert n_pin_5, 'invalid n_pin_5'
+    assert n_pin_6, 'invalid n_pin_6'
+    N_Pin_Connector_Piece.__init__(self, 6, set([n_pin_5, n_pin_6]),
+        'Motor Connector')
+    self.n_pin_5 = n_pin_5
+    self.n_pin_6 = n_pin_6
+  def locs_for(self, node):
+    locs = []
+    if node == self.n_pin_5:
+      locs.append(self.loc_for_pin(5))
+    if node == self.n_pin_6:
+      locs.append(self.loc_for_pin(6))
+    return locs
+  def __str__(self):
+    return 'Motor_Connector_Piece pin 5: %s, pin 6: %s' % (self.n_pin_5,
+        self.n_pin_6)

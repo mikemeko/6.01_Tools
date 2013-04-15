@@ -16,6 +16,7 @@ Terms used in this file:
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
 from circuit_piece_placement import find_placement
+from circuit_pieces import Motor_Connector_Piece
 from circuit_pieces import Op_Amp_Piece
 from circuit_pieces import Pot_Piece
 from circuit_pieces import Resistor_Piece
@@ -23,6 +24,7 @@ from circuit_pieces import Resistor_Piece
 from circuit_simulator.main.constants import GROUND
 from circuit_simulator.main.constants import POWER
 from circuit_simulator.simulation.circuit import Circuit
+from circuit_simulator.simulation.circuit import Motor
 from circuit_simulator.simulation.circuit import Op_Amp
 from circuit_simulator.simulation.circuit import Pot
 from circuit_simulator.simulation.circuit import Resistor
@@ -80,6 +82,13 @@ def pot_piece_from_pot(pot):
   assert isinstance(pot, Pot), 'pot must be a Pot'
   return Pot_Piece(pot.n_top, pot.n_middle, pot.n_bottom)
 
+def motor_connector_piece_from_motor(motor):
+  """
+  TODO(mikemeko)
+  """
+  assert isinstance(motor, Motor), 'motor must be a Motor'
+  return Motor_Connector_Piece(motor.n1, motor.n2)
+
 def op_amp_piece_from_op_amp(op_amp_set):
   """
   Returns an Op_Amp_Piece constructed using |op_amp_set|, a set of 1 or 2
@@ -110,19 +119,21 @@ def get_piece_placement(circuit):
       the best one (i.e. the one the requires minimal wiring) is too expensive.
   """
   assert isinstance(circuit, Circuit), 'circuit must be a Circuit'
-  resistors = filter(lambda obj: isinstance(obj, Resistor), circuit.components)
+  resistors = filter(lambda obj: obj.__class__ == Resistor, circuit.components)
   resistor_pieces = map(resistor_piece_from_resistor, resistors)
-  pots = filter(lambda obj: isinstance(obj, Pot), circuit.components)
+  pots = filter(lambda obj: obj.__class__ == Pot, circuit.components)
   pot_pieces = map(pot_piece_from_pot, pots)
-  op_amps = filter(lambda obj: isinstance(obj, Op_Amp), circuit.components)
+  motors = filter(lambda obj: obj.__class__ == Motor, circuit.components)
+  motor_pieces = map(motor_connector_piece_from_motor, motors)
+  op_amps = filter(lambda obj: obj.__class__ == Op_Amp, circuit.components)
   num_op_amps = len(op_amps)
   best_placement = None
   best_placement_cost = maxint
   # search through all the ways of packaging up the op amps
   for partition in all_1_2_partitions(num_op_amps):
     for grouping in all_groupings(op_amps, partition):
-      pieces = resistor_pieces + pot_pieces + map(op_amp_piece_from_op_amp,
-          grouping)
+      pieces = resistor_pieces + pot_pieces + motor_pieces + map(
+          op_amp_piece_from_op_amp, grouping)
       placement, cost = find_placement(pieces)
       if cost < best_placement_cost:
         best_placement = placement

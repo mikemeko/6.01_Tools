@@ -7,6 +7,8 @@ __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 from circuit_simulator.main.constants import POT_ALPHA_FILL
 
 # gui constants
+N_PIN_CONNECTOR_FILL = '#999'
+N_PIN_CONNECTOR_OUTLINE = 'black'
 OP_AMP_BODY_COLOR = '#999'
 OP_AMP_DOT_COLOR = '#CCC'
 OP_AMP_DOT_OFFSET = 6
