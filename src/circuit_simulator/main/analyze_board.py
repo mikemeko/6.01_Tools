@@ -1,5 +1,7 @@
 """
 Contains the method to analyze the circuit drawn on a board.
+TODO(mikemeko): motor connectors (and possibly robot and head connectors) need
+  to be labeled in case there are multiple.
 """
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
@@ -118,9 +120,9 @@ def run_analysis(board, analyze):
   """
   Extracts a Circuit object from what is drawn on the given |board| and calls
       the given function |analyze| on it. The funtion |analyze| should take as
-      arguments the circuit, as well as the labels for the positive and
-      negative probe, in that order.
-  TODO(mikemeko): update
+      arguments the circuit, as well as the plotters that are collected.
+  TODO(mikemeko): run_analysis gets the job done, but work on a cleaner
+      implementation.
   """
   assert isinstance(board, Board), 'board must be a Board'
   # remove current message on board, if any

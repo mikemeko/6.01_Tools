@@ -137,14 +137,12 @@ if __name__ == '__main__':
     init_board()
   def simulate(circuit, plotters):
     """
-    Displays a stem plot showing the voltage difference between nodes
-        |probe_plus| and |probe_minus| of the given |circuit|.
-    TODO(mikemeko): update
+    Displays the plot that are drawn by the |plotters|.
     """
     # ensure that circuit was successfully solved
     if circuit.data:
       # show analysis plots
-      for i, plotter in enumerate(plotters):
+      for plotter in plotters:
         figure()
         plotter.plot(board, circuit.data)
       show()
@@ -154,7 +152,6 @@ if __name__ == '__main__':
     """
     Finds a way to layout the given |circuit| on a proto board and displays the
         discovered proto board.
-    TODO(mikemeko): update
     """
     placement = get_piece_placement(circuit)
     proto_board = Proto_Board()

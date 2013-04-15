@@ -208,6 +208,7 @@ class Resistor_Piece(Circuit_Piece):
   def inverted(self):
     return Resistor_Piece(self.n_2, self.n_1)
   def draw_on(self, canvas, top_left):
+    # TODO(mikemeko): color resistor based on resistance
     x, y = top_left
     # inner rectangle, i.e. the thin one that is partially covered
     canvas.create_rectangle(x, y, x + CONNECTOR_SIZE,
@@ -274,20 +275,22 @@ class Pot_Piece(Circuit_Piece):
 
 class N_Pin_Connector_Piece(Circuit_Piece):
   """
-  Abstract
-  TODO(mikemeko)
+  Abstract representation for the connector pieces (i.e. motor connector, head
+      connector, and robot connector).
   """
   possible_top_left_rows = [0, PROTO_BOARD_HEIGHT - 3]
-  def __init__(self, n, nodes, name):
+  def __init__(self, nodes, n, name):
     """
-    TODO(mikemeko)
+    |n|: the number of pins for this connector.
+    |name|: the name for this connector.
     """
     Circuit_Piece.__init__(self, nodes, n + 2, 3)
     self.n = n
     self.name = name
   def loc_for_pin(self, i):
     """
-    TODO(mikemeko)
+    Returns the location for the |i|th pin of this connector, where |i| is an
+        integer between 1 and the number of pins for this connector.
     """
     assert 1 <= i <= self.n, 'i must be between 1 and %d' % self.n
     self._assert_top_left_loc_set()
@@ -302,20 +305,16 @@ class N_Pin_Connector_Piece(Circuit_Piece):
     r, c = self.top_left_loc
     assert r in self.possible_top_left_rows, 'invalid top left row'
     x, y = top_left
-    padding = 4
+    # draw box
     width = (self.n + 2) * CONNECTOR_SIZE + (self.n + 1) * CONNECTOR_SPACING
-    if r == 0:
-      offset_top = CONNECTOR_SIZE + 2 * CONNECTOR_SPACING
-      offset_bottom = 5 * CONNECTOR_SIZE + 4 * CONNECTOR_SPACING
-      canvas.create_rectangle(x - padding, y - offset_top - padding,
-          x + width + padding, y + offset_bottom + padding,
-          fill=N_PIN_CONNECTOR_FILL, outline=N_PIN_CONNECTOR_OUTLINE)
-    else:
-      offset_top = 0
-      offset_bottom = 6 * CONNECTOR_SIZE + 6 * CONNECTOR_SPACING
-      canvas.create_rectangle(x - padding, y - offset_top - padding,
-          x + width + padding, y + offset_bottom + padding,
-          fill=N_PIN_CONNECTOR_FILL, outline=N_PIN_CONNECTOR_OUTLINE)
+    offset_top = (r == 0) * (CONNECTOR_SIZE + 2 * CONNECTOR_SPACING)
+    offset_bottom = ((5 * CONNECTOR_SIZE + 4 * CONNECTOR_SPACING) if r == 0
+        else (6 * CONNECTOR_SIZE + 6 * CONNECTOR_SPACING))
+    padding = 4
+    canvas.create_rectangle(x - padding, y - offset_top - padding,
+        x + width + padding, y + offset_bottom + padding,
+        fill=N_PIN_CONNECTOR_FILL, outline=N_PIN_CONNECTOR_OUTLINE)
+    # draw pins
     for i in xrange(1, self.n + 1):
       cr, cc = self.loc_for_pin(i)
       pin_x = x + (cc - c) * (CONNECTOR_SIZE + CONNECTOR_SPACING)
@@ -325,21 +324,23 @@ class N_Pin_Connector_Piece(Circuit_Piece):
           pin_y + CONNECTOR_SIZE, fill='#777', outline='black')
       canvas.create_text(pin_x + 3, pin_y + (-CONNECTOR_SIZE - 5 if r == 0 else
           2 * CONNECTOR_SIZE + 5), text=str(i), fill='white')
+    # display the connector's name
     canvas.create_text(x + width / 2, y + (r != 0) * 4 * (CONNECTOR_SIZE +
         CONNECTOR_SPACING), text=self.name, width=width, fill='white',
         justify=CENTER)
 
 class Motor_Connector_Piece(N_Pin_Connector_Piece):
   """
-  TODO(mikemeko)
+  Representation for the motor connecotor piece.
   """
   def __init__(self, n_pin_5, n_pin_6):
     """
-    TODO(mikemeko)
+    |n_pin_5|: node at pin 5, motor+.
+    |n_pin_6|: node at pin 6, motor-.
     """
     assert n_pin_5, 'invalid n_pin_5'
     assert n_pin_6, 'invalid n_pin_6'
-    N_Pin_Connector_Piece.__init__(self, 6, set([n_pin_5, n_pin_6]),
+    N_Pin_Connector_Piece.__init__(self, set([n_pin_5, n_pin_6]), 6,
         'Motor Connector')
     self.n_pin_5 = n_pin_5
     self.n_pin_6 = n_pin_6

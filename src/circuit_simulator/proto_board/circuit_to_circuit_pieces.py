@@ -84,7 +84,8 @@ def pot_piece_from_pot(pot):
 
 def motor_connector_piece_from_motor(motor):
   """
-  TODO(mikemeko)
+  Returns a Motor_Connector_Piece constructed using |motor|, an instance of
+      Motor.
   """
   assert isinstance(motor, Motor), 'motor must be a Motor'
   return Motor_Connector_Piece(motor.n1, motor.n2)
