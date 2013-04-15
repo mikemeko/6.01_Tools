@@ -9,6 +9,7 @@ Equation representation: a list of terms summing to 0, where a term is a tuple
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
 from constants import DEBUG
+from constants import MOTOR_RESISTANCE
 from constants import NUM_SAMPLES
 from constants import OP_AMP_K
 from constants import T
@@ -191,6 +192,13 @@ class Pot(Component):
   def KCL_update(self, t, KCL):
     for resistor in self._resistors_at(t):
       resistor.KCL_update(t, KCL)
+
+class Motor(Resistor):
+  """
+  Representation for a motor as a resistor.
+  """
+  def __init__(self, n1, n2, i):
+    Resistor.__init__(self, n1, n2, i, MOTOR_RESISTANCE)
 
 class Circuit:
   """

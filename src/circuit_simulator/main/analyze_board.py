@@ -13,13 +13,13 @@ from circuit_drawables import Probe_Minus_Drawable
 from circuit_drawables import Probe_Plus_Drawable
 from circuit_drawables import Resistor_Drawable
 from circuit_simulator.simulation.circuit import Circuit
+from circuit_simulator.simulation.circuit import Motor
 from circuit_simulator.simulation.circuit import Op_Amp
 from circuit_simulator.simulation.circuit import Pot
 from circuit_simulator.simulation.circuit import Resistor
 from circuit_simulator.simulation.circuit import Voltage_Source
 from circuit_simulator.simulation.constants import T
 from constants import GROUND
-from constants import MOTOR_RESISTANCE
 from constants import POWER
 from constants import POWER_VOLTS
 from core.gui.board import Board
@@ -271,8 +271,7 @@ def run_analysis(board, analyze):
             'wire', ERROR)
         return
       n1, n2 = map(maybe_rename_node, (pin_5_nodes[0], pin_6_nodes[0]))
-      circuit_components.append(Resistor(n1, n2, current_name(drawable, n1,
-          n2), MOTOR_RESISTANCE))
+      circuit_components.append(Motor(n1, n2, current_name(drawable, n1, n2)))
       plotters.append(Motor_Plotter(n1, n2))
   # make sure both of the probes are present
   if not probe_plus and not probe_minus:
