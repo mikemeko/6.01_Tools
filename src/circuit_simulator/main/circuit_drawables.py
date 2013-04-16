@@ -495,7 +495,7 @@ class Motor_Connector_Drawable(N_Pin_Connector_Drawable):
   """
   Drawable for Motor Connector.
   """
-  def __init__(self, direction=DIRECTION_RIGHT):
+  def __init__(self, direction=DIRECTION_UP):
     N_Pin_Connector_Drawable.__init__(self, 'MC', 'Motor Connector', 6,
         direction)
   def rotated(self):
