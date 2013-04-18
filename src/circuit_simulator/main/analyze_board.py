@@ -20,6 +20,7 @@ from circuit_simulator.simulation.circuit import Motor
 from circuit_simulator.simulation.circuit import Op_Amp
 from circuit_simulator.simulation.circuit import Pot
 from circuit_simulator.simulation.circuit import Resistor
+from circuit_simulator.simulation.circuit import Robot_Connector
 from circuit_simulator.simulation.circuit import Voltage_Source
 from circuit_simulator.simulation.constants import T
 from constants import GROUND
@@ -166,6 +167,7 @@ def run_analysis(board, analyze):
         return
       power_nodes.add(pin_2_nodes[0])
       ground_nodes.add(pin_4_nodes[0])
+      circuit_components.append(Robot_Connector())
   # ensure that there is at least one power component
   if not power_nodes:
     board.display_message('No power components', ERROR)

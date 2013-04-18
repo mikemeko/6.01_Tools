@@ -200,6 +200,15 @@ class Motor(Resistor):
   def __init__(self, n1, n2, i):
     Resistor.__init__(self, n1, n2, i, MOTOR_RESISTANCE)
 
+class Robot_Connector(Component):
+  """
+  Representation for a robot connector.
+  """
+  def equations(self, t):
+    return []
+  def KCL_update(self, t, KCL):
+    pass
+
 class Circuit:
   """
   Representation for a circuit.

@@ -26,6 +26,7 @@ from circuit_simulator.proto_board.find_proto_board_wiring import find_wiring
 from circuit_simulator.proto_board.proto_board import Proto_Board
 from circuit_simulator.proto_board.visualization.visualization import (
     visualize_proto_board)
+from circuit_simulator.simulation.circuit import Robot_Connector
 from constants import APP_NAME
 from constants import BOARD_HEIGHT
 from constants import BOARD_WIDTH
@@ -160,7 +161,9 @@ if __name__ == '__main__':
     for piece in placement:
       proto_board = proto_board.with_piece(piece)
     proto_board = find_wiring(loc_pairs_to_connect(placement), proto_board)
-    visualize_proto_board(proto_board, Toplevel())
+    show_pwr_gnd_pins = not any([isinstance(component, Robot_Connector) for
+        component in circuit.components])
+    visualize_proto_board(proto_board, Toplevel(), show_pwr_gnd_pins)
   # create empty board
   board = Board(root, width=BOARD_WIDTH, height=BOARD_HEIGHT,
       directed_wires=False, on_changed=on_changed, on_exit=request_save)

@@ -354,3 +354,29 @@ class Motor_Connector_Piece(N_Pin_Connector_Piece):
   def __str__(self):
     return 'Motor_Connector_Piece pin 5: %s, pin 6: %s' % (self.n_pin_5,
         self.n_pin_6)
+
+class Robot_Connector_Piece(N_Pin_Connector_Piece):
+  """
+  Representation for the robot connector piece.
+  """
+  def __init__(self, n_pin_2, n_pin_4):
+    """
+    |n_pin_2|: node at pin 2, power.
+    |n_pin_4|: node at pin 4, ground.
+    """
+    assert n_pin_2, 'invalid n_pin_2'
+    assert n_pin_4, 'invalid n_pin_4'
+    N_Pin_Connector_Piece.__init__(self, set([n_pin_2, n_pin_4]), 8,
+        'Robot Connector')
+    self.n_pin_2 = n_pin_2
+    self.n_pin_4 = n_pin_4
+  def locs_for(self, node):
+    locs = []
+    if node == self.n_pin_2:
+      locs.append(self.loc_for_pin(2))
+    if node == self.n_pin_4:
+      locs.append(self.loc_for_pin(4))
+    return locs
+  def __str__(self):
+    return 'Robot_Connector_Piece pin 2: %s, pin 4: %s' % (self.n_pin_2,
+        self.n_pin_4)

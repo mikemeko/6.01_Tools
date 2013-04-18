@@ -20,6 +20,7 @@ from circuit_pieces import Motor_Connector_Piece
 from circuit_pieces import Op_Amp_Piece
 from circuit_pieces import Pot_Piece
 from circuit_pieces import Resistor_Piece
+from circuit_pieces import Robot_Connector_Piece
 # TODO(mikemeko): this is kind of hacky, coupled with board parsing
 from circuit_simulator.main.constants import GROUND
 from circuit_simulator.main.constants import POWER
@@ -28,6 +29,7 @@ from circuit_simulator.simulation.circuit import Motor
 from circuit_simulator.simulation.circuit import Op_Amp
 from circuit_simulator.simulation.circuit import Pot
 from circuit_simulator.simulation.circuit import Resistor
+from circuit_simulator.simulation.circuit import Robot_Connector
 from itertools import permutations
 from sys import maxint
 
@@ -90,6 +92,15 @@ def motor_connector_piece_from_motor(motor):
   assert isinstance(motor, Motor), 'motor must be a Motor'
   return Motor_Connector_Piece(motor.n1, motor.n2)
 
+def robot_connector_piece_from_robot_connector(robot_connector):
+  """
+  Returns a Robot_Connector_Piece constructed using |robot_connector|, an
+      instance of Robot_Connector.
+  """
+  assert isinstance(robot_connector, Robot_Connector), ('robot_connector must '
+      'be a Robot_Connector')
+  return Robot_Connector_Piece(POWER, GROUND)
+
 def op_amp_piece_from_op_amp(op_amp_set):
   """
   Returns an Op_Amp_Piece constructed using |op_amp_set|, a set of 1 or 2
@@ -126,6 +137,10 @@ def get_piece_placement(circuit):
   pot_pieces = map(pot_piece_from_pot, pots)
   motors = filter(lambda obj: obj.__class__ == Motor, circuit.components)
   motor_pieces = map(motor_connector_piece_from_motor, motors)
+  robot_connectors = filter(lambda obj: obj.__class__ == Robot_Connector,
+      circuit.components)
+  robot_connector_pieces = map(robot_connector_piece_from_robot_connector,
+      robot_connectors)
   op_amps = filter(lambda obj: obj.__class__ == Op_Amp, circuit.components)
   num_op_amps = len(op_amps)
   best_placement = None
@@ -133,8 +148,8 @@ def get_piece_placement(circuit):
   # search through all the ways of packaging up the op amps
   for partition in all_1_2_partitions(num_op_amps):
     for grouping in all_groupings(op_amps, partition):
-      pieces = resistor_pieces + pot_pieces + motor_pieces + map(
-          op_amp_piece_from_op_amp, grouping)
+      pieces = (resistor_pieces + pot_pieces + motor_pieces +
+          robot_connector_pieces + map(op_amp_piece_from_op_amp, grouping))
       placement, cost = find_placement(pieces)
       if cost < best_placement_cost:
         best_placement = placement

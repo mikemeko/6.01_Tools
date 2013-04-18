@@ -32,14 +32,17 @@ class Proto_Board_Visualizer(Frame):
   """
   Tk Frame to visualize Proto boards.
   """
-  def __init__(self, parent, proto_board):
+  def __init__(self, parent, proto_board, show_pwr_gnd_pins):
     """
     |proto_board|: the proto board to visualize.
+    |show_pwr_gnd_pins|: flag whether to show pwr and gnd pins as a reminder to
+        connect to a power supply.
     """
     Frame.__init__(self, parent, background=BACKGROUND_COLOR)
     parent.title(WINDOW_TITLE)
     parent.resizable(0, 0)
     self._proto_board = proto_board
+    self._show_pwr_gnd_pins = show_pwr_gnd_pins
     self._canvas = Canvas(self, width=WIDTH, height=HEIGHT,
         background=BACKGROUND_COLOR)
     self._draw_proto_board()
@@ -182,14 +185,15 @@ class Proto_Board_Visualizer(Frame):
     self._draw_connectors()
     self._draw_bus_lines()
     self._draw_labels()
-    self._draw_gnd_pwr_pins()
     self._draw_pieces()
     self._draw_wires()
     self._canvas.pack()
+    if self._show_pwr_gnd_pins:
+      self._draw_gnd_pwr_pins()
     self.pack()
 
-def visualize_proto_board(proto_board, toplevel):
+def visualize_proto_board(proto_board, toplevel, show_pwr_gnd_pins=True):
   """
   Displays a nice window portraying the given |proto_board|.
   """
-  Proto_Board_Visualizer(toplevel, proto_board)
+  Proto_Board_Visualizer(toplevel, proto_board, show_pwr_gnd_pins)
