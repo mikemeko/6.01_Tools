@@ -110,6 +110,10 @@ class Proto_Board:
     Returns a new Proto_Board containing the given |piece|. If the piece
         collides with another object on the board, this method returns raises
         an Exception.
+    TODO(mikemeko): it is necessary to update self._loc_disjoint_set_forest
+        in case this piece has pins that are not connected to anything else,
+        but should still be disconnected form everything else. This is
+        especially important for the motor connector and robot connector.
     """
     # check for intersections with current objects on the board
     if any(piece.crossed_by(wire) for wire in self._wires) or any(
