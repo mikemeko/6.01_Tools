@@ -14,6 +14,7 @@ from circuit_drawables import Power_Drawable
 from circuit_drawables import Probe_Minus_Drawable
 from circuit_drawables import Probe_Plus_Drawable
 from circuit_drawables import Resistor_Drawable
+from circuit_drawables import Robot_Connector_Drawable
 from circuit_simulator.simulation.circuit import Circuit
 from circuit_simulator.simulation.circuit import Motor
 from circuit_simulator.simulation.circuit import Op_Amp
@@ -151,6 +152,20 @@ def run_analysis(board, analyze):
             ERROR)
         return
       ground_nodes.add(nodes[0])
+    # robot connector component
+    if isinstance(drawable, Robot_Connector_Drawable):
+      pin_2_nodes = [wire.label for wire in drawable.pin_connector(2).wires()]
+      if len(pin_2_nodes) != 1:
+        board.display_message('Robot connector pin 2 must be connected to 1 '
+            'wire', ERROR)
+        return
+      pin_4_nodes = [wire.label for wire in drawable.pin_connector(4).wires()]
+      if len(pin_4_nodes) != 1:
+        board.display_message('Robot connector pin 4 must be connected to 1 '
+            'wire', ERROR)
+        return
+      power_nodes.add(pin_2_nodes[0])
+      ground_nodes.add(pin_4_nodes[0])
   # ensure that there is at least one power component
   if not power_nodes:
     board.display_message('No power components', ERROR)
@@ -262,12 +277,12 @@ def run_analysis(board, analyze):
           n_bottom), pot_variables['pot_r'], pot_variables['pot_signal']))
     # motor connector component
     elif isinstance(drawable, Motor_Connector_Drawable):
-      pin_5_nodes = [wire.label for wire in drawable.n_connectors[4].wires()]
+      pin_5_nodes = [wire.label for wire in drawable.pin_connector(5).wires()]
       if len(pin_5_nodes) != 1:
         board.display_message('Motor connector pin 5 must be connected to 1 '
             'wire', ERROR)
         return
-      pin_6_nodes = [wire.label for wire in drawable.n_connectors[5].wires()]
+      pin_6_nodes = [wire.label for wire in drawable.pin_connector(6).wires()]
       if len(pin_6_nodes) != 1:
         board.display_message('Motor connector pin 6 must be connected to 1 '
             'wire', ERROR)

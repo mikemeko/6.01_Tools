@@ -493,6 +493,12 @@ class N_Pin_Connector_Drawable(Drawable):
       # label pin
       self.parts.add(canvas.create_text(x + text_dx, y + text_dy,
           text=str(i + 1)))
+  def pin_connector(self, i):
+    """
+    Returns the connector corresponding to the given pin number |i|.
+    """
+    assert 1 <= i <= self.n, 'i=%d must be between 1 and %d' % (i, self.n)
+    return self.n_connectors[i - 1]
 
 class Motor_Connector_Drawable(N_Pin_Connector_Drawable):
   """
@@ -511,6 +517,26 @@ class Motor_Connector_Drawable(N_Pin_Connector_Drawable):
     if m:
       direction, ox, oy = map(int, m.groups())
       board.add_drawable(Motor_Connector_Drawable(direction), (ox, oy))
+      return True
+    return False
+
+class Robot_Connector_Drawable(N_Pin_Connector_Drawable):
+  """
+  Drawable for Robot Connector.
+  """
+  def __init__(self, direction=DIRECTION_UP):
+    N_Pin_Connector_Drawable.__init__(self, 'RC', 'Robot Connector', 8,
+        direction, (1, 3, 5, 6, 7, 8))
+  def rotated(self):
+    return Robot_Connector_Drawable(direction=(self.direction + 1) % 4)
+  def serialize(self, offset):
+    return 'Robot connector %d %s' % (self.direction, str(offset))
+  @staticmethod
+  def deserialize(item_str, board):
+    m = match(r'Robot connector %s %s' % (RE_INT, RE_INT_PAIR), item_str)
+    if m:
+      direction, ox, oy = map(int, m.groups())
+      board.add_drawable(Robot_Connector_Drawable(direction), (ox, oy))
       return True
     return False
 

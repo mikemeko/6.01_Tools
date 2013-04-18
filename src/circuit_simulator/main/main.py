@@ -16,6 +16,7 @@ from circuit_drawables import Probe_Minus_Drawable
 from circuit_drawables import Probe_Plus_Drawable
 from circuit_drawables import Proto_Board_Run_Drawable
 from circuit_drawables import Resistor_Drawable
+from circuit_drawables import Robot_Connector_Drawable
 from circuit_drawables import Simulate_Run_Drawable
 from circuit_simulator.proto_board.circuit_piece_placement import (
     loc_pairs_to_connect)
@@ -118,7 +119,8 @@ if __name__ == '__main__':
     # open a new board with the new file name
     deserializers = (Power_Drawable, Ground_Drawable, Probe_Plus_Drawable,
         Probe_Minus_Drawable, Resistor_Drawable, Op_Amp_Drawable,
-        Pot_Drawable, Motor_Connector_Drawable, Wire_Connector_Drawable, Wire)
+        Pot_Drawable, Motor_Connector_Drawable, Robot_Connector_Drawable,
+        Wire_Connector_Drawable, Wire)
     if open_board_from_file(board, new_file_name, deserializers,
         FILE_EXTENSION):
       # update to new file name
@@ -174,6 +176,7 @@ if __name__ == '__main__':
       on_signal_file_changed=lambda: board.set_changed(True))
   palette.add_drawable_type(Op_Amp_Drawable, LEFT, None)
   palette.add_drawable_type(Motor_Connector_Drawable, LEFT, None)
+  palette.add_drawable_type(Robot_Connector_Drawable, LEFT, None)
   # add buttons to analyze circuit
   palette.add_drawable_type(Simulate_Run_Drawable, RIGHT,
       lambda event: run_analysis(board, simulate))
