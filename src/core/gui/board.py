@@ -283,8 +283,10 @@ class Board(Frame):
         wire data.
     """
     self._wire_start = (snap(event.x), snap(event.y))
-    # if there isn't a connector at wire start, don't allow drawing wire
-    if not self._connector_at(self._wire_start):
+    # if there isn't a connector at wire start, or if that connector is
+    #     disabled, don't allow drawing wire
+    start_connector = self._connector_at(self._wire_start)
+    if not start_connector or not start_connector.enabled:
       self._wire_start = None
       self._erase_previous_wire()
   def _wire_move(self, event):
@@ -304,9 +306,14 @@ class Board(Frame):
       end_connector = self._connector_at(self._wire_end)
       if not end_connector:
         # if no end connector is found when wire drawing is complete, then
-        # create a wire connector at the end of the new wire
+        #     create a wire connector at the end of the new wire
         self._add_drawable(Wire_Connector_Drawable(), self._wire_end)
         end_connector = self._connector_at(self._wire_end)
+      elif not end_connector.enabled:
+        # if there is an end connector, but it is disabled, then don't allow
+        #     drawing the wire at all
+        self._erase_previous_wire()
+        return
       # create wire
       self._add_wire(self._wire_parts, start_connector, end_connector)
       # mark the board changed
@@ -318,13 +325,15 @@ class Board(Frame):
   def add_wire(self, x1, y1, x2, y2):
     """
     Adds a wire to this board going from (|x1|, |y1|) to (|x2|, |y2|). This
-        method assumes that there are connectors on this board at the given
-        start and end locations of the wire.
+        method assumes that there are enabled connectors on this board at the
+        given start and end locations of the wire.
     """
     start_connector = self._connector_at((x1, y1))
-    assert start_connector, 'There must be a connector at (x1, y1)'
+    assert start_connector and start_connector.enabled, ('There must be an '
+        'enabled connector at (%d, %d)' % (x1, y1))
     end_connector = self._connector_at((x2, y2))
-    assert end_connector, 'There must be a connector at (x2, y2)'
+    assert end_connector and end_connector.enabled, ('There must be an enabled'
+        ' connector at (%d, %d)' % (x2, y2))
     self._add_wire(create_wire(self._canvas, x1, y1, x2, y2,
         self._directed_wires), start_connector, end_connector)
   def _delete(self, event):

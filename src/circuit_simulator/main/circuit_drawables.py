@@ -421,13 +421,14 @@ class N_Pin_Connector_Drawable(Drawable):
   TODO(mikemeko): consider "disabeling" the the connectors that are not meant
       to be used.
   """
-  def __init__(self, short_name, long_name, n, direction):
+  def __init__(self, short_name, long_name, n, direction, disabled_pins=()):
     """
     |short_name|, |long_name|: names, short and long, to identify this n-pin
         connector. Two versions needed for different orientations.
     |n|: a positive integer, the number of pins on this connector.
     |direction|: the direction of this n-pin connector, one of DIRECTION_DOWN,
         DIRECTION_LEFT, DIRECTION_RIGHT, or DIRECTION_UP.
+    |disabled_pins|: pins that are not meant to be connected to anything.
     """
     assert isinstance(n, int) and n > 0, 'n must be a positive integer'
     # width and height assuming horizontal orientation
@@ -441,6 +442,7 @@ class N_Pin_Connector_Drawable(Drawable):
     self.long_name = long_name
     self.n = n
     self.direction = direction
+    self.disabled_pins = disabled_pins
   def draw_on(self, canvas, offset=(0, 0)):
     ox, oy = offset
     w, h = self.width, self.height
@@ -486,7 +488,8 @@ class N_Pin_Connector_Drawable(Drawable):
     self.n_connectors = []
     for i in xrange(self.n):
       x, y = sx + i * dx, sy + i * dy
-      self.n_connectors.append(self._draw_connector(canvas, (x, y)))
+      self.n_connectors.append(self._draw_connector(canvas, (x, y),
+          enabled=((i + 1) not in self.disabled_pins)))
       # label pin
       self.parts.add(canvas.create_text(x + text_dx, y + text_dy,
           text=str(i + 1)))
@@ -497,7 +500,7 @@ class Motor_Connector_Drawable(N_Pin_Connector_Drawable):
   """
   def __init__(self, direction=DIRECTION_UP):
     N_Pin_Connector_Drawable.__init__(self, 'MC', 'Motor Connector', 6,
-        direction)
+        direction, (1, 2, 3, 4))
   def rotated(self):
     return Motor_Connector_Drawable(direction=(self.direction + 1) % 4)
   def serialize(self, offset):

@@ -6,8 +6,12 @@ __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
 from constants import CONNECTOR_BOTTOM
 from constants import CONNECTOR_CENTER
-from constants import CONNECTOR_COLOR
+from constants import CONNECTOR_DISABLED_COLOR
+from constants import CONNECTOR_DISABLED_OUTLINE
 from constants import CONNECTOR_EMPTY_COLOR
+from constants import CONNECTOR_EMPTY_OUTLINE
+from constants import CONNECTOR_FULL_COLOR
+from constants import CONNECTOR_FULL_OUTLINE
 from constants import CONNECTOR_LEFT
 from constants import CONNECTOR_RADIUS
 from constants import CONNECTOR_RIGHT
@@ -107,14 +111,18 @@ class Drawable:
     x1, y1 = offset
     x2, y2 = x1 + self.width, y1 + self.height
     return x1, y1, x2, y2
-  def _draw_connector(self, canvas, point):
+  def _draw_connector(self, canvas, point, enabled=True):
     """
     |point|: a tuple of the form (x, y) indicating where the connecter should
         be drawn.
+    |enabled|: allowed to start and end wires at the connector being created?
     Draws and returns a connector for this Drawable at the indicated |point|.
     """
     x, y = map(snap, point)
-    connector = Connector(create_connector(canvas, x, y), (x, y), self)
+    connector = Connector(create_connector(canvas, x, y, CONNECTOR_EMPTY_COLOR
+        if enabled else CONNECTOR_DISABLED_COLOR, CONNECTOR_EMPTY_OUTLINE if
+        enabled else CONNECTOR_DISABLED_OUTLINE, 2 if enabled else 1), (x, y),
+        self, enabled)
     self.connectors.add(connector)
     return connector
   def draw_connectors(self, canvas, offset=(0, 0)):
@@ -207,17 +215,19 @@ class Connector:
   """
   Pieces used to connect drawables using wires.
   """
-  def __init__(self, canvas_id, center, drawable):
+  def __init__(self, canvas_id, center, drawable, enabled=True):
     """
     |canvas_id|: the canvas id of the circle used to draw this connector.
     |center|: a tuple of the form (x, y) indicating the center of this
         connector.
     |drawable|: the Drawable to which this connector belongs.
+    |enabled|: allowed to start and end wires at this connector?
     """
     assert isinstance(drawable, Drawable), 'drawable must be a Drawable'
     self.canvas_id = canvas_id
     self.center = center
     self.drawable = drawable
+    self.enabled = enabled
     # wires that start at this connector
     self.start_wires = set()
     # wires that end at this connector
@@ -285,8 +295,14 @@ class Connector:
     canvas.delete(self.canvas_id)
     x, y = self.center
     # appropriately choose fill color
-    fill = CONNECTOR_COLOR if self.num_wires() else CONNECTOR_EMPTY_COLOR
-    self.canvas_id = create_connector(canvas, x, y, fill=fill)
+    fill = ((CONNECTOR_FULL_COLOR if self.num_wires() else
+        CONNECTOR_EMPTY_COLOR) if self.enabled else CONNECTOR_DISABLED_COLOR)
+    outline = ((CONNECTOR_FULL_OUTLINE if self.num_wires() else
+        CONNECTOR_EMPTY_OUTLINE) if self.enabled else
+        CONNECTOR_DISABLED_OUTLINE)
+    active_width = 2 if self.enabled else 1
+    self.canvas_id = create_connector(canvas, x, y, fill, outline,
+        active_width)
   def wires(self):
     """
     Returns a generator of the wires attached to this connector.

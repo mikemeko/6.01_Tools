@@ -7,7 +7,6 @@ __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 from constants import BOARD_GRID_SEPARATION
 from constants import CONNECTOR_BOTTOM
 from constants import CONNECTOR_CENTER
-from constants import CONNECTOR_EMPTY_COLOR
 from constants import CONNECTOR_LEFT
 from constants import CONNECTOR_RADIUS
 from constants import CONNECTOR_RIGHT
@@ -91,14 +90,15 @@ def create_circle(canvas, x, y, r, *args, **kwargs):
   assert isinstance(canvas, Canvas), 'canvas must be a Canvas'
   return canvas.create_oval(x - r, y - r, x + r, y + r, *args, **kwargs)
 
-def create_connector(canvas, x, y, fill=CONNECTOR_EMPTY_COLOR):
+def create_connector(canvas, x, y, fill, outline, active_width):
   """
   Draws a connector centered at (|x|, |y|) on the |canvas| and with the given
-      |fill| color.
+      |fill| and |outline| colors. |active_width| is the width of the outline
+      when the cursor is over the connector.
   Returns the canvas id of the created object.
   """
   return create_circle(canvas, x, y, CONNECTOR_RADIUS, fill=fill,
-      activewidth=2, tags=CONNECTOR_TAG)
+      outline=outline, activewidth=active_width, tags=CONNECTOR_TAG)
 
 def create_wire(canvas, x1, y1, x2, y2, directed=True):
   """
