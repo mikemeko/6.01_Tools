@@ -5,6 +5,12 @@ GUI tool on which several items may be drawn. Supports dragging the items
 TODO(mikemeko): enable snapping wires onto other wires? enable starting drawing
     wires from other wires?
 TODO(mikemeko): undo / redo for text changes (gain, resistor).
+TODO(mikemeko): when drawing a wire or moving a drawable, it'd be nice to
+    show lines (extending to the entire board) showing how the item is moving
+    to make alignment easier.
+TODO(mikemeko): time permitting, it'd be really awesome if we allow doing
+    basically anything that can be done on the board only using the keyboard (
+    and not the mouse) a la vimium (http://vimium.github.io/).
 """
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
