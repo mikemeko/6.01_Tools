@@ -143,18 +143,12 @@ def run_analysis(board, analyze):
     nodes = [wire.label for wire in drawable.wires()]
     # power component
     if isinstance(drawable, Power_Drawable):
-      if len(nodes) != 1:
-        board.display_message('Power component must be connected to 1 wire',
-            ERROR)
-        return
-      power_nodes.add(nodes[0])
+      for node in nodes:
+        power_nodes.add(node)
     # ground component
     if isinstance(drawable, Ground_Drawable):
-      if len(nodes) != 1:
-        board.display_message('Ground component must be connected to 1 wire',
-            ERROR)
-        return
-      ground_nodes.add(nodes[0])
+      for node in nodes:
+        ground_nodes.add(node)
     # robot connector component
     if isinstance(drawable, Robot_Connector_Drawable):
       if robot_connector_found:
@@ -162,37 +156,33 @@ def run_analysis(board, analyze):
         return
       robot_connector_found = True
       pin_2_nodes = [wire.label for wire in drawable.pin_connector(2).wires()]
-      if len(pin_2_nodes) != 1:
-        board.display_message('Robot connector pin 2 must be connected to 1 '
-            'wire', ERROR)
-        return
+      for node in pin_2_nodes:
+        power_nodes.add(node)
       pin_4_nodes = [wire.label for wire in drawable.pin_connector(4).wires()]
-      if len(pin_4_nodes) != 1:
-        board.display_message('Robot connector pin 4 must be connected to 1 '
-            'wire', ERROR)
-        return
-      power_nodes.add(pin_2_nodes[0])
-      ground_nodes.add(pin_4_nodes[0])
+      for node in pin_4_nodes:
+        ground_nodes.add(node)
+      # add robot connector to circuit components, so that we know it's there
+      #     and that we don't need to connect to a power supply
       circuit_components.append(Robot_Connector())
   # ensure that there is at least one power component
   if not power_nodes:
-    board.display_message('No power components', ERROR)
+    board.display_message('No power nodes', ERROR)
     return
   # ensure that there is at least one ground component
   if not ground_nodes:
-    board.display_message('No ground components', ERROR)
+    board.display_message('No ground nodes', ERROR)
     return
   # ensure that power nodes and ground nodes are disjoint (no short circuit)
   if power_nodes.intersection(ground_nodes):
     board.display_message('Short circuit', ERROR)
     return
   # add voltage source to circuit
-  circuit_components.append(Voltage_Source(POWER, GROUND,
-      current_name(drawable, POWER, GROUND), POWER_VOLTS))
+  circuit_components.append(Voltage_Source(POWER, GROUND, current_name(
+      drawable, POWER, GROUND), POWER_VOLTS))
   def maybe_rename_node(node):
     """
     If this node is a power node or a ground node, this method returns the
-        appropriate name, otherwise the original name is returned.
+        appropriate unique name, otherwise the original name is returned.
     """
     if node in power_nodes:
       return POWER
@@ -206,22 +196,29 @@ def run_analysis(board, analyze):
     nodes = [wire.label for wire in drawable.wires()]
     # probe plus component
     if isinstance(drawable, Probe_Plus_Drawable):
-      if len(nodes) != 1:
-        board.display_message('+probe must be connected to 1 wire', WARNING)
+      if len(nodes) > 1:
+        board.display_message('+probe can be connected to at most 1 wire',
+            ERROR)
         return
-      probe_plus = maybe_rename_node(nodes[0])
+      if nodes:
+        probe_plus = maybe_rename_node(nodes[0])
     # probe minus component
     elif isinstance(drawable, Probe_Minus_Drawable):
-      if len(nodes) != 1:
-        board.display_message('-probe must be connected to 1 wire', WARNING)
+      if len(nodes) > 1:
+        board.display_message('-probe can be connected to at most 1 wire',
+            ERROR)
         return
-      probe_minus = maybe_rename_node(nodes[0])
+      if nodes:
+        probe_minus = maybe_rename_node(nodes[0])
     # resistor component
-    # TODO(mikemeko): better check for resistor connections (exactly one node
-    #     on each end of the resistor)
     elif isinstance(drawable, Resistor_Drawable):
-      if len(nodes) != 2:
-        board.display_message('Resistor must be connected to 2 wires', ERROR)
+      resistor_connector_it = iter(drawable.connectors)
+      connector_1_nodes = list(resistor_connector_it.next().wires())
+      connector_2_nodes = list(resistor_connector_it.next().wires())
+      # resistor is proper only if it has exactly one wire attached to each end
+      if len(connector_1_nodes) != 1 or len(connector_2_nodes) != 1:
+        board.display_message('Each end of resistor must be connected to 1 '
+            'wire', ERROR)
         return
       # get its resistance
       try:
@@ -298,16 +295,9 @@ def run_analysis(board, analyze):
       n1, n2 = map(maybe_rename_node, (pin_5_nodes[0], pin_6_nodes[0]))
       circuit_components.append(Motor(n1, n2, current_name(drawable, n1, n2)))
       plotters.append(Motor_Plotter(n1, n2))
-  # make sure both of the probes are present
-  if not probe_plus and not probe_minus:
-    board.display_message('No probes', WARNING)
-  elif not probe_plus:
-    board.display_message('No +probe', WARNING)
-  elif not probe_minus:
-    board.display_message('No -probe', WARNING)
-  else:
-    # add probe plotter to list of plotters
+  # if both probes are given, display probe voltage difference graph
+  if probe_plus and probe_minus:
     plotters.append(Probe_Plotter(probe_plus, probe_minus))
-    # create and analyze circuit
-    circuit = Circuit(circuit_components, GROUND)
-    analyze(circuit, plotters)
+  # create and analyze circuit
+  circuit = Circuit(circuit_components, GROUND)
+  analyze(circuit, plotters)
