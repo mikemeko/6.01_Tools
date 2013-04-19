@@ -136,6 +136,8 @@ def run_analysis(board, analyze):
   # first identify all power and ground nodes and use the same name for all
   #     power nodes, as well as the same name for all ground nodes
   power_nodes, ground_nodes = set(), set()
+  # flag to ensure that there is at most one robot connector
+  robot_connector_found = False
   for drawable in board.get_drawables():
     # wires attached to this component
     nodes = [wire.label for wire in drawable.wires()]
@@ -155,6 +157,10 @@ def run_analysis(board, analyze):
       ground_nodes.add(nodes[0])
     # robot connector component
     if isinstance(drawable, Robot_Connector_Drawable):
+      if robot_connector_found:
+        board.display_message('At most 1 Robot Connector allowed', ERROR)
+        return
+      robot_connector_found = True
       pin_2_nodes = [wire.label for wire in drawable.pin_connector(2).wires()]
       if len(pin_2_nodes) != 1:
         board.display_message('Robot connector pin 2 must be connected to 1 '
