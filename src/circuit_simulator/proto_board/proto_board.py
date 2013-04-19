@@ -110,10 +110,8 @@ class Proto_Board:
     Returns a new Proto_Board containing the given |piece|. If the piece
         collides with another object on the board, this method returns raises
         an Exception.
-    TODO(mikemeko): it is necessary to update self._loc_disjoint_set_forest
-        in case this piece has pins that are not connected to anything else,
-        but should still be disconnected form everything else. This is
-        especially important for the motor connector and robot connector.
+    TODO(mikemeko): check that the piece is placed so that it's not connected
+        to anything else that is already on the proto board.
     """
     # check for intersections with current objects on the board
     if any(piece.crossed_by(wire) for wire in self._wires) or any(
@@ -122,8 +120,16 @@ class Proto_Board:
     # add new piece to pieces
     new_pieces = self._pieces.copy()
     new_pieces.add(piece)
+    # account for piece sacred locations, i.e. make sure these locations never
+    #     get connected to another node in the circuit
+    new_loc_disjoint_set_forest = self._loc_disjoint_set_forest.copy()
+    for loc in piece.get_sacred_locs():
+      new_loc_disjoint_set_forest.make_set(loc)
+      for section_loc in section_locs(loc):
+        new_loc_disjoint_set_forest.make_set(section_loc)
+        new_loc_disjoint_set_forest.union(loc, section_loc)
     return Proto_Board(self._wire_mappings.copy(), self._wires[:], new_pieces,
-        self._loc_disjoint_set_forest.copy())
+        new_loc_disjoint_set_forest)
   def occupied(self, loc):
     """
     Returns True if the given |loc| is occupied, False otherwise.

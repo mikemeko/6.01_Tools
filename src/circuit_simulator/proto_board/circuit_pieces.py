@@ -5,6 +5,8 @@ Representations for objects that can be placed on the proto board: op amps,
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
+from circuit_simulator.main.constants import DISABLED_PINS_MOTOR_CONNECTOR
+from circuit_simulator.main.constants import DISABLED_PINS_ROBOT_CONNECTOR
 from constants import N_PIN_CONNECTOR_FILL
 from constants import N_PIN_CONNECTOR_OUTLINE
 from constants import OP_AMP_BODY_COLOR
@@ -108,6 +110,15 @@ class Circuit_Piece:
     """
     assert isinstance(other, Circuit_Piece), 'other must be a Circuit_Piece'
     return rects_overlap(self.bbox(), other.bbox())
+  def get_sacred_locs(self):
+    """
+    Returns a list of the locations on the proto board in contact with this
+        piece that are not connected to any other circuit component, but should
+        still be kept disconnected from all other things on the proto board.
+    Default is an empty list, but subclasses can override this method as
+        necessary.
+    """
+    return []
 
 class Op_Amp_Piece(Circuit_Piece):
   """
@@ -279,14 +290,16 @@ class N_Pin_Connector_Piece(Circuit_Piece):
       connector, and robot connector).
   """
   possible_top_left_rows = [0, PROTO_BOARD_HEIGHT - 3]
-  def __init__(self, nodes, n, name):
+  def __init__(self, nodes, n, name, disabled_pins):
     """
     |n|: the number of pins for this connector.
     |name|: the name for this connector.
+    |disabled_pins|: pins that are not meant to be connected to anything.
     """
     Circuit_Piece.__init__(self, nodes, n + 2, 3)
     self.n = n
     self.name = name
+    self.disabled_pins = disabled_pins
   def loc_for_pin(self, i):
     """
     Returns the location for the |i|th pin of this connector, where |i| is an
@@ -328,6 +341,9 @@ class N_Pin_Connector_Piece(Circuit_Piece):
     canvas.create_text(x + width / 2, y + (r != 0) * 4 * (CONNECTOR_SIZE +
         CONNECTOR_SPACING), text=self.name, width=width, fill='white',
         justify=CENTER)
+  def get_sacred_locs(self):
+    # keep disabled pins disconnected from everything else
+    return list(self.loc_for_pin(i) for i in self.disabled_pins)
 
 class Motor_Connector_Piece(N_Pin_Connector_Piece):
   """
@@ -341,7 +357,7 @@ class Motor_Connector_Piece(N_Pin_Connector_Piece):
     assert n_pin_5, 'invalid n_pin_5'
     assert n_pin_6, 'invalid n_pin_6'
     N_Pin_Connector_Piece.__init__(self, set([n_pin_5, n_pin_6]), 6,
-        'Motor Connector')
+        'Motor Connector', DISABLED_PINS_MOTOR_CONNECTOR)
     self.n_pin_5 = n_pin_5
     self.n_pin_6 = n_pin_6
   def locs_for(self, node):
@@ -367,7 +383,7 @@ class Robot_Connector_Piece(N_Pin_Connector_Piece):
     assert n_pin_2, 'invalid n_pin_2'
     assert n_pin_4, 'invalid n_pin_4'
     N_Pin_Connector_Piece.__init__(self, set([n_pin_2, n_pin_4]), 8,
-        'Robot Connector')
+        'Robot Connector', DISABLED_PINS_ROBOT_CONNECTOR)
     self.n_pin_2 = n_pin_2
     self.n_pin_4 = n_pin_4
   def locs_for(self, node):

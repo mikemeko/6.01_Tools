@@ -8,6 +8,8 @@ from constants import DIRECTION_DOWN
 from constants import DIRECTION_LEFT
 from constants import DIRECTION_RIGHT
 from constants import DIRECTION_UP
+from constants import DISABLED_PINS_MOTOR_CONNECTOR
+from constants import DISABLED_PINS_ROBOT_CONNECTOR
 from constants import GROUND
 from constants import N_PIN_CONNECTOR_FILL
 from constants import N_PIN_CONNECTOR_OUTLINE
@@ -506,7 +508,7 @@ class Motor_Connector_Drawable(N_Pin_Connector_Drawable):
   """
   def __init__(self, direction=DIRECTION_UP):
     N_Pin_Connector_Drawable.__init__(self, 'MC', 'Motor Connector', 6,
-        direction, (1, 2, 3, 4))
+        direction, DISABLED_PINS_MOTOR_CONNECTOR)
   def rotated(self):
     return Motor_Connector_Drawable(direction=(self.direction + 1) % 4)
   def serialize(self, offset):
@@ -526,7 +528,7 @@ class Robot_Connector_Drawable(N_Pin_Connector_Drawable):
   """
   def __init__(self, direction=DIRECTION_UP):
     N_Pin_Connector_Drawable.__init__(self, 'RC', 'Robot Connector', 8,
-        direction, (1, 3, 5, 6, 7, 8))
+        direction, DISABLED_PINS_ROBOT_CONNECTOR)
   def rotated(self):
     return Robot_Connector_Drawable(direction=(self.direction + 1) % 4)
   def serialize(self, offset):

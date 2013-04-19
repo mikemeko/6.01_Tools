@@ -75,5 +75,9 @@ BOARD_WIDTH = 800
 BOARD_HEIGHT = 500
 PALETTE_HEIGHT = 100
 
+# connector piece disabled pins
+DISABLED_PINS_MOTOR_CONNECTOR = (1, 2, 3, 4)
+DISABLED_PINS_ROBOT_CONNECTOR = (1, 3, 5, 6, 7, 8)
+
 # regular expressions
 RE_OP_AMP_VERTICES = r'\((\d+), (\d+), (\d+), (\d+), (\d+), (\d+)\)'
