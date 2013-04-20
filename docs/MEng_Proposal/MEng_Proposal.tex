@@ -80,29 +80,29 @@ There are several very general circuit simulators available, but none that direc
 \section{Implementation}
 \label{sec:implementation}
 
-In keeping with the implementation of the current tools in 6.01, I plan to build my circuit simulation tool entirely in the Python programming language. This is because I have significant experience developing in Python, and the language is flexible enough to allow any of the things I plan to do in this project.
+In keeping with the implementation of the current tools and infrastructure in 6.01, I plan to build my circuit simulation tool entirely in the Python programming language. This suits me very well because I have significant experience developing software in Python. The language is flexible enough to allow any of the things I plan to do in this project.
 
-There are three important pieces to this simulation tool.
+There are three major pieces to this simulation tool.
 
 \subsection{A user-friendly GUI}
 
 It is important that the GUI be very easy and intuitive to use to allow for quick building of schematics as well as quick amending of schematics already drawn. The GUI will essentially be composed of two parts. The first is a large (initially empty) area in which the schematics will be drawn. The second is a pallete that provides all the available circuit components. The components will be precisely the components necessary for 6.01 labs, i.e. the ones currently available in CMax. Students will be able to select circuit components from the palette to put in the drawing area, and they will also be able to connect different circuit components using wires. The GUI will also allow easy saving and opening of files, undoing and redoing actions, etc.
 
-I will use the Python Tkinter module to implement this GUI\cite{tkinter}.
+I will use the Tkinter module, the standard Python module to write GUIs, to implement my GUI\cite{tkinter}.
 
 \subsection{Circuit Analysis}
 
-The tool will provide the ability to analyze circuits by allowing students to probe voltages and currents in the schematics they draw. In fact, CMax already allows students to probe voltage differences, so what the new simulation tool will do will be very similar to what CMax does to analyze circuits.
+The tool will provide the ability to analyze circuits by allowing students to probe voltages and currents in the schematics they draw as well as by producing the responses of some of the circuit components (motors, for example) to the particular circuit. The circuit analysis capabilities of my circuit simulator will essentially be identical to that which is currently provided by CMax.
 
 \subsection{Automatic Protoboard Layout}
 
-This is of course the most important part of the project, and the novel idea put forth in the project. The way I will tackle the automatic layout problem is by formulating it as a search problem. The very general steps to this process are given below, and these steps will be elaborated upon in detail in my final Thesis write-up:
+This is of course the most novel and important part of the project. The way I will tackle the automatic layout problem is by formulating it as a search problem. The very general steps to this process are given below, and these steps will be elaborated upon in much further detail in my final Thesis write-up:
 
 \begin{enumerate}
-\item Extract all the pieces from the schematic drawing.
+\item Extract all the circuit pieces from the schematic drawing.
 \item Figure out how the pieces are to be interconnected from the schematic drawing.
 \item Figure out a good way to place the pieces on a protoboard so as to require as little wiring as possible.
-\item Figure out a way to wire up the pieces. This step can be formulated as a search problem, in fact 6.01 provides a great infrastructure for this using the $A^*$ algorithm\cite{6.01search}.
+\item Figure out a way to wire up the pieces. This step can be formulated as a search problem, in fact 6.01 provides a great infrastructure for this using the $A^*$ search algorithm\cite{6.01search}.
 \end{enumerate}
 
 \section{Risks}
