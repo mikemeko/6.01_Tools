@@ -5,6 +5,7 @@ Representations for objects that can be placed on the proto board: op amps,
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
+from circuit_simulator.main.constants import DISABLED_PINS_HEAD_CONNECTOR
 from circuit_simulator.main.constants import DISABLED_PINS_MOTOR_CONNECTOR
 from circuit_simulator.main.constants import DISABLED_PINS_ROBOT_CONNECTOR
 from constants import N_PIN_CONNECTOR_FILL
@@ -341,9 +342,20 @@ class N_Pin_Connector_Piece(Circuit_Piece):
     canvas.create_text(x + width / 2, y + (r != 0) * 4 * (CONNECTOR_SIZE +
         CONNECTOR_SPACING), text=self.name, width=width, fill='white',
         justify=CENTER)
+  def _disconnected_pins(self):
+    """
+    Returns a tuple of the pins for this connector that are enabled, but are
+        not connected to anything else. These pins should be kept sacred along
+        with the disabled pins.
+    Returns empty tuple by default assuming that all enabled pins are connected
+        to something else, but subclasses can override this as necessary.
+    """
+    return ()
   def get_sacred_locs(self):
-    # keep disabled pins disconnected from everything else
-    return list(self.loc_for_pin(i) for i in self.disabled_pins)
+    # keep disabled pins and disconnected enabled pins disconnected from
+    #     everything else
+    return list(self.loc_for_pin(i) for i in (self.disabled_pins +
+        self._disconnected_pins()))
 
 class Motor_Connector_Piece(N_Pin_Connector_Piece):
   """
@@ -396,3 +408,25 @@ class Robot_Connector_Piece(N_Pin_Connector_Piece):
   def __str__(self):
     return 'Robot_Connector_Piece pin 2: %s, pin 4: %s' % (self.n_pin_2,
         self.n_pin_4)
+
+class Head_Connector_Piece(N_Pin_Connector_Piece):
+  """
+  Representation for the head connector piece.
+  """
+  def __init__(self, pin_nodes):
+    """
+    |pin_nodes|: a list containing the nodes from pin 1 to pin 8 in that order.
+    """
+    assert isinstance(pin_nodes, list) and len(pin_nodes) == 8, ('pin_nodes '
+        'should be a list containing 8 values')
+    N_Pin_Connector_Piece.__init__(self, set(pin_nodes), 8, 'Head Connector',
+        DISABLED_PINS_HEAD_CONNECTOR)
+    self.pin_nodes = pin_nodes
+  def locs_for(self, node):
+    return [self.loc_for_pin(i + 1) for i, pin_node in enumerate(
+        self.pin_nodes) if node == pin_node]
+  def _disconnected_pins(self):
+    return tuple(i + 1 for i, pin_node in enumerate(self.pin_nodes) if not
+        pin_node)
+  def __str__(self):
+    return 'Head_Connector_Piece pin_nodes: %s' % str(self.pin_nodes)

@@ -7,6 +7,7 @@ TODO(mikemeko): motor connectors (and possibly robot and head connectors) need
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
 from circuit_drawables import Ground_Drawable
+from circuit_drawables import Head_Connector_Drawable
 from circuit_drawables import Motor_Connector_Drawable
 from circuit_drawables import Op_Amp_Drawable
 from circuit_drawables import Pot_Drawable
@@ -16,6 +17,7 @@ from circuit_drawables import Probe_Plus_Drawable
 from circuit_drawables import Resistor_Drawable
 from circuit_drawables import Robot_Connector_Drawable
 from circuit_simulator.simulation.circuit import Circuit
+from circuit_simulator.simulation.circuit import Head_Connector
 from circuit_simulator.simulation.circuit import Motor
 from circuit_simulator.simulation.circuit import Op_Amp
 from circuit_simulator.simulation.circuit import Pot
@@ -295,6 +297,19 @@ def run_analysis(board, analyze):
       n1, n2 = map(maybe_rename_node, (pin_5_nodes[0], pin_6_nodes[0]))
       circuit_components.append(Motor(n1, n2, current_name(drawable, n1, n2)))
       plotters.append(Motor_Plotter(n1, n2))
+    # head connector component
+    elif isinstance(drawable, Head_Connector_Drawable):
+      pin_nodes = []
+      for i in xrange(1, 9):
+        pin_i_nodes = [wire.label for wire in drawable.pin_connector(i).wires(
+            )]
+        if len(pin_i_nodes) > 1:
+          board.display_message('Head connector pin %d cannot be connected to '
+              'more than 1 wire' % i, ERROR)
+          return
+        pin_nodes.append(maybe_rename_node(pin_i_nodes[0]) if pin_i_nodes else
+            None)
+      circuit_components.append(Head_Connector(pin_nodes))
   # if both probes are given, display probe voltage difference graph
   if probe_plus and probe_minus:
     plotters.append(Probe_Plotter(probe_plus, probe_minus))

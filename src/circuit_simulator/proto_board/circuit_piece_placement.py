@@ -81,7 +81,7 @@ def loc_pairs_to_connect(pieces):
       appropriately connected.
   """
   return reduce(list.__add__, (loc_pairs_for_node(locs_for_node(pieces,
-      node), node) for node in all_nodes(pieces)))
+      node), node) for node in all_nodes(pieces) if node))
 
 def set_locations(pieces):
   """

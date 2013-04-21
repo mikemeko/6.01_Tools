@@ -209,6 +209,18 @@ class Robot_Connector(Component):
   def KCL_update(self, t, KCL):
     pass
 
+class Head_Connector(Component):
+  """
+  Representation for a head connector.
+  TODO(mikemeko): implement head connector simulation.
+  """
+  def __init__(self, pin_nodes):
+    self.pin_nodes = pin_nodes
+  def equations(self, t):
+    return []
+  def KCL_update(self, t, KCL):
+    pass
+
 class Circuit:
   """
   Representation for a circuit.
