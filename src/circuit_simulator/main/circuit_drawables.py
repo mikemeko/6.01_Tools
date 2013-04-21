@@ -8,6 +8,7 @@ from constants import DIRECTION_DOWN
 from constants import DIRECTION_LEFT
 from constants import DIRECTION_RIGHT
 from constants import DIRECTION_UP
+from constants import DISABLED_PINS_HEAD_CONNECTOR
 from constants import DISABLED_PINS_MOTOR_CONNECTOR
 from constants import DISABLED_PINS_ROBOT_CONNECTOR
 from constants import GROUND
@@ -539,6 +540,26 @@ class Robot_Connector_Drawable(N_Pin_Connector_Drawable):
     if m:
       direction, ox, oy = map(int, m.groups())
       board.add_drawable(Robot_Connector_Drawable(direction), (ox, oy))
+      return True
+    return False
+
+class Head_Connector_Drawable(N_Pin_Connector_Drawable):
+  """
+  Drawable for Head Connector.
+  """
+  def __init__(self, direction=DIRECTION_UP):
+    N_Pin_Connector_Drawable.__init__(self, 'HC', 'Head Connector', 8,
+        direction, DISABLED_PINS_HEAD_CONNECTOR)
+  def rotated(self):
+    return Head_Connector_Drawable(direction=(self.direction + 1) % 4)
+  def serialize(self, offset):
+    return 'Head connector %d %s' % (self.direction, str(offset))
+  @staticmethod
+  def deserialize(item_str, board):
+    m = match(r'Head connector %s %s' % (RE_INT, RE_INT_PAIR), item_str)
+    if m:
+      direction, ox, oy = map(int, m.groups())
+      board.add_drawable(Head_Connector_Drawable(direction), (ox, oy))
       return True
     return False
 

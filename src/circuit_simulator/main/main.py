@@ -8,6 +8,7 @@ __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
 from analyze_board import run_analysis
 from circuit_drawables import Ground_Drawable
+from circuit_drawables import Head_Connector_Drawable
 from circuit_drawables import Motor_Connector_Drawable
 from circuit_drawables import Op_Amp_Drawable
 from circuit_drawables import Pot_Drawable
@@ -127,7 +128,7 @@ if __name__ == '__main__':
     deserializers = (Power_Drawable, Ground_Drawable, Probe_Plus_Drawable,
         Probe_Minus_Drawable, Resistor_Drawable, Op_Amp_Drawable,
         Pot_Drawable, Motor_Connector_Drawable, Robot_Connector_Drawable,
-        Wire_Connector_Drawable, Wire)
+        Head_Connector_Drawable, Wire_Connector_Drawable, Wire)
     if open_board_from_file(board, new_file_name, deserializers,
         FILE_EXTENSION):
       # update to new file name
@@ -186,6 +187,7 @@ if __name__ == '__main__':
   palette.add_drawable_type(Op_Amp_Drawable, LEFT, None)
   palette.add_drawable_type(Motor_Connector_Drawable, LEFT, None)
   palette.add_drawable_type(Robot_Connector_Drawable, LEFT, None)
+  palette.add_drawable_type(Head_Connector_Drawable, LEFT, None)
   # add buttons to analyze circuit
   palette.add_drawable_type(Simulate_Run_Drawable, RIGHT,
       lambda event: run_analysis(board, simulate))
