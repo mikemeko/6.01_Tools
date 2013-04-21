@@ -10,6 +10,7 @@ from constants import BOARD_GRID_SEPARATION
 from constants import PALETTE_BACKGROUND_COLOR
 from constants import PALETTE_HEIGHT
 from constants import PALETTE_PADDING
+from constants import PALETTE_SEPARATION_LINE_COLOR
 from constants import PALETTE_WIDTH
 from constants import RIGHT
 from constants import WARNING
@@ -39,6 +40,8 @@ class Palette(Frame):
     self.current_left_x = 0
     # x-position of last item added on the RIGHT side of this palette
     self.current_right_x = self.width
+    # line to separate left and right sides of palette
+    self.left_right_separation_line_id = None
     # setup ui
     self.canvas.pack()
     self.pack()
@@ -88,6 +91,13 @@ class Palette(Frame):
     if side == RIGHT:
       offset_x = self.current_right_x - PALETTE_PADDING - display.width
       self.current_right_x -= PALETTE_PADDING + display.width + PALETTE_PADDING
+      # update left-right separation line
+      if self.left_right_separation_line_id:
+        self.canvas.delete(self.left_right_separation_line_id)
+      separation_x = self.current_right_x - PALETTE_PADDING
+      self.left_right_separation_line_id = self.canvas.create_line(
+          separation_x, 0, separation_x, self.height,
+          fill=PALETTE_SEPARATION_LINE_COLOR)
     else:
       # if given |side| is illegal, assume LEFT
       offset_x = self.current_left_x + PALETTE_PADDING
