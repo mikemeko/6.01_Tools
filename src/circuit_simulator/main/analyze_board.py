@@ -18,13 +18,12 @@ from circuit_drawables import Resistor_Drawable
 from circuit_drawables import Robot_Connector_Drawable
 from circuit_simulator.simulation.circuit import Circuit
 from circuit_simulator.simulation.circuit import Head_Connector
-from circuit_simulator.simulation.circuit import Motor
+from circuit_simulator.simulation.circuit import Motor_Connector
 from circuit_simulator.simulation.circuit import Op_Amp
 from circuit_simulator.simulation.circuit import Pot
 from circuit_simulator.simulation.circuit import Resistor
 from circuit_simulator.simulation.circuit import Robot_Connector
 from circuit_simulator.simulation.circuit import Voltage_Source
-from circuit_simulator.simulation.constants import T
 from constants import GROUND
 from constants import POWER
 from constants import POWER_VOLTS
@@ -51,7 +50,7 @@ class Plotter:
     """
     raise NotImplementedError('subclasses should implement this')
 
-class Probe_Plotter:
+class Probe_Plotter(Plotter):
   """
   Plotter that shows the voltage difference accross probes with respect to
       time.
@@ -79,39 +78,28 @@ class Probe_Plotter:
     ylabel('Probe Voltage Difference')
     stem(t_samples, probe_samples)
 
-class Motor_Plotter:
+class Motor_Plotter(Plotter):
   """
   Plotter that shows motor angle and velocity with respect to time.
-  TODO(mikemeko): calibrate correctly with measurements. Don't forget to cap
-      minimum and maximum possible motor angle.
   """
-  def __init__(self, n1, n2):
+  def __init__(self, motor_connector):
     """
-    |n1|: Motor + termina.
-    |n2|: Motor - terminal.
+    TODO(mikemeko)
     """
-    self.n1 = n1
-    self.n2 = n2
+    assert isinstance(motor_connector, Motor_Connector), ('motor_connector '
+        'must be a Motor_Connector')
+    self._motor_connector = motor_connector
   def plot(self, board, data):
-    t_samples, angle_samples, velocity_samples = [], [0], []
-    for t, solution in sorted(data.items(), key=lambda (t, sol): t):
-      # ensure that motor terminals are in the solved circuits
-      if self.n1 not in solution or self.n2 not in solution:
-        board.display_message('Motor resistor disconnected from circuit',
-            ERROR)
-        return
-      t_samples.append(t)
-      velocity_samples.append(solution[self.n1] - solution[self.n2])
-      angle_samples.append(angle_samples[-1] + T * velocity_samples[-1])
+    t_samples = sorted(data.keys())
     # plot time versus motor angle
     xlabel('t')
     ylabel('Motor angle')
-    stem(t_samples, angle_samples[:-1])
+    stem(t_samples, self._motor_connector.angle[:-1])
     # plot time versus motor velocity
     figure()
     xlabel('t')
     ylabel('Motor velocity')
-    stem(t_samples, velocity_samples)
+    stem(t_samples, self._motor_connector.speed[:-1])
 
 def current_name(drawable, n1, n2):
   """
@@ -295,8 +283,9 @@ def run_analysis(board, analyze):
             'wire', ERROR)
         return
       n1, n2 = map(maybe_rename_node, (pin_5_nodes[0], pin_6_nodes[0]))
-      circuit_components.append(Motor(n1, n2, current_name(drawable, n1, n2)))
-      plotters.append(Motor_Plotter(n1, n2))
+      motor_connector = Motor_Connector(n1, n2, current_name(drawable, n1, n2))
+      circuit_components.append(motor_connector)
+      plotters.append(Motor_Plotter(motor_connector))
     # head connector component
     elif isinstance(drawable, Head_Connector_Drawable):
       pin_nodes = []

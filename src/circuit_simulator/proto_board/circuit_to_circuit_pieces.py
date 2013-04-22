@@ -27,7 +27,7 @@ from circuit_simulator.main.constants import GROUND
 from circuit_simulator.main.constants import POWER
 from circuit_simulator.simulation.circuit import Circuit
 from circuit_simulator.simulation.circuit import Head_Connector
-from circuit_simulator.simulation.circuit import Motor
+from circuit_simulator.simulation.circuit import Motor_Connector
 from circuit_simulator.simulation.circuit import Op_Amp
 from circuit_simulator.simulation.circuit import Pot
 from circuit_simulator.simulation.circuit import Resistor
@@ -86,13 +86,14 @@ def pot_piece_from_pot(pot):
   assert isinstance(pot, Pot), 'pot must be a Pot'
   return Pot_Piece(pot.n_top, pot.n_middle, pot.n_bottom)
 
-def motor_connector_piece_from_motor(motor):
+def motor_connector_piece_from_motor_connector(motor_connector):
   """
-  Returns a Motor_Connector_Piece constructed using |motor|, an instance of
-      Motor.
+  Returns a Motor_Connector_Piece constructed using |motor_connector|, an
+      instance of Motor_Connector.
   """
-  assert isinstance(motor, Motor), 'motor must be a Motor'
-  return Motor_Connector_Piece(motor.n1, motor.n2)
+  assert isinstance(motor_connector, Motor_Connector), ('motor_connector must '
+      'be a Motor_Connector')
+  return Motor_Connector_Piece(motor_connector.n1, motor_connector.n2)
 
 def robot_connector_piece_from_robot_connector(robot_connector):
   """
@@ -147,8 +148,10 @@ def get_piece_placement(circuit):
   resistor_pieces = map(resistor_piece_from_resistor, resistors)
   pots = filter(lambda obj: obj.__class__ == Pot, circuit.components)
   pot_pieces = map(pot_piece_from_pot, pots)
-  motors = filter(lambda obj: obj.__class__ == Motor, circuit.components)
-  motor_pieces = map(motor_connector_piece_from_motor, motors)
+  motor_connectors = filter(lambda obj: obj.__class__ == Motor_Connector,
+      circuit.components)
+  motor_connector_pieces = map(motor_connector_piece_from_motor_connector,
+      motor_connectors)
   robot_connectors = filter(lambda obj: obj.__class__ == Robot_Connector,
       circuit.components)
   robot_connector_pieces = map(robot_connector_piece_from_robot_connector,
@@ -164,7 +167,7 @@ def get_piece_placement(circuit):
   # search through all the ways of packaging up the op amps
   for partition in all_1_2_partitions(num_op_amps):
     for grouping in all_groupings(op_amps, partition):
-      pieces = (resistor_pieces + pot_pieces + motor_pieces +
+      pieces = (resistor_pieces + pot_pieces + motor_connector_pieces +
           robot_connector_pieces + head_connector_pieces + map(
           op_amp_piece_from_op_amp, grouping))
       placement, cost = find_placement(pieces)

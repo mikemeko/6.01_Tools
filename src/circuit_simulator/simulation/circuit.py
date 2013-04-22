@@ -21,22 +21,32 @@ from traceback import format_exc
 class Component:
   """
   Abstract representation for circuit components.
-  All subclasses should implement equations(t) and KCL_update(t, KCL).
+  All subclasses should implement equations() and KCL_update(KCL).
   """
+  def __init__(self):
+    """
+    TODO(mikemeko)
+    """
+    self.current_time = 0
+  def step(self, current_solution):
+    """
+    TODO(mikemeko)
+    """
+    self.current_time += T
   @property
-  def equations(self, t):
+  def equations(self):
     """
     Returns a list of the equations that represent the constraints imposed by
-        this Component at the given time |t|.
+        this Component at the current time.
     All subclasses should implement this method.
     """
     raise NotImplementedError('subclasses should implement this')
   @property
-  def KCL_update(self, t, KCL):
+  def KCL_update(self, KCL):
     """
     |KCL| is a dictionary mapping circuit nodes to a list of the currents
         leaving (+) and entering (-) them. This method should update |KCL|
-        based on its state at the given time |t|.
+        based on its state at the current time.
     All subclasses should implement this method.
     """
     raise NotImplementedError('subclasses should implement this')
@@ -52,6 +62,7 @@ class One_Port(Component):
     |n2|: second (-) node this one port is connected to.
     |i|: the current through this one port, flowing from |n1| to |n2|.
     """
+    Component.__init__(self)
     self.n1 = n1
     self.n2 = n2
     self.i = i
@@ -63,9 +74,9 @@ class One_Port(Component):
     All subclasses should implement this method.
     """
     raise NotImplementedError('subclasses should implement this')
-  def equations(self, t):
+  def equations(self):
     return [self.equation()]
-  def KCL_update(self, t, KCL):
+  def KCL_update(self, KCL):
     KCL[self.n1] = KCL.get(self.n1, []) + [(1, self.i)]
     KCL[self.n2] = KCL.get(self.n2, []) + [(-1, self.i)]
 
@@ -142,17 +153,18 @@ class Op_Amp(Component):
     |ib1|: current into node |nb1|.
     |K|: VCVS constant of proportionality.
     """
+    Component.__init__(self)
     self.voltage_sensor = Voltage_Sensor(na1, na2, ia)
     self.vcvs = VCVS(na1, na2, nb1, nb2, ib, K)
     self.na1 = na1
     self.na2 = na2
     self.nb1 = nb1
     self.nb2 = nb2
-  def equations(self, t):
+  def equations(self):
     return [self.voltage_sensor.equation(), self.vcvs.equation()]
-  def KCL_update(self, t, KCL):
-    self.voltage_sensor.KCL_update(t, KCL)
-    self.vcvs.KCL_update(t, KCL)
+  def KCL_update(self, KCL):
+    self.voltage_sensor.KCL_update(KCL)
+    self.vcvs.KCL_update(KCL)
 
 class Pot(Component):
   """
@@ -171,6 +183,7 @@ class Pot(Component):
         turned) for this pot.
     """
     assert isinstance(signal, CT_Signal), 'signal must be a CT_Signal'
+    Component.__init__(self)
     self.n_top = n_top
     self.n_middle = n_middle
     self.n_bottom = n_bottom
@@ -178,35 +191,53 @@ class Pot(Component):
     self.i_middle_bottom = i_middle_bottom
     self.r = r
     self.signal = signal
-  def _resistors_at(self, t):
+  def _current_resistors(self):
     """
-    Returns the top and bottom Resistors at the given time |t|.
+    Returns the current top and bottom Resistors.
     """
     # ensure that alpha is between 0 and 1
-    alpha = clip(self.signal(t), 0, 1)
+    alpha = clip(self.signal(self.current_time), 0, 1)
     return Resistor(self.n_top, self.n_middle, self.i_top_middle,
         (1 - alpha) * self.r), Resistor(self.n_middle, self.n_bottom,
         self.i_middle_bottom, alpha * self.r)
-  def equations(self, t):
-    return [resistor.equation() for resistor in self._resistors_at(t)]
-  def KCL_update(self, t, KCL):
-    for resistor in self._resistors_at(t):
-      resistor.KCL_update(t, KCL)
+  def equations(self):
+    return [resistor.equation() for resistor in self._current_resistors()]
+  def KCL_update(self, KCL):
+    for resistor in self._current_resistors():
+      resistor.KCL_update(KCL)
 
-class Motor(Resistor):
+class Motor_Connector(One_Port):
   """
-  Representation for a motor as a resistor.
+  TODO(mikemeko)
   """
   def __init__(self, n1, n2, i):
-    Resistor.__init__(self, n1, n2, i, MOTOR_RESISTANCE)
+    """
+    TODO(mikemekko)
+    """
+    One_Port.__init__(self, n1, n2, i)
+    self._resistor = Resistor(n1, n2, i, MOTOR_RESISTANCE)
+    self.angle = [0]
+    self.speed = [0]
+  def step(self, current_solution):
+    # TODO(mikemeko): calibration
+    assert self.n1 in current_solution, '%s not in current solution' % self.n1
+    assert self.n2 in current_solution, '%s not in current solution' % self.n2
+    # TODO(mikemeko): order of updates
+    self.angle.append(self.angle[-1] + T * self.speed[-1])
+    self.speed.append(current_solution[self.n1] - current_solution[self.n2])
+    One_Port.step(self, current_solution)
+  def equations(self):
+    return self._resistor.equations()
+  def KCL_update(self, KCL):
+    self._resistor.KCL_update(KCL)
 
 class Robot_Connector(Component):
   """
   Representation for a robot connector.
   """
-  def equations(self, t):
+  def equations(self):
     return []
-  def KCL_update(self, t, KCL):
+  def KCL_update(self, KCL):
     pass
 
 class Head_Connector(Component):
@@ -215,10 +246,11 @@ class Head_Connector(Component):
   TODO(mikemeko): implement head connector simulation.
   """
   def __init__(self, pin_nodes):
+    Component.__init__(self)
     self.pin_nodes = pin_nodes
-  def equations(self, t):
+  def equations(self):
     return []
-  def KCL_update(self, t, KCL):
+  def KCL_update(self, KCL):
     pass
 
 class Circuit:
@@ -249,15 +281,18 @@ class Circuit:
     for n in xrange(NUM_SAMPLES):
       # accumulate and solve system of equations
       # component equations
-      equations = reduce(list.__add__, (component.equations(n * T) for
-          component in self.components), [])
+      equations = reduce(list.__add__, (component.equations() for component in
+          self.components), [])
       # one KCL equation per node in the circuit (excluding ground node)
       KCL = {}
       for component in self.components:
-        component.KCL_update(n * T, KCL)
+        component.KCL_update(KCL)
       equations.extend([KCL[node] for node in KCL if node is not self.gnd])
       # assert that ground voltage is 0
       equations.append([(1, self.gnd)])
       # solve system of equations
       data[n * T] = solve_equations(equations)
+      # step components TODO(mikemeko)
+      for component in self.components:
+        component.step(data[n * T])
     return data
