@@ -1,7 +1,6 @@
 """
 Contains the method to analyze the circuit drawn on a board.
-TODO(mikemeko): motor connectors (and possibly robot and head connectors) need
-  to be labeled in case there are multiple.
+TODO(mikemeko): some items need to be labeled in case there are multiple.
 """
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
