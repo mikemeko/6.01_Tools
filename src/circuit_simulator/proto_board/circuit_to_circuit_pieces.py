@@ -29,8 +29,8 @@ from circuit_simulator.simulation.circuit import Circuit
 from circuit_simulator.simulation.circuit import Head_Connector
 from circuit_simulator.simulation.circuit import Motor_Connector
 from circuit_simulator.simulation.circuit import Op_Amp
-from circuit_simulator.simulation.circuit import Pot
 from circuit_simulator.simulation.circuit import Resistor
+from circuit_simulator.simulation.circuit import Signalled_Pot
 from circuit_simulator.simulation.circuit import Robot_Connector
 from itertools import permutations
 from sys import maxint
@@ -81,9 +81,9 @@ def resistor_piece_from_resistor(resistor):
 
 def pot_piece_from_pot(pot):
   """
-  Returns a Pot_Piece constructed using |pot|, an instance of Pot.
+  Returns a Pot_Piece constructed using |pot|, an instance of Signalled_Pot.
   """
-  assert isinstance(pot, Pot), 'pot must be a Pot'
+  assert isinstance(pot, Signalled_Pot), 'pot must be a Signalled_Pot'
   return Pot_Piece(pot.n_top, pot.n_middle, pot.n_bottom)
 
 def motor_connector_piece_from_motor_connector(motor_connector):
@@ -146,7 +146,7 @@ def get_piece_placement(circuit):
   assert isinstance(circuit, Circuit), 'circuit must be a Circuit'
   resistors = filter(lambda obj: obj.__class__ == Resistor, circuit.components)
   resistor_pieces = map(resistor_piece_from_resistor, resistors)
-  pots = filter(lambda obj: obj.__class__ == Pot, circuit.components)
+  pots = filter(lambda obj: obj.__class__ == Signalled_Pot, circuit.components)
   pot_pieces = map(pot_piece_from_pot, pots)
   motor_connectors = filter(lambda obj: obj.__class__ == Motor_Connector,
       circuit.components)

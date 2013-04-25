@@ -19,6 +19,11 @@ class CT_Signal:
         should implement this method.
     """
     raise NotImplementedError('subclasses should implement this')
+  def samples(self, t_0, T, num_samples):
+    """
+    TODO(mikemeko)
+    """
+    return [self.sample(t_0 + n * T) for n in xrange(num_samples)]
   def __call__(self, t):
     return self.sample(t)
 

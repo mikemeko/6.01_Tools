@@ -20,8 +20,8 @@ from circuit_simulator.simulation.circuit import Circuit
 from circuit_simulator.simulation.circuit import Head_Connector
 from circuit_simulator.simulation.circuit import Motor_Connector
 from circuit_simulator.simulation.circuit import Op_Amp
-from circuit_simulator.simulation.circuit import Pot
 from circuit_simulator.simulation.circuit import Resistor
+from circuit_simulator.simulation.circuit import Signalled_Pot
 from circuit_simulator.simulation.circuit import Robot_Connector
 from circuit_simulator.simulation.circuit import Voltage_Source
 from constants import GROUND
@@ -29,77 +29,10 @@ from constants import POWER
 from constants import POWER_VOLTS
 from core.gui.board import Board
 from core.gui.constants import ERROR
-from core.gui.constants import WARNING
-from pylab import figure
-from pylab import stem
-from pylab import xlabel
-from pylab import ylabel
-
-class Plotter:
-  """
-  Abstract data structure that supports a |plot| method that, given a Board and
-      the data for a particular circuit, plots something meaningful about the
-      circuit, or displays the errors on the Board, if any.
-  """
-  def plot(self, board, data):
-    """
-    |board|: the Board containing the circuit. This can be used to display any
-        messages.
-    |data|: the data corresponding to the solved circuit.
-    All subclasses should implement this.
-    """
-    raise NotImplementedError('subclasses should implement this')
-
-class Probe_Plotter(Plotter):
-  """
-  Plotter that shows the voltage difference accross probes with respect to
-      time.
-  """
-  def __init__(self, probe_plus, probe_minus):
-    """
-    |probe_plus|, |probe_minus|: probed nodes.
-    """
-    self.probe_plus = probe_plus
-    self.probe_minus = probe_minus
-  def plot(self, board, data):
-    t_samples, probe_samples = [], []
-    for t, solution in data.items():
-      # ensure that the probes are in the solved circuits
-      if self.probe_plus not in solution:
-        board.display_message('+probe is disconnected from circuit', WARNING)
-        return
-      elif self.probe_minus not in solution:
-        board.display_message('-probe is disconnected from circuit', WARNING)
-        return
-      t_samples.append(t)
-      probe_samples.append(
-          solution[self.probe_plus] - solution[self.probe_minus])
-    xlabel('t')
-    ylabel('Probe Voltage Difference')
-    stem(t_samples, probe_samples)
-
-class Motor_Plotter(Plotter):
-  """
-  Plotter that shows motor angle and velocity with respect to time.
-  """
-  def __init__(self, motor_connector):
-    """
-    TODO(mikemeko)
-    """
-    assert isinstance(motor_connector, Motor_Connector), ('motor_connector '
-        'must be a Motor_Connector')
-    self._motor_connector = motor_connector
-  def plot(self, board, data):
-    t_samples = sorted(data.keys())
-    # plot time versus motor angle
-    xlabel('t')
-    ylabel('Motor angle')
-    stem(t_samples, self._motor_connector.angle[:-1])
-    # plot time versus motor velocity
-    figure()
-    xlabel('t')
-    ylabel('Motor velocity')
-    stem(t_samples, self._motor_connector.speed[:-1])
+from plotters import Head_Plotter
+from plotters import Motor_Plotter
+from plotters import Probe_Plotter
+from plotters import Signalled_Pot_Plotter
 
 def current_name(drawable, n1, n2):
   """
@@ -181,6 +114,8 @@ def run_analysis(board, analyze):
     return node
   # probe labels
   probe_plus, probe_minus = None, None
+  # flag to ensure that there is at most one head connector
+  head_connector_found = False
   for drawable in board.get_drawables():
     # wires attached to this component
     nodes = [wire.label for wire in drawable.wires()]
@@ -267,9 +202,11 @@ def run_analysis(board, analyze):
         return
       n_top, n_middle, n_bottom = map(maybe_rename_node, (top_nodes[0],
           middle_nodes[0], bottom_nodes[0]))
-      circuit_components.append(Pot(n_top, n_middle, n_bottom, current_name(
-          drawable, n_top, n_middle), current_name(drawable, n_middle,
-          n_bottom), pot_variables['pot_r'], pot_variables['pot_signal']))
+      pot = Signalled_Pot(n_top, n_middle, n_bottom, current_name(drawable,
+          n_top, n_middle), current_name(drawable, n_middle, n_bottom),
+          pot_variables['pot_r'], pot_variables['pot_signal'])
+      circuit_components.append(pot)
+      plotters.append(Signalled_Pot_Plotter(pot))
     # motor connector component
     elif isinstance(drawable, Motor_Connector_Drawable):
       pin_5_nodes = [wire.label for wire in drawable.pin_connector(5).wires()]
@@ -288,6 +225,16 @@ def run_analysis(board, analyze):
       plotters.append(Motor_Plotter(motor_connector))
     # head connector component
     elif isinstance(drawable, Head_Connector_Drawable):
+      if head_connector_found:
+        board.display_message('At most 1 Head Connector allowed', ERROR)
+        return
+      head_connector_found = True
+      if not drawable.signal_file:
+        board.display_message('No signal file loaded for Head Connector',
+            ERROR)
+        return
+      lamp_signals = {'lamp_angle_signal': None, 'lamp_distance_signal': None}
+      execfile(drawable.signal_file, lamp_signals)
       pin_nodes = []
       for i in xrange(1, 9):
         pin_i_nodes = [wire.label for wire in drawable.pin_connector(i).wires(
@@ -298,7 +245,17 @@ def run_analysis(board, analyze):
           return
         pin_nodes.append(maybe_rename_node(pin_i_nodes[0]) if pin_i_nodes else
             None)
-      circuit_components.append(Head_Connector(pin_nodes))
+      (pot_top, pot_middle, pot_bottom, photo_left, photo_common, photo_right,
+          motor_plus, motor_minus) = pin_nodes
+      head_connector = Head_Connector(pot_top, pot_middle, pot_bottom,
+          current_name(drawable, pot_top, pot_middle), current_name(drawable,
+          pot_middle, pot_bottom), photo_left, photo_common, photo_right,
+          current_name(drawable, photo_left, photo_common), current_name(
+          drawable, photo_common, photo_right), motor_plus, motor_minus,
+          current_name(drawable, motor_plus, motor_minus), lamp_signals[
+          'lamp_angle_signal'], lamp_signals['lamp_distance_signal'])
+      circuit_components.append(head_connector)
+      plotters.append(Head_Plotter(head_connector))
   # if both probes are given, display probe voltage difference graph
   if probe_plus and probe_minus:
     plotters.append(Probe_Plotter(probe_plus, probe_minus))

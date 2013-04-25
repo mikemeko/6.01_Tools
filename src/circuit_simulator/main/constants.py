@@ -8,6 +8,9 @@ from core.gui.constants import CONNECTOR_LEFT
 from core.gui.constants import CONNECTOR_RIGHT
 
 # colors
+LAMP_BOX_EMPTY_COLOR = 'white'
+LAMP_BOX_COLOR = '#AAA'
+LAMP_COLOR = 'yellow'
 N_PIN_CONNECTOR_FILL = '#EEE'
 N_PIN_CONNECTOR_OUTLINE = 'black'
 NEGATIVE_COLOR = '#1531AE'
@@ -31,6 +34,9 @@ DIRECTION_UP    = 0
 DIRECTION_RIGHT = 1
 DIRECTION_DOWN  = 2
 DIRECTION_LEFT  = 3
+LAMP_BOX_PADDING = 3
+LAMP_BOX_SIZE = 12
+LAMP_RADIUS = 4
 N_PIN_CONNECTOR_PER_CONNECTOR = 10
 N_PIN_CONNECTOR_TEXT_SIZE = 60
 OP_AMP_BASE = 60
@@ -60,6 +66,9 @@ APP_NAME = 'Circuit Simulator'
 DEV_STAGE = 'Pre-alpha'
 FILE_EXTENSION = '.circsim'
 GROUND = 'gnd'
+LAMP_SIGNAL_FILE_EXTENSION = '.lampsig'
+LAMP_SIGNAL_FILE_TYPE = 'Lamp Signal File'
+OPEN_LAMP_SIGNAL_FILE_TITLE = 'Open lamp signal file ...'
 OPEN_POT_SIGNAL_FILE_TITLE = 'Open pot signal file ...'
 POT_ALPHA_TEXT = u'\u03B1'
 POT_SIGNAL_FILE_EXTENSION = '.potsig'

@@ -49,7 +49,6 @@ from core.save.save import open_board_from_file
 from core.save.save import request_save_board
 from core.save.save import save_board
 from core.save.util import strip_file_name
-from pylab import figure
 from pylab import show
 from sys import argv
 from Tkinter import Menu
@@ -153,7 +152,6 @@ if __name__ == '__main__':
     if circuit.data:
       # show analysis plots
       for plotter in plotters:
-        figure()
         plotter.plot(board, circuit.data)
       show()
     else:
@@ -187,7 +185,8 @@ if __name__ == '__main__':
   palette.add_drawable_type(Op_Amp_Drawable, LEFT, None)
   palette.add_drawable_type(Motor_Connector_Drawable, LEFT, None)
   palette.add_drawable_type(Robot_Connector_Drawable, LEFT, None)
-  palette.add_drawable_type(Head_Connector_Drawable, LEFT, None)
+  palette.add_drawable_type(Head_Connector_Drawable, LEFT, None,
+      on_signal_file_changed=lambda: board.set_changed(True))
   # add buttons to analyze circuit
   palette.add_drawable_type(Simulate_Run_Drawable, RIGHT,
       lambda event: run_analysis(board, simulate))

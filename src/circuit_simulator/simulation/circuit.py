@@ -9,13 +9,19 @@ Equation representation: a list of terms summing to 0, where a term is a tuple
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
 from constants import DEBUG
+from constants import MOTOR_INIT_ANGLE
+from constants import MOTOR_INIT_SPEED
 from constants import MOTOR_RESISTANCE
+from constants import HEAD_POT_INIT_ALPHA
+from constants import HEAD_POT_RESISTANCE
 from constants import NUM_SAMPLES
 from constants import OP_AMP_K
 from constants import T
 from core.math.CT_signal import CT_Signal
 from core.math.equation_solver import solve_equations
 from core.util.util import clip
+from core.util.util import is_number
+from math import pi
 from traceback import format_exc
 
 class Component:
@@ -31,6 +37,7 @@ class Component:
   def step(self, current_solution):
     """
     TODO(mikemeko)
+    be sure to remind to call parent step.
     """
     self.current_time += T
   @property
@@ -84,27 +91,59 @@ class Voltage_Source(One_Port):
   """
   Representation for voltage source component.
   """
-  def __init__(self, n1, n2, i, v0):
+  def __init__(self, n1, n2, i, v0=None):
     """
     |v0|: the voltage difference (|n1| - |n2|) this voltage source provides.
     """
     One_Port.__init__(self, n1, n2, i)
     self.v0 = v0
+  def set_v0(self, v0):
+    """
+    TODO(mikemeko)
+    """
+    self.v0 = v0
   def equation(self):
+    assert self.v0 is not None, 'v0 has not been set'
     # n1 - n0 = v0
     return [(1, self.n1), (-1, self.n2), (-self.v0, None)]
+
+class Current_Source(One_Port):
+  """
+  TODO(mikemeko)
+  """
+  def __init__(self, n1, n2, i, i0=None):
+    """
+    TODO(mikemeko)
+    """
+    One_Port.__init__(self, n1, n2, i)
+    self.i0 = i0
+  def set_i0(self, i0):
+    """
+    TODO(mikemeko)
+    """
+    self.i0 = i0
+  def equation(self):
+    assert self.i0 is not None, 'i0 has not been set'
+    # i = i0
+    return [(1, self.i), (-self.i0, None)]
 
 class Resistor(One_Port):
   """
   Representation for resistor component.
   """
-  def __init__(self, n1, n2, i, r):
+  def __init__(self, n1, n2, i, r=None):
     """
     |r|: resistance (impedance) of this resistor.
     """
     One_Port.__init__(self, n1, n2, i)
     self.r = r
+  def set_r(self, r):
+    """
+    TODO(mikemeko)
+    """
+    self.r = r
   def equation(self):
+    assert self.r is not None, 'r has not been set'
     # n1 - n2 = i * r
     return [(1, self.n1), (-1, self.n2), (-self.r, self.i)]
 
@@ -171,7 +210,7 @@ class Pot(Component):
   Representation for pot component.
   """
   def __init__(self, n_top, n_middle, n_bottom, i_top_middle, i_middle_bottom,
-      r, signal):
+      r, alpha):
     """
     |n_top|: top terminal node.
     |n_middle|: middle terminal node.
@@ -179,32 +218,51 @@ class Pot(Component):
     |i_top_middle|: current from |n_top| to |n_middle|.
     |i_middle_bottom|: current from |n_middle| to |n_bottom|.
     |r|: total resistance.
+    TODO(mikemeko): assert not null?
+    """
+    assert is_number(alpha), 'alpha must be a number'
+    Component.__init__(self)
+    self.r = r
+    self.alpha = clip(alpha, 0, 1)
+    self._resistor_1 = Resistor(n_top, n_middle, i_top_middle,
+        (1 - self.alpha) * r)
+    self._resistor_2 = Resistor(n_middle, n_bottom, i_middle_bottom,
+        self.alpha * r)
+  def set_alpha(self, alpha):
+    """
+    TODO(mikemeko)
+    """
+    self.alpha = clip(alpha, 0, 1)
+  def step(self, current_solution):
+    self._resistor_1.set_r((1 - self.alpha) * self.r)
+    self._resistor_2.set_r(self.alpha * self.r)
+    Component.step(self, current_solution)
+  def equations(self):
+    return [self._resistor_1.equation(), self._resistor_2.equation()]
+  def KCL_update(self, KCL):
+    self._resistor_1.KCL_update(KCL)
+    self._resistor_2.KCL_update(KCL)
+
+class Signalled_Pot(Pot):
+  """
+  TODO(mikemeko)
+  """
+  def __init__(self, n_top, n_middle, n_bottom, i_top_middle, i_middle_bottom,
+      r, signal):
+    """
+    TODO(mikemeko)
     |signal|: CT_Signal dictating the value of alpha (how much the shaft is
         turned) for this pot.
     """
     assert isinstance(signal, CT_Signal), 'signal must be a CT_Signal'
-    Component.__init__(self)
-    self.n_top = n_top
-    self.n_middle = n_middle
-    self.n_bottom = n_bottom
-    self.i_top_middle = i_top_middle
-    self.i_middle_bottom = i_middle_bottom
-    self.r = r
+    Pot.__init__(self, n_top, n_middle, n_bottom, i_top_middle,
+        i_middle_bottom, r, signal(0))
     self.signal = signal
-  def _current_resistors(self):
-    """
-    Returns the current top and bottom Resistors.
-    """
-    # ensure that alpha is between 0 and 1
-    alpha = clip(self.signal(self.current_time), 0, 1)
-    return Resistor(self.n_top, self.n_middle, self.i_top_middle,
-        (1 - alpha) * self.r), Resistor(self.n_middle, self.n_bottom,
-        self.i_middle_bottom, alpha * self.r)
-  def equations(self):
-    return [resistor.equation() for resistor in self._current_resistors()]
-  def KCL_update(self, KCL):
-    for resistor in self._current_resistors():
-      resistor.KCL_update(KCL)
+    self.alpha_samples = [self.alpha]
+  def step(self, current_solution):
+    self.set_alpha(self.signal(self.current_time))
+    self.alpha_samples.append(self.alpha)
+    Pot.step(self, current_solution)
 
 class Motor_Connector(One_Port):
   """
@@ -216,15 +274,17 @@ class Motor_Connector(One_Port):
     """
     One_Port.__init__(self, n1, n2, i)
     self._resistor = Resistor(n1, n2, i, MOTOR_RESISTANCE)
-    self.angle = [0]
-    self.speed = [0]
+    self.angle_samples = [MOTOR_INIT_ANGLE]
+    self.speed_samples = [MOTOR_INIT_SPEED]
   def step(self, current_solution):
     # TODO(mikemeko): calibration
     assert self.n1 in current_solution, '%s not in current solution' % self.n1
     assert self.n2 in current_solution, '%s not in current solution' % self.n2
     # TODO(mikemeko): order of updates
-    self.angle.append(self.angle[-1] + T * self.speed[-1])
-    self.speed.append(current_solution[self.n1] - current_solution[self.n2])
+    self.angle_samples.append(self.angle_samples[-1] + T *
+        self.speed_samples[-1])
+    self.speed_samples.append(current_solution[self.n1] -
+        current_solution[self.n2])
     One_Port.step(self, current_solution)
   def equations(self):
     return self._resistor.equations()
@@ -243,15 +303,100 @@ class Robot_Connector(Component):
 class Head_Connector(Component):
   """
   Representation for a head connector.
-  TODO(mikemeko): implement head connector simulation.
   """
-  def __init__(self, pin_nodes):
+  def __init__(self, n_pot_top, n_pot_middle, n_pot_bottom, i_pot_top_middle,
+      i_pot_middle_bottom, n_photo_left, n_photo_common, n_photo_right,
+      i_photo_left_common, i_photo_common_right, n_motor_plus, n_motor_minus,
+      i_motor, lamp_angle_signal, lamp_distance_signal):
+    """
+    TODO(mikemeko)
+    """
+    assert isinstance(lamp_angle_signal, CT_Signal), ('lamp_angle_signal must '
+        'be a CT_Signal')
+    assert isinstance(lamp_distance_signal, CT_Signal), ('lamp_distance_signal'
+        ' must be a CT_Signal')
     Component.__init__(self)
-    self.pin_nodes = pin_nodes
+    # neck pot
+    self.pot_present = all([n_pot_top, n_pot_middle, n_pot_bottom,
+        i_pot_top_middle, i_pot_middle_bottom])
+    if self.pot_present:
+      self.pot = Pot(n_pot_top, n_pot_middle, n_pot_bottom, i_pot_top_middle,
+          i_pot_middle_bottom, HEAD_POT_RESISTANCE, HEAD_POT_INIT_ALPHA)
+    # photodetectors
+    # TODO(mikemeko): order of node names
+    init_lamp_angle = lamp_angle_signal(0)
+    init_lamp_distance = lamp_distance_signal(0)
+    self.photo_left_present = all([n_photo_left, n_photo_common,
+        i_photo_left_common])
+    if self.photo_left_present:
+      self.photo_left = Current_Source(n_photo_left, n_photo_common,
+          i_photo_left_common, self._photodetector_constant(init_lamp_angle,
+          init_lamp_distance, 'left'))
+    self.photo_right_present = all([n_photo_right, n_photo_common,
+        i_photo_common_right])
+    if self.photo_right_present:
+      self.photo_right = Current_Source(n_photo_right, n_photo_common,
+          i_photo_common_right, self._photodetector_constant(init_lamp_angle,
+          init_lamp_distance, 'right'))
+    # motor
+    self.motor_present = all([n_motor_plus, n_motor_minus, i_motor])
+    # TODO(mikemeko): check this
+    if self.pot_present:
+      assert self.motor_present
+    if self.motor_present:
+      self.motor = Motor_Connector(n_motor_plus, n_motor_minus, i_motor)
+    # lamp signals
+    self.lamp_angle_signal = lamp_angle_signal
+    self.lamp_distance_signal = lamp_distance_signal
+    # all pin nodes in order
+    self.pin_nodes = [n_pot_top, n_pot_middle, n_pot_bottom, n_photo_left,
+        n_photo_common, n_photo_right, n_motor_plus, n_motor_minus]
+  def _photodetector_constant(self, lamp_angle, lamp_distance, side):
+    """
+    TODO(mikemeko)
+    update correctly
+    """
+    assert side in ('left', 'right'), 'side muste be either "left" or "right"'
+    return 1. / lamp_distance
+  def step(self, current_solution):
+    # TODO(mikemeko): order
+    if self.pot_present:
+      current_motor_angle = self.motor.angle_samples[-1]
+      # TODO(mikemeko): does this make sense?
+      self.pot.set_alpha((current_motor_angle / (2 * pi) + 0.5) % 1)
+      self.pot.step(current_solution)
+    current_lamp_angle = self.lamp_angle_signal(self.current_time)
+    current_lamp_distance = self.lamp_distance_signal(self.current_time)
+    if self.photo_left_present:
+      # TODO(mikemeko): better model
+      self.photo_left.set_i0(self._photodetector_constant(current_lamp_angle,
+          current_lamp_distance, 'left'))
+      self.photo_left.step(current_solution)
+    if self.photo_right_present:
+      # TODO(mikemeko): better model
+      self.photo_right.set_i0(self._photodetector_constant(current_lamp_angle,
+          current_lamp_distance, 'right'))
+      self.photo_right.step(current_solution)
+    if self.motor_present:
+      self.motor.step(current_solution)
+    Component.step(self, current_solution)
+  def _present_components(self):
+    components = []
+    if self.pot_present:
+      components.append(self.pot)
+    if self.photo_left_present:
+      components.append(self.photo_left)
+    if self.photo_right_present:
+      components.append(self.photo_right)
+    if self.motor_present:
+      components.append(self.motor)
+    return components
   def equations(self):
-    return []
+    return reduce(list.__add__, (component.equations() for component in
+        self._present_components()), [])
   def KCL_update(self, KCL):
-    pass
+    for component in self._present_components():
+      component.KCL_update(KCL)
 
 class Circuit:
   """
