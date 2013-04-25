@@ -93,7 +93,8 @@ def motor_connector_piece_from_motor_connector(motor_connector):
   """
   assert isinstance(motor_connector, Motor_Connector), ('motor_connector must '
       'be a Motor_Connector')
-  return Motor_Connector_Piece(motor_connector.n1, motor_connector.n2)
+  return Motor_Connector_Piece(motor_connector.motor_plus,
+      motor_connector.motor_minus)
 
 def robot_connector_piece_from_robot_connector(robot_connector):
   """
