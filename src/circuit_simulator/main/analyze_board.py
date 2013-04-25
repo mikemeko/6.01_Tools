@@ -240,13 +240,36 @@ def run_analysis(board, analyze):
         pin_i_nodes = [wire.label for wire in drawable.pin_connector(i).wires(
             )]
         if len(pin_i_nodes) > 1:
-          board.display_message('Head connector pin %d cannot be connected to '
+          board.display_message('Head Connector pin %d cannot be connected to '
               'more than 1 wire' % i, ERROR)
           return
         pin_nodes.append(maybe_rename_node(pin_i_nodes[0]) if pin_i_nodes else
             None)
       (pot_top, pot_middle, pot_bottom, photo_left, photo_common, photo_right,
           motor_plus, motor_minus) = pin_nodes
+      # pot check
+      if any([pot_top, pot_middle, pot_bottom]) and not all([pot_top,
+          pot_middle, pot_bottom]):
+        board.display_message('Head Connector pot must be either fully '
+            'connected or fully disconnected', ERROR)
+        return
+      # left photodetector check
+      if any([photo_left, photo_common]) and not all([photo_left,
+          photo_common]):
+        board.display_message('Head Connector left photodetector must be '
+            'either fully connected or fully disconnected', ERROR)
+        return
+      # right photodetector check
+      if any([photo_right, photo_common]) and not all([photo_right,
+          photo_common]):
+        board.display_message('Head Connector right photodetector must be '
+            'either fully connected or fully disconnected', ERROR)
+        return
+      # motor check
+      if any([motor_plus, motor_minus]) and not all([motor_plus, motor_minus]):
+        board.display_message('Head Connector motor must be either fully '
+            'connected or fully disconnected', ERROR)
+        return
       head_connector = Head_Connector(pot_top, pot_middle, pot_bottom,
           current_name(drawable, pot_top, pot_middle), current_name(drawable,
           pot_middle, pot_bottom), photo_left, photo_common, photo_right,

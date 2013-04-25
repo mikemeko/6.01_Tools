@@ -31,29 +31,36 @@ class Component:
   """
   def __init__(self):
     """
-    TODO(mikemeko)
+    Creates the current_time attribute that gets updated on every call to
+        step(current_solution).
+    All subclasses that choose to override this method should make sure to call
+        this super method.
     """
+    # simulation starts at time = 0 and steps by T
     self.current_time = 0
   def step(self, current_solution):
     """
-    TODO(mikemeko)
-    be sure to remind to call parent step.
+    |current_solution|: a dictionary mapping all the variables in the circuit
+        to their solved values in the current time step.
+    Steps this component by |T| time units.
+    All subclasses that choose to override this method should make sure to call
+        this super method.
     """
     self.current_time += T
   @property
   def equations(self):
     """
     Returns a list of the equations that represent the constraints imposed by
-        this Component at the current time.
+        this Component at the current time step.
     All subclasses should implement this method.
     """
     raise NotImplementedError('subclasses should implement this')
   @property
   def KCL_update(self, KCL):
     """
-    |KCL| is a dictionary mapping circuit nodes to a list of the currents
+    |KCL|: a dictionary mapping circuit nodes to a list of the currents
         leaving (+) and entering (-) them. This method should update |KCL|
-        based on its state at the current time.
+        based on its state at the current time step.
     All subclasses should implement this method.
     """
     raise NotImplementedError('subclasses should implement this')
@@ -77,7 +84,7 @@ class One_Port(Component):
   def equation(self):
     """
     Returns an equation representing the constraint that needs to be satisfied
-        for this one port.
+        for this one port at the current time step.
     All subclasses should implement this method.
     """
     raise NotImplementedError('subclasses should implement this')
@@ -99,7 +106,7 @@ class Voltage_Source(One_Port):
     self.v0 = v0
   def set_v0(self, v0):
     """
-    TODO(mikemeko)
+    Sets the voltage difference constant for this Voltage_Source.
     """
     self.v0 = v0
   def equation(self):
@@ -109,17 +116,17 @@ class Voltage_Source(One_Port):
 
 class Current_Source(One_Port):
   """
-  TODO(mikemeko)
+  Representation for current source component.
   """
   def __init__(self, n1, n2, i, i0=None):
     """
-    TODO(mikemeko)
+    |i0|: the current from |n1| to |n2| this current source provides.
     """
     One_Port.__init__(self, n1, n2, i)
     self.i0 = i0
   def set_i0(self, i0):
     """
-    TODO(mikemeko)
+    Sets the current constant for this Current_Source.
     """
     self.i0 = i0
   def equation(self):
@@ -139,7 +146,7 @@ class Resistor(One_Port):
     self.r = r
   def set_r(self, r):
     """
-    TODO(mikemeko)
+    Sets the resistance for this Resistor.
     """
     self.r = r
   def equation(self):
@@ -210,7 +217,7 @@ class Pot(Component):
   Representation for pot component.
   """
   def __init__(self, n_top, n_middle, n_bottom, i_top_middle, i_middle_bottom,
-      r, alpha):
+      r, init_alpha):
     """
     |n_top|: top terminal node.
     |n_middle|: middle terminal node.
@@ -218,28 +225,25 @@ class Pot(Component):
     |i_top_middle|: current from |n_top| to |n_middle|.
     |i_middle_bottom|: current from |n_middle| to |n_bottom|.
     |r|: total resistance.
-    TODO(mikemeko): assert not null?
+    |init_alpha|: the initial value of alpha for this pot.
     """
-    assert is_number(alpha), 'alpha must be a number'
+    assert is_number(init_alpha), 'init_alpha must be a number'
     Component.__init__(self)
     self.n_top = n_top
     self.n_middle = n_middle
     self.n_bottom = n_bottom
     self.r = r
-    self.alpha = clip(alpha, 0, 1)
+    init_alpha = clip(init_alpha, 0, 1)
     self._resistor_1 = Resistor(n_top, n_middle, i_top_middle,
-        (1 - self.alpha) * r)
+        (1 - init_alpha) * r)
     self._resistor_2 = Resistor(n_middle, n_bottom, i_middle_bottom,
-        self.alpha * r)
+        init_alpha * r)
   def set_alpha(self, alpha):
     """
-    TODO(mikemeko)
+    Sets alpha for this Pot.
     """
-    self.alpha = clip(alpha, 0, 1)
-  def step(self, current_solution):
-    self._resistor_1.set_r((1 - self.alpha) * self.r)
-    self._resistor_2.set_r(self.alpha * self.r)
-    Component.step(self, current_solution)
+    self._resistor_1.set_r((1 - alpha) * self.r)
+    self._resistor_2.set_r(alpha * self.r)
   def equations(self):
     return [self._resistor_1.equation(), self._resistor_2.equation()]
   def KCL_update(self, KCL):
@@ -248,47 +252,51 @@ class Pot(Component):
 
 class Signalled_Pot(Pot):
   """
-  TODO(mikemeko)
+  Representation for a pot whose alpha at each time step is determined from a
+      CT_Signal.
   """
   def __init__(self, n_top, n_middle, n_bottom, i_top_middle, i_middle_bottom,
       r, signal):
     """
-    TODO(mikemeko)
-    |signal|: CT_Signal dictating the value of alpha (how much the shaft is
-        turned) for this pot.
+    |signal|: CT_Signal dictating the values of alpha for this pot.
     """
     assert isinstance(signal, CT_Signal), 'signal must be a CT_Signal'
+    init_alpha = signal(0)
     Pot.__init__(self, n_top, n_middle, n_bottom, i_top_middle,
-        i_middle_bottom, r, signal(0))
+        i_middle_bottom, r, init_alpha)
     self.signal = signal
-    self.alpha_samples = [self.alpha]
   def step(self, current_solution):
+    # set pot alpha to its new value
     self.set_alpha(self.signal(self.current_time))
-    self.alpha_samples.append(self.alpha)
     Pot.step(self, current_solution)
 
-class Motor_Connector(One_Port):
+class Motor_Connector(Component):
   """
-  TODO(mikemeko)
+  Representation for motor connector.
   """
-  def __init__(self, n1, n2, i):
+  def __init__(self, motor_plus, motor_minus, i):
     """
-    TODO(mikemekko)
+    |motor_plus|: Motor + node.
+    |motor_minus|: Motor - node.
+    |i|: current from + node to - node.
     """
-    One_Port.__init__(self, n1, n2, i)
-    self._resistor = Resistor(n1, n2, i, MOTOR_RESISTANCE)
+    Component.__init__(self)
+    self.motor_plus = motor_plus
+    self.motor_minus = motor_minus
+    self._resistor = Resistor(motor_plus, motor_minus, i, MOTOR_RESISTANCE)
     self.angle_samples = [MOTOR_INIT_ANGLE]
     self.speed_samples = [MOTOR_INIT_SPEED]
   def step(self, current_solution):
-    # TODO(mikemeko): calibration
-    assert self.n1 in current_solution, '%s not in current solution' % self.n1
-    assert self.n2 in current_solution, '%s not in current solution' % self.n2
-    # TODO(mikemeko): order of updates
+    assert self.motor_plus in current_solution, ('%s not in current solution' %
+        self.n1)
+    assert self.motor_minus in current_solution, ('%s not in current solution'
+        % self.n2)
+    # TODO(mikemeko): improve speed estimation based on voltage difference
+    self.speed_samples.append(current_solution[self.motor_plus] -
+        current_solution[self.motor_minus])
     self.angle_samples.append(self.angle_samples[-1] + T *
         self.speed_samples[-1])
-    self.speed_samples.append(current_solution[self.n1] -
-        current_solution[self.n2])
-    One_Port.step(self, current_solution)
+    Component.step(self, current_solution)
   def equations(self):
     return self._resistor.equations()
   def KCL_update(self, KCL):
@@ -296,7 +304,7 @@ class Motor_Connector(One_Port):
 
 class Robot_Connector(Component):
   """
-  Representation for a robot connector.
+  Representation for robot connector.
   """
   def equations(self):
     return []
@@ -305,47 +313,52 @@ class Robot_Connector(Component):
 
 class Head_Connector(Component):
   """
-  Representation for a head connector.
+  Representation for head connector.
   """
   def __init__(self, n_pot_top, n_pot_middle, n_pot_bottom, i_pot_top_middle,
       i_pot_middle_bottom, n_photo_left, n_photo_common, n_photo_right,
       i_photo_left_common, i_photo_common_right, n_motor_plus, n_motor_minus,
       i_motor, lamp_angle_signal, lamp_distance_signal):
     """
-    TODO(mikemeko)
+    |n_pot_top|, |n_pot_middle|, |n_pot_bottom|: nodes for head pot.
+    |i_pot_top_middle|, |i_pot_middle_bottom|: currents for head pot.
+    |n_photo_left|, |n_photo_common|, |n_photo_right|: nodes for head
+        photodetectors.
+    |i_photo_left_common|, |i_photo_common_right|: currents for head
+        photodetectors.
+    |n_motor_plus|, |n_motor_minus|: nodes for head motor.
+    |i_motor|: current for head motor.
+    |lamp_angle_signal|: CT_Signal for lamp angle.
+    |lamp_distance_signal|: CT_Signal for lamp distance.
     """
     assert isinstance(lamp_angle_signal, CT_Signal), ('lamp_angle_signal must '
         'be a CT_Signal')
     assert isinstance(lamp_distance_signal, CT_Signal), ('lamp_distance_signal'
         ' must be a CT_Signal')
     Component.__init__(self)
-    # neck pot
+    # pot
     self.pot_present = all([n_pot_top, n_pot_middle, n_pot_bottom,
         i_pot_top_middle, i_pot_middle_bottom])
     if self.pot_present:
       self.pot = Pot(n_pot_top, n_pot_middle, n_pot_bottom, i_pot_top_middle,
           i_pot_middle_bottom, HEAD_POT_RESISTANCE, HEAD_POT_INIT_ALPHA)
     # photodetectors
-    # TODO(mikemeko): order of node names
     init_lamp_angle = lamp_angle_signal(0)
     init_lamp_distance = lamp_distance_signal(0)
     self.photo_left_present = all([n_photo_left, n_photo_common,
         i_photo_left_common])
     if self.photo_left_present:
       self.photo_left = Current_Source(n_photo_left, n_photo_common,
-          i_photo_left_common, self._photodetector_constant(init_lamp_angle,
-          init_lamp_distance, 'left'))
+          i_photo_left_common, self._photodetector_current_constant(
+          init_lamp_angle, init_lamp_distance, 'left'))
     self.photo_right_present = all([n_photo_right, n_photo_common,
         i_photo_common_right])
     if self.photo_right_present:
       self.photo_right = Current_Source(n_photo_right, n_photo_common,
-          i_photo_common_right, self._photodetector_constant(init_lamp_angle,
-          init_lamp_distance, 'right'))
+          i_photo_common_right, self._photodetector_current_constant(
+          init_lamp_angle, init_lamp_distance, 'right'))
     # motor
     self.motor_present = all([n_motor_plus, n_motor_minus, i_motor])
-    # TODO(mikemeko): check this
-    if self.pot_present:
-      assert self.motor_present
     if self.motor_present:
       self.motor = Motor_Connector(n_motor_plus, n_motor_minus, i_motor)
     # lamp signals
@@ -354,36 +367,45 @@ class Head_Connector(Component):
     # all pin nodes in order
     self.pin_nodes = [n_pot_top, n_pot_middle, n_pot_bottom, n_photo_left,
         n_photo_common, n_photo_right, n_motor_plus, n_motor_minus]
-  def _photodetector_constant(self, lamp_angle, lamp_distance, side):
+  def _photodetector_current_constant(self, lamp_angle, lamp_distance, side):
     """
-    TODO(mikemeko)
-    update correctly
+    |lamp_angle|: angle of the lamp from the center of the head.
+    |lamp_distance|: distance of the lamp from the center of the head.
+    |side|: 'left' or 'right'. TODO(mikemeko) use +/- pi/4?
+    Returns the current constant for the given photodetector estimated based on
+        |lamp_angle| and |lamp_distance|.
     """
     assert side in ('left', 'right'), 'side muste be either "left" or "right"'
+    # TODO(mikemeko): improve current constant estimation based on lamp_angle
+    #     and lamp_distance
     return 1. / lamp_distance
   def step(self, current_solution):
-    # TODO(mikemeko): order
-    if self.pot_present:
-      current_motor_angle = self.motor.angle_samples[-1]
-      # TODO(mikemeko): does this make sense?
-      self.pot.set_alpha((current_motor_angle / (2 * pi) + 0.5) % 1)
-      self.pot.step(current_solution)
+    # step photodetectors
     current_lamp_angle = self.lamp_angle_signal(self.current_time)
     current_lamp_distance = self.lamp_distance_signal(self.current_time)
     if self.photo_left_present:
-      # TODO(mikemeko): better model
-      self.photo_left.set_i0(self._photodetector_constant(current_lamp_angle,
-          current_lamp_distance, 'left'))
+      self.photo_left.set_i0(self._photodetector_current_constant(
+          current_lamp_angle, current_lamp_distance, 'left'))
       self.photo_left.step(current_solution)
     if self.photo_right_present:
-      # TODO(mikemeko): better model
-      self.photo_right.set_i0(self._photodetector_constant(current_lamp_angle,
-          current_lamp_distance, 'right'))
+      self.photo_right.set_i0(self._photodetector_current_constant(
+          current_lamp_angle, current_lamp_distance, 'right'))
       self.photo_right.step(current_solution)
+    # step motor
     if self.motor_present:
       self.motor.step(current_solution)
+    # step pot
+    # TODO(mikemeko): improve pot alpha estimation based on motor angle
+    if self.pot_present:
+      current_motor_angle = self.motor.angle_samples[-1]
+      self.pot.set_alpha((current_motor_angle / (2 * pi) + 0.5) % 1)
+      self.pot.step(current_solution)
     Component.step(self, current_solution)
   def _present_components(self):
+    """
+    Returns a list of the components in the head that are connected to other
+        components in the circuit.
+    """
     components = []
     if self.pot_present:
       components.append(self.pot)
@@ -440,7 +462,7 @@ class Circuit:
       equations.append([(1, self.gnd)])
       # solve system of equations
       data[n * T] = solve_equations(equations)
-      # step components TODO(mikemeko)
+      # step components, providing them the solution for the current time step
       for component in self.components:
         component.step(data[n * T])
     return data

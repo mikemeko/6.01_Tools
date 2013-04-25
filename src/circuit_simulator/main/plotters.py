@@ -10,6 +10,7 @@ from circuit_simulator.simulation.circuit import Motor_Connector
 from circuit_simulator.simulation.circuit import Signalled_Pot
 from circuit_simulator.simulation.constants import NUM_SAMPLES
 from circuit_simulator.simulation.constants import T
+from constants import T_SAMPLES
 from pylab import figure
 from pylab import stem
 from pylab import xlabel
@@ -42,28 +43,27 @@ class Head_Plotter(Plotter):
         'be a Head_Connector')
     self._head_connector = head_connector
   def plot(self, board, data):
-    t_samples = sorted(data.keys())
     # motor
     if self._head_connector.motor_present:
       figure()
       xlabel('t')
       ylabel('Motor angle')
-      stem(t_samples, self._head_connector.motor.angle_samples[:-1])
+      stem(T_SAMPLES, self._head_connector.motor.angle_samples[:-1])
       figure()
       xlabel('t')
       ylabel('Motor velocity')
-      stem(t_samples, self._head_connector.motor.speed_samples[:-1])
+      stem(T_SAMPLES, self._head_connector.motor.speed_samples[:-1])
     # lamp distance signal
     figure()
     xlabel('t')
     ylabel('Lamp distance')
-    stem(t_samples, self._head_connector.lamp_distance_signal.samples(0, T,
+    stem(T_SAMPLES, self._head_connector.lamp_distance_signal.samples(0, T,
         NUM_SAMPLES))
     # lamp angle signal
     figure()
     xlabel('t')
     ylabel('Lamp angle')
-    stem(t_samples, self._head_connector.lamp_angle_signal.samples(0, T,
+    stem(T_SAMPLES, self._head_connector.lamp_angle_signal.samples(0, T,
         NUM_SAMPLES))
 
 class Motor_Plotter(Plotter):
@@ -78,17 +78,16 @@ class Motor_Plotter(Plotter):
         'must be a Motor_Connector')
     self._motor_connector = motor_connector
   def plot(self, board, data):
-    t_samples = sorted(data.keys())
     # plot time versus motor angle
     figure()
     xlabel('t')
     ylabel('Motor angle')
-    stem(t_samples, self._motor_connector.angle_samples[:-1])
+    stem(T_SAMPLES, self._motor_connector.angle_samples[:-1])
     # plot time versus motor velocity
     figure()
     xlabel('t')
     ylabel('Motor velocity')
-    stem(t_samples, self._motor_connector.speed_samples[:-1])
+    stem(T_SAMPLES, self._motor_connector.speed_samples[:-1])
 
 class Signalled_Pot_Plotter(Plotter):
   """
@@ -101,11 +100,10 @@ class Signalled_Pot_Plotter(Plotter):
     assert isinstance(pot, Signalled_Pot), ('pot must be a Signalled_Pot')
     self._pot = pot
   def plot(self, board, data):
-    t_samples = sorted(data.keys())
     figure()
     xlabel('t')
     ylabel('Pot alpha')
-    stem(t_samples, self._pot.alpha_samples[:-1])
+    stem(T_SAMPLES, self._pot.signal.samples(0, T, NUM_SAMPLES))
 
 class Probe_Plotter(Plotter):
   """
