@@ -1,6 +1,5 @@
 """
-TODO(mikemeko)
-cleanup
+Analysis plot display.
 """
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
@@ -18,8 +17,8 @@ from pylab import ylabel
 
 class Plotter:
   """
-  Abstract data structure that supports a |plot| method that, given a Board and
-      the data for a particular circuit, plots something meaningful about the
+  Abstract type that supports a |plot| method that, given a Board and the
+      data for a particular circuit, plots something meaningful about the
       circuit, or displays the errors on the Board, if any.
   """
   def plot(self, board, data):
@@ -33,12 +32,9 @@ class Plotter:
 
 class Head_Plotter(Plotter):
   """
-  TODO(mikemeko)
+  Plots motor angle and speed, as well as lamp angle and distance.
   """
   def __init__(self, head_connector):
-    """
-    TODO(mikemeko)
-    """
     assert isinstance(head_connector, Head_Connector), ('head_connector must '
         'be a Head_Connector')
     self._head_connector = head_connector
@@ -68,35 +64,26 @@ class Head_Plotter(Plotter):
 
 class Motor_Plotter(Plotter):
   """
-  Plotter that shows motor angle and velocity vs. time.
+  Plots motor angle and speed.
   """
   def __init__(self, motor_connector):
-    """
-    TODO(mikemeko)
-    """
     assert isinstance(motor_connector, Motor_Connector), ('motor_connector '
         'must be a Motor_Connector')
     self._motor_connector = motor_connector
   def plot(self, board, data):
-    # plot time versus motor angle
+    # motor angle
     figure()
     xlabel('t')
     ylabel('Motor angle')
     stem(T_SAMPLES, self._motor_connector.angle_samples[:-1])
-    # plot time versus motor velocity
+    # motor speed
     figure()
     xlabel('t')
-    ylabel('Motor velocity')
+    ylabel('Motor speed')
     stem(T_SAMPLES, self._motor_connector.speed_samples[:-1])
 
 class Signalled_Pot_Plotter(Plotter):
-  """
-  TODO(mikemeko)
-  """
   def __init__(self, pot):
-    """
-    TODO(mikemeko)
-    """
     assert isinstance(pot, Signalled_Pot), ('pot must be a Signalled_Pot')
     self._pot = pot
   def plot(self, board, data):
@@ -107,7 +94,7 @@ class Signalled_Pot_Plotter(Plotter):
 
 class Probe_Plotter(Plotter):
   """
-  Plotter that shows the voltage difference accross probes vs. time.
+  Plotter that shows the voltage difference accross probes.
   """
   def __init__(self, probe_plus, probe_minus):
     """
@@ -128,5 +115,5 @@ class Probe_Plotter(Plotter):
           solution[self._probe_plus] - solution[self._probe_minus])
     figure()
     xlabel('t')
-    ylabel('Probe Voltage Difference')
+    ylabel('Probe voltage difference')
     stem(t_samples, probe_samples)
