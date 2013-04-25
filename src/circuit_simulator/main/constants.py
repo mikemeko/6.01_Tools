@@ -8,9 +8,9 @@ from core.gui.constants import CONNECTOR_LEFT
 from core.gui.constants import CONNECTOR_RIGHT
 
 # colors
-LAMP_BOX_EMPTY_COLOR = 'white'
-LAMP_BOX_COLOR = '#AAA'
+LAMP_BOX_COLOR = 'white'
 LAMP_COLOR = 'yellow'
+LAMP_EMPTY_COLOR = '#DDD'
 N_PIN_CONNECTOR_FILL = '#EEE'
 N_PIN_CONNECTOR_OUTLINE = 'black'
 NEGATIVE_COLOR = '#1531AE'

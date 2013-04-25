@@ -222,6 +222,9 @@ class Pot(Component):
     """
     assert is_number(alpha), 'alpha must be a number'
     Component.__init__(self)
+    self.n_top = n_top
+    self.n_middle = n_middle
+    self.n_bottom = n_bottom
     self.r = r
     self.alpha = clip(alpha, 0, 1)
     self._resistor_1 = Resistor(n_top, n_middle, i_top_middle,

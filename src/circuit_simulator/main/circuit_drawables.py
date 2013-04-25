@@ -13,10 +13,10 @@ from constants import DISABLED_PINS_MOTOR_CONNECTOR
 from constants import DISABLED_PINS_ROBOT_CONNECTOR
 from constants import GROUND
 from constants import LAMP_BOX_COLOR
-from constants import LAMP_BOX_EMPTY_COLOR
 from constants import LAMP_BOX_PADDING
 from constants import LAMP_BOX_SIZE
 from constants import LAMP_COLOR
+from constants import LAMP_EMPTY_COLOR
 from constants import LAMP_RADIUS
 from constants import LAMP_SIGNAL_FILE_EXTENSION
 from constants import LAMP_SIGNAL_FILE_TYPE
@@ -345,7 +345,7 @@ class Pot_Drawable(Drawable):
         changed.
     |direction|: the direction of this pot, one of DIRECTION_DOWN,
         DIRECTION_LEFT, DIRECTION_RIGHT, or DIRECTION_UP.
-    |signal_file|: the signal file (alpha) associated with this pot.
+    |signal_file|: the signal file (containing alpha) associated with this pot.
     """
     assert is_callable(on_signal_file_changed), ('on_signal_file_changed must '
         'be callable')
@@ -554,15 +554,14 @@ class Robot_Connector_Drawable(N_Pin_Connector_Drawable):
 class Head_Connector_Drawable(N_Pin_Connector_Drawable):
   """
   Drawable for Head Connector.
-  TODO(mikemeko): cleanup
   """
   def __init__(self, on_signal_file_changed, direction=DIRECTION_UP,
       signal_file=None):
     """
     |on_signal_file_changed|: function to be called when head connector signal
         file is changed.
-    |signal_file|: the signal file (lamp angle and distance) associated with
-        this pot.
+    |signal_file|: the signal file (containing lamp angle and distance)
+        associated with this pot.
     """
     assert is_callable(on_signal_file_changed), ('on_signal_file_changed must '
         'be callable')
@@ -574,20 +573,22 @@ class Head_Connector_Drawable(N_Pin_Connector_Drawable):
     return Head_Connector_Drawable(self.on_signal_file_changed,
         (self.direction + 1) % 4, self.signal_file)
   def draw_on(self, canvas, offset=(0, 0)):
+    # first draw as regular N_Pin_Connector_Drawable
     N_Pin_Connector_Drawable.draw_on(self, canvas, offset)
+    # then draw the button that, when right-clicked, lets the user select a
+    #     signal file for this head connector
     ox, oy = offset
     w, h = self.width, self.height
-    # create a button that lets user select a signal file for this head
-    #     connector when right-clicked
     lamp_box_ox = (ox + LAMP_BOX_PADDING) if self.direction in (DIRECTION_UP,
         DIRECTION_RIGHT) else (ox + w - LAMP_BOX_SIZE - LAMP_BOX_PADDING)
     lamp_box_oy = (oy + LAMP_BOX_PADDING) if self.direction in (DIRECTION_DOWN,
         DIRECTION_RIGHT) else (oy + h - LAMP_BOX_SIZE - LAMP_BOX_PADDING)
     lamp_box = canvas.create_rectangle(lamp_box_ox, lamp_box_oy,
         lamp_box_ox + LAMP_BOX_SIZE, lamp_box_oy + LAMP_BOX_SIZE,
-        fill=LAMP_BOX_COLOR if self.signal_file else LAMP_BOX_EMPTY_COLOR)
+        fill=LAMP_BOX_COLOR)
     lamp = create_circle(canvas, lamp_box_ox + LAMP_BOX_SIZE / 2,
-        lamp_box_oy + LAMP_BOX_SIZE / 2, LAMP_RADIUS, fill=LAMP_COLOR)
+        lamp_box_oy + LAMP_BOX_SIZE / 2, LAMP_RADIUS, fill=LAMP_COLOR
+        if self.signal_file else LAMP_EMPTY_COLOR)
     def set_signal_file(event):
       """
       Opens a window to let the user choose a signal file for this head
@@ -598,7 +599,7 @@ class Head_Connector_Drawable(N_Pin_Connector_Drawable):
           LAMP_SIGNAL_FILE_EXTENSION)], initialfile=self.signal_file)
       if new_signal_file and new_signal_file != self.signal_file:
         self.signal_file = relpath(new_signal_file)
-        canvas.itemconfig(lamp_box, fill=LAMP_BOX_COLOR)
+        canvas.itemconfig(lamp, fill=LAMP_COLOR)
         self.on_signal_file_changed()
     for lamp_part in (lamp_box, lamp):
       self.parts.add(lamp_part)
