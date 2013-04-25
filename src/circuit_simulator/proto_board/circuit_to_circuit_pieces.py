@@ -111,7 +111,6 @@ def head_connector_piece_from_head_connector(head_connector):
   """
   assert isinstance(head_connector, Head_Connector), ('head_connector must be '
       'a Head_Connector')
-  # TODO(mikemeko)
   return Head_Connector_Piece(head_connector.pin_nodes)
 
 def op_amp_piece_from_op_amp(op_amp_set):
