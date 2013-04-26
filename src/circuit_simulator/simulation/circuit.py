@@ -9,8 +9,13 @@ Equation representation: a list of terms summing to 0, where a term is a tuple
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
 from constants import DEBUG
+from constants import MOTOR_B_LOADED
+from constants import MOTOR_B_UNLOADED
 from constants import MOTOR_INIT_ANGLE
 from constants import MOTOR_INIT_SPEED
+from constants import MOTOR_J
+from constants import MOTOR_KB
+from constants import MOTOR_KT
 from constants import MOTOR_RESISTANCE
 from constants import HEAD_POT_INIT_ALPHA
 from constants import HEAD_POT_RESISTANCE
@@ -276,28 +281,40 @@ class Motor_Connector(Component):
   """
   Representation for motor connector.
   """
-  def __init__(self, motor_plus, motor_minus, i):
+  def __init__(self, motor_plus, motor_minus, i, r=MOTOR_RESISTANCE,
+      Kt=MOTOR_KT, Kb=MOTOR_KB, J=MOTOR_J, B=MOTOR_B_UNLOADED):
     """
     |motor_plus|: Motor + node.
     |motor_minus|: Motor - node.
     |i|: current from + node to - node.
+    |r|, |Kt|, |Kb|, |J|, |B|: motor model parameters.
     """
     Component.__init__(self)
     self.motor_plus = motor_plus
     self.motor_minus = motor_minus
-    self._resistor = Resistor(motor_plus, motor_minus, i, MOTOR_RESISTANCE)
+    self._resistor = Resistor(motor_plus, motor_minus, i, r)
     self.angle_samples = [MOTOR_INIT_ANGLE]
     self.speed_samples = [MOTOR_INIT_SPEED]
+    self.r = r
+    self.Kt = Kt
+    self.Kb = Kb
+    self.J = J
+    self.B = B
   def step(self, current_solution):
     assert self.motor_plus in current_solution, ('%s not in current solution' %
         self.n1)
     assert self.motor_minus in current_solution, ('%s not in current solution'
         % self.n2)
-    # TODO(mikemeko): improve speed estimation based on voltage difference
-    self.speed_samples.append(current_solution[self.motor_plus] -
-        current_solution[self.motor_minus])
-    self.angle_samples.append(self.angle_samples[-1] + T *
-        self.speed_samples[-1])
+    current_angle = self.angle_samples[-1]
+    current_speed = self.speed_samples[-1]
+    voltage_accross = current_solution[self.motor_plus] - current_solution[
+        self.motor_minus]
+    torque = self.Kt * (voltage_accross - self.Kb * current_speed) / self.r
+    acceleration = (torque - self.B * current_speed) / self.J
+    new_speed = current_speed + T * acceleration
+    new_angle = current_angle + T * new_speed
+    self.angle_samples.append(new_angle)
+    self.speed_samples.append(new_speed)
     Component.step(self, current_solution)
   def equations(self):
     return self._resistor.equations()
@@ -344,7 +361,8 @@ class Head_Connector(Component):
     # motor
     self.motor_present = all([n_motor_plus, n_motor_minus, i_motor])
     if self.motor_present:
-      self.motor = Motor_Connector(n_motor_plus, n_motor_minus, i_motor)
+      self.motor = Motor_Connector(n_motor_plus, n_motor_minus, i_motor,
+          B=MOTOR_B_LOADED)
     # pot
     self.pot_present = all([n_pot_top, n_pot_middle, n_pot_bottom,
         i_pot_top_middle, i_pot_middle_bottom])
