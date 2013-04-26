@@ -26,6 +26,7 @@ from constants import T
 from core.math.CT_signal import CT_Signal
 from core.math.equation_solver import solve_equations
 from core.util.util import clip
+from core.util.util import in_bounds
 from core.util.util import is_number
 from math import cos
 from math import pi
@@ -282,12 +283,15 @@ class Motor_Connector(Component):
   Representation for motor connector.
   """
   def __init__(self, motor_plus, motor_minus, i, r=MOTOR_RESISTANCE,
-      Kt=MOTOR_KT, Kb=MOTOR_KB, J=MOTOR_J, B=MOTOR_B_UNLOADED):
+      Kt=MOTOR_KT, Kb=MOTOR_KB, J=MOTOR_J, B=MOTOR_B_UNLOADED,
+      angle_min=float('-inf'), angle_max=float('inf')):
     """
     |motor_plus|: Motor + node.
     |motor_minus|: Motor - node.
     |i|: current from + node to - node.
     |r|, |Kt|, |Kb|, |J|, |B|: motor model parameters.
+    |angle_min|: minimum allowed angle for motor.
+    |angle_max|: maximum allowed angle for motor.
     """
     Component.__init__(self)
     self.motor_plus = motor_plus
@@ -300,6 +304,8 @@ class Motor_Connector(Component):
     self.Kb = Kb
     self.J = J
     self.B = B
+    self.angle_min = angle_min
+    self.angle_max = angle_max
   def step(self, current_solution):
     assert self.motor_plus in current_solution, ('%s not in current solution' %
         self.n1)
@@ -313,6 +319,11 @@ class Motor_Connector(Component):
     acceleration = (torque - self.B * current_speed) / self.J
     new_speed = current_speed + T * acceleration
     new_angle = current_angle + T * new_speed
+    if not in_bounds(new_angle, self.angle_min, self.angle_max):
+      # if angle has not really changed, then force speed to be 0
+      if current_angle in (self.angle_min, self.angle_max):
+        new_speed = 0
+      new_angle = clip(new_angle, self.angle_min, self.angle_max)
     self.angle_samples.append(new_angle)
     self.speed_samples.append(new_speed)
     Component.step(self, current_solution)
@@ -362,7 +373,7 @@ class Head_Connector(Component):
     self.motor_present = all([n_motor_plus, n_motor_minus, i_motor])
     if self.motor_present:
       self.motor = Motor_Connector(n_motor_plus, n_motor_minus, i_motor,
-          B=MOTOR_B_LOADED)
+          B=MOTOR_B_LOADED, angle_min=-pi, angle_max=pi)
     # pot
     self.pot_present = all([n_pot_top, n_pot_middle, n_pot_bottom,
         i_pot_top_middle, i_pot_middle_bottom])
@@ -410,10 +421,9 @@ class Head_Connector(Component):
     if self.motor_present:
       self.motor.step(current_solution)
     # step pot
-    # TODO(mikemeko): improve pot alpha estimation based on motor angle
     if self.pot_present:
       current_motor_angle = self.motor.angle_samples[-1]
-      self.pot.set_alpha((current_motor_angle / (2 * pi) + 0.5) % 1)
+      self.pot.set_alpha(current_motor_angle / (2 * pi) + 0.5)
       self.pot.step(current_solution)
     Component.step(self, current_solution)
   def _present_components(self):
