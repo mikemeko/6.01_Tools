@@ -16,11 +16,13 @@ from constants import HEAD_POT_INIT_ALPHA
 from constants import HEAD_POT_RESISTANCE
 from constants import NUM_SAMPLES
 from constants import OP_AMP_K
+from constants import PHOTODETECTOR_K
 from constants import T
 from core.math.CT_signal import CT_Signal
 from core.math.equation_solver import solve_equations
 from core.util.util import clip
 from core.util.util import is_number
+from math import cos
 from math import pi
 from traceback import format_exc
 
@@ -336,6 +338,13 @@ class Head_Connector(Component):
     assert isinstance(lamp_distance_signal, CT_Signal), ('lamp_distance_signal'
         ' must be a CT_Signal')
     Component.__init__(self)
+    # lamp signals
+    self.lamp_angle_signal = lamp_angle_signal
+    self.lamp_distance_signal = lamp_distance_signal
+    # motor
+    self.motor_present = all([n_motor_plus, n_motor_minus, i_motor])
+    if self.motor_present:
+      self.motor = Motor_Connector(n_motor_plus, n_motor_minus, i_motor)
     # pot
     self.pot_present = all([n_pot_top, n_pot_middle, n_pot_bottom,
         i_pot_top_middle, i_pot_middle_bottom])
@@ -343,53 +352,41 @@ class Head_Connector(Component):
       self.pot = Pot(n_pot_top, n_pot_middle, n_pot_bottom, i_pot_top_middle,
           i_pot_middle_bottom, HEAD_POT_RESISTANCE, HEAD_POT_INIT_ALPHA)
     # photodetectors
-    init_lamp_angle = lamp_angle_signal(0)
-    init_lamp_distance = lamp_distance_signal(0)
     self.photo_left_present = all([n_photo_left, n_photo_common,
         i_photo_left_common])
     if self.photo_left_present:
       self.photo_left = Current_Source(n_photo_left, n_photo_common,
-          i_photo_left_common, self._photodetector_current_constant(
-          init_lamp_angle, init_lamp_distance, 'left'))
+          i_photo_left_common, self._photodetector_current_constant('left'))
     self.photo_right_present = all([n_photo_right, n_photo_common,
         i_photo_common_right])
     if self.photo_right_present:
       self.photo_right = Current_Source(n_photo_right, n_photo_common,
-          i_photo_common_right, self._photodetector_current_constant(
-          init_lamp_angle, init_lamp_distance, 'right'))
-    # motor
-    self.motor_present = all([n_motor_plus, n_motor_minus, i_motor])
-    if self.motor_present:
-      self.motor = Motor_Connector(n_motor_plus, n_motor_minus, i_motor)
-    # lamp signals
-    self.lamp_angle_signal = lamp_angle_signal
-    self.lamp_distance_signal = lamp_distance_signal
+          i_photo_common_right, self._photodetector_current_constant('right'))
     # all pin nodes in order
     self.pin_nodes = [n_pot_top, n_pot_middle, n_pot_bottom, n_photo_left,
         n_photo_common, n_photo_right, n_motor_plus, n_motor_minus]
-  def _photodetector_current_constant(self, lamp_angle, lamp_distance, side):
+  def _photodetector_current_constant(self, side):
     """
-    |lamp_angle|: angle of the lamp from the center of the head.
-    |lamp_distance|: distance of the lamp from the center of the head.
-    |side|: 'left' or 'right'. TODO(mikemeko) use +/- pi/4?
-    Returns the current constant for the given photodetector estimated based on
-        |lamp_angle| and |lamp_distance|.
+    |side|: 'left' or 'right'.
     """
-    assert side in ('left', 'right'), 'side muste be either "left" or "right"'
-    # TODO(mikemeko): improve current constant estimation based on lamp_angle
-    #     and lamp_distance
-    return 1. / lamp_distance
+    assert side in ('left', 'right'), ('side=%s must be either "left" or '
+        '"right"' % side)
+    # TODO(mikemeko): improve current constant estimation
+    lamp_angle = self.lamp_angle_signal(self.current_time)
+    lamp_distance = self.lamp_distance_signal(self.current_time)
+    motor_angle = self.motor.angle_samples[-1] if self.motor_present else (
+        MOTOR_INIT_ANGLE)
+    photodetector_offset = pi / 4 if side == 'left' else -pi / 4
+    photodetector_lamp_angle = lamp_angle - motor_angle + photodetector_offset
+    return PHOTODETECTOR_K * cos(photodetector_lamp_angle) / (
+        lamp_distance ** 2)
   def step(self, current_solution):
     # step photodetectors
-    current_lamp_angle = self.lamp_angle_signal(self.current_time)
-    current_lamp_distance = self.lamp_distance_signal(self.current_time)
     if self.photo_left_present:
-      self.photo_left.set_i0(self._photodetector_current_constant(
-          current_lamp_angle, current_lamp_distance, 'left'))
+      self.photo_left.set_i0(self._photodetector_current_constant('left'))
       self.photo_left.step(current_solution)
     if self.photo_right_present:
-      self.photo_right.set_i0(self._photodetector_current_constant(
-          current_lamp_angle, current_lamp_distance, 'right'))
+      self.photo_right.set_i0(self._photodetector_current_constant('right'))
       self.photo_right.step(current_solution)
     # step motor
     if self.motor_present:
