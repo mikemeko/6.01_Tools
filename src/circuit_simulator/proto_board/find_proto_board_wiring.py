@@ -172,13 +172,14 @@ def find_wiring(loc_pairs, start_proto_board=Proto_Board()):
       properly connected, or None if no such Proto_Board can be found. Search
       starts from |start_proto_board|.
   """
-  start_node = Proto_Board_Search_Node(
-      start_proto_board.with_loc_disjoint_set_forest(loc_disjoint_set_forest(
-      loc_pairs)), tuple(loc_pairs))
-  global proto_board
   def run_search():
-    global proto_board
-    proto_board, loc_pairs = a_star(start_node, goal_test, heuristic, progress)
+    proto_board = start_proto_board.with_loc_disjoint_set_forest(
+        loc_disjoint_set_forest(loc_pairs))
+    print 'Connecting %d pairs' % len(loc_pairs)
+    while loc_pairs:
+      node = Proto_Board_Search_Node(proto_board, (loc_pairs.pop(),))
+      proto_board = a_star(node, goal_test, heuristic, progress)[0]
+      print '\t%d pairs left' % len(loc_pairs)
     return proto_board
   if DEBUG & DEBUG_SHOW_PROFILE:
     runctx('proto_board = run_search()', globals(), locals())
