@@ -173,8 +173,10 @@ def find_wiring(loc_pairs, start_proto_board=Proto_Board()):
       starts from |start_proto_board|.
   """
   def run_search():
-    # first connect pairs that are farther apart
-    loc_pairs.sort(key=lambda (loc_1, loc_2): dist(loc_1, loc_2))
+    # first connect pairs that are farther apart; connect to rail last
+    # TODO(mikemeko): this is ordering is very ad hoc, not well thought out
+    loc_pairs.sort(key=lambda (loc_1, loc_2): (not (is_rail_loc(loc_1) or
+        is_rail_loc(loc_2))) * dist(loc_1, loc_2))
     proto_board = start_proto_board.with_loc_disjoint_set_forest(
         loc_disjoint_set_forest(loc_pairs))
     # connect one pair of locations at a time

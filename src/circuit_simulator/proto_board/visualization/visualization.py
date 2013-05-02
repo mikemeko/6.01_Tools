@@ -188,9 +188,9 @@ class Proto_Board_Visualizer(Frame):
     self._draw_labels()
     self._draw_pieces()
     self._draw_wires()
-    self._canvas.pack()
     if self._show_pwr_gnd_pins:
       self._draw_gnd_pwr_pins()
+    self._canvas.pack()
     self.pack()
 
 def visualize_proto_board(proto_board, toplevel, show_pwr_gnd_pins=True):
