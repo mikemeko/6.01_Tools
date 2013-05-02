@@ -176,7 +176,8 @@ class Proto_Board_Visualizer(Frame):
     """
     Draws all the wires on the proto board.
     """
-    for wire in self._proto_board.get_wires():
+    for wire in sorted(self._proto_board.get_wires(),
+        key=lambda wire: -wire.length()):
       self._draw_wire(wire)
   def _draw_proto_board(self):
     """
