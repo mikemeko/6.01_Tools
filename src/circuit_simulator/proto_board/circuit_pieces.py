@@ -1,6 +1,6 @@
 """
 Representations for objects that can be placed on the proto board: op amps,
-    resistors, pots ... TODO(mikemeko).
+    resistors, pots, motor connectors, head connectors, and robot connectors.
 """
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
