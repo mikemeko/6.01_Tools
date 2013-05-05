@@ -193,7 +193,8 @@ if __name__ == '__main__':
   if SCHEMATIC_CONNECTOR_DRAWABLES:
     palette.add_drawable_type(Motor_Drawable, LEFT, None)
     palette.add_drawable_type(Motor_Pot_Drawable, LEFT, None)
-    palette.add_drawable_type(Photosensors_Drawable, LEFT, None)
+    palette.add_drawable_type(Photosensors_Drawable, LEFT, None,
+        on_signal_file_changed=lambda: board.set_changed(True))
     palette.add_drawable_type(Robot_Pin_Drawable, LEFT, None)
   else:
     palette.add_drawable_type(Motor_Connector_Drawable, LEFT, None)

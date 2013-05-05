@@ -751,10 +751,56 @@ class Photosensors_Drawable(Pin_Drawable):
   """
   TODO:
   """
-  def __init__(self, direction=DIRECTION_RIGHT):
+  def __init__(self, on_signal_file_changed, direction=DIRECTION_RIGHT,
+      signal_file=None):
+    assert is_callable(on_signal_file_changed), ('on_signal_file_changed must '
+        'be callable')
     Pin_Drawable.__init__(self, 'PS', PHOTOSENSORS_FILL, PHOTOSENSORS_SIZE,
         PHOTOSENSORS_SIZE)
+    self.on_signal_file_changed = on_signal_file_changed
     self.direction = direction
+    self.signal_file = signal_file
+  def draw_on(self, canvas, offset=(0, 0)):
+    Pin_Drawable.draw_on(self, canvas, offset)
+    # draw the button that, when right-clicked, lets the user select a signal
+    #     file for the photosensors
+    ox, oy = offset
+    w, h = self.width, self.height
+    if self.direction == DIRECTION_UP:
+      lamp_cx = ox + w / 2
+      lamp_cy = oy + h - LAMP_BOX_PADDING - LAMP_BOX_SIZE / 2
+    elif self.direction == DIRECTION_RIGHT:
+      lamp_cx = ox + LAMP_BOX_PADDING + LAMP_BOX_SIZE / 2
+      lamp_cy = oy + h / 2
+    elif self.direction == DIRECTION_DOWN:
+      lamp_cx = ox + w / 2
+      lamp_cy = oy + LAMP_BOX_PADDING + LAMP_BOX_SIZE / 2
+    elif self.direction == DIRECTION_LEFT:
+      lamp_cx = ox + w - LAMP_BOX_PADDING - LAMP_BOX_SIZE / 2
+      lamp_cy = oy + h / 2
+    else:
+      # should never get here
+      raise Exception('Invalid direction %s' % self.direction)
+    lamp_box = canvas.create_rectangle(lamp_cx - LAMP_BOX_SIZE / 2, lamp_cy -
+        LAMP_BOX_SIZE / 2, lamp_cx + LAMP_BOX_SIZE / 2, lamp_cy +
+        LAMP_BOX_SIZE / 2, fill=LAMP_BOX_COLOR)
+    lamp = create_circle(canvas, lamp_cx, lamp_cy, LAMP_RADIUS, fill=LAMP_COLOR
+        if self.signal_file else LAMP_EMPTY_COLOR)
+    def set_signal_file(event):
+      """
+      Opens a window to let the user choose a signal file for this head
+          connector.
+      """
+      new_signal_file = askopenfilename(title=OPEN_LAMP_SIGNAL_FILE_TITLE,
+          filetypes=[('%s files' % LAMP_SIGNAL_FILE_TYPE,
+          LAMP_SIGNAL_FILE_EXTENSION)], initialfile=self.signal_file)
+      if new_signal_file and new_signal_file != self.signal_file:
+        self.signal_file = relpath(new_signal_file)
+        canvas.itemconfig(lamp, fill=LAMP_COLOR)
+        self.on_signal_file_changed()
+    for lamp_part in (lamp_box, lamp):
+      self.parts.add(lamp_part)
+      canvas.tag_bind(lamp_part, '<Button-3>', set_signal_file)
   def draw_connectors(self, canvas, offset=(0, 0)):
     ox, oy = offset
     w, h = self.width, self.height
@@ -790,9 +836,9 @@ class Photosensors_Drawable(Pin_Drawable):
     self.common = self._draw_connector(canvas, (common_x, common_y))
     self.right = self._draw_connector(canvas, (right_x, right_y))
     text_padding = 8
-    self.parts.add(canvas.create_text(left_x + text_padding * sign(cx - left_x),
-        left_y + text_padding * sign(cy - left_y), text='l', fill='white',
-        justify=CENTER))
+    self.parts.add(canvas.create_text(left_x + text_padding * sign(cx -
+        left_x), left_y + text_padding * sign(cy - left_y), text='l',
+        fill='white', justify=CENTER))
     self.parts.add(canvas.create_text(common_x + text_padding * sign(cx -
         common_x), common_y + text_padding * sign(cy - common_y), text='c',
         fill='white', justify=CENTER))
@@ -800,15 +846,21 @@ class Photosensors_Drawable(Pin_Drawable):
         right_x), right_y + text_padding * sign(cy - right_y), text='r',
         fill='white', justify=CENTER))
   def rotated(self):
-    return Photosensors_Drawable((self.direction + 1) % 4)
+    return Photosensors_Drawable(self.on_signal_file_changed,
+        (self.direction + 1) % 4, self.signal_file)
   def serialize(self, offset):
-    return 'Photosensors %d %s' % (self.direction, str(offset))
+    return 'Photosensors %s %d %s' % (self.signal_file, self.direction,
+        str(offset))
   @staticmethod
   def deserialize(item_str, board):
-    m = match(r'Photosensors %s %s' % (RE_INT, RE_INT_PAIR), item_str)
+    m = match(r'Photosensors (.+) %s %s' % (RE_INT, RE_INT_PAIR), item_str)
     if m:
-      direction, ox, oy = map(int, m.groups())
-      board.add_drawable(Photosensors_Drawable(direction), (ox, oy))
+      signal_file = m.group(1)
+      if not isfile(signal_file):
+        signal_file = None
+      direction, ox, oy = map(int, m.groups()[1:])
+      board.add_drawable(Photosensors_Drawable(lambda: board.set_changed(
+          True), direction, signal_file), (ox, oy))
       return True
     return False
 
