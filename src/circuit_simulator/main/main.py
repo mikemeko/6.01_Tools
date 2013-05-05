@@ -13,7 +13,7 @@ from circuit_drawables import Motor_Connector_Drawable
 from circuit_drawables import Motor_Drawable
 from circuit_drawables import Motor_Pot_Drawable
 from circuit_drawables import Op_Amp_Drawable
-from circuit_drawables import Photoresistors_Drawable
+from circuit_drawables import Photosensors_Drawable
 from circuit_drawables import Pot_Drawable
 from circuit_drawables import Power_Drawable
 from circuit_drawables import Probe_Minus_Drawable
@@ -132,7 +132,7 @@ if __name__ == '__main__':
     deserializers = (Power_Drawable, Ground_Drawable, Probe_Plus_Drawable,
         Probe_Minus_Drawable, Resistor_Drawable, Op_Amp_Drawable,
         Pot_Drawable, Motor_Drawable, Motor_Connector_Drawable,
-        Motor_Pot_Drawable, Photoresistors_Drawable, Robot_Pin_Drawable,
+        Motor_Pot_Drawable, Photosensors_Drawable, Robot_Pin_Drawable,
         Robot_Connector_Drawable, Head_Connector_Drawable,
         Wire_Connector_Drawable, Wire)
     if open_board_from_file(board, new_file_name, deserializers,
@@ -193,7 +193,7 @@ if __name__ == '__main__':
   if SCHEMATIC_CONNECTOR_DRAWABLES:
     palette.add_drawable_type(Motor_Drawable, LEFT, None)
     palette.add_drawable_type(Motor_Pot_Drawable, LEFT, None)
-    palette.add_drawable_type(Photoresistors_Drawable, LEFT, None)
+    palette.add_drawable_type(Photosensors_Drawable, LEFT, None)
     palette.add_drawable_type(Robot_Pin_Drawable, LEFT, None)
   else:
     palette.add_drawable_type(Motor_Connector_Drawable, LEFT, None)

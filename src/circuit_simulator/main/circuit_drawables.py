@@ -39,8 +39,8 @@ from constants import OP_AMP_SIGN_PADDING
 from constants import OP_AMP_UP_VERTICES
 from constants import OPEN_LAMP_SIGNAL_FILE_TITLE
 from constants import OPEN_POT_SIGNAL_FILE_TITLE
-from constants import PHOTORESISTORS_FILL
-from constants import PHOTORESISTORS_SIZE
+from constants import PHOTOSENSORS_FILL
+from constants import PHOTOSENSORS_SIZE
 from constants import PIN_HORIZONTAL_HEIGHT
 from constants import PIN_HORIZONTAL_WIDTH
 from constants import PIN_OUTLINE
@@ -68,10 +68,8 @@ from constants import ROBOT_PIN_SIZE
 from constants import SIMULATE
 from core.gui.components import Drawable
 from core.gui.components import Run_Drawable
-from core.gui.constants import CONNECTOR_BOTTOM
 from core.gui.constants import CONNECTOR_LEFT
 from core.gui.constants import CONNECTOR_RIGHT
-from core.gui.constants import CONNECTOR_TOP
 from core.gui.util import create_circle
 from core.gui.util import create_editable_text
 from core.gui.util import rotate_connector_flags
@@ -84,6 +82,7 @@ from re import match
 from tkFileDialog import askopenfilename
 from Tkinter import CENTER
 from util import draw_resistor_zig_zags
+from util import sign
 
 class Pin_Drawable(Drawable):
   """
@@ -635,19 +634,51 @@ class Motor_Drawable(Pin_Drawable):
   """
   TODO:
   """
-  def __init__(self, connectors=CONNECTOR_BOTTOM | CONNECTOR_TOP):
-    Pin_Drawable.__init__(self, 'Motor', MOTOR_FILL, MOTOR_SIZE, MOTOR_SIZE,
-        connectors)
+  def __init__(self, direction=DIRECTION_UP):
+    Pin_Drawable.__init__(self, 'M', MOTOR_FILL, MOTOR_SIZE, MOTOR_SIZE)
+    self.direction = direction
+  def draw_connectors(self, canvas, offset=(0, 0)):
+    ox, oy = offset
+    w, h = self.width, self.height
+    cx, cy = ox + w / 2, oy + h / 2
+    if self.direction == DIRECTION_UP:
+      plus_x = minus_x = ox + w / 2
+      plus_y = oy
+      minus_y = oy + h
+    elif self.direction == DIRECTION_RIGHT:
+      plus_x = ox + w
+      minus_x = ox
+      plus_y = minus_y = oy + h / 2
+    elif self.direction == DIRECTION_DOWN:
+      plus_x = minus_x = ox + w / 2
+      plus_y = oy + h
+      minus_y = oy
+    elif self.direction == DIRECTION_LEFT:
+      plus_x = ox
+      minus_x = ox + w
+      plus_y = minus_y = oy + h / 2
+    else:
+      # should never get here
+      raise Exception('Invalid direction %s' % self.direction)
+    self.plus = self._draw_connector(canvas, (plus_x, plus_y))
+    self.minus = self._draw_connector(canvas, (minus_x, minus_y))
+    text_padding = 8
+    self.parts.add(canvas.create_text(plus_x + text_padding * sign(cx -
+        plus_x), plus_y + text_padding * sign(cy - plus_y), text='+',
+        fill='white', justify=CENTER))
+    self.parts.add(canvas.create_text(minus_x + text_padding * sign(cx -
+        minus_x), minus_y + text_padding * sign(cy - minus_y), text='-',
+        fill='white', justify=CENTER))
   def rotated(self):
-    return Motor_Drawable(rotate_connector_flags(self.connector_flags))
+    return Motor_Drawable((self.direction + 1) % 4)
   def serialize(self, offset):
-    return 'Motor %d %s' % (self.connector_flags, str(offset))
+    return 'Motor %d %s' % (self.direction, str(offset))
   @staticmethod
   def deserialize(item_str, board):
     m = match(r'Motor %s %s' % (RE_INT, RE_INT_PAIR), item_str)
     if m:
-      connectors, ox, oy = map(int, m.groups())
-      board.add_drawable(Motor_Drawable(connectors), (ox, oy))
+      direction, ox, oy = map(int, m.groups())
+      board.add_drawable(Motor_Drawable(direction), (ox, oy))
       return True
     return False
 
@@ -655,42 +686,129 @@ class Motor_Pot_Drawable(Pin_Drawable):
   """
   TODO:
   """
-  def __init__(self, connectors=CONNECTOR_BOTTOM | CONNECTOR_RIGHT |
-      CONNECTOR_TOP):
-    Pin_Drawable.__init__(self, 'Motor Pot', MOTOR_POT_FILL, MOTOR_POT_SIZE,
-        MOTOR_POT_SIZE, connectors)
+  def __init__(self, direction=DIRECTION_RIGHT):
+    Pin_Drawable.__init__(self, 'MP', MOTOR_POT_FILL, MOTOR_POT_SIZE,
+        MOTOR_POT_SIZE)
+    self.direction = direction
+  def draw_connectors(self, canvas, offset=(0, 0)):
+    ox, oy = offset
+    w, h = self.width, self.height
+    cx, cy = ox + w / 2, oy + h / 2
+    if self.direction == DIRECTION_UP:
+      top_x = ox
+      top_y = bottom_y = cy
+      middle_x = cx
+      middle_y = oy
+      bottom_x = ox + w
+    elif self.direction == DIRECTION_RIGHT:
+      top_x = bottom_x = cx
+      top_y = oy
+      middle_x = ox + w
+      middle_y = cy
+      bottom_y = oy + h
+    elif self.direction == DIRECTION_DOWN:
+      top_x = ox + w
+      top_y = bottom_y = cy
+      middle_x = cx
+      middle_y = oy + h
+      bottom_x = ox
+    elif self.direction == DIRECTION_LEFT:
+      top_x = bottom_x = cx
+      top_y = oy + h
+      middle_x = ox
+      middle_y = cy
+      bottom_y = oy
+    else:
+      # should never get here
+      raise Exception('Invalid direction %s' % self.direction)
+    self.top = self._draw_connector(canvas, (top_x, top_y))
+    self.middle = self._draw_connector(canvas, (middle_x, middle_y))
+    self.bottom = self._draw_connector(canvas, (bottom_x, bottom_y))
+    text_padding = 8
+    self.parts.add(canvas.create_text(top_x + text_padding * sign(cx - top_x),
+        top_y + text_padding * sign(cy - top_y), text='+', fill='white',
+        justify=CENTER))
+    self.parts.add(canvas.create_text(middle_x + text_padding * sign(cx -
+        middle_x), middle_y + text_padding * sign(cy - middle_y), text='m',
+        fill='white', justify=CENTER))
+    self.parts.add(canvas.create_text(bottom_x + text_padding * sign(cx -
+        bottom_x), bottom_y + text_padding * sign(cy - bottom_y), text='-',
+        fill='white', justify=CENTER))
   def rotated(self):
-    return Motor_Pot_Drawable(rotate_connector_flags(self.connector_flags))
+    return Motor_Pot_Drawable((self.direction + 1) % 4)
   def serialize(self, offset):
-    return 'Motor Pot %d %s' % (self.connector_flags, str(offset))
+    return 'Motor Pot %d %s' % (self.direction, str(offset))
   @staticmethod
   def deserialize(item_str, board):
     m = match(r'Motor Pot %s %s' % (RE_INT, RE_INT_PAIR), item_str)
     if m:
-      connectors, ox, oy = map(int, m.groups())
-      board.add_drawable(Motor_Pot_Drawable(connectors), (ox, oy))
+      direction, ox, oy = map(int, m.groups())
+      board.add_drawable(Motor_Pot_Drawable(direction), (ox, oy))
       return True
     return False
 
-class Photoresistors_Drawable(Pin_Drawable):
+class Photosensors_Drawable(Pin_Drawable):
   """
   TODO:
   """
-  def __init__(self, connectors=CONNECTOR_BOTTOM | CONNECTOR_RIGHT |
-      CONNECTOR_TOP):
-    Pin_Drawable.__init__(self, 'Photoresistors', PHOTORESISTORS_FILL,
-        PHOTORESISTORS_SIZE, PHOTORESISTORS_SIZE, connectors)
+  def __init__(self, direction=DIRECTION_RIGHT):
+    Pin_Drawable.__init__(self, 'PS', PHOTOSENSORS_FILL, PHOTOSENSORS_SIZE,
+        PHOTOSENSORS_SIZE)
+    self.direction = direction
+  def draw_connectors(self, canvas, offset=(0, 0)):
+    ox, oy = offset
+    w, h = self.width, self.height
+    cx, cy = ox + w / 2, oy + h / 2
+    if self.direction == DIRECTION_UP:
+      left_x = ox
+      left_y = right_y = cy
+      common_x = cx
+      common_y = oy
+      right_x = ox + w
+    elif self.direction == DIRECTION_RIGHT:
+      left_x = right_x = cx
+      left_y = oy
+      common_x = ox + w
+      common_y = cy
+      right_y = oy + h
+    elif self.direction == DIRECTION_DOWN:
+      left_x = ox + w
+      left_y = right_y = cy
+      common_x = cx
+      common_y = oy + h
+      right_x = ox
+    elif self.direction == DIRECTION_LEFT:
+      left_x = right_x = cx
+      left_y = oy + h
+      common_x = ox
+      common_y = cy
+      right_y = oy
+    else:
+      # should never get here
+      raise Exception('Invalid direction %s' % self.direction)
+    self.left = self._draw_connector(canvas, (left_x, left_y))
+    self.common = self._draw_connector(canvas, (common_x, common_y))
+    self.right = self._draw_connector(canvas, (right_x, right_y))
+    text_padding = 8
+    self.parts.add(canvas.create_text(left_x + text_padding * sign(cx - left_x),
+        left_y + text_padding * sign(cy - left_y), text='l', fill='white',
+        justify=CENTER))
+    self.parts.add(canvas.create_text(common_x + text_padding * sign(cx -
+        common_x), common_y + text_padding * sign(cy - common_y), text='c',
+        fill='white', justify=CENTER))
+    self.parts.add(canvas.create_text(right_x + text_padding * sign(cx -
+        right_x), right_y + text_padding * sign(cy - right_y), text='r',
+        fill='white', justify=CENTER))
   def rotated(self):
-    return Photoresistors_Drawable(rotate_connector_flags(
-        self.connector_flags))
+    return Photosensors_Drawable((self.direction + 1) % 4)
   def serialize(self, offset):
-    return 'Photoresistors %d %s' % (self.connector_flags, str(offset))
+    return 'Photosensors %d %s' % (self.direction, str(offset))
   @staticmethod
   def deserialize(item_str, board):
-    m = match(r'Photoresistors %s %s' % (RE_INT, RE_INT_PAIR), item_str)
+    m = match(r'Photosensors %s %s' % (RE_INT, RE_INT_PAIR), item_str)
     if m:
-      connectors, ox, oy = map(int, m.groups())
-      board.add_drawable(Photoresistors_Drawable(connectors), (ox, oy))
+      direction, ox, oy = map(int, m.groups())
+      board.add_drawable(Photosensors_Drawable(direction), (ox, oy))
       return True
     return False
 
@@ -699,46 +817,41 @@ class Robot_Pin_Drawable(Pin_Drawable):
   TODO:
   """
   def __init__(self, direction=DIRECTION_UP):
-    Pin_Drawable.__init__(self, 'Robot', ROBOT_PIN_FILL, ROBOT_PIN_SIZE,
+    Pin_Drawable.__init__(self, 'R', ROBOT_PIN_FILL, ROBOT_PIN_SIZE,
         ROBOT_PIN_SIZE)
     self.direction = direction
   def draw_connectors(self, canvas, offset=(0, 0)):
     ox, oy = offset
     w, h = self.width, self.height
-    t_padding = 7
+    cx, cy = ox + w / 2, oy + h / 2
     if self.direction == DIRECTION_UP:
-      plus_x = minus_x = ox + w / 2
-      plus_y = oy
-      minus_y = oy + h
-      tx = 0
-      ty = t_padding
+      pwr_x = gnd_x = ox + w / 2
+      pwr_y = oy
+      gnd_y = oy + h
     elif self.direction == DIRECTION_RIGHT:
-      plus_x = ox + w
-      minus_x = ox
-      plus_y = minus_y = oy + h / 2
-      tx = -t_padding
-      ty = 0
+      pwr_x = ox + w
+      gnd_x = ox
+      pwr_y = gnd_y = oy + h / 2
     elif self.direction == DIRECTION_DOWN:
-      plus_x = minus_x = ox + w / 2
-      plus_y = oy + h
-      minus_y = oy
-      tx = 0
-      ty = -t_padding
+      pwr_x = gnd_x = ox + w / 2
+      pwr_y = oy + h
+      gnd_y = oy
     elif self.direction == DIRECTION_LEFT:
-      plus_x = ox
-      minus_x = ox + w
-      plus_y = minus_y = oy + h / 2
-      tx = t_padding
-      ty = 0
+      pwr_x = ox
+      gnd_x = ox + w
+      pwr_y = gnd_y = oy + h / 2
     else:
       # should never get here
       raise Exception('Invalid direction %s' % self.direction)
-    self.pwr = self._draw_connector(canvas, (plus_x, plus_y))
-    self.gnd = self._draw_connector(canvas, (minus_x, minus_y))
-    self.parts.add(canvas.create_text(plus_x + tx, plus_y + ty, text='+',
-        fill='white', justify=CENTER))
-    self.parts.add(canvas.create_text(minus_x - tx, minus_y - ty, text='-',
-        fill='white', justify=CENTER))
+    self.pwr = self._draw_connector(canvas, (pwr_x, pwr_y))
+    self.gnd = self._draw_connector(canvas, (gnd_x, gnd_y))
+    text_padding = 8
+    self.parts.add(canvas.create_text(pwr_x + text_padding * sign(cx - pwr_x),
+        pwr_y + text_padding * sign(cy - pwr_y), text='+', fill='white',
+        justify=CENTER))
+    self.parts.add(canvas.create_text(gnd_x + text_padding * sign(cx - gnd_x),
+        gnd_y + text_padding * sign(cy - gnd_y), text='-', fill='white',
+        justify=CENTER))
   def rotated(self):
     return Robot_Pin_Drawable((self.direction + 1) % 4)
   def serialize(self, offset):
