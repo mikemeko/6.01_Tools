@@ -6,18 +6,19 @@ __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
 from circuit_simulator.simulation.constants import NUM_SAMPLES
 from circuit_simulator.simulation.constants import T
-from core.gui.constants import CONNECTOR_LEFT
-from core.gui.constants import CONNECTOR_RIGHT
 
 # colors
 LAMP_BOX_COLOR = 'white'
 LAMP_COLOR = 'yellow'
 LAMP_EMPTY_COLOR = '#DDD'
+MOTOR_FILL = '#666'
+MOTOR_POT_FILL = '#666'
 N_PIN_CONNECTOR_FILL = '#EEE'
 N_PIN_CONNECTOR_OUTLINE = 'black'
 NEGATIVE_COLOR = '#1531AE'
 OP_AMP_FILL = '#EEE'
 OP_AMP_OUTLINE = 'black'
+PHOTORESISTORS_FILL = '#666'
 PIN_OUTLINE = 'black'
 PIN_TEXT_COLOR = 'white'
 POSITIVE_COLOR = '#EF002A'
@@ -26,10 +27,7 @@ POT_ALPHA_FILL = '#3AAACF'
 POT_ALPHA_OUTLINE = '#888'
 RESISTOR_FILL = 'white'
 RESISTOR_OUTLINE = 'grey'
-
-# connector flags for circuit drawable components
-PIN_RIGHT_CONNECTORS = CONNECTOR_RIGHT
-RESISTOR_HORIZONTAL_CONNECTORS = CONNECTOR_LEFT | CONNECTOR_RIGHT
+ROBOT_PIN_FILL = '#666'
 
 # circuit drawable component constants
 DIRECTION_UP    = 0
@@ -39,6 +37,8 @@ DIRECTION_LEFT  = 3
 LAMP_BOX_PADDING = 3
 LAMP_BOX_SIZE = 12
 LAMP_RADIUS = 4
+MOTOR_SIZE = 60
+MOTOR_POT_SIZE = 60
 N_PIN_CONNECTOR_PER_CONNECTOR = 10
 N_PIN_CONNECTOR_TEXT_SIZE = 60
 OP_AMP_BASE = 60
@@ -51,6 +51,7 @@ OP_AMP_UP_VERTICES = (OP_AMP_BASE / 2, 0, 0, OP_AMP_HEIGHT, OP_AMP_BASE,
     OP_AMP_HEIGHT)
 OP_AMP_CONNECTOR_PADDING = 20
 OP_AMP_SIGN_PADDING = 10
+PHOTORESISTORS_SIZE = 60
 PIN_HORIZONTAL_HEIGHT = 20
 PIN_HORIZONTAL_WIDTH = 40
 POT_ALPHA_WIDTH = 12
@@ -62,6 +63,7 @@ RESISTOR_HORIZONTAL_HEIGHT = 20
 RESISTOR_HORIZONTAL_WIDTH = 40
 RESISTOR_NUM_ZIG_ZAGS = 5
 RESISTOR_TEXT_PADDING = 10
+ROBOT_PIN_SIZE = 60
 
 # text
 APP_NAME = 'Circuit Simulator'
@@ -93,6 +95,9 @@ DISABLED_PINS_ROBOT_CONNECTOR = (1, 3, 5, 6, 7, 8)
 
 # plotter constants
 T_SAMPLES = [(n * T) for n in xrange(NUM_SAMPLES)]
+
+# way to represent connectors
+SCHEMATIC_CONNECTOR_DRAWABLES = True
 
 # regular expressions
 RE_OP_AMP_VERTICES = r'\((\d+), (\d+), (\d+), (\d+), (\d+), (\d+)\)'

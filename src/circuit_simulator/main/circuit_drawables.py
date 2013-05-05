@@ -20,6 +20,10 @@ from constants import LAMP_EMPTY_COLOR
 from constants import LAMP_RADIUS
 from constants import LAMP_SIGNAL_FILE_EXTENSION
 from constants import LAMP_SIGNAL_FILE_TYPE
+from constants import MOTOR_FILL
+from constants import MOTOR_POT_FILL
+from constants import MOTOR_POT_SIZE
+from constants import MOTOR_SIZE
 from constants import N_PIN_CONNECTOR_FILL
 from constants import N_PIN_CONNECTOR_OUTLINE
 from constants import N_PIN_CONNECTOR_PER_CONNECTOR
@@ -35,10 +39,11 @@ from constants import OP_AMP_SIGN_PADDING
 from constants import OP_AMP_UP_VERTICES
 from constants import OPEN_LAMP_SIGNAL_FILE_TITLE
 from constants import OPEN_POT_SIGNAL_FILE_TITLE
+from constants import PHOTORESISTORS_FILL
+from constants import PHOTORESISTORS_SIZE
 from constants import PIN_HORIZONTAL_HEIGHT
 from constants import PIN_HORIZONTAL_WIDTH
 from constants import PIN_OUTLINE
-from constants import PIN_RIGHT_CONNECTORS
 from constants import PIN_TEXT_COLOR
 from constants import POSITIVE_COLOR
 from constants import POT_ALPHA_EMPTY_FILL
@@ -55,13 +60,18 @@ from constants import PROBE_PLUS
 from constants import PROBE_SIZE
 from constants import PROTO_BOARD
 from constants import RE_OP_AMP_VERTICES
-from constants import RESISTOR_HORIZONTAL_CONNECTORS
 from constants import RESISTOR_HORIZONTAL_HEIGHT
 from constants import RESISTOR_HORIZONTAL_WIDTH
 from constants import RESISTOR_TEXT_PADDING
+from constants import ROBOT_PIN_FILL
+from constants import ROBOT_PIN_SIZE
 from constants import SIMULATE
 from core.gui.components import Drawable
 from core.gui.components import Run_Drawable
+from core.gui.constants import CONNECTOR_BOTTOM
+from core.gui.constants import CONNECTOR_LEFT
+from core.gui.constants import CONNECTOR_RIGHT
+from core.gui.constants import CONNECTOR_TOP
 from core.gui.util import create_circle
 from core.gui.util import create_editable_text
 from core.gui.util import rotate_connector_flags
@@ -78,8 +88,9 @@ from util import draw_resistor_zig_zags
 class Pin_Drawable(Drawable):
   """
   Abstract Drawable to represent pins: power, ground, and probes.
+  TODO:
   """
-  def __init__(self, text, fill, width, height, connectors):
+  def __init__(self, text, fill, width, height, connectors=0):
     """
     |text|: label for this pin.
     |fill|: color for this pin.
@@ -93,14 +104,14 @@ class Pin_Drawable(Drawable):
         oy + self.height), fill=self.fill, outline=PIN_OUTLINE))
     self.parts.add(canvas.create_text(ox + self.width / 2,
         oy + self.height / 2, text=self.text, fill=PIN_TEXT_COLOR,
-        width=self.width, justify=CENTER))
+        width=.8 * self.width, justify=CENTER))
 
 class Power_Drawable(Pin_Drawable):
   """
   Power pin.
   """
   def __init__(self, width=PIN_HORIZONTAL_WIDTH, height=PIN_HORIZONTAL_HEIGHT,
-      connectors=PIN_RIGHT_CONNECTORS):
+      connectors=CONNECTOR_RIGHT):
     Pin_Drawable.__init__(self, '+%d' % POWER_VOLTS, POSITIVE_COLOR, width,
         height, connectors)
   def rotated(self):
@@ -124,7 +135,7 @@ class Ground_Drawable(Pin_Drawable):
   Ground pin.
   """
   def __init__(self, width=PIN_HORIZONTAL_WIDTH, height=PIN_HORIZONTAL_HEIGHT,
-      connectors=PIN_RIGHT_CONNECTORS):
+      connectors=CONNECTOR_RIGHT):
     Pin_Drawable.__init__(self, GROUND, NEGATIVE_COLOR, width, height,
         connectors)
   def rotated(self):
@@ -147,7 +158,7 @@ class Probe_Plus_Drawable(Pin_Drawable):
   """
   +probe pin.
   """
-  def __init__(self, connectors=PIN_RIGHT_CONNECTORS):
+  def __init__(self, connectors=CONNECTOR_RIGHT):
     Pin_Drawable.__init__(self, PROBE_PLUS, POSITIVE_COLOR, PROBE_SIZE,
         PROBE_SIZE, connectors)
   def rotated(self):
@@ -169,7 +180,7 @@ class Probe_Minus_Drawable(Pin_Drawable):
   """
   -probe pin.
   """
-  def __init__(self, connectors=PIN_RIGHT_CONNECTORS):
+  def __init__(self, connectors=CONNECTOR_RIGHT):
     Pin_Drawable.__init__(self, PROBE_MINUS, NEGATIVE_COLOR, PROBE_SIZE,
         PROBE_SIZE, connectors)
   def rotated(self):
@@ -193,7 +204,7 @@ class Resistor_Drawable(Drawable):
   """
   def __init__(self, on_resistance_changed, width=RESISTOR_HORIZONTAL_WIDTH,
       height=RESISTOR_HORIZONTAL_HEIGHT,
-      connectors=RESISTOR_HORIZONTAL_CONNECTORS, init_resistance=1):
+      connectors=CONNECTOR_LEFT | CONNECTOR_RIGHT, init_resistance=1):
     """
     |on_resistance_changed|: function to be called when resistance is changed.
     |init_resistance|: the initial resistance for this resistor.
@@ -617,6 +628,127 @@ class Head_Connector_Drawable(N_Pin_Connector_Drawable):
       direction, ox, oy = map(int, m.groups()[1:])
       board.add_drawable(Head_Connector_Drawable(lambda: board.set_changed(
           True), direction, signal_file), (ox, oy))
+      return True
+    return False
+
+class Motor_Drawable(Pin_Drawable):
+  """
+  TODO:
+  """
+  def __init__(self, connectors=CONNECTOR_BOTTOM | CONNECTOR_TOP):
+    Pin_Drawable.__init__(self, 'Motor', MOTOR_FILL, MOTOR_SIZE, MOTOR_SIZE,
+        connectors)
+  def rotated(self):
+    return Motor_Drawable(rotate_connector_flags(self.connector_flags))
+  def serialize(self, offset):
+    return 'Motor %d %s' % (self.connector_flags, str(offset))
+  @staticmethod
+  def deserialize(item_str, board):
+    m = match(r'Motor %s %s' % (RE_INT, RE_INT_PAIR), item_str)
+    if m:
+      connectors, ox, oy = map(int, m.groups())
+      board.add_drawable(Motor_Drawable(connectors), (ox, oy))
+      return True
+    return False
+
+class Motor_Pot_Drawable(Pin_Drawable):
+  """
+  TODO:
+  """
+  def __init__(self, connectors=CONNECTOR_BOTTOM | CONNECTOR_RIGHT |
+      CONNECTOR_TOP):
+    Pin_Drawable.__init__(self, 'Motor Pot', MOTOR_POT_FILL, MOTOR_POT_SIZE,
+        MOTOR_POT_SIZE, connectors)
+  def rotated(self):
+    return Motor_Pot_Drawable(rotate_connector_flags(self.connector_flags))
+  def serialize(self, offset):
+    return 'Motor Pot %d %s' % (self.connector_flags, str(offset))
+  @staticmethod
+  def deserialize(item_str, board):
+    m = match(r'Motor Pot %s %s' % (RE_INT, RE_INT_PAIR), item_str)
+    if m:
+      connectors, ox, oy = map(int, m.groups())
+      board.add_drawable(Motor_Pot_Drawable(connectors), (ox, oy))
+      return True
+    return False
+
+class Photoresistors_Drawable(Pin_Drawable):
+  """
+  TODO:
+  """
+  def __init__(self, connectors=CONNECTOR_BOTTOM | CONNECTOR_RIGHT |
+      CONNECTOR_TOP):
+    Pin_Drawable.__init__(self, 'Photoresistors', PHOTORESISTORS_FILL,
+        PHOTORESISTORS_SIZE, PHOTORESISTORS_SIZE, connectors)
+  def rotated(self):
+    return Photoresistors_Drawable(rotate_connector_flags(
+        self.connector_flags))
+  def serialize(self, offset):
+    return 'Photoresistors %d %s' % (self.connector_flags, str(offset))
+  @staticmethod
+  def deserialize(item_str, board):
+    m = match(r'Photoresistors %s %s' % (RE_INT, RE_INT_PAIR), item_str)
+    if m:
+      connectors, ox, oy = map(int, m.groups())
+      board.add_drawable(Photoresistors_Drawable(connectors), (ox, oy))
+      return True
+    return False
+
+class Robot_Pin_Drawable(Pin_Drawable):
+  """
+  TODO:
+  """
+  def __init__(self, direction=DIRECTION_UP):
+    Pin_Drawable.__init__(self, 'Robot', ROBOT_PIN_FILL, ROBOT_PIN_SIZE,
+        ROBOT_PIN_SIZE)
+    self.direction = direction
+  def draw_connectors(self, canvas, offset=(0, 0)):
+    ox, oy = offset
+    w, h = self.width, self.height
+    t_padding = 7
+    if self.direction == DIRECTION_UP:
+      plus_x = minus_x = ox + w / 2
+      plus_y = oy
+      minus_y = oy + h
+      tx = 0
+      ty = t_padding
+    elif self.direction == DIRECTION_RIGHT:
+      plus_x = ox + w
+      minus_x = ox
+      plus_y = minus_y = oy + h / 2
+      tx = -t_padding
+      ty = 0
+    elif self.direction == DIRECTION_DOWN:
+      plus_x = minus_x = ox + w / 2
+      plus_y = oy + h
+      minus_y = oy
+      tx = 0
+      ty = -t_padding
+    elif self.direction == DIRECTION_LEFT:
+      plus_x = ox
+      minus_x = ox + w
+      plus_y = minus_y = oy + h / 2
+      tx = t_padding
+      ty = 0
+    else:
+      # should never get here
+      raise Exception('Invalid direction %s' % self.direction)
+    self.pwr = self._draw_connector(canvas, (plus_x, plus_y))
+    self.gnd = self._draw_connector(canvas, (minus_x, minus_y))
+    self.parts.add(canvas.create_text(plus_x + tx, plus_y + ty, text='+',
+        fill='white', justify=CENTER))
+    self.parts.add(canvas.create_text(minus_x - tx, minus_y - ty, text='-',
+        fill='white', justify=CENTER))
+  def rotated(self):
+    return Robot_Pin_Drawable((self.direction + 1) % 4)
+  def serialize(self, offset):
+    return 'Robot pin %d %s' % (self.direction, str(offset))
+  @staticmethod
+  def deserialize(item_str, board):
+    m = match(r'Robot pin %s %s' % (RE_INT, RE_INT_PAIR), item_str)
+    if m:
+      direction, ox, oy = map(int, m.groups())
+      board.add_drawable(Robot_Pin_Drawable(direction), (ox, oy))
       return True
     return False
 
