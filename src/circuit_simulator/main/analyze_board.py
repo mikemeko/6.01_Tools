@@ -8,13 +8,17 @@ __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 from circuit_drawables import Ground_Drawable
 from circuit_drawables import Head_Connector_Drawable
 from circuit_drawables import Motor_Connector_Drawable
+from circuit_drawables import Motor_Drawable
+from circuit_drawables import Motor_Pot_Drawable
 from circuit_drawables import Op_Amp_Drawable
+from circuit_drawables import Photosensors_Drawable
 from circuit_drawables import Pot_Drawable
 from circuit_drawables import Power_Drawable
 from circuit_drawables import Probe_Minus_Drawable
 from circuit_drawables import Probe_Plus_Drawable
 from circuit_drawables import Resistor_Drawable
 from circuit_drawables import Robot_Connector_Drawable
+from circuit_drawables import Robot_Pin_Drawable
 from circuit_simulator.simulation.circuit import Circuit
 from circuit_simulator.simulation.circuit import Head_Connector
 from circuit_simulator.simulation.circuit import Motor_Connector
@@ -72,16 +76,21 @@ def run_analysis(board, analyze):
       for node in nodes:
         ground_nodes.add(node)
     # robot connector component
-    if isinstance(drawable, Robot_Connector_Drawable):
+    if isinstance(drawable, Robot_Connector_Drawable) or isinstance(drawable,
+        Robot_Pin_Drawable):
       if robot_connector_found:
         board.display_message('At most 1 Robot Connector allowed', ERROR)
         return
       robot_connector_found = True
-      pin_2_nodes = [wire.label for wire in drawable.pin_connector(2).wires()]
-      for node in pin_2_nodes:
+      if isinstance(drawable, Robot_Connector_Drawable):
+        pwr_connector = drawable.pin_connector(2)
+        gnd_connector = drawable.pin_connector(4)
+      else: # isinstance(drawable, Robot_Pin_Drawable)
+        pwr_connector = drawable.pwr
+        gnd_connector = drawable.gnd
+      for node in [wire.label for wire in pwr_connector.wires()]:
         power_nodes.add(node)
-      pin_4_nodes = [wire.label for wire in drawable.pin_connector(4).wires()]
-      for node in pin_4_nodes:
+      for node in [wire.label for wire in gnd_connector.wires()]:
         ground_nodes.add(node)
       # add robot connector to circuit components, so that we know it's there
       #     and that we don't need to connect to a power supply
