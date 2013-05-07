@@ -360,11 +360,8 @@ class Head_Connector(Component):
     |i_motor|: current for head motor.
     |lamp_angle_signal|: CT_Signal for lamp angle.
     |lamp_distance_signal|: CT_Signal for lamp distance.
+    TODO: check that lamp signals are available when needed
     """
-    assert isinstance(lamp_angle_signal, CT_Signal), ('lamp_angle_signal must '
-        'be a CT_Signal')
-    assert isinstance(lamp_distance_signal, CT_Signal), ('lamp_distance_signal'
-        ' must be a CT_Signal')
     Component.__init__(self)
     # lamp signals
     self.lamp_angle_signal = lamp_angle_signal

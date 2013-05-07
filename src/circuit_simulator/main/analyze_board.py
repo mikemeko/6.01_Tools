@@ -244,6 +244,74 @@ def run_analysis(board, analyze):
       n_motor_plus = maybe_rename_node(pin_5_nodes[0])
       n_motor_minus = maybe_rename_node(pin_6_nodes[0])
       i_motor = current_name(drawable, n_motor_plus, n_motor_minus)
+    # motor component
+    elif isinstance(drawable, Motor_Drawable):
+      plus_nodes = [wire.label for wire in drawable.plus.wires()]
+      if len(plus_nodes) != 1:
+        board.display_message('Motor+ must be connected to 1 wire', ERROR)
+        return
+      minus_nodes = [wire.label for wire in drawable.minus.wires()]
+      if len(minus_nodes) != 1:
+        board.display_message('Motor- must be connected to 1 wire', ERROR)
+        return
+      n_motor_plus = maybe_rename_node(plus_nodes[0])
+      n_motor_minus = maybe_rename_node(minus_nodes[0])
+      i_motor = current_name(drawable, n_motor_plus, n_motor_minus)
+    # motor pot component
+    elif isinstance(drawable, Motor_Pot_Drawable):
+      pot_top_nodes = [wire.label for wire in drawable.top.wires()]
+      if len(pot_top_nodes) != 1:
+        board.display_message('Motor pot top must be connected to 1 wire',
+            ERROR)
+        return
+      pot_middle_nodes = [wire.label for wire in drawable.middle.wires()]
+      if len(pot_middle_nodes) != 1:
+        board.display_message('Motor pot middle must be connected to 1 wire',
+            ERROR)
+        return
+      pot_bottom_nodes = [wire.label for wire in drawable.bottom.wires()]
+      if len(pot_bottom_nodes) != 1:
+        board.display_message('Motor pot bottom must be connected to 1 wire',
+            ERROR)
+        return
+      n_motor_pot_top = maybe_rename_node(pot_top_nodes[0])
+      n_motor_pot_middle = maybe_rename_node(pot_middle_nodes[0])
+      n_motor_pot_bottom = maybe_rename_node(pot_bottom_nodes[0])
+      i_motor_pot_top_middle = current_name(drawable, n_motor_pot_top,
+          n_motor_pot_middle)
+      i_motor_pot_middle_bottom = current_name(drawable, n_motor_pot_middle,
+          n_motor_pot_bottom)
+    # photosensor component
+    elif isinstance(drawable, Photosensors_Drawable):
+      if not drawable.signal_file:
+        board.display_message('No signal file loaded for Photosensors', ERROR)
+        return
+      lamp_signals = {'lamp_angle_signal': None, 'lamp_distance_signal': None}
+      execfile(drawable.signal_file, lamp_signals)
+      photo_lamp_angle_signal = lamp_signals['lamp_angle_signal']
+      photo_lamp_distance_signal = lamp_signals['lamp_distance_signal']
+      photo_left_nodes = [wire.label for wire in drawable.left.wires()]
+      if len(photo_left_nodes) != 1:
+        board.display_message('Photosensor left must be connected to 1 wire',
+            ERROR)
+        return
+      photo_common_nodes = [wire.label for wire in drawable.common.wires()]
+      if len(photo_common_nodes) != 1:
+        board.display_message('Photosensor common must be connected to 1 wire',
+            ERROR)
+        return
+      photo_right_nodes = [wire.label for wire in drawable.right.wires()]
+      if len(photo_right_nodes) != 1:
+        board.display_message('Photosensor right must be connected to 1 wire',
+            ERROR)
+        return
+      n_photo_left = maybe_rename_node(photo_left_nodes[0])
+      n_photo_common = maybe_rename_node(photo_common_nodes[0])
+      n_photo_right = maybe_rename_node(photo_right_nodes[0])
+      i_photo_left_common = current_name(drawable, n_photo_left,
+          n_photo_common)
+      i_photo_common_right = current_name(drawable, n_photo_common,
+          n_photo_right)
     # head connector component
     elif isinstance(drawable, Head_Connector_Drawable):
       if not drawable.signal_file:

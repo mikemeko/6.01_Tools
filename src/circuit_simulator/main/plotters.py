@@ -50,17 +50,19 @@ class Head_Plotter(Plotter):
       ylabel('Motor velocity')
       stem(T_SAMPLES, self._head_connector.motor.speed_samples[:-1])
     # lamp distance signal
-    figure()
-    xlabel('t')
-    ylabel('Lamp distance')
-    stem(T_SAMPLES, self._head_connector.lamp_distance_signal.samples(0, T,
-        NUM_SAMPLES))
+    if self._head_connector.lamp_distance_signal:
+      figure()
+      xlabel('t')
+      ylabel('Lamp distance')
+      stem(T_SAMPLES, self._head_connector.lamp_distance_signal.samples(0, T,
+          NUM_SAMPLES))
     # lamp angle signal
-    figure()
-    xlabel('t')
-    ylabel('Lamp angle')
-    stem(T_SAMPLES, self._head_connector.lamp_angle_signal.samples(0, T,
-        NUM_SAMPLES))
+    if self._head_connector.lamp_angle_signal:
+      figure()
+      xlabel('t')
+      ylabel('Lamp angle')
+      stem(T_SAMPLES, self._head_connector.lamp_angle_signal.samples(0, T,
+          NUM_SAMPLES))
 
 class Motor_Plotter(Plotter):
   """
