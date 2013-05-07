@@ -278,7 +278,7 @@ class Signalled_Pot(Pot):
     self.set_alpha(self.signal(self.current_time))
     Pot.step(self, current_solution)
 
-class Motor_Connector(Component):
+class Motor(Component):
   """
   Representation for motor connector.
   """
@@ -372,7 +372,7 @@ class Head_Connector(Component):
     # motor
     self.motor_present = all([n_motor_plus, n_motor_minus, i_motor])
     if self.motor_present:
-      self.motor = Motor_Connector(n_motor_plus, n_motor_minus, i_motor,
+      self.motor = Motor(n_motor_plus, n_motor_minus, i_motor,
           B=MOTOR_B_LOADED, angle_min=-pi, angle_max=pi)
     # pot
     self.pot_present = all([n_pot_top, n_pot_middle, n_pot_bottom,

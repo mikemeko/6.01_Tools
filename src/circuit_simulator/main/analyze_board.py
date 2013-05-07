@@ -21,7 +21,7 @@ from circuit_drawables import Robot_Connector_Drawable
 from circuit_drawables import Robot_Pin_Drawable
 from circuit_simulator.simulation.circuit import Circuit
 from circuit_simulator.simulation.circuit import Head_Connector
-from circuit_simulator.simulation.circuit import Motor_Connector
+from circuit_simulator.simulation.circuit import Motor
 from circuit_simulator.simulation.circuit import Op_Amp
 from circuit_simulator.simulation.circuit import Resistor
 from circuit_simulator.simulation.circuit import Signalled_Pot
@@ -122,8 +122,22 @@ def run_analysis(board, analyze):
     return node
   # probe labels
   probe_plus, probe_minus = None, None
-  # flag to ensure that there is at most one head connector
-  head_connector_found = False
+  # constants for motors, motor_pots, and photosensors
+  n_motor_plus = None
+  n_motor_minus = None
+  i_motor = None
+  n_motor_pot_top = None
+  n_motor_pot_middle = None
+  n_motor_pot_bottom = None
+  i_motor_pot_top_middle = None
+  i_motor_pot_middle_bottom = None
+  n_photo_left = None
+  n_photo_common = None
+  n_photo_right = None
+  i_photo_left_common = None
+  i_photo_common_right = None
+  photo_lamp_angle_signal = None
+  photo_lamp_distance_signal = None
   for drawable in board.get_drawables():
     # wires attached to this component
     nodes = [wire.label for wire in drawable.wires()]
@@ -227,22 +241,20 @@ def run_analysis(board, analyze):
         board.display_message('Motor connector pin 6 must be connected to 1 '
             'wire', ERROR)
         return
-      n1, n2 = map(maybe_rename_node, (pin_5_nodes[0], pin_6_nodes[0]))
-      motor_connector = Motor_Connector(n1, n2, current_name(drawable, n1, n2))
-      circuit_components.append(motor_connector)
-      plotters.append(Motor_Plotter(motor_connector))
+      n_motor_plus = maybe_rename_node(pin_5_nodes[0])
+      n_motor_minus = maybe_rename_node(pin_6_nodes[0])
+      i_motor = current_name(drawable, n_motor_plus, n_motor_minus)
     # head connector component
     elif isinstance(drawable, Head_Connector_Drawable):
-      if head_connector_found:
-        board.display_message('At most 1 Head Connector allowed', ERROR)
-        return
-      head_connector_found = True
       if not drawable.signal_file:
         board.display_message('No signal file loaded for Head Connector',
             ERROR)
         return
+      # photosensor lamp signals
       lamp_signals = {'lamp_angle_signal': None, 'lamp_distance_signal': None}
       execfile(drawable.signal_file, lamp_signals)
+      photo_lamp_angle_signal = lamp_signals['lamp_angle_signal']
+      photo_lamp_distance_signal = lamp_signals['lamp_distance_signal']
       pin_nodes = []
       for i in xrange(1, 9):
         pin_i_nodes = [wire.label for wire in drawable.pin_connector(i).wires(
@@ -256,37 +268,60 @@ def run_analysis(board, analyze):
       (pot_top, pot_middle, pot_bottom, photo_left, photo_common, photo_right,
           motor_plus, motor_minus) = pin_nodes
       # pot check
-      if any([pot_top, pot_middle, pot_bottom]) and not all([pot_top,
-          pot_middle, pot_bottom]):
-        board.display_message('Head Connector pot must be either fully '
-            'connected or fully disconnected', ERROR)
-        return
+      if any([pot_top, pot_middle, pot_bottom]):
+        if not all([pot_top, pot_middle, pot_bottom]):
+          board.display_message('Head Connector pot must be either fully '
+              'connected or fully disconnected', ERROR)
+          return
+        n_motor_pot_top = maybe_rename_node(pot_top)
+        n_motor_pot_middle = maybe_rename_node(pot_middle)
+        n_motor_pot_bottom = maybe_rename_node(pot_bottom)
+        i_motor_pot_top_middle = current_name(drawable, n_motor_pot_top,
+            n_motor_pot_middle)
+        i_motor_pot_middle_bottom = current_name(drawable, n_motor_pot_middle,
+            n_motor_pot_bottom)
       # left photodetector check
-      if any([photo_left, photo_common]) and not all([photo_left,
-          photo_common]):
-        board.display_message('Head Connector left photodetector must be '
-            'either fully connected or fully disconnected', ERROR)
-        return
+      if any([photo_left, photo_common]):
+        if not all([photo_left, photo_common]):
+          board.display_message('Head Connector left photodetector must be '
+              'either fully connected or fully disconnected', ERROR)
+          return
+        n_photo_left = maybe_rename_node(photo_left)
+        n_photo_common = maybe_rename_node(photo_common)
+        i_photo_left_common = current_name(drawable, n_photo_left,
+            n_photo_common)
       # right photodetector check
-      if any([photo_right, photo_common]) and not all([photo_right,
-          photo_common]):
-        board.display_message('Head Connector right photodetector must be '
-            'either fully connected or fully disconnected', ERROR)
-        return
+      if any([photo_right, photo_common]):
+        if not all([photo_right, photo_common]):
+          board.display_message('Head Connector right photodetector must be '
+              'either fully connected or fully disconnected', ERROR)
+          return
+        n_photo_right = maybe_rename_node(photo_right)
+        n_photo_common = maybe_rename_node(photo_common)
+        i_photo_common_right = current_name(drawable, n_photo_common,
+            n_photo_right)
       # motor check
-      if any([motor_plus, motor_minus]) and not all([motor_plus, motor_minus]):
-        board.display_message('Head Connector motor must be either fully '
-            'connected or fully disconnected', ERROR)
-        return
-      head_connector = Head_Connector(pot_top, pot_middle, pot_bottom,
-          current_name(drawable, pot_top, pot_middle), current_name(drawable,
-          pot_middle, pot_bottom), photo_left, photo_common, photo_right,
-          current_name(drawable, photo_left, photo_common), current_name(
-          drawable, photo_common, photo_right), motor_plus, motor_minus,
-          current_name(drawable, motor_plus, motor_minus), lamp_signals[
-          'lamp_angle_signal'], lamp_signals['lamp_distance_signal'])
-      circuit_components.append(head_connector)
-      plotters.append(Head_Plotter(head_connector))
+      if any([motor_plus, motor_minus]):
+        if not all([motor_plus, motor_minus]):
+          board.display_message('Head Connector motor must be either fully '
+              'connected or fully disconnected', ERROR)
+          return
+        n_motor_plus = maybe_rename_node(motor_plus)
+        n_motor_minus = maybe_rename_node(motor_minus)
+        i_motor = current_name(drawable, n_motor_plus, n_motor_minus)
+  # TODO:
+  if n_motor_pot_top or n_photo_left:
+    head_connector = Head_Connector(n_motor_pot_top, n_motor_pot_middle,
+        n_motor_pot_bottom, i_motor_pot_top_middle, i_motor_pot_middle_bottom,
+        n_photo_left, n_photo_common, n_photo_right, i_photo_left_common,
+        i_photo_common_right, n_motor_plus, n_motor_minus, i_motor,
+        photo_lamp_angle_signal, photo_lamp_distance_signal)
+    circuit_components.append(head_connector)
+    plotters.append(Head_Plotter(head_connector))
+  elif n_motor_plus:
+    motor = Motor(n_motor_plus, n_motor_minus, i_motor)
+    circuit_components.append(motor)
+    plotters.append(Motor_Plotter(motor))
   # if both probes are given, display probe voltage difference graph
   if probe_plus and probe_minus:
     plotters.append(Probe_Plotter(probe_plus, probe_minus))

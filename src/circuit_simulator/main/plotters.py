@@ -5,7 +5,7 @@ Analysis plot display.
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
 from circuit_simulator.simulation.circuit import Head_Connector
-from circuit_simulator.simulation.circuit import Motor_Connector
+from circuit_simulator.simulation.circuit import Motor
 from circuit_simulator.simulation.circuit import Signalled_Pot
 from circuit_simulator.simulation.constants import NUM_SAMPLES
 from circuit_simulator.simulation.constants import T
@@ -67,8 +67,8 @@ class Motor_Plotter(Plotter):
   Plots motor angle and speed.
   """
   def __init__(self, motor_connector):
-    assert isinstance(motor_connector, Motor_Connector), ('motor_connector '
-        'must be a Motor_Connector')
+    assert isinstance(motor_connector, Motor), ('motor_connector must be a '
+        'Motor')
     self._motor_connector = motor_connector
   def plot(self, board, data):
     # motor angle

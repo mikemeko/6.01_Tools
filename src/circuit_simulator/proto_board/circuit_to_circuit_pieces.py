@@ -27,7 +27,7 @@ from circuit_simulator.main.constants import GROUND
 from circuit_simulator.main.constants import POWER
 from circuit_simulator.simulation.circuit import Circuit
 from circuit_simulator.simulation.circuit import Head_Connector
-from circuit_simulator.simulation.circuit import Motor_Connector
+from circuit_simulator.simulation.circuit import Motor
 from circuit_simulator.simulation.circuit import Op_Amp
 from circuit_simulator.simulation.circuit import Resistor
 from circuit_simulator.simulation.circuit import Signalled_Pot
@@ -86,15 +86,13 @@ def pot_piece_from_pot(pot):
   assert isinstance(pot, Signalled_Pot), 'pot must be a Signalled_Pot'
   return Pot_Piece(pot.n_top, pot.n_middle, pot.n_bottom)
 
-def motor_connector_piece_from_motor_connector(motor_connector):
+def motor_connector_piece_from_motor(motor):
   """
-  Returns a Motor_Connector_Piece constructed using |motor_connector|, an
-      instance of Motor_Connector.
+  Returns a Motor_Connector_Piece constructed using |motor|, an instance of
+      Motor.
   """
-  assert isinstance(motor_connector, Motor_Connector), ('motor_connector must '
-      'be a Motor_Connector')
-  return Motor_Connector_Piece(motor_connector.motor_plus,
-      motor_connector.motor_minus)
+  assert isinstance(motor, Motor), ('motor must be a Motor')
+  return Motor_Connector_Piece(motor.motor_plus, motor.motor_minus)
 
 def robot_connector_piece_from_robot_connector(robot_connector):
   """
@@ -148,9 +146,9 @@ def get_piece_placement(circuit):
   resistor_pieces = map(resistor_piece_from_resistor, resistors)
   pots = filter(lambda obj: obj.__class__ == Signalled_Pot, circuit.components)
   pot_pieces = map(pot_piece_from_pot, pots)
-  motor_connectors = filter(lambda obj: obj.__class__ == Motor_Connector,
+  motor_connectors = filter(lambda obj: obj.__class__ == Motor,
       circuit.components)
-  motor_connector_pieces = map(motor_connector_piece_from_motor_connector,
+  motor_connector_pieces = map(motor_connector_piece_from_motor,
       motor_connectors)
   robot_connectors = filter(lambda obj: obj.__class__ == Robot_Connector,
       circuit.components)
