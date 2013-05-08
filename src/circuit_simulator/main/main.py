@@ -191,15 +191,15 @@ if __name__ == '__main__':
       on_signal_file_changed=lambda: board.set_changed(True))
   palette.add_drawable_type(Op_Amp_Drawable, LEFT, None)
   if SCHEMATIC_CONNECTOR_DRAWABLES:
-    palette.add_drawable_type(Motor_Drawable, LEFT, None)
-    palette.add_drawable_type(Motor_Pot_Drawable, LEFT, None)
-    palette.add_drawable_type(Photosensors_Drawable, LEFT, None,
+    palette.add_drawable_type(Motor_Drawable, LEFT, None, True)
+    palette.add_drawable_type(Motor_Pot_Drawable, LEFT, None, True)
+    palette.add_drawable_type(Photosensors_Drawable, LEFT, None, True,
         on_signal_file_changed=lambda: board.set_changed(True))
-    palette.add_drawable_type(Robot_Pin_Drawable, LEFT, None)
+    palette.add_drawable_type(Robot_Pin_Drawable, LEFT, None, True)
   else:
-    palette.add_drawable_type(Motor_Connector_Drawable, LEFT, None)
-    palette.add_drawable_type(Robot_Connector_Drawable, LEFT, None)
-    palette.add_drawable_type(Head_Connector_Drawable, LEFT, None,
+    palette.add_drawable_type(Motor_Connector_Drawable, LEFT, None, True)
+    palette.add_drawable_type(Robot_Connector_Drawable, LEFT, None, True)
+    palette.add_drawable_type(Head_Connector_Drawable, LEFT, None, True,
         on_signal_file_changed=lambda: board.set_changed(True))
   # add buttons to analyze circuit
   palette.add_drawable_type(Simulate_Run_Drawable, RIGHT,
