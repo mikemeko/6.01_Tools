@@ -146,10 +146,8 @@ def get_piece_placement(circuit):
   resistor_pieces = map(resistor_piece_from_resistor, resistors)
   pots = filter(lambda obj: obj.__class__ == Signalled_Pot, circuit.components)
   pot_pieces = map(pot_piece_from_pot, pots)
-  motor_connectors = filter(lambda obj: obj.__class__ == Motor,
-      circuit.components)
-  motor_connector_pieces = map(motor_connector_piece_from_motor,
-      motor_connectors)
+  motors = filter(lambda obj: obj.__class__ == Motor, circuit.components)
+  motor_connector_pieces = map(motor_connector_piece_from_motor, motors)
   robot_connectors = filter(lambda obj: obj.__class__ == Robot_Connector,
       circuit.components)
   robot_connector_pieces = map(robot_connector_piece_from_robot_connector,
