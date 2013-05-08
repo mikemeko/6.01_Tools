@@ -360,7 +360,6 @@ class Head_Connector(Component):
     |i_motor|: current for head motor.
     |lamp_angle_signal|: CT_Signal for lamp angle.
     |lamp_distance_signal|: CT_Signal for lamp distance.
-    TODO: check that lamp signals are available when needed
     """
     Component.__init__(self)
     # lamp signals
@@ -380,11 +379,17 @@ class Head_Connector(Component):
     # photodetectors
     self.photo_left_present = all([n_photo_left, n_photo_common,
         i_photo_left_common])
+    self.photo_right_present = all([n_photo_right, n_photo_common,
+        i_photo_common_right])
+    # check that lamp signals are available if we need them
+    if self.photo_left_present or self.photo_right_present:
+      assert isinstance(self.lamp_angle_signal, CT_Signal), (
+          'lamp_angle_signal must be a CT_Signal')
+      assert isinstance(self.lamp_distance_signal, CT_Signal), (
+          'lamp_distance_signal must be a CT_Signal')
     if self.photo_left_present:
       self.photo_left = Current_Source(n_photo_left, n_photo_common,
           i_photo_left_common, self._photodetector_current_constant('left'))
-    self.photo_right_present = all([n_photo_right, n_photo_common,
-        i_photo_common_right])
     if self.photo_right_present:
       self.photo_right = Current_Source(n_photo_right, n_photo_common,
           i_photo_common_right, self._photodetector_current_constant('right'))
