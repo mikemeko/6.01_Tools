@@ -25,7 +25,7 @@ MOTOR_RESISTANCE = 5.26
 PHOTODETECTOR_K = 5e-7 # TODO(mikemeko): verify this with measurements
 
 # sampling constants
-NUM_SAMPLES = 80
+NUM_SAMPLES = 120
 T = 0.01 # sampling periond
 
 # debugging
