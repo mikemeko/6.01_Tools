@@ -377,7 +377,8 @@ def run_analysis(board, analyze):
         n_motor_plus = maybe_rename_node(motor_plus)
         n_motor_minus = maybe_rename_node(motor_minus)
         i_motor = current_name(drawable, n_motor_plus, n_motor_minus)
-  # TODO:
+  # assemble either a head connector or a motor
+  # if motor pot or photosensors are used, we need a head connector
   if n_motor_pot_top or n_photo_left:
     head_connector = Head_Connector(n_motor_pot_top, n_motor_pot_middle,
         n_motor_pot_bottom, i_motor_pot_top_middle, i_motor_pot_middle_bottom,
@@ -386,6 +387,9 @@ def run_analysis(board, analyze):
         photo_lamp_angle_signal, photo_lamp_distance_signal)
     circuit_components.append(head_connector)
     plotters.append(Head_Plotter(head_connector))
+  # otherwise we only need a motor
+  # TODO(mikemeko): technically if user explicitly uses head connector, but
+  #     only uses the motor, this does not behave correctly
   elif n_motor_plus:
     motor = Motor(n_motor_plus, n_motor_minus, i_motor)
     circuit_components.append(motor)
