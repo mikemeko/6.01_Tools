@@ -12,6 +12,7 @@ from constants import DISABLED_PINS_HEAD_CONNECTOR
 from constants import DISABLED_PINS_MOTOR_CONNECTOR
 from constants import DISABLED_PINS_ROBOT_CONNECTOR
 from constants import GROUND
+from constants import LABEL_PADDING
 from constants import LAMP_BOX_COLOR
 from constants import LAMP_BOX_PADDING
 from constants import LAMP_BOX_SIZE
@@ -35,7 +36,6 @@ from constants import OP_AMP_FILL
 from constants import OP_AMP_LEFT_VERTICES
 from constants import OP_AMP_OUTLINE
 from constants import OP_AMP_RIGHT_VERTICES
-from constants import OP_AMP_SIGN_PADDING
 from constants import OP_AMP_UP_VERTICES
 from constants import OPEN_LAMP_SIGNAL_FILE_TITLE
 from constants import OPEN_POT_SIGNAL_FILE_TITLE
@@ -86,23 +86,22 @@ from util import sign
 
 class Pin_Drawable(Drawable):
   """
-  Abstract Drawable to represent pins: power, ground, and probes.
-  TODO:
+  Abstract Drawable to represent basic pins. Draws a box with a label.
   """
-  def __init__(self, text, fill, width, height, connectors=0):
+  def __init__(self, label, fill, width, height, connectors=0):
     """
-    |text|: label for this pin.
+    |label|: label for this pin.
     |fill|: color for this pin.
     """
     Drawable.__init__(self, width, height, connectors)
-    self.text = text
+    self.label = label
     self.fill = fill
   def draw_on(self, canvas, offset=(0, 0)):
     ox, oy = offset
     self.parts.add(canvas.create_rectangle((ox, oy, ox + self.width,
         oy + self.height), fill=self.fill, outline=PIN_OUTLINE))
     self.parts.add(canvas.create_text(ox + self.width / 2,
-        oy + self.height / 2, text=self.text, fill=PIN_TEXT_COLOR,
+        oy + self.height / 2, text=self.label, fill=PIN_TEXT_COLOR,
         width=.8 * self.width, justify=CENTER))
 
 class Power_Drawable(Pin_Drawable):
@@ -275,25 +274,25 @@ class Op_Amp_Drawable(Drawable):
     self.parts.add(canvas.create_polygon(x1, y1, x2, y2, x3, y3,
         fill=OP_AMP_FILL, outline=OP_AMP_OUTLINE))
     if self.vertices == OP_AMP_RIGHT_VERTICES:
-      self.parts.add(canvas.create_text(x1 + OP_AMP_SIGN_PADDING,
+      self.parts.add(canvas.create_text(x1 + LABEL_PADDING,
           y1 + OP_AMP_CONNECTOR_PADDING, text='+'))
-      self.parts.add(canvas.create_text(x2 + OP_AMP_SIGN_PADDING,
+      self.parts.add(canvas.create_text(x2 + LABEL_PADDING,
           y2 - OP_AMP_CONNECTOR_PADDING, text='-'))
     elif self.vertices == OP_AMP_DOWN_VERTICES:
       self.parts.add(canvas.create_text(x3 - OP_AMP_CONNECTOR_PADDING,
-          y3 + OP_AMP_SIGN_PADDING, text='+'))
+          y3 + LABEL_PADDING, text='+'))
       self.parts.add(canvas.create_text(x1 + OP_AMP_CONNECTOR_PADDING,
-          y1 + OP_AMP_SIGN_PADDING, text='-'))
+          y1 + LABEL_PADDING, text='-'))
     elif self.vertices == OP_AMP_LEFT_VERTICES:
-      self.parts.add(canvas.create_text(x2 - OP_AMP_SIGN_PADDING,
+      self.parts.add(canvas.create_text(x2 - LABEL_PADDING,
           y2 - OP_AMP_CONNECTOR_PADDING, text='+'))
-      self.parts.add(canvas.create_text(x3 - OP_AMP_SIGN_PADDING,
+      self.parts.add(canvas.create_text(x3 - LABEL_PADDING,
           y3 + OP_AMP_CONNECTOR_PADDING, text='-'))
     else: # OP_AMP_UP_VERTICES
       self.parts.add(canvas.create_text(x2 + OP_AMP_CONNECTOR_PADDING,
-          y2 - OP_AMP_SIGN_PADDING, text='+'))
+          y2 - LABEL_PADDING, text='+'))
       self.parts.add(canvas.create_text(x3 - OP_AMP_CONNECTOR_PADDING,
-          y3 - OP_AMP_SIGN_PADDING, text='-'))
+          y3 - LABEL_PADDING, text='-'))
   def draw_connectors(self, canvas, offset=(0, 0)):
     x1, y1, x2, y2, x3, y3 = self.vertices
     ox, oy = offset
@@ -378,7 +377,7 @@ class Pot_Drawable(Drawable):
         else 'black')
     def set_signal_file(event):
       """
-      Opens a window to let the user choose a signal file for this pot.
+      Opens a window to let the user choose a signal file.
       """
       new_signal_file = askopenfilename(title=OPEN_POT_SIGNAL_FILE_TITLE,
           filetypes=[('%s files' % POT_SIGNAL_FILE_TYPE,
@@ -570,8 +569,7 @@ class Head_Connector_Drawable(N_Pin_Connector_Drawable):
     """
     |on_signal_file_changed|: function to be called when head connector signal
         file is changed.
-    |signal_file|: the signal file (containing lamp angle and distance)
-        associated with this pot.
+    |signal_file|: the signal file containing lamp angle and distance.
     """
     assert is_callable(on_signal_file_changed), ('on_signal_file_changed must '
         'be callable')
@@ -601,8 +599,7 @@ class Head_Connector_Drawable(N_Pin_Connector_Drawable):
         if self.signal_file else LAMP_EMPTY_COLOR)
     def set_signal_file(event):
       """
-      Opens a window to let the user choose a signal file for this head
-          connector.
+      Opens a window to let the user choose a lamp signal file.
       """
       new_signal_file = askopenfilename(title=OPEN_LAMP_SIGNAL_FILE_TITLE,
           filetypes=[('%s files' % LAMP_SIGNAL_FILE_TYPE,
@@ -632,7 +629,7 @@ class Head_Connector_Drawable(N_Pin_Connector_Drawable):
 
 class Motor_Drawable(Pin_Drawable):
   """
-  TODO:
+  Drawable for motor (can be independent or can be part of head).
   """
   def __init__(self, direction=DIRECTION_UP):
     Pin_Drawable.__init__(self, 'M', MOTOR_FILL, MOTOR_SIZE, MOTOR_SIZE)
@@ -642,32 +639,31 @@ class Motor_Drawable(Pin_Drawable):
     w, h = self.width, self.height
     cx, cy = ox + w / 2, oy + h / 2
     if self.direction == DIRECTION_UP:
-      plus_x = minus_x = ox + w / 2
+      plus_x = minus_x = cx
       plus_y = oy
       minus_y = oy + h
     elif self.direction == DIRECTION_RIGHT:
       plus_x = ox + w
       minus_x = ox
-      plus_y = minus_y = oy + h / 2
+      plus_y = minus_y = cy
     elif self.direction == DIRECTION_DOWN:
-      plus_x = minus_x = ox + w / 2
+      plus_x = minus_x = cx
       plus_y = oy + h
       minus_y = oy
     elif self.direction == DIRECTION_LEFT:
       plus_x = ox
       minus_x = ox + w
-      plus_y = minus_y = oy + h / 2
+      plus_y = minus_y = cy
     else:
       # should never get here
       raise Exception('Invalid direction %s' % self.direction)
     self.plus = self._draw_connector(canvas, (plus_x, plus_y))
     self.minus = self._draw_connector(canvas, (minus_x, minus_y))
-    text_padding = 8
-    self.parts.add(canvas.create_text(plus_x + text_padding * sign(cx -
-        plus_x), plus_y + text_padding * sign(cy - plus_y), text='+',
+    self.parts.add(canvas.create_text(plus_x + LABEL_PADDING * sign(cx -
+        plus_x), plus_y + LABEL_PADDING * sign(cy - plus_y), text='+',
         fill='white', justify=CENTER))
-    self.parts.add(canvas.create_text(minus_x + text_padding * sign(cx -
-        minus_x), minus_y + text_padding * sign(cy - minus_y), text='-',
+    self.parts.add(canvas.create_text(minus_x + LABEL_PADDING * sign(cx -
+        minus_x), minus_y + LABEL_PADDING * sign(cy - minus_y), text='-',
         fill='white', justify=CENTER))
   def rotated(self):
     return Motor_Drawable((self.direction + 1) % 4)
@@ -684,7 +680,7 @@ class Motor_Drawable(Pin_Drawable):
 
 class Motor_Pot_Drawable(Pin_Drawable):
   """
-  TODO:
+  Drawable for motor pot on head.
   """
   def __init__(self, direction=DIRECTION_RIGHT):
     Pin_Drawable.__init__(self, 'MP', MOTOR_POT_FILL, MOTOR_POT_SIZE,
@@ -724,15 +720,14 @@ class Motor_Pot_Drawable(Pin_Drawable):
     self.top = self._draw_connector(canvas, (top_x, top_y))
     self.middle = self._draw_connector(canvas, (middle_x, middle_y))
     self.bottom = self._draw_connector(canvas, (bottom_x, bottom_y))
-    text_padding = 8
-    self.parts.add(canvas.create_text(top_x + text_padding * sign(cx - top_x),
-        top_y + text_padding * sign(cy - top_y), text='+', fill='white',
+    self.parts.add(canvas.create_text(top_x + LABEL_PADDING * sign(cx - top_x),
+        top_y + LABEL_PADDING * sign(cy - top_y), text='+', fill='white',
         justify=CENTER))
-    self.parts.add(canvas.create_text(middle_x + text_padding * sign(cx -
-        middle_x), middle_y + text_padding * sign(cy - middle_y), text='m',
+    self.parts.add(canvas.create_text(middle_x + LABEL_PADDING * sign(cx -
+        middle_x), middle_y + LABEL_PADDING * sign(cy - middle_y), text='m',
         fill='white', justify=CENTER))
-    self.parts.add(canvas.create_text(bottom_x + text_padding * sign(cx -
-        bottom_x), bottom_y + text_padding * sign(cy - bottom_y), text='-',
+    self.parts.add(canvas.create_text(bottom_x + LABEL_PADDING * sign(cx -
+        bottom_x), bottom_y + LABEL_PADDING * sign(cy - bottom_y), text='-',
         fill='white', justify=CENTER))
   def rotated(self):
     return Motor_Pot_Drawable((self.direction + 1) % 4)
@@ -749,10 +744,15 @@ class Motor_Pot_Drawable(Pin_Drawable):
 
 class Photosensors_Drawable(Pin_Drawable):
   """
-  TODO:
+  Drawable for photodetectors on head.
   """
   def __init__(self, on_signal_file_changed, direction=DIRECTION_RIGHT,
       signal_file=None):
+    """
+    |on_signal_file_changed|: function to be called when photosensor signal
+        file is changed.
+    |signal_file|: the signal file containing lamp angle and distance.
+    """
     assert is_callable(on_signal_file_changed), ('on_signal_file_changed must '
         'be callable')
     Pin_Drawable.__init__(self, 'PS', PHOTOSENSORS_FILL, PHOTOSENSORS_SIZE,
@@ -788,8 +788,7 @@ class Photosensors_Drawable(Pin_Drawable):
         if self.signal_file else LAMP_EMPTY_COLOR)
     def set_signal_file(event):
       """
-      Opens a window to let the user choose a signal file for this head
-          connector.
+      Opens a window to let the user choose a lamp signal file.
       """
       new_signal_file = askopenfilename(title=OPEN_LAMP_SIGNAL_FILE_TITLE,
           filetypes=[('%s files' % LAMP_SIGNAL_FILE_TYPE,
@@ -835,15 +834,14 @@ class Photosensors_Drawable(Pin_Drawable):
     self.left = self._draw_connector(canvas, (left_x, left_y))
     self.common = self._draw_connector(canvas, (common_x, common_y))
     self.right = self._draw_connector(canvas, (right_x, right_y))
-    text_padding = 8
-    self.parts.add(canvas.create_text(left_x + text_padding * sign(cx -
-        left_x), left_y + text_padding * sign(cy - left_y), text='l',
+    self.parts.add(canvas.create_text(left_x + LABEL_PADDING * sign(cx -
+        left_x), left_y + LABEL_PADDING * sign(cy - left_y), text='l',
         fill='white', justify=CENTER))
-    self.parts.add(canvas.create_text(common_x + text_padding * sign(cx -
-        common_x), common_y + text_padding * sign(cy - common_y), text='c',
+    self.parts.add(canvas.create_text(common_x + LABEL_PADDING * sign(cx -
+        common_x), common_y + LABEL_PADDING * sign(cy - common_y), text='c',
         fill='white', justify=CENTER))
-    self.parts.add(canvas.create_text(right_x + text_padding * sign(cx -
-        right_x), right_y + text_padding * sign(cy - right_y), text='r',
+    self.parts.add(canvas.create_text(right_x + LABEL_PADDING * sign(cx -
+        right_x), right_y + LABEL_PADDING * sign(cy - right_y), text='r',
         fill='white', justify=CENTER))
   def rotated(self):
     return Photosensors_Drawable(self.on_signal_file_changed,
@@ -866,7 +864,7 @@ class Photosensors_Drawable(Pin_Drawable):
 
 class Robot_Pin_Drawable(Pin_Drawable):
   """
-  TODO:
+  Drawable for robot (to get power).
   """
   def __init__(self, direction=DIRECTION_UP):
     Pin_Drawable.__init__(self, 'R', ROBOT_PIN_FILL, ROBOT_PIN_SIZE,
@@ -877,32 +875,31 @@ class Robot_Pin_Drawable(Pin_Drawable):
     w, h = self.width, self.height
     cx, cy = ox + w / 2, oy + h / 2
     if self.direction == DIRECTION_UP:
-      pwr_x = gnd_x = ox + w / 2
+      pwr_x = gnd_x = cx
       pwr_y = oy
       gnd_y = oy + h
     elif self.direction == DIRECTION_RIGHT:
       pwr_x = ox + w
       gnd_x = ox
-      pwr_y = gnd_y = oy + h / 2
+      pwr_y = gnd_y = cy
     elif self.direction == DIRECTION_DOWN:
-      pwr_x = gnd_x = ox + w / 2
+      pwr_x = gnd_x = cx
       pwr_y = oy + h
       gnd_y = oy
     elif self.direction == DIRECTION_LEFT:
       pwr_x = ox
       gnd_x = ox + w
-      pwr_y = gnd_y = oy + h / 2
+      pwr_y = gnd_y = cy
     else:
       # should never get here
       raise Exception('Invalid direction %s' % self.direction)
     self.pwr = self._draw_connector(canvas, (pwr_x, pwr_y))
     self.gnd = self._draw_connector(canvas, (gnd_x, gnd_y))
-    text_padding = 8
-    self.parts.add(canvas.create_text(pwr_x + text_padding * sign(cx - pwr_x),
-        pwr_y + text_padding * sign(cy - pwr_y), text='+', fill='white',
+    self.parts.add(canvas.create_text(pwr_x + LABEL_PADDING * sign(cx - pwr_x),
+        pwr_y + LABEL_PADDING * sign(cy - pwr_y), text='+', fill='white',
         justify=CENTER))
-    self.parts.add(canvas.create_text(gnd_x + text_padding * sign(cx - gnd_x),
-        gnd_y + text_padding * sign(cy - gnd_y), text='-', fill='white',
+    self.parts.add(canvas.create_text(gnd_x + LABEL_PADDING * sign(cx - gnd_x),
+        gnd_y + LABEL_PADDING * sign(cy - gnd_y), text='-', fill='white',
         justify=CENTER))
   def rotated(self):
     return Robot_Pin_Drawable((self.direction + 1) % 4)
