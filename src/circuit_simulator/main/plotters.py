@@ -17,18 +17,34 @@ from pylab import ylabel
 
 class Plotter:
   """
-  Abstract type that supports a |plot| method that, given a Board and the
-      data for a particular circuit, plots something meaningful about the
-      circuit, or displays the errors on the Board, if any.
+  Abstract type that supports a |plot| method that, given the |data| for a
+      particular circuit, plots something meaningful about the circuit.
   """
-  def plot(self, board, data):
+  def plot(self, data):
     """
-    |board|: the Board containing the circuit. This can be used to display any
-        messages.
     |data|: the data corresponding to the solved circuit.
     All subclasses should implement this.
     """
     raise NotImplementedError('subclasses should implement this')
+
+class Motor_Plotter(Plotter):
+  """
+  Plots motor angle and speed.
+  """
+  def __init__(self, motor):
+    assert isinstance(motor, Motor), 'motor must be a Motor'
+    self._motor = motor
+  def plot(self, data):
+    # motor angle
+    figure()
+    xlabel('t')
+    ylabel('Motor angle')
+    stem(T_SAMPLES, self._motor.angle_samples[:-1])
+    # motor speed
+    figure()
+    xlabel('t')
+    ylabel('Motor speed')
+    stem(T_SAMPLES, self._motor.speed_samples[:-1])
 
 class Head_Plotter(Plotter):
   """
@@ -38,17 +54,10 @@ class Head_Plotter(Plotter):
     assert isinstance(head_connector, Head_Connector), ('head_connector must '
         'be a Head_Connector')
     self._head_connector = head_connector
-  def plot(self, board, data):
+  def plot(self, data):
     # motor
     if self._head_connector.motor_present:
-      figure()
-      xlabel('t')
-      ylabel('Motor angle')
-      stem(T_SAMPLES, self._head_connector.motor.angle_samples[:-1])
-      figure()
-      xlabel('t')
-      ylabel('Motor velocity')
-      stem(T_SAMPLES, self._head_connector.motor.speed_samples[:-1])
+      Motor_Plotter(self._head_connector.motor).plot(data)
     # lamp distance signal
     if self._head_connector.lamp_distance_signal:
       figure()
@@ -64,31 +73,11 @@ class Head_Plotter(Plotter):
       stem(T_SAMPLES, self._head_connector.lamp_angle_signal.samples(0, T,
           NUM_SAMPLES))
 
-class Motor_Plotter(Plotter):
-  """
-  Plots motor angle and speed.
-  """
-  def __init__(self, motor_connector):
-    assert isinstance(motor_connector, Motor), ('motor_connector must be a '
-        'Motor')
-    self._motor_connector = motor_connector
-  def plot(self, board, data):
-    # motor angle
-    figure()
-    xlabel('t')
-    ylabel('Motor angle')
-    stem(T_SAMPLES, self._motor_connector.angle_samples[:-1])
-    # motor speed
-    figure()
-    xlabel('t')
-    ylabel('Motor speed')
-    stem(T_SAMPLES, self._motor_connector.speed_samples[:-1])
-
 class Signalled_Pot_Plotter(Plotter):
   def __init__(self, pot):
-    assert isinstance(pot, Signalled_Pot), ('pot must be a Signalled_Pot')
+    assert isinstance(pot, Signalled_Pot), 'pot must be a Signalled_Pot'
     self._pot = pot
-  def plot(self, board, data):
+  def plot(self, data):
     figure()
     xlabel('t')
     ylabel('Pot alpha')
@@ -104,7 +93,7 @@ class Probe_Plotter(Plotter):
     """
     self._probe_plus = probe_plus
     self._probe_minus = probe_minus
-  def plot(self, board, data):
+  def plot(self, data):
     t_samples, probe_samples = [], []
     for t, solution in data.items():
       # ensure that the probes are in the solved circuits

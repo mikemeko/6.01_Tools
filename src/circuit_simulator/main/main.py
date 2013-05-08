@@ -159,7 +159,7 @@ if __name__ == '__main__':
     if circuit.data:
       # show analysis plots
       for plotter in plotters:
-        plotter.plot(board, circuit.data)
+        plotter.plot(circuit.data)
       show()
     else:
       board.display_message('Could not solve circuit', ERROR)
