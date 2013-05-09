@@ -123,6 +123,7 @@ def run_analysis(board, analyze):
   # probe labels
   probe_plus, probe_minus = None, None
   # constants for motors, motor_pots, and photosensors
+  # TODO(mikemeko): check that each of these is set at most once
   n_motor_plus = None
   n_motor_minus = None
   i_motor = None
