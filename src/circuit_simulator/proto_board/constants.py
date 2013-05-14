@@ -48,7 +48,7 @@ ALLOW_CROSSING_WIRES = True
 WIRE_LENGTH_LIMIT = 15
 
 # circuit piece placement constants
-CIRCUIT_PIECE_SEPARATION = 2
+CIRCUIT_PIECE_SEPARATION = 3
 
 # debugging
 DEBUG_SHOW_COST =        2 ** 0

@@ -168,11 +168,12 @@ if __name__ == '__main__':
     Finds a way to layout the given |circuit| on a proto board and displays the
         discovered proto board.
     """
-    placement = get_piece_placement(circuit)
+    placement, resistor_node_pairs = get_piece_placement(circuit)
     proto_board = Proto_Board()
     for piece in placement:
       proto_board = proto_board.with_piece(piece)
-    proto_board = find_wiring(loc_pairs_to_connect(placement), proto_board)
+    proto_board = find_wiring(loc_pairs_to_connect(placement,
+        resistor_node_pairs), proto_board)
     show_pwr_gnd_pins = not any([isinstance(component, Robot_Connector) for
         component in circuit.components])
     visualize_proto_board(proto_board, Toplevel(), show_pwr_gnd_pins)

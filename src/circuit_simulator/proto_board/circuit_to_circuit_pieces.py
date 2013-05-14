@@ -19,6 +19,7 @@ from circuit_piece_placement import find_placement
 from circuit_pieces import Head_Connector_Piece
 from circuit_pieces import Motor_Connector_Piece
 from circuit_pieces import Op_Amp_Piece
+from circuit_pieces import Place_Holder_Piece
 from circuit_pieces import Pot_Piece
 from circuit_pieces import Resistor_Piece
 from circuit_pieces import Robot_Connector_Piece
@@ -75,6 +76,7 @@ def resistor_piece_from_resistor(resistor):
   """
   Returns a Resistor_Piece constructed using |resistor|, an instance of
       Resistor.
+  TODO: remove?
   """
   assert isinstance(resistor, Resistor), 'resistor must be a Resistor'
   return Resistor_Piece(resistor.n1, resistor.n2)
@@ -140,10 +142,12 @@ def get_piece_placement(circuit):
   """
   Returns a *good* ordering of Circuit_Pieces for the given |circuit|. Finding
       the best one (i.e. the one the requires minimal wiring) is too expensive.
+  TODO: update
   """
   assert isinstance(circuit, Circuit), 'circuit must be a Circuit'
   resistors = filter(lambda obj: obj.__class__ == Resistor, circuit.components)
-  resistor_pieces = map(resistor_piece_from_resistor, resistors)
+  resistor_node_pairs = [(resistor.n1, resistor.n2) for resistor in resistors]
+  resistor_nodes = reduce(set.union, map(set, resistor_node_pairs), set())
   pots = filter(lambda obj: obj.__class__ == Signalled_Pot, circuit.components)
   pot_pieces = map(pot_piece_from_pot, pots)
   motors = filter(lambda obj: obj.__class__ == Motor, circuit.components)
@@ -163,11 +167,17 @@ def get_piece_placement(circuit):
   # search through all the ways of packaging up the op amps
   for partition in all_1_2_partitions(num_op_amps):
     for grouping in all_groupings(op_amps, partition):
-      pieces = (resistor_pieces + pot_pieces + motor_connector_pieces +
-          robot_connector_pieces + head_connector_pieces + map(
-          op_amp_piece_from_op_amp, grouping))
-      placement, cost = find_placement(pieces)
+      op_amp_pieces = map(op_amp_piece_from_op_amp, grouping)
+      non_resistor_pieces = (pot_pieces + motor_connector_pieces +
+          robot_connector_pieces + head_connector_pieces + op_amp_pieces)
+      non_resistor_nodes = reduce(set.union, (piece.nodes for piece in
+          non_resistor_pieces), set())
+      # create place holders for nodes needed for resistors
+      place_holder_pieces = [Place_Holder_Piece(node) for node in
+          (resistor_nodes - non_resistor_nodes)]
+      placement, cost = find_placement(non_resistor_pieces +
+          place_holder_pieces)
       if cost < best_placement_cost:
         best_placement = placement
         best_placement_cost = cost
-  return best_placement
+  return best_placement, resistor_node_pairs

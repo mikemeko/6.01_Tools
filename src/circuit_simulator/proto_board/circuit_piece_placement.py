@@ -9,6 +9,7 @@ from circuit_pieces import Circuit_Piece
 # TODO(mikemeko): this is kind of hacky, coupled with board parsing
 from circuit_simulator.main.constants import GROUND
 from circuit_simulator.main.constants import POWER
+from collections import defaultdict
 from constants import CIRCUIT_PIECE_SEPARATION
 from constants import GROUND_RAIL
 from constants import POWER_RAIL
@@ -18,6 +19,7 @@ from constants import RAIL_ROWS
 from copy import deepcopy
 from core.data_structures.disjoint_set_forest import Disjoint_Set_Forest
 from core.data_structures.queue import Queue
+from itertools import product
 from sys import maxint
 from util import dist
 
@@ -75,13 +77,28 @@ def all_nodes(pieces):
   """
   return reduce(set.union, (piece.nodes for piece in pieces), set())
 
-def loc_pairs_to_connect(pieces):
+def loc_pairs_to_connect(pieces, resistor_node_pairs):
   """
   Returns a tuple of the locations pairs to connect so that the |pieces| are
       appropriately connected.
+  TODO: update
   """
-  return reduce(list.__add__, (loc_pairs_for_node(locs_for_node(pieces,
+  loc_pairs = reduce(list.__add__, (loc_pairs_for_node(locs_for_node(pieces,
       node), node) for node in all_nodes(pieces) if node))
+  occurences = defaultdict(int)
+  flagged_loc_pairs = []
+  for loc_1, loc_2 in loc_pairs:
+    occurences[loc_1] += 1
+    occurences[loc_2] += 1
+    flagged_loc_pairs.append((loc_1, loc_2, False))
+  for n1, n2 in resistor_node_pairs:
+    loc_1, loc_2 = min(product(locs_for_node(pieces, n1), locs_for_node(pieces,
+        n2)), key=lambda (loc_1, loc_2): 5 * (occurences[loc_1] +
+        occurences[loc_2]) + dist(loc_1, loc_2))
+    occurences[loc_1] += 1
+    occurences[loc_2] += 1
+    flagged_loc_pairs.append((loc_1, loc_2, True))
+  return flagged_loc_pairs
 
 def set_locations(pieces):
   """
@@ -104,15 +121,18 @@ def cost(placement):
   TODO(mikemeko): here, the concept of distance should take into account the
       presence of the circuit pieces, i.e. it should factor having to wire
       around the pieces.
+  TODO: update
   """
   set_locations(placement)
-  return sum(dist(*loc_pair) for loc_pair in loc_pairs_to_connect(placement))
+  return sum(dist(loc_1, loc_2) for loc_1, loc_2, r_flag in
+      loc_pairs_to_connect(placement, []))
 
 def find_placement(pieces):
   """
   Given a list of |pieces|, returns a placement of the pieces that requires
       comparatively small wiring. Finding the absolute best placement is too
       expensive.
+  TODO: update
   """
   assert isinstance(pieces, list), 'pieces must be a list'
   assert all(isinstance(piece, Circuit_Piece) for piece in pieces), ('all '

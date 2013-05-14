@@ -7,6 +7,7 @@ TODO(mikemeko): certain wire crossings (basically same shape crossings) should
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
+from circuit_pieces import Resistor_Piece
 from constants import ALLOW_CROSSING_WIRES
 from constants import DEBUG
 from constants import DEBUG_SHOW_COST
@@ -82,10 +83,11 @@ class Proto_Board_Search_Node(Search_Node):
   def get_children(self):
     """
     Returns the children of this Proto_Board_Search_Node.
+    TODO: update
     """
     children = []
     proto_board, loc_pairs = self.state
-    for i, (loc_1, loc_2) in enumerate(loc_pairs):
+    for i, (loc_1, loc_2, resistor_flag) in enumerate(loc_pairs):
       # can extend a wire from |loc_1| towards |loc_2| from any of the
       #     the locations |loc_1| is internally connected to
       for neighbor_loc in section_locs(loc_1):
@@ -109,21 +111,42 @@ class Proto_Board_Search_Node(Search_Node):
             # continue if we do not want to allow crossing wires
             if crosses_wires and not ALLOW_CROSSING_WIRES:
               continue
-            new_proto_board = proto_board.with_wire(new_wire)
-            # make sure that the wire doesn't (1) connect things we want to
-            #     keep disconnected or (2) connect things that are already
-            #     connected
-            if not new_proto_board or new_proto_board is proto_board:
+            # TODO: elaborate
+            wire_proto_board = proto_board.with_wire(new_wire)
+            valid_wire_proto_board = (wire_proto_board and wire_proto_board is
+                not proto_board)
+            # TODO: elaborate
+            added_resistor = False
+            if resistor_flag and not crosses_wires and new_wire.length() == 3:
+              resistor_piece = Resistor_Piece('_', '_', new_wire.vertical())
+              # TODO: cleanup
+              if new_wire.horizontal():
+                resistor_piece.top_left_loc = (new_wire.loc_1 if new_wire.c_1 <
+                    new_wire.c_2 else new_wire.loc_2)
+              else: # vertical resistor
+                resistor_piece.top_left_loc = (new_wire.loc_1 if new_wire.r_1 <
+                    new_wire.r_2 else new_wire.loc_2)
+              new_proto_board = proto_board.with_piece(resistor_piece)
+              new_resistor_flag = False
+              added_resistor = True
+            elif valid_wire_proto_board:
+              new_proto_board = wire_proto_board
+              new_resistor_flag = resistor_flag
+            else:
               continue
             # we have a candidate proto board, compute state and cost
             new_loc_pairs = list(loc_pairs)
             new_cost = self.cost
-            if new_proto_board.connected(loc_1, loc_2):
+            if not resistor_flag and wire_proto_board.connected(loc_1, loc_2):
               new_loc_pairs.pop(i)
               # favor connectedness a lot
               new_cost -= 100
             else:
-              new_loc_pairs[i] = (wire_end, loc_2)
+              new_loc_pairs[i] = (wire_end, loc_2, new_resistor_flag)
+            # TODO: cleanup
+            if added_resistor:
+              non_resistor_loc_pairs = list(loc_pairs)
+              non_resistor_loc_pairs[i] = (wire_end, loc_2, True)
             # penalize long wires
             new_cost += 5 * new_wire.length()
             # penalize many wires
@@ -139,6 +162,10 @@ class Proto_Board_Search_Node(Search_Node):
                 PROTO_BOARD_MIDDLE)
             children.append(Proto_Board_Search_Node(new_proto_board,
                 tuple(new_loc_pairs), self, new_cost))
+            # TODO: elaborate; cleanup
+            if added_resistor and valid_wire_proto_board:
+              children.append(Proto_Board_Search_Node(wire_proto_board,
+                  tuple(non_resistor_loc_pairs), self, new_cost))
     return children
 
 def goal_test(state):
@@ -148,7 +175,8 @@ def goal_test(state):
       False otherwise.
   """
   proto_board, loc_pairs = state
-  return all(proto_board.connected(loc_1, loc_2) for loc_1, loc_2 in loc_pairs)
+  return all(not resistor_flag and proto_board.connected(loc_1, loc_2) for
+      loc_1, loc_2, resistor_flag in loc_pairs)
 
 def heuristic(state):
   """
@@ -156,7 +184,7 @@ def heuristic(state):
       |state| and a goal state.
   """
   proto_board, loc_pairs = state
-  return sum(dist(loc_1, loc_2) for loc_1, loc_2 in loc_pairs)
+  return sum(dist(loc_1, loc_2) for loc_1, loc_2, resistor_flag in loc_pairs)
 
 def progress(state, cost):
   """
@@ -171,23 +199,28 @@ def find_wiring(loc_pairs, start_proto_board=Proto_Board()):
   Returns a Proto_Board in which all the pairs of locations in |loc_pairs| are
       properly connected, or None if no such Proto_Board can be found. Search
       starts from |start_proto_board|.
+  TODO: update
   """
+  global proto_board
+  proto_board = None
   def run_search():
+    global proto_board
     # first connect pairs that are farther apart; connect to rail last
     # TODO(mikemeko): this is ordering is very ad hoc, not well thought out
-    loc_pairs.sort(key=lambda (loc_1, loc_2): (not (is_rail_loc(loc_1) or
-        is_rail_loc(loc_2))) * dist(loc_1, loc_2))
+    loc_pairs.sort(key=lambda (loc_1, loc_2, resistor_flag): (not (is_rail_loc(
+        loc_1) or is_rail_loc(loc_2))) * dist(loc_1, loc_2) + resistor_flag *
+        10)
     proto_board = start_proto_board.with_loc_disjoint_set_forest(
         loc_disjoint_set_forest(loc_pairs))
     # connect one pair of locations at a time
     print 'Connecting %d pairs' % len(loc_pairs)
     while loc_pairs:
-      node = Proto_Board_Search_Node(proto_board, (loc_pairs.pop(),))
+      next_pair = loc_pairs.pop()
+      node = Proto_Board_Search_Node(proto_board, (next_pair,))
       proto_board = a_star(node, goal_test, heuristic, progress)[0]
-      print '\t%d pairs left' % len(loc_pairs)
-    return proto_board
+      print '\t%d pairs left, connecting: %s' % (len(loc_pairs), next_pair)
   if DEBUG & DEBUG_SHOW_PROFILE:
-    runctx('proto_board = run_search()', globals(), locals())
+    runctx('run_search()', globals(), locals())
   else:
-    proto_board = run_search()
+    run_search()
   return proto_board

@@ -86,16 +86,20 @@ def loc_disjoint_set_forest(loc_pairs):
   """
   Returns a forest of disjoint sets representing the grouping of locations
       given the pairs of locations in |loc_pairs|.
+  TODO: update
   """
   forest = Disjoint_Set_Forest()
-  for loc_1, loc_2 in loc_pairs:
+  for loc_1, loc_2, resistor_flag in loc_pairs:
     forest.make_set(loc_1)
     for loc in section_locs(loc_1):
       forest.make_set(loc)
       forest.union(loc_1, loc)
+    forest.make_set(loc_2)
     for loc in section_locs(loc_2):
       forest.make_set(loc)
-      forest.union(loc_1, loc)
+      forest.union(loc_2, loc)
+    if not resistor_flag:
+      forest.union(loc_1, loc_2)
   return forest
 
 def overlap(interval_1, interval_2):
