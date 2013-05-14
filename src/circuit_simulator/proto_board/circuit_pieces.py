@@ -195,6 +195,28 @@ class Op_Amp_Piece(Circuit_Piece):
     return 'Op_Amp_Piece %s %s' % (str([self.n_1, self.n_2, self.n_3, self.n_4,
         self.n_5, self.n_6, self.n_7, self.n_8]), self.dot_bottom_left)
 
+class Place_Holder_Piece(Circuit_Piece):
+  """
+  TODO: docstring
+  """
+  possible_top_left_rows = [PROTO_BOARD_HEIGHT / 2 - 1, PROTO_BOARD_HEIGHT / 2]
+  def __init__(self, n):
+    """
+    TODO: docstring
+    """
+    assert n, 'invalid n'
+    Circuit_Piece.__init__(self, set([n]), 0, 0)
+    self.n = n
+  def locs_for(self, node):
+    self._assert_top_left_loc_set()
+    return [self.top_left_loc] if node == self.n else []
+  def inverted(self):
+    return self
+  def draw_on(self, canvas, top_left):
+    pass
+  def __str__(self):
+    return 'Place_Holder_Piece %s' % self.n
+
 class Resistor_Piece(Circuit_Piece):
   """
   Representation for the resistor piece.
