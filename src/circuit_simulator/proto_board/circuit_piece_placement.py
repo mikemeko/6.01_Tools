@@ -79,12 +79,15 @@ def all_nodes(pieces):
 
 def loc_pairs_to_connect(pieces, resistor_node_pairs):
   """
-  Returns a tuple of the locations pairs to connect so that the |pieces| are
-      appropriately connected.
-  TODO: update
+  Returns a tuple of the locations pairs to connect so that the |pieces| and
+      |resistor_node_pairs| are appropriately connected. Each location pairs
+      comes with a flag indicating whether or not to include a resistor.
   """
+  # find loc pairs to connect not taking resistors into account
   loc_pairs = reduce(list.__add__, (loc_pairs_for_node(locs_for_node(pieces,
       node), node) for node in all_nodes(pieces) if node))
+  # find loc pairs to connect for resistors
+  # TODO(mikemeko): method here is very ad hoc
   occurences = defaultdict(int)
   flagged_loc_pairs = []
   for loc_1, loc_2 in loc_pairs:
@@ -121,10 +124,9 @@ def cost(placement):
   TODO(mikemeko): here, the concept of distance should take into account the
       presence of the circuit pieces, i.e. it should factor having to wire
       around the pieces.
-  TODO: update
   """
   set_locations(placement)
-  return sum(dist(loc_1, loc_2) for loc_1, loc_2, r_flag in
+  return sum(dist(loc_1, loc_2) for loc_1, loc_2, resistor_flag in
       loc_pairs_to_connect(placement, []))
 
 def find_placement(pieces):
@@ -132,7 +134,6 @@ def find_placement(pieces):
   Given a list of |pieces|, returns a placement of the pieces that requires
       comparatively small wiring. Finding the absolute best placement is too
       expensive.
-  TODO: update
   """
   assert isinstance(pieces, list), 'pieces must be a list'
   assert all(isinstance(piece, Circuit_Piece) for piece in pieces), ('all '
