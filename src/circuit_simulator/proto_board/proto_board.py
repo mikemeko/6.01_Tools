@@ -61,6 +61,20 @@ class Proto_Board:
         otherwise.
     """
     return self._connected(loc_1, loc_2, set())
+  def locs_connected_to(self, loc):
+    """
+    TODO: docstring
+    """
+    locs = set()
+    to_consider = set(section_locs(loc))
+    while to_consider:
+      l = to_consider.pop()
+      locs.add(l)
+      if l in self._wire_mappings:
+        for h in section_locs(self._wire_mappings[l]):
+          if h not in locs:
+            to_consider.add(h)
+    return locs
   def with_loc_disjoint_set_forest(self, loc_disjoint_set_forest):
     """
     Returns a copy of this board with a new forest of disjoint location sets to

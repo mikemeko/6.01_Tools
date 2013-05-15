@@ -45,7 +45,6 @@ NUM_ROWS_PER_VERTICAL_SEPARATION = 2
 
 # wire constants
 ALLOW_CROSSING_WIRES = True
-WIRE_LENGTH_LIMIT = 15
 
 # circuit piece placement constants
 CIRCUIT_PIECE_SEPARATION = 3
