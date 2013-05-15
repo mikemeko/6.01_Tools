@@ -197,12 +197,16 @@ class Op_Amp_Piece(Circuit_Piece):
 
 class Place_Holder_Piece(Circuit_Piece):
   """
-  TODO: docstring
+  Circuit_Piece used to hold a place for a particular node that isn't
+      present on any other Circuit_Piece, but is present in a circuit. This is
+      particularly important for resistor nodes that are not connected to any
+      other component in the circuit. Look at get_piece_placement in
+      circuit_to_circuit_pieces.py for usage.
   """
   possible_top_left_rows = [PROTO_BOARD_HEIGHT / 2 - 1, PROTO_BOARD_HEIGHT / 2]
   def __init__(self, n):
     """
-    TODO: docstring
+    |n|: the node for this Place_Holder_Piece.
     """
     assert n, 'invalid n'
     Circuit_Piece.__init__(self, set([n]), 0, 0)
@@ -213,6 +217,7 @@ class Place_Holder_Piece(Circuit_Piece):
   def inverted(self):
     return self
   def draw_on(self, canvas, top_left):
+    # nothing to draw
     pass
   def __str__(self):
     return 'Place_Holder_Piece %s' % self.n
@@ -220,11 +225,13 @@ class Place_Holder_Piece(Circuit_Piece):
 class Resistor_Piece(Circuit_Piece):
   """
   Representation for the resistor piece.
+  TODO(mikemeko): Resistor_Piece is not used exaclty like the other
+      Circuit_Pieces since the start of treating resistors as wires.
   """
   def __init__(self, n_1, n_2, vertical):
     """
     |n_1|, |n_2|: the two nodes of the resistor.
-    TODO: update
+    |vertical|: True if orientation is vertical, False otherwise.
     """
     assert n_1, 'invalid n_1'
     assert n_2, 'invalid n_2'
