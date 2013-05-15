@@ -63,18 +63,19 @@ class Proto_Board:
     return self._connected(loc_1, loc_2, set())
   def locs_connected_to(self, loc):
     """
-    TODO: docstring
+    Returns a set of the locations on this proto board that are connected (
+        internally or by wires) to |loc|.
     """
-    locs = set()
-    to_consider = set(section_locs(loc))
-    while to_consider:
-      l = to_consider.pop()
-      locs.add(l)
-      if l in self._wire_mappings:
-        for h in section_locs(self._wire_mappings[l]):
-          if h not in locs:
-            to_consider.add(h)
-    return locs
+    connected_locs = set()
+    queue = set(section_locs(loc))
+    while queue:
+      connected_loc = queue.pop()
+      connected_locs.add(connected_loc)
+      if connected_loc in self._wire_mappings:
+        for wire_neighbor in section_locs(self._wire_mappings[connected_loc]):
+          if wire_neighbor not in connected_locs:
+            queue.add(wire_neighbor)
+    return connected_locs
   def with_loc_disjoint_set_forest(self, loc_disjoint_set_forest):
     """
     Returns a copy of this board with a new forest of disjoint location sets to
