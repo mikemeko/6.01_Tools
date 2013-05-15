@@ -82,24 +82,19 @@ def dist(loc_1, loc_2):
   return abs(r_1 - r_2) + abs(c_1 - c_2) + (
       vertical_separators * NUM_ROWS_PER_VERTICAL_SEPARATION)
 
-def loc_disjoint_set_forest(loc_pairs):
+def node_disjoint_set_forest(node_locs_mapping):
   """
-  Returns a forest of disjoint sets representing the grouping of locations
-      given the pairs of locations in |loc_pairs|.
-  TODO: update
+  Returns a Disjoint_Set_Forest representation of |node_locs_mapping|, a
+      dictionary mapping node names to lists of locations on the proto board to
+      be connected to the corresponding node.
   """
   forest = Disjoint_Set_Forest()
-  for loc_1, loc_2, resistor_flag in loc_pairs:
-    forest.make_set(loc_1)
-    for loc in section_locs(loc_1):
-      forest.make_set(loc)
-      forest.union(loc_1, loc)
-    forest.make_set(loc_2)
-    for loc in section_locs(loc_2):
-      forest.make_set(loc)
-      forest.union(loc_2, loc)
-    if not resistor_flag:
-      forest.union(loc_1, loc_2)
+  for node, locs in node_locs_mapping.items():
+    forest.make_set(node)
+    for loc in locs:
+      for section_loc in section_locs(loc):
+        forest.make_set(section_loc)
+        forest.union(section_loc, node)
   return forest
 
 def overlap(interval_1, interval_2):

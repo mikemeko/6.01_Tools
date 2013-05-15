@@ -23,7 +23,6 @@ from util import body_opp_section_rows
 from util import dist
 from util import is_body_loc
 from util import is_rail_loc
-from util import loc_disjoint_set_forest
 from util import section_locs
 from util import valid_loc
 from wire import Wire
@@ -216,8 +215,7 @@ def find_wiring(loc_pairs, start_proto_board=Proto_Board()):
     loc_pairs.sort(key=lambda (loc_1, loc_2, resistor_flag): (not (is_rail_loc(
         loc_1) or is_rail_loc(loc_2))) * dist(loc_1, loc_2) + resistor_flag *
         10)
-    proto_board = start_proto_board.with_loc_disjoint_set_forest(
-        loc_disjoint_set_forest(loc_pairs))
+    proto_board = start_proto_board
     # connect one pair of locations at a time
     print 'Connecting %d pairs' % len(loc_pairs)
     def r_dist(loc_1, loc_2, resistor_flag):
@@ -236,7 +234,6 @@ def find_wiring(loc_pairs, start_proto_board=Proto_Board()):
       next_pair = (best_loc_1, loc_2, resistor_flag) if dist(best_loc_1,
           loc_2) < dist(loc_1, best_loc_2) else (loc_1, best_loc_2,
           resistor_flag)
-      print (loc_1, loc_2), next_pair[:-1]
       print '\t%d pairs left, connecting: %s' % (len(loc_pairs), next_pair)
       node = Proto_Board_Search_Node(proto_board, (next_pair,))
       proto_board = a_star(node, goal_test, heuristic, progress)[0]

@@ -72,11 +72,11 @@ def run_analysis(board, analyze):
       for node in nodes:
         power_nodes.add(node)
     # ground component
-    if isinstance(drawable, Ground_Drawable):
+    elif isinstance(drawable, Ground_Drawable):
       for node in nodes:
         ground_nodes.add(node)
     # robot connector component
-    if isinstance(drawable, Robot_Connector_Drawable) or isinstance(drawable,
+    elif isinstance(drawable, Robot_Connector_Drawable) or isinstance(drawable,
         Robot_Pin_Drawable):
       if robot_connector_found:
         board.display_message('At most 1 Robot Connector allowed', ERROR)

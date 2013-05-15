@@ -23,12 +23,16 @@ from circuit_drawables import Resistor_Drawable
 from circuit_drawables import Robot_Connector_Drawable
 from circuit_drawables import Robot_Pin_Drawable
 from circuit_drawables import Simulate_Run_Drawable
+from circuit_simulator.proto_board.circuit_piece_placement import all_nodes
 from circuit_simulator.proto_board.circuit_piece_placement import (
     loc_pairs_to_connect)
+from circuit_simulator.proto_board.circuit_piece_placement import (
+    locs_for_node)
 from circuit_simulator.proto_board.circuit_to_circuit_pieces import (
     get_piece_placement)
 from circuit_simulator.proto_board.find_proto_board_wiring import find_wiring
 from circuit_simulator.proto_board.proto_board import Proto_Board
+from circuit_simulator.proto_board.util import node_disjoint_set_forest
 from circuit_simulator.proto_board.visualization.visualization import (
     visualize_proto_board)
 from circuit_simulator.simulation.circuit import Robot_Connector
@@ -172,6 +176,9 @@ if __name__ == '__main__':
     proto_board = Proto_Board()
     for piece in placement:
       proto_board = proto_board.with_piece(piece)
+    proto_board = proto_board.with_loc_disjoint_set_forest(
+        node_disjoint_set_forest({node: locs_for_node(placement, node) for node
+        in all_nodes(placement)}))
     proto_board = find_wiring(loc_pairs_to_connect(placement,
         resistor_node_pairs), proto_board)
     show_pwr_gnd_pins = not any([isinstance(component, Robot_Connector) for
