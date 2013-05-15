@@ -21,7 +21,6 @@ from circuit_pieces import Motor_Connector_Piece
 from circuit_pieces import Op_Amp_Piece
 from circuit_pieces import Place_Holder_Piece
 from circuit_pieces import Pot_Piece
-from circuit_pieces import Resistor_Piece
 from circuit_pieces import Robot_Connector_Piece
 # TODO(mikemeko): this is kind of hacky, coupled with board parsing
 from circuit_simulator.main.constants import GROUND
@@ -71,15 +70,6 @@ def all_groupings(items, partition):
     if new_grouping not in groupings:
       groupings.append(new_grouping)
   return groupings
-
-def resistor_piece_from_resistor(resistor):
-  """
-  Returns a Resistor_Piece constructed using |resistor|, an instance of
-      Resistor.
-  TODO: remove?
-  """
-  assert isinstance(resistor, Resistor), 'resistor must be a Resistor'
-  return Resistor_Piece(resistor.n1, resistor.n2)
 
 def pot_piece_from_pot(pot):
   """
@@ -142,7 +132,7 @@ def get_piece_placement(circuit):
   """
   Returns a *good* ordering of Circuit_Pieces for the given |circuit|. Finding
       the best one (i.e. the one the requires minimal wiring) is too expensive.
-  TODO: update
+      Also returns a list of the resistor node pairs in the |circuit|.
   """
   assert isinstance(circuit, Circuit), 'circuit must be a Circuit'
   resistors = filter(lambda obj: obj.__class__ == Resistor, circuit.components)
