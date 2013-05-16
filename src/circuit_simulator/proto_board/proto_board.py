@@ -149,5 +149,5 @@ class Proto_Board:
     """
     Returns True if the given |loc| is occupied, False otherwise.
     """
-    return any(loc in wire.all_locs() for wire in self._wires) or any(loc in
-        piece.all_locs() for piece in self._pieces)
+    return loc in self._wire_mappings or any(loc in piece.all_locs() for piece
+        in self._pieces)

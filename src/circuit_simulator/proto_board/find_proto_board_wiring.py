@@ -195,19 +195,14 @@ def condense_loc_pairs(loc_pairs, proto_board):
   Updates the |loc_pairs| so as connecting them up will be easier, but no
       structural change is made.
   """
-  def metric(loc_1, loc_2, resistor_flag):
-    d = dist(loc_1, loc_2)
-    return d + 1000 * (proto_board.occupied(loc_1) or proto_board.occupied(
-        loc_2)) + 10 * resistor_flag * (d < 3)
   condensed_loc_pairs = []
   for (loc_1, loc_2, resistor_flag) in loc_pairs:
     loc_1_condensed = (min(proto_board.locs_connected_to(loc_1),
-        key=lambda loc: metric(loc, loc_2, resistor_flag)), loc_2,
-        resistor_flag)
+        key=lambda loc: dist(loc, loc_2)), loc_2, resistor_flag)
     loc_2_condensed = (loc_1, min(proto_board.locs_connected_to(loc_2),
-        key=lambda loc: metric(loc_1, loc, resistor_flag)), resistor_flag)
+        key=lambda loc: dist(loc_1, loc)), resistor_flag)
     condensed_loc_pairs.append(min([loc_1_condensed, loc_2_condensed],
-        key=lambda condensed: metric(*condensed)))
+        key=lambda condensed: dist(*condensed[:2])))
   return condensed_loc_pairs
 
 def find_wiring(loc_pairs, start_proto_board=Proto_Board()):
