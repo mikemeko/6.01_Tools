@@ -19,6 +19,7 @@ from constants import RAIL_ROWS
 from copy import deepcopy
 from core.data_structures.disjoint_set_forest import Disjoint_Set_Forest
 from core.data_structures.queue import Queue
+from itertools import permutations
 from itertools import product
 from sys import maxint
 from util import dist
@@ -175,3 +176,26 @@ def find_placement(pieces):
           in piece.nodes] for node in current_piece.nodes], []):
         add_to_queue(piece)
   return placement, placement_cost
+
+def _find_placement(pieces):
+  """
+  find_placement that looks at every possibility. Takes too long!
+  """
+  piece_options = []
+  for piece in pieces:
+    options = []
+    for p in [piece, piece.inverted()]:
+      for top_left_row in piece.possible_top_left_rows:
+        option = deepcopy(p)
+        option.top_left_row = top_left_row
+        options.append(option)
+    piece_options.append(options)
+  best_placement = None
+  best_cost = maxint
+  for perm in permutations(piece_options):
+    perm_best = min(product(*perm), key=cost)
+    perm_best_cost = cost(perm_best)
+    if perm_best_cost < best_cost:
+      best_placement = perm_best
+      best_cost = perm_best_cost
+  return best_placement, best_cost
