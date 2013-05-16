@@ -12,7 +12,6 @@ from constants import RAIL_ROWS
 from constants import ROWS
 from core.search.search import a_star
 from core.search.search import Search_Node
-from itertools import product
 from proto_board import Proto_Board
 from util import body_opp_section_rows
 from util import dist
@@ -202,10 +201,13 @@ def condense_loc_pairs(loc_pairs, proto_board):
         loc_2)) + 10 * resistor_flag * (d < 3)
   condensed_loc_pairs = []
   for (loc_1, loc_2, resistor_flag) in loc_pairs:
-    best_loc_1, best_loc_2 = min(product(proto_board.locs_connected_to(loc_1),
-        proto_board.locs_connected_to(loc_2)), key= lambda (l1, l2): metric(l1,
-        l2, resistor_flag))
-    condensed_loc_pairs.append((best_loc_1, best_loc_2, resistor_flag))
+    loc_1_condensed = (min(proto_board.locs_connected_to(loc_1),
+        key=lambda loc: metric(loc, loc_2, resistor_flag)), loc_2,
+        resistor_flag)
+    loc_2_condensed = (loc_1, min(proto_board.locs_connected_to(loc_2),
+        key=lambda loc: metric(loc_1, loc, resistor_flag)), resistor_flag)
+    condensed_loc_pairs.append(min([loc_1_condensed, loc_2_condensed],
+        key=lambda condensed: metric(*condensed)))
   return condensed_loc_pairs
 
 def find_wiring(loc_pairs, start_proto_board=Proto_Board()):
