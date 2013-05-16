@@ -1,23 +1,18 @@
 """
 Search to find proto board wiring to connect a given list of pairs of locations
     on the proto board.
-TODO(mikemeko): certain wire crossings (basically same shape crossings) should
-    probably not be allowed at all.
 """
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
 from circuit_pieces import Resistor_Piece
 from constants import ALLOW_CROSSING_WIRES
-from constants import DEBUG
-from constants import DEBUG_SHOW_COST
-from constants import DEBUG_SHOW_PROFILE
 from constants import PROTO_BOARD_MIDDLE
 from constants import RAIL_ROWS
 from constants import ROWS
 from core.search.search import a_star
 from core.search.search import Search_Node
-from cProfile import runctx
+from itertools import product
 from proto_board import Proto_Board
 from util import body_opp_section_rows
 from util import dist
@@ -34,7 +29,9 @@ class Proto_Board_Search_Node(Search_Node):
   def __init__(self, proto_board, loc_pairs, parent=None, cost=0):
     """
     |proto_board|: current Proto_Board in the search.
-    |loc_pairs|: a tuple of the pairs of locations we are trying to connect.
+    |loc_pairs|: a tuple of tuples of the form (loc_1, loc_2, resistor_flag),
+        where loc_1 and loc_2 are to be connected and resistor_flag indicates
+        whether there needs to be a resistor between them.
     |parent|: this node's parent node, or None if this is the root node.
     |cost|: the cost of getting from the root node to this node.
     """
@@ -60,15 +57,17 @@ class Proto_Board_Search_Node(Search_Node):
     """
     Returns a list of the locations that can be connected by a wire with the
         given |loc| on the given |proto_board|, assuming that |loc| is a body
-        location.
+        location. |span| is the length of the longest wire that may be used.
     """
     assert is_body_loc(loc)
+    # make max possible wire length at least 5
+    span = max(span, 5)
     r, c = loc
     wire_ends = []
     # can draw horizontal wires to locations to the left and right of |loc|
     # note that we limit the lengh of these horizontal wires (can technically
     #     be very big, but considering all gets us a huge branching factor)
-    for l in range(1, max(span, 5) + 1):
+    for l in range(1, span + 1):
       wire_ends.append((r, c - l))
       wire_ends.append((r, c + l))
     # can draw vertical wires to the opposite half
@@ -81,7 +80,6 @@ class Proto_Board_Search_Node(Search_Node):
   def get_children(self):
     """
     Returns the children of this Proto_Board_Search_Node.
-    TODO: update
     """
     children = []
     proto_board, loc_pairs = self.state
@@ -90,87 +88,81 @@ class Proto_Board_Search_Node(Search_Node):
       #     the locations |loc_1| is internally connected to
       for neighbor_loc in section_locs(loc_1):
         # make sure that the candidate start location is not occupied
-        if not proto_board.occupied(neighbor_loc):
-          # get candidate end locations for the new wire to draw
-          wire_ends = (self._wire_ends_from_rail_loc(neighbor_loc,
-              proto_board) if is_rail_loc(neighbor_loc) else
-              self._wire_ends_from_body_loc(neighbor_loc, proto_board,
-              span=dist(loc_1, loc_2)))
-          for wire_end in wire_ends:
-            new_wire = Wire(neighbor_loc, wire_end)
-            # make sure that there is a wire to draw
-            if new_wire.length() == 0:
-              continue
-            # make sure that the wire does not cross any piece
-            if any(piece.crossed_by(new_wire) for piece in
-                proto_board.get_pieces()):
-              continue
-            crosses_wires = False
-            same_orientation_crossing = False
-            for wire in proto_board.get_wires():
-              if wire.crosses(new_wire):
-                crosses_wires = True
-                if wire.vertical() == new_wire.vertical():
-                  same_orientation_crossing = True
-            # continue if we do not want to allow crossing wires
-            if crosses_wires and not ALLOW_CROSSING_WIRES:
-              continue
-            # TODO: elaborate
-            wire_proto_board = proto_board.with_wire(new_wire)
-            valid_wire_proto_board = (wire_proto_board and wire_proto_board is
-                not proto_board)
-            # TODO: elaborate
-            added_resistor = False
-            if resistor_flag and not crosses_wires and new_wire.length() == 3:
-              resistor_piece = Resistor_Piece('_', '_', new_wire.vertical())
-              # TODO: cleanup
-              if new_wire.horizontal():
-                resistor_piece.top_left_loc = (new_wire.loc_1 if new_wire.c_1 <
-                    new_wire.c_2 else new_wire.loc_2)
-              else: # vertical resistor
-                resistor_piece.top_left_loc = (new_wire.loc_1 if new_wire.r_1 <
-                    new_wire.r_2 else new_wire.loc_2)
-              new_proto_board = proto_board.with_piece(resistor_piece)
-              new_resistor_flag = False
-              added_resistor = True
-            elif valid_wire_proto_board:
-              new_proto_board = wire_proto_board
-              new_resistor_flag = resistor_flag
-            else:
-              continue
-            # we have a candidate proto board, compute state and cost
-            new_loc_pairs = list(loc_pairs)
-            new_cost = self.cost
-            if not resistor_flag and wire_proto_board.connected(loc_1, loc_2):
-              new_loc_pairs.pop(i)
-              # favor connectedness a lot
-              new_cost -= 100
-            else:
-              new_loc_pairs[i] = (wire_end, loc_2, new_resistor_flag)
-            # TODO: cleanup
-            if added_resistor:
-              non_resistor_loc_pairs = list(loc_pairs)
-              non_resistor_loc_pairs[i] = (wire_end, loc_2, True)
-            # penalize long wires
-            new_cost += 5 * new_wire.length()
-            # penalize many wires
-            new_cost += 1
-            # penalize crossing wires (if allowed at all)
-            # TODO(mikemeko): prefer certain kinds of crossings over others?
-            if crosses_wires:
-              new_cost += 200 if same_orientation_crossing else 50
-            # favor wires that get us close to the goal, and penalize wires
-            #     that get us farther away
-            new_cost += dist(wire_end, loc_2) - dist(loc_1, loc_2)
-            # favor keeping horizontal wires close to circuit pieces
-            new_cost += new_wire.horizontal() * abs(new_wire.r_1 -
-                PROTO_BOARD_MIDDLE)
-            children.append(Proto_Board_Search_Node(new_proto_board,
-                tuple(new_loc_pairs), self, new_cost))
-            # TODO: elaborate; cleanup
-            if added_resistor and valid_wire_proto_board:
-              children.append(Proto_Board_Search_Node(wire_proto_board,
-                  tuple(non_resistor_loc_pairs), self, new_cost))
+        if proto_board.occupied(neighbor_loc):
+          continue
+        # get candidate end locations for the new wire to draw
+        wire_ends = (self._wire_ends_from_rail_loc(neighbor_loc,
+            proto_board) if is_rail_loc(neighbor_loc) else
+            self._wire_ends_from_body_loc(neighbor_loc, proto_board,
+            span=dist(loc_1, loc_2)))
+        for wire_end in wire_ends:
+          # make sure that there is a wire to draw
+          if wire_end == neighbor_loc:
+            continue
+          new_wire = Wire(neighbor_loc, wire_end)
+          # make sure that the wire does not cross any piece
+          if any(piece.crossed_by(new_wire) for piece in
+              proto_board.get_pieces()):
+            continue
+          # track number of other wires this new wire crosses
+          num_wire_crossings = sum(wire.crosses(new_wire) for wire in
+              proto_board.get_wires())
+          # continue if we do not want to allow any crossing wires
+          if not ALLOW_CROSSING_WIRES and num_wire_crossings:
+            continue
+          # construct a proto board with this new wire
+          wire_proto_board = proto_board.with_wire(new_wire)
+          # check that adding the wire is reasonable
+          wire_proto_board_valid = (wire_proto_board and wire_proto_board is
+              not proto_board)
+          # potentially create another proto board with a resistor in place of
+          #     the new wire
+          add_resistor = (resistor_flag and not num_wire_crossings and
+              new_wire.length() == 3)
+          if add_resistor:
+            # TODO(mikemeko): ignoring resistor nodes for now
+            resistor_piece = Resistor_Piece('_', '_', new_wire.vertical())
+            resistor_piece.top_left_loc = (new_wire.loc_1 if new_wire.c_1 <
+                new_wire.c_2 or new_wire.r_1 < new_wire.r_2 else
+                new_wire.loc_2)
+            new_proto_board = proto_board.with_piece(resistor_piece)
+            # would no longer need a resistor for this pair of locations
+            new_resistor_flag = False
+          elif wire_proto_board_valid:
+            new_proto_board = wire_proto_board
+            new_resistor_flag = resistor_flag
+          else:
+            continue
+          # we have a candidate proto board, compute state and cost
+          new_loc_pairs = list(loc_pairs)
+          new_cost = self.cost
+          if proto_board.connected(wire_end, loc_2):
+            new_loc_pairs.pop(i)
+            # favor connectedness a lot
+            new_cost -= 100
+          else:
+            new_loc_pairs[i] = (wire_end, loc_2, new_resistor_flag)
+          # penalize long wires
+          new_cost += 5 * new_wire.length()
+          # penalize many wires
+          new_cost += 1
+          # penalize crossing wires (if allowed at all)
+          new_cost += 100 * num_wire_crossings
+          # favor wires that get us close to the goal, and penalize wires
+          #     that get us farther away
+          new_cost += dist(wire_end, loc_2) - dist(loc_1, loc_2)
+          # favor keeping horizontal wires close to circuit pieces
+          new_cost += new_wire.horizontal() * abs(new_wire.r_1 -
+              PROTO_BOARD_MIDDLE)
+          children.append(Proto_Board_Search_Node(new_proto_board,
+              tuple(new_loc_pairs), self, new_cost))
+          # if added a resistor, also create a proto board where we use a wire
+          #     instead of the resistor
+          if add_resistor and wire_proto_board_valid:
+            wire_loc_pairs = list(loc_pairs)
+            wire_loc_pairs[i] = (wire_end, loc_2, True)
+            children.append(Proto_Board_Search_Node(wire_proto_board,
+                tuple(wire_loc_pairs), self, new_cost))
     return children
 
 def goal_test(state):
@@ -180,8 +172,8 @@ def goal_test(state):
       False otherwise.
   """
   proto_board, loc_pairs = state
-  return all(not resistor_flag and proto_board.connected(loc_1, loc_2) for
-      loc_1, loc_2, resistor_flag in loc_pairs)
+  return all((not resistor_flag) and proto_board.connected(loc_1, loc_2) for
+      (loc_1, loc_2, resistor_flag) in loc_pairs)
 
 def heuristic(state):
   """
@@ -191,54 +183,45 @@ def heuristic(state):
   proto_board, loc_pairs = state
   return sum(dist(loc_1, loc_2) for loc_1, loc_2, resistor_flag in loc_pairs)
 
-def progress(state, cost):
+def loc_pair_to_connect_next(loc_pairs):
   """
-  Displays some debug information to better understand search process.
+  Returns the loc pair to connect next out of the given |loc_pairs|.
   """
-  if DEBUG & DEBUG_SHOW_COST:
-    proto_board, loc_pairs = state
-    print cost, '%d to connect' % len(loc_pairs)
+  assert loc_pairs, 'loc_pairs is empty'
+  return max(loc_pairs, key=lambda (loc_1, loc_2, resistor_flag): dist(loc_1,
+      loc_2) + 10 * resistor_flag)
+
+def condense_loc_pairs(loc_pairs, proto_board):
+  """
+  Updates the |loc_pairs| so as connecting them up will be easier, but no
+      structural change is made.
+  """
+  def metric(loc_1, loc_2, resistor_flag):
+    d = dist(loc_1, loc_2)
+    return d + 1000 * (proto_board.occupied(loc_1) or proto_board.occupied(
+        loc_2)) + 10 * resistor_flag * (d < 3)
+  condensed_loc_pairs = []
+  for (loc_1, loc_2, resistor_flag) in loc_pairs:
+    best_loc_1, best_loc_2 = min(product(proto_board.locs_connected_to(loc_1),
+        proto_board.locs_connected_to(loc_2)), key= lambda (l1, l2): metric(l1,
+        l2, resistor_flag))
+    condensed_loc_pairs.append((best_loc_1, best_loc_2, resistor_flag))
+  return condensed_loc_pairs
 
 def find_wiring(loc_pairs, start_proto_board=Proto_Board()):
   """
   Returns a Proto_Board in which all the pairs of locations in |loc_pairs| are
       properly connected, or None if no such Proto_Board can be found. Search
       starts from |start_proto_board|.
-  TODO: update
   """
-  global proto_board
-  proto_board = None
-  def run_search():
-    global proto_board
-    # first connect pairs that are farther apart; connect to rail last
-    # TODO(mikemeko): this is ordering is very ad hoc, not well thought out
-    loc_pairs.sort(key=lambda (loc_1, loc_2, resistor_flag): (not (is_rail_loc(
-        loc_1) or is_rail_loc(loc_2))) * dist(loc_1, loc_2) + resistor_flag *
-        10)
-    proto_board = start_proto_board
-    # connect one pair of locations at a time
-    print 'Connecting %d pairs' % len(loc_pairs)
-    def r_dist(loc_1, loc_2, resistor_flag):
-      """
-      TODO: docstring
-      """
-      d = dist(loc_1, loc_2)
-      return d + 10 * resistor_flag * (d < 3)
-    while loc_pairs:
-      next_pair = loc_pairs.pop()
-      loc_1, loc_2, resistor_flag = next_pair
-      best_loc_1 = min(proto_board.locs_connected_to(loc_1),
-          key=lambda loc: r_dist(loc, loc_2, resistor_flag))
-      best_loc_2 = min(proto_board.locs_connected_to(loc_2),
-          key=lambda loc: r_dist(loc, loc_1, resistor_flag))
-      next_pair = (best_loc_1, loc_2, resistor_flag) if dist(best_loc_1,
-          loc_2) < dist(loc_1, best_loc_2) else (loc_1, best_loc_2,
-          resistor_flag)
-      print '\t%d pairs left, connecting: %s' % (len(loc_pairs), next_pair)
-      node = Proto_Board_Search_Node(proto_board, (next_pair,))
-      proto_board = a_star(node, goal_test, heuristic, progress)[0]
-  if DEBUG & DEBUG_SHOW_PROFILE:
-    runctx('run_search()', globals(), locals())
-  else:
-    run_search()
+  proto_board = start_proto_board
+  # connect one pair of locations at a time
+  n = len(loc_pairs)
+  while loc_pairs:
+    next_pair = loc_pair_to_connect_next(loc_pairs)
+    print '%d/%d connecting: %s' % (n - len(loc_pairs) + 1, n, next_pair)
+    proto_board = a_star(Proto_Board_Search_Node(proto_board, (next_pair,)),
+        goal_test, heuristic)[0]
+    loc_pairs.remove(next_pair)
+    loc_pairs = condense_loc_pairs(loc_pairs, proto_board)
   return proto_board

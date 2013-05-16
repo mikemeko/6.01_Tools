@@ -4,6 +4,7 @@ Representation for a wire on a proto board.
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
+from itertools import product
 from util import dist
 from util import overlap
 
@@ -27,6 +28,13 @@ class Wire:
     # row and column supports, i.e. min's and max's
     self.row_support = min(r_1, r_2), max(r_1, r_2)
     self.column_support = min(c_1, c_2), max(c_1, c_2)
+  def all_locs(self):
+    """
+    Returns all the locations that are covered by this wire.
+    """
+    r_min, r_max = self.row_support
+    c_min, c_max = self.column_support
+    return set(product(range(r_min, r_max + 1), range(c_min, c_max + 1)))
   def crosses(self, other):
     """
     Returns True if this wire and the |other| wire intersect, False otherwise.

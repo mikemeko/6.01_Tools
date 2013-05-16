@@ -48,8 +48,3 @@ ALLOW_CROSSING_WIRES = True
 
 # circuit piece placement constants
 CIRCUIT_PIECE_SEPARATION = 3
-
-# debugging
-DEBUG_SHOW_COST =        2 ** 0
-DEBUG_SHOW_PROFILE =     2 ** 1
-DEBUG = 0
