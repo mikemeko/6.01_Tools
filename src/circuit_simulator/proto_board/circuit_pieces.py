@@ -339,7 +339,7 @@ class N_Pin_Connector_Piece(Circuit_Piece):
     |name|: the name for this connector.
     |disabled_pins|: pins that are not meant to be connected to anything.
     """
-    Circuit_Piece.__init__(self, nodes, n + 2, 3)
+    Circuit_Piece.__init__(self, set(filter(bool, nodes)), n + 2, 3)
     self.n = n
     self.name = name
     self.disabled_pins = disabled_pins
@@ -410,7 +410,7 @@ class Motor_Connector_Piece(N_Pin_Connector_Piece):
     """
     assert n_pin_5, 'invalid n_pin_5'
     assert n_pin_6, 'invalid n_pin_6'
-    N_Pin_Connector_Piece.__init__(self, set([n_pin_5, n_pin_6]), 6,
+    N_Pin_Connector_Piece.__init__(self, [n_pin_5, n_pin_6], 6,
         'Motor Connector', DISABLED_PINS_MOTOR_CONNECTOR)
     self.n_pin_5 = n_pin_5
     self.n_pin_6 = n_pin_6
@@ -436,7 +436,7 @@ class Robot_Connector_Piece(N_Pin_Connector_Piece):
     """
     assert n_pin_2, 'invalid n_pin_2'
     assert n_pin_4, 'invalid n_pin_4'
-    N_Pin_Connector_Piece.__init__(self, set([n_pin_2, n_pin_4]), 8,
+    N_Pin_Connector_Piece.__init__(self, [n_pin_2, n_pin_4], 8,
         'Robot Connector', DISABLED_PINS_ROBOT_CONNECTOR)
     self.n_pin_2 = n_pin_2
     self.n_pin_4 = n_pin_4
@@ -461,7 +461,7 @@ class Head_Connector_Piece(N_Pin_Connector_Piece):
     """
     assert isinstance(pin_nodes, list) and len(pin_nodes) == 8, ('pin_nodes '
         'should be a list containing 8 values')
-    N_Pin_Connector_Piece.__init__(self, set(pin_nodes), 8, 'Head Connector',
+    N_Pin_Connector_Piece.__init__(self, pin_nodes, 8, 'Head Connector',
         DISABLED_PINS_HEAD_CONNECTOR)
     self.pin_nodes = pin_nodes
   def locs_for(self, node):

@@ -76,6 +76,12 @@ class Proto_Board:
           if wire_neighbor not in connected_locs:
             queue.add(wire_neighbor)
     return connected_locs
+  def rep_for(self, item):
+    """
+    Returns the representative for the group to which |item|, a location or
+        node name, belongs.
+    """
+    return self._loc_disjoint_set_forest.find_set(item)
   def with_loc_disjoint_set_forest(self, loc_disjoint_set_forest):
     """
     Returns a copy of this board with a new forest of disjoint location sets to
@@ -90,6 +96,19 @@ class Proto_Board:
       if board is None:
         raise Exception('board violates given forest')
     return board
+  def with_loc_repped(self, rep, loc):
+    """
+    Returns a new Proto_Board with the given |loc| and the locations internally
+        connected to it being members of the group of locations represented by
+        |rep|.
+    """
+    assert self.rep_for(rep)
+    assert not self.rep_for(loc)
+    new_loc_disjoint_set_forest = self._loc_disjoint_set_forest.copy()
+    for section_loc in section_locs(loc):
+      new_loc_disjoint_set_forest.make_set(section_loc)
+      new_loc_disjoint_set_forest.union(rep, section_loc)
+    return self.with_loc_disjoint_set_forest(new_loc_disjoint_set_forest)
   def with_wire(self, new_wire):
     """
     Returns a new Proto_Board containing the |new_wire|. If the wire connects
@@ -102,8 +121,8 @@ class Proto_Board:
     if self.connected(new_wire.loc_1, new_wire.loc_2):
       return self
     # if the wire results in a short, no new proto board
-    group_1 = self._loc_disjoint_set_forest.find_set(new_wire.loc_1)
-    group_2 = self._loc_disjoint_set_forest.find_set(new_wire.loc_2)
+    group_1 = self.rep_for(new_wire.loc_1)
+    group_2 = self.rep_for(new_wire.loc_2)
     if group_1 and group_2 and group_1 != group_2:
       return None
     new_wire_mappings = self._wire_mappings.copy()

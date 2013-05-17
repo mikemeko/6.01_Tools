@@ -101,7 +101,7 @@ def loc_pairs_to_connect(pieces, resistor_node_pairs):
         occurences[loc_2]) + dist(loc_1, loc_2))
     occurences[loc_1] += 1
     occurences[loc_2] += 1
-    flagged_loc_pairs.append((loc_1, loc_2, True))
+    flagged_loc_pairs.append((loc_1, loc_2, (n1, n2)))
   return flagged_loc_pairs
 
 def set_locations(pieces):

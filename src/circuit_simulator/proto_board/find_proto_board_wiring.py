@@ -7,7 +7,6 @@ __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
 from circuit_pieces import Resistor_Piece
 from constants import ALLOW_CROSSING_WIRES
-from constants import PROTO_BOARD_MIDDLE
 from constants import RAIL_ROWS
 from constants import ROWS
 from core.search.search import a_star
@@ -59,7 +58,7 @@ class Proto_Board_Search_Node(Search_Node):
         location. |span| is the length of the longest wire that may be used.
     """
     assert is_body_loc(loc)
-    # make max possible wire length at least 5
+    # make max possible horizontal wire length at least 5
     span = max(span, 5)
     r, c = loc
     wire_ends = []
@@ -119,19 +118,58 @@ class Proto_Board_Search_Node(Search_Node):
           add_resistor = (resistor_flag and not num_wire_crossings and
               new_wire.length() == 3)
           if add_resistor:
-            # TODO(mikemeko): ignoring resistor nodes for now
-            resistor_piece = Resistor_Piece('_', '_', new_wire.vertical())
-            resistor_piece.top_left_loc = (new_wire.loc_1 if new_wire.c_1 <
-                new_wire.c_2 or new_wire.r_1 < new_wire.r_2 else
-                new_wire.loc_2)
-            new_proto_board = proto_board.with_piece(resistor_piece)
-            # would no longer need a resistor for this pair of locations
-            new_resistor_flag = False
-          elif wire_proto_board_valid:
-            new_proto_board = wire_proto_board
-            new_resistor_flag = resistor_flag
-          else:
-            continue
+            n1, n2 = resistor_flag
+            # find representatives for the two groups, they better be there
+            n1_group = proto_board.rep_for(n1)
+            assert n1_group
+            n2_group = proto_board.rep_for(n2)
+            assert n2_group, str(n2)
+            # find representative for the location we're trying to extend this
+            #     resistor, representative better be there and match one of the
+            #     node representatives
+            wire_loc_1_group = proto_board.rep_for(new_wire.loc_1)
+            if wire_loc_1_group == n1_group:
+              new_group = n2_group
+            elif wire_loc_1_group == n2_group:
+              new_group = n1_group
+            else:
+              # should never get here
+              raise Exception('unexpected: n1_group=%s, n2_group=%s, '
+                  'wire_loc_1_group=%s' % (n1_group, n2_group,
+                  wire_loc_1_group))
+            # find representative for opposite location, might not be there
+            wire_loc_2_group = proto_board.rep_for(new_wire.loc_2)
+            if (not wire_loc_2_group) or wire_loc_2_group == new_group:
+              # figure out correct orientation of Resistor_Piece n1 and n2
+              if new_wire.c_1 < new_wire.c_2 or new_wire.r_1 < new_wire.r_2:
+                top_left_loc = new_wire.loc_1
+                if wire_loc_1_group == n2_group:
+                  n1, n2 = n2, n1
+              else:
+                top_left_loc = new_wire.loc_2
+                if wire_loc_1_group == n1_group:
+                  n1, n2 = n2, n1
+              # create Resistor_Piece
+              resistor_piece = Resistor_Piece(n1, n2, new_wire.vertical())
+              resistor_piece.top_left_loc = top_left_loc
+              # create proto board with resistor
+              new_proto_board = proto_board.with_piece(resistor_piece)
+              if not wire_loc_2_group:
+                # ensure to mark the oposite location with its apporpriate node
+                new_proto_board = new_proto_board.with_loc_repped(new_group,
+                    new_wire.loc_2)
+              # would no longer need a resistor for this pair of locations
+              new_resistor_flag = False
+            else:
+              # placing the resistor would create a violating connection
+              add_resistor = False
+          if not add_resistor:
+            if wire_proto_board_valid:
+              # can still put a wire down if allowed
+              new_proto_board = wire_proto_board
+              new_resistor_flag = resistor_flag
+            else:
+              continue
           # we have a candidate proto board, compute state and cost
           new_loc_pairs = list(loc_pairs)
           new_cost = self.cost
@@ -150,16 +188,13 @@ class Proto_Board_Search_Node(Search_Node):
           # favor wires that get us close to the goal, and penalize wires
           #     that get us farther away
           new_cost += dist(wire_end, loc_2) - dist(loc_1, loc_2)
-          # favor keeping horizontal wires close to circuit pieces
-          new_cost += new_wire.horizontal() * abs(new_wire.r_1 -
-              PROTO_BOARD_MIDDLE)
           children.append(Proto_Board_Search_Node(new_proto_board,
               tuple(new_loc_pairs), self, new_cost))
           # if added a resistor, also create a proto board where we use a wire
           #     instead of the resistor
           if add_resistor and wire_proto_board_valid:
             wire_loc_pairs = list(loc_pairs)
-            wire_loc_pairs[i] = (wire_end, loc_2, True)
+            wire_loc_pairs[i] = (wire_end, loc_2, resistor_flag)
             children.append(Proto_Board_Search_Node(wire_proto_board,
                 tuple(wire_loc_pairs), self, new_cost))
     return children
@@ -188,7 +223,7 @@ def loc_pair_to_connect_next(loc_pairs):
   """
   assert loc_pairs, 'loc_pairs is empty'
   return max(loc_pairs, key=lambda (loc_1, loc_2, resistor_flag): dist(loc_1,
-      loc_2) + 10 * resistor_flag)
+      loc_2) + 10 * bool(resistor_flag))
 
 def condense_loc_pairs(loc_pairs, proto_board):
   """
