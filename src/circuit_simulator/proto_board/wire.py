@@ -49,7 +49,12 @@ class Wire:
     Returns True if this wire is vertical, or False if it is horizontal.
     """
     return self.c_1 == self.c_2
+  def __eq__(self, other):
+    return (isinstance(other, Wire) and self.row_support == other.row_support
+        and self.column_support == other.column_support)
+  def __ne__(self, other):
+    return not self == other
   def __hash__(self):
-    return hash((self.loc_1, self.loc_2))
+    return hash((self.row_support, self.column_support))
   def __str__(self):
     return '%s-%s' % (self.loc_1, self.loc_2)

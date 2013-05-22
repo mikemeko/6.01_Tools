@@ -4,14 +4,19 @@ Representation for a proto board.
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
-from util import section_locs
+from constants import PROTO_BOARD_WIDTH
+from constants import PROTO_BOARD_HEIGHT
 from core.data_structures.disjoint_set_forest import Disjoint_Set_Forest
+from string import ascii_lowercase
+from string import ascii_uppercase
+from string import digits
+from util import section_locs
 
 class Proto_Board:
   """
   Proto board representation.
   """
-  def __init__(self, wire_mappings=None, wires=None, pieces=set(),
+  def __init__(self, wire_mappings=None, wires=None, pieces=None,
       loc_disjoint_set_forest=None):
     """
     |wire_mappings|: a dictionary mapping locations to other locations to which
@@ -24,7 +29,7 @@ class Proto_Board:
     """
     self._wire_mappings = wire_mappings if wire_mappings is not None else {}
     self._wires = wires if wires is not None else []
-    self._pieces = pieces
+    self._pieces = pieces if pieces is not None else set()
     self._loc_disjoint_set_forest = (loc_disjoint_set_forest if
         loc_disjoint_set_forest is not None else Disjoint_Set_Forest())
   def get_wires(self):
@@ -170,3 +175,33 @@ class Proto_Board:
     """
     return loc in self._wire_mappings or any(loc in piece.all_locs() for piece
         in self._pieces)
+  def free(self, loc):
+    """
+    Returns True if the given |loc| is not occupied, False otherwise.
+    """
+    return not self.occupied(loc)
+  def __str__(self):
+    """
+    Quick, convenience str method, not at all comprehensive.
+    """
+    # represent proto board as a grid
+    grid = [[' '] * (PROTO_BOARD_WIDTH + 1) for row in xrange(
+        PROTO_BOARD_HEIGHT + 1)]
+    # write out row and column numbers
+    for r in xrange(PROTO_BOARD_HEIGHT):
+      grid[r + 1][0] = str(r % 10)
+    for c in xrange(PROTO_BOARD_WIDTH):
+      grid[0][c + 1] = str(c % 10)
+    # write out a string of identical letters for each wire
+    chars = ascii_lowercase + ascii_uppercase + digits
+    for i, wire in enumerate(sorted(self._wires)):
+      r_min, r_max = wire.row_support
+      c_min, c_max = wire.column_support
+      for r in xrange(r_min, r_max + 1):
+        for c in xrange(c_min, c_max + 1):
+          grid[r + 1][c + 1] = chars[i % len(chars)]
+    # write out a box of !s for each piece
+    for piece in sorted(self._pieces):
+      for (r, c) in piece.all_locs():
+        grid[r + 1][c + 1] = '!'
+    return '\n'.join([''.join(row) for row in grid])

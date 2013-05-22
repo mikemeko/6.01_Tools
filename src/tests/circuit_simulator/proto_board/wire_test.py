@@ -21,6 +21,10 @@ class Wire_Test(TestCase):
     assert Wire((2, 1), (2, 2)).crosses(Wire((2, 1), (2, 2)))
     assert not Wire((2, 0), (2, 2)).crosses(Wire((3, 0), (4, 0)))
     assert not Wire((2, 0), (2, 2)).crosses(Wire((3, 0), (3, 2)))
+  def test_eq(self):
+    assert Wire((2, 2), (4, 2)) == Wire((2, 2), (4, 2))
+    assert Wire((2, 2), (4, 2)) == Wire((4, 2), (2, 2))
+    assert Wire((2, 2), (4, 2)) != Wire((2, 2), (3, 2))
 
 if __name__ == '__main__':
   main()

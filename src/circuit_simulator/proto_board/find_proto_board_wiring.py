@@ -6,23 +6,26 @@ Search to find proto board wiring to connect a given list of pairs of locations
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
 from circuit_pieces import Resistor_Piece
-from constants import ALLOW_CROSSING_WIRES
+from constants import ALLOW_PIECE_CROSSINGS
+from constants import ALLOW_WIRE_CROSSINGS
 from constants import RAIL_ROWS
 from constants import ROWS
 from core.search.search import a_star
 from core.search.search import Search_Node
+from itertools import product
 from proto_board import Proto_Board
+from time import time
 from util import body_opp_section_rows
 from util import dist
 from util import is_body_loc
 from util import is_rail_loc
-from util import section_locs
 from util import valid_loc
 from wire import Wire
 
 class Proto_Board_Search_Node(Search_Node):
   """
   Search_Node for proto board wiring problem.
+  TODO(mikemeko): implement smart __eq__ and __hash__ for state.
   """
   def __init__(self, proto_board, loc_pairs, parent=None, cost=0):
     """
@@ -84,10 +87,8 @@ class Proto_Board_Search_Node(Search_Node):
     for i, (loc_1, loc_2, resistor_flag) in enumerate(loc_pairs):
       # can extend a wire from |loc_1| towards |loc_2| from any of the
       #     the locations |loc_1| is internally connected to
-      for neighbor_loc in section_locs(loc_1):
-        # make sure that the candidate start location is not occupied
-        if proto_board.occupied(neighbor_loc):
-          continue
+      for neighbor_loc in filter(proto_board.free,
+          proto_board.locs_connected_to(loc_1)):
         # get candidate end locations for the new wire to draw
         wire_ends = (self._wire_ends_from_rail_loc(neighbor_loc,
             proto_board) if is_rail_loc(neighbor_loc) else
@@ -98,15 +99,16 @@ class Proto_Board_Search_Node(Search_Node):
           if wire_end == neighbor_loc:
             continue
           new_wire = Wire(neighbor_loc, wire_end)
-          # make sure that the wire does not cross any piece
-          if any(piece.crossed_by(new_wire) for piece in
-              proto_board.get_pieces()):
+          # track number of pieces this wire crosses
+          num_piece_crossings = sum(piece.crossed_by(new_wire) for piece in
+              proto_board.get_pieces())
+          if not ALLOW_PIECE_CROSSINGS and num_piece_crossings:
             continue
           # track number of other wires this new wire crosses
           num_wire_crossings = sum(wire.crosses(new_wire) for wire in
               proto_board.get_wires())
           # continue if we do not want to allow any crossing wires
-          if not ALLOW_CROSSING_WIRES and num_wire_crossings:
+          if not ALLOW_WIRE_CROSSINGS and num_wire_crossings:
             continue
           # construct a proto board with this new wire
           wire_proto_board = proto_board.with_wire(new_wire)
@@ -115,15 +117,15 @@ class Proto_Board_Search_Node(Search_Node):
               not proto_board)
           # potentially create another proto board with a resistor in place of
           #     the new wire
-          add_resistor = (resistor_flag and not num_wire_crossings and
-              new_wire.length() == 3)
+          add_resistor = (resistor_flag and not num_piece_crossings and not
+              num_wire_crossings and new_wire.length() == 3)
           if add_resistor:
             n1, n2 = resistor_flag
             # find representatives for the two groups, they better be there
             n1_group = proto_board.rep_for(n1)
             assert n1_group
             n2_group = proto_board.rep_for(n2)
-            assert n2_group, str(n2)
+            assert n2_group
             # find representative for the location we're trying to extend this
             #     resistor, representative better be there and match one of the
             #     node representatives
@@ -180,11 +182,11 @@ class Proto_Board_Search_Node(Search_Node):
           else:
             new_loc_pairs[i] = (wire_end, loc_2, new_resistor_flag)
           # penalize long wires
-          new_cost += 5 * new_wire.length()
+          new_cost += new_wire.length()
           # penalize many wires
-          new_cost += 1
+          new_cost += 10
           # penalize crossing wires (if allowed at all)
-          new_cost += 100 * num_wire_crossings
+          new_cost += 100 * (num_piece_crossings + num_wire_crossings)
           # favor wires that get us close to the goal, and penalize wires
           #     that get us farther away
           new_cost += dist(wire_end, loc_2) - dist(loc_1, loc_2)
@@ -232,12 +234,10 @@ def condense_loc_pairs(loc_pairs, proto_board):
   """
   condensed_loc_pairs = []
   for (loc_1, loc_2, resistor_flag) in loc_pairs:
-    loc_1_condensed = (min(proto_board.locs_connected_to(loc_1),
-        key=lambda loc: dist(loc, loc_2)), loc_2, resistor_flag)
-    loc_2_condensed = (loc_1, min(proto_board.locs_connected_to(loc_2),
-        key=lambda loc: dist(loc_1, loc)), resistor_flag)
-    condensed_loc_pairs.append(min([loc_1_condensed, loc_2_condensed],
-        key=lambda condensed: dist(*condensed[:2])))
+    condensed_loc_pairs.append(tuple(min(product(filter(proto_board.free,
+        proto_board.locs_connected_to(loc_1)), filter(proto_board.free,
+        proto_board.locs_connected_to(loc_2))), key=lambda (l1, l2): dist(l1,
+        l2))) + (resistor_flag,))
   return condensed_loc_pairs
 
 def find_wiring(loc_pairs, start_proto_board=Proto_Board()):
@@ -250,10 +250,14 @@ def find_wiring(loc_pairs, start_proto_board=Proto_Board()):
   # connect one pair of locations at a time
   n = len(loc_pairs)
   while loc_pairs:
+    loc_pairs = condense_loc_pairs(loc_pairs, proto_board)
     next_pair = loc_pair_to_connect_next(loc_pairs)
     print '%d/%d connecting: %s' % (n - len(loc_pairs) + 1, n, next_pair)
+    start_time = time()
     proto_board = a_star(Proto_Board_Search_Node(proto_board, (next_pair,)),
         goal_test, heuristic)[0]
+    end_time = time()
+    print '\tspent %.2f seconds' % (end_time - start_time)
+    print proto_board
     loc_pairs.remove(next_pair)
-    loc_pairs = condense_loc_pairs(loc_pairs, proto_board)
   return proto_board

@@ -44,7 +44,11 @@ GROUND_RAIL = PROTO_BOARD_HEIGHT - 2
 NUM_ROWS_PER_VERTICAL_SEPARATION = 2
 
 # wire constants
-ALLOW_CROSSING_WIRES = True
+ALLOW_PIECE_CROSSINGS = False
+ALLOW_WIRE_CROSSINGS = True
 
 # circuit piece placement constants
-CIRCUIT_PIECE_SEPARATION = 3
+CIRCUIT_PIECE_SEPARATION = 2
+
+# whether to treat resistors as components or wires
+RESISTORS_AS_COMPONENTS = True

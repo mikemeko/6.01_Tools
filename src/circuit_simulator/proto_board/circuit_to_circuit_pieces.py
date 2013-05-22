@@ -21,6 +21,7 @@ from circuit_pieces import Motor_Connector_Piece
 from circuit_pieces import Op_Amp_Piece
 from circuit_pieces import Place_Holder_Piece
 from circuit_pieces import Pot_Piece
+from circuit_pieces import Resistor_Piece
 from circuit_pieces import Robot_Connector_Piece
 # TODO(mikemeko): this is kind of hacky, coupled with board parsing
 from circuit_simulator.main.constants import GROUND
@@ -32,6 +33,7 @@ from circuit_simulator.simulation.circuit import Op_Amp
 from circuit_simulator.simulation.circuit import Resistor
 from circuit_simulator.simulation.circuit import Signalled_Pot
 from circuit_simulator.simulation.circuit import Robot_Connector
+from constants import RESISTORS_AS_COMPONENTS
 from itertools import permutations
 from sys import maxint
 
@@ -70,6 +72,14 @@ def all_groupings(items, partition):
     if new_grouping not in groupings:
       groupings.append(new_grouping)
   return groupings
+
+def resistor_piece_from_resistor(resistor):
+  """
+  Returns a Resistor_Piece constructed using |resistor|, an instance of
+      Resistor.
+  """
+  assert isinstance(resistor, Resistor), 'resistor must be a Resistor'
+  return Resistor_Piece(resistor.n1, resistor.n2, True)
 
 def pot_piece_from_pot(pot):
   """
@@ -136,8 +146,12 @@ def get_piece_placement(circuit):
   """
   assert isinstance(circuit, Circuit), 'circuit must be a Circuit'
   resistors = filter(lambda obj: obj.__class__ == Resistor, circuit.components)
-  resistor_node_pairs = [(resistor.n1, resistor.n2) for resistor in resistors]
-  resistor_nodes = reduce(set.union, map(set, resistor_node_pairs), set())
+  if RESISTORS_AS_COMPONENTS:
+    resistor_pieces = map(resistor_piece_from_resistor, resistors)
+  else:
+    resistor_node_pairs = [(resistor.n1, resistor.n2) for resistor in
+        resistors]
+    resistor_nodes = reduce(set.union, map(set, resistor_node_pairs), set())
   pots = filter(lambda obj: obj.__class__ == Signalled_Pot, circuit.components)
   pot_pieces = map(pot_piece_from_pot, pots)
   motors = filter(lambda obj: obj.__class__ == Motor, circuit.components)
@@ -160,14 +174,18 @@ def get_piece_placement(circuit):
       op_amp_pieces = map(op_amp_piece_from_op_amp, grouping)
       non_resistor_pieces = (pot_pieces + motor_connector_pieces +
           robot_connector_pieces + head_connector_pieces + op_amp_pieces)
-      non_resistor_nodes = reduce(set.union, (piece.nodes for piece in
-          non_resistor_pieces), set())
-      # create place holders for nodes needed for resistors
-      place_holder_pieces = [Place_Holder_Piece(node) for node in
-          (resistor_nodes - non_resistor_nodes)]
-      placement, cost = find_placement(non_resistor_pieces +
-          place_holder_pieces)
+      if RESISTORS_AS_COMPONENTS:
+        pieces = non_resistor_pieces + resistor_pieces
+      else:
+        non_resistor_nodes = reduce(set.union, (piece.nodes for piece in
+            non_resistor_pieces), set())
+        # create place holders for nodes needed for resistors
+        place_holder_pieces = [Place_Holder_Piece(node) for node in
+            (resistor_nodes - non_resistor_nodes)]
+        pieces = non_resistor_pieces + place_holder_pieces
+      placement, cost = find_placement(pieces)
       if cost < best_placement_cost:
         best_placement = placement
         best_placement_cost = cost
-  return best_placement, resistor_node_pairs
+  return best_placement, ([] if RESISTORS_AS_COMPONENTS else
+      resistor_node_pairs)
