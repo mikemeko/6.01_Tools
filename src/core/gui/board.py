@@ -100,6 +100,8 @@ class Board(Frame):
     self._message_remove_timer = None
     # state for guide lines
     self._guide_line_parts = []
+    # state for grid lines
+    self._grid_line_parts = []
     # state to track whether this board has been changed
     self._changed = False
     # setup ui
@@ -110,10 +112,10 @@ class Board(Frame):
     Draws grid lines on the board.
     """
     for dim in xrange(0, self.width, BOARD_GRID_SEPARATION):
-      self._canvas.create_line((0, dim, self.width, dim),
-          fill=BOARD_MARKER_LINE_COLOR)
-      self._canvas.create_line((dim, 0, dim, self.height),
-          fill=BOARD_MARKER_LINE_COLOR)
+      self._grid_line_parts.append(self._canvas.create_line((0, dim,
+          self.width, dim), fill=BOARD_MARKER_LINE_COLOR))
+      self._grid_line_parts.append(self._canvas.create_line((dim, 0, dim,
+          self.height), fill=BOARD_MARKER_LINE_COLOR))
     self._canvas.pack()
     self.pack()
   def _setup_bindings(self):
@@ -188,10 +190,13 @@ class Board(Frame):
     self._remove_guide_lines()
     # draw new guide lines
     self._guide_line_parts.extend([self._canvas.create_line(x, 0, x,
-        self.height, fill=GUIDE_LINE_COLOR, width=2), self._canvas.create_line(
-        0, y, self.width, y, fill=GUIDE_LINE_COLOR, width=2)])
+        self.height, fill=GUIDE_LINE_COLOR), self._canvas.create_line(0, y,
+        self.width, y, fill=GUIDE_LINE_COLOR)])
     # lower lines below drawables on the board
     for part in self._guide_line_parts:
+      self._canvas.tag_lower(part)
+    # lower the grid lines so that they don't mask the guide lines
+    for part in self._grid_line_parts:
       self._canvas.tag_lower(part)
   def _remove_guide_lines(self):
     """
