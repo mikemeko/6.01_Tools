@@ -5,9 +5,6 @@ GUI tool on which several items may be drawn. Supports dragging the items
 TODO(mikemeko): enable snapping wires onto other wires? enable starting drawing
     wires from other wires?
 TODO(mikemeko): undo / redo for text changes (gain, resistor).
-TODO(mikemeko): when drawing a wire or moving a drawable, it'd be nice to
-    show lines (extending to the entire board) showing how the item is moving
-    to make alignment easier.
 TODO(mikemeko): time permitting, it'd be really awesome if we allow doing
     basically anything that can be done on the board only using the keyboard (
     and not the mouse) a la vimium (http://vimium.github.io/).
@@ -30,6 +27,7 @@ from constants import CTRL_DOWN
 from constants import DISPLAY_WIRE_LABELS
 from constants import DRAG_TAG
 from constants import ERROR
+from constants import GUIDE_LINE_COLOR
 from constants import INFO
 from constants import MESSAGE_ERROR_COLOR
 from constants import MESSAGE_ERROR_DURATION
@@ -100,6 +98,8 @@ class Board(Frame):
     # state for message display
     self._message_parts = []
     self._message_remove_timer = None
+    # state for guide lines
+    self._guide_line_parts = []
     # state to track whether this board has been changed
     self._changed = False
     # setup ui
@@ -179,6 +179,33 @@ class Board(Frame):
     assert drawable in self._drawables, 'drawable is not on board'
     x, y = drawable.offset
     drawable.offset = x + dx, y + dy
+  def _draw_guide_lines(self, x, y):
+    """
+    Draws two drawing guide lines (vertical and horizontal) crossing at the
+        point (|x|, |y|).
+    """
+    # remove previously drawn guide lines
+    self._remove_guide_lines()
+    # draw new guide lines
+    self._guide_line_parts.extend([self._canvas.create_line(x, 0, x,
+        self.height, fill=GUIDE_LINE_COLOR, width=2), self._canvas.create_line(
+        0, y, self.width, y, fill=GUIDE_LINE_COLOR, width=2)])
+    # lower lines below drawables on the board
+    for part in self._guide_line_parts:
+      self._canvas.tag_lower(part)
+  def _remove_guide_lines(self):
+    """
+    Removes the currently drawn guide lines, if any.
+    """
+    for part in self._guide_line_parts:
+      self._canvas.delete(part)
+    self._guide_line_parts = []
+  def _get_drawable_center(self, drawable):
+    """
+    Returns the center point of the given |drawable|.
+    """
+    x1, y1, x2, y2 = drawable.bounding_box(self.get_drawable_offset(drawable))
+    return (x1 + x2) / 2, (y1 + y2) / 2
   def _move_drawable(self, drawable, dx, dy):
     """
     Moves the given |drawable| by (|dx|, |dy|). Assumes that |drawable| is on
@@ -192,6 +219,8 @@ class Board(Frame):
       drawable.move(self._canvas, dx, dy)
       # update the drawable's offset
       self._update_drawable_offset(drawable, dx, dy)
+      # redraw guide lines
+      self._draw_guide_lines(*self._get_drawable_center(self._drag_item))
   def _drag_press(self, event):
     """
     Callback for when a drawable item is clicked. Updates drag state.
@@ -227,6 +256,8 @@ class Board(Frame):
         self._action_history.record_action(Action(
             lambda: self._move_drawable(drawable, dx, dy),
             lambda: self._move_drawable(drawable, -dx, -dy), 'move'))
+      # remove last drawn guide lines
+      self._remove_guide_lines()
     # reset
     self._drag_item = None
     self._drag_start_point = None
@@ -294,7 +325,6 @@ class Board(Frame):
     start_connector = self._connector_at(self._wire_start)
     if not start_connector or not start_connector.enabled:
       self._wire_start = None
-      self._erase_previous_wire()
   def _wire_move(self, event):
     """
     Callback for when a wire is changed while being created. Updates wire data.
@@ -303,6 +333,8 @@ class Board(Frame):
       self._wire_end = (snap(event.x), snap(event.y))
       self._straighten_wire()
       self._draw_current_wire()
+      # redraw guide lines
+      self._draw_guide_lines(*self._wire_end)
   def _wire_release(self, event):
     """
     Callback for when wire creation is complete. Updates wire data.
@@ -324,6 +356,8 @@ class Board(Frame):
       self._add_wire(self._wire_parts, start_connector, end_connector)
       # mark the board changed
       self.set_changed(True)
+      # remove last drawn guide lines
+      self._remove_guide_lines()
     # reset
     self._wire_parts = None
     self._wire_start = None
