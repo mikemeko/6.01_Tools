@@ -45,13 +45,13 @@ class Palette(Frame):
     # setup ui
     self.canvas.pack()
     self.pack()
-  def _add_item_callback(self, drawable_type, disregard_location, *args,
-      **kwargs):
+  def _add_item_callback(self, drawable_type, offset_x, disregard_location,
+      *args, **kwargs):
     """
     Returns a callback method that, when called, adds an item of the given
-        |drawable_type| to the board. Does not allow adding duplicated items
-        to the board. If |disregard_location| is True, location is disregarded
-        on duplicate test.
+        |drawable_type| to the board, at the given |offset_x|. Does not allow
+        adding duplicated items to the board. If |disregard_location| is True,
+        location is disregarded on duplicate test.
     """
     assert issubclass(drawable_type, Drawable), ('drawable must be a Drawable '
         'subclass')
@@ -60,8 +60,6 @@ class Palette(Frame):
       self.board.remove_message()
       # create new drawable
       new_drawable = drawable_type(*args, **kwargs)
-      # offset: bottom-left corner of board
-      offset_x = PALETTE_PADDING
       offset_y = self.board.height - new_drawable.height - PALETTE_PADDING
       offset = (offset_x, offset_y)
       # make sure that there isn't already an identical drawable
@@ -111,8 +109,8 @@ class Palette(Frame):
     # attach callback to drawn parts
     # default callback adds items of this drawable type to the board
     if callback is None:
-      callback = self._add_item_callback(drawable_type, disregard_location,
-          *args, **kwargs)
+      callback = self._add_item_callback(drawable_type, offset_x,
+          disregard_location, *args, **kwargs)
     for part in display.parts:
       self.canvas.tag_bind(part, '<ButtonPress-1>', callback)
     for connector in display.connectors:
