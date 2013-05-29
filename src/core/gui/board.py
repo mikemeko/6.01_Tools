@@ -224,8 +224,6 @@ class Board(Frame):
       drawable.move(self._canvas, dx, dy)
       # update the drawable's offset
       self._update_drawable_offset(drawable, dx, dy)
-      # redraw guide lines
-      self._draw_guide_lines(*self._get_drawable_center(self._drag_item))
   def _drag_press(self, event):
     """
     Callback for when a drawable item is clicked. Updates drag state.
@@ -243,6 +241,8 @@ class Board(Frame):
       dx = snap(event.x - last_x)
       dy = snap(event.y - last_y)
       self._move_drawable(self._drag_item, dx, dy)
+      # redraw guide lines
+      self._draw_guide_lines(*self._get_drawable_center(self._drag_item))
       # update drag state
       self._drag_last_point = (last_x + dx, last_y + dy)
   def _drag_release(self, event):
