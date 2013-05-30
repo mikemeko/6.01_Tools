@@ -1,5 +1,6 @@
 """
 Representation for DT LTI systems.
+TODO(mikemeko): do a better job of finding feedback loops without delays.
 """
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
