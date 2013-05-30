@@ -192,16 +192,17 @@ class Proto_Board:
       grid[r + 1][0] = str(r % 10)
     for c in xrange(PROTO_BOARD_WIDTH):
       grid[0][c + 1] = str(c % 10)
+    # write out a box of !s for each piece
+    for piece in self._pieces:
+      for (r, c) in piece.all_locs():
+        grid[r + 1][c + 1] = '!'
     # write out a string of identical letters for each wire
     chars = ascii_lowercase + ascii_uppercase + digits
-    for i, wire in enumerate(sorted(self._wires)):
+    for i, wire in enumerate(sorted(self._wires,
+        key=lambda wire: -wire.length())):
       r_min, r_max = wire.row_support
       c_min, c_max = wire.column_support
       for r in xrange(r_min, r_max + 1):
         for c in xrange(c_min, c_max + 1):
           grid[r + 1][c + 1] = chars[i % len(chars)]
-    # write out a box of !s for each piece
-    for piece in sorted(self._pieces):
-      for (r, c) in piece.all_locs():
-        grid[r + 1][c + 1] = '!'
     return '\n'.join([''.join(row) for row in grid])

@@ -105,9 +105,21 @@ class Proto_Board_Search_Node(Search_Node):
           if not ALLOW_PIECE_CROSSINGS and num_piece_crossings:
             continue
           # track number of other wires this new wire crosses
-          num_wire_crossings = sum(wire.crosses(new_wire) for wire in
-              proto_board.get_wires())
-          # continue if we do not want to allow any crossing wires
+          any_same_orientation_crossings = False
+          num_wire_crossings = 0
+          for wire in proto_board.get_wires():
+            if wire.crosses(new_wire):
+              if wire.vertical() == new_wire.vertical():
+                any_same_orientation_crossings = True
+                break
+              else:
+                num_wire_crossings += 1
+          # don't allow any wire crossings where the two wires have the same
+          #     orientation
+          if any_same_orientation_crossings:
+            continue
+          # continue if we do not want to allow any crossing wires at all, even
+          #     ones of different orientation
           if not ALLOW_WIRE_CROSSINGS and num_wire_crossings:
             continue
           # construct a proto board with this new wire
@@ -185,8 +197,10 @@ class Proto_Board_Search_Node(Search_Node):
           new_cost += new_wire.length()
           # penalize many wires
           new_cost += 10
-          # penalize crossing wires (if allowed at all)
-          new_cost += 100 * (num_piece_crossings + num_wire_crossings)
+          # penalize wires crossing pieces (if allowed at all)
+          new_cost += 100 * num_piece_crossings
+          # penalize crossing wires of opposite orientation (if allowed at all)
+          new_cost += 100 * num_wire_crossings
           # favor wires that get us close to the goal, and penalize wires
           #     that get us farther away
           new_cost += dist(wire_end, loc_2) - dist(loc_1, loc_2)

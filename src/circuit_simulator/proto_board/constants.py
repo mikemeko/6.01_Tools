@@ -45,7 +45,8 @@ NUM_ROWS_PER_VERTICAL_SEPARATION = 2
 
 # wire constants
 ALLOW_PIECE_CROSSINGS = False
-ALLOW_WIRE_CROSSINGS = True
+ALLOW_WIRE_CROSSINGS = True # of opposite orientation, no wire crossings of
+                            #     same orientation are allowed
 
 # circuit piece placement constants
 CIRCUIT_PIECE_SEPARATION = 2
