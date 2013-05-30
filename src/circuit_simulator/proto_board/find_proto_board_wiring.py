@@ -14,7 +14,6 @@ from core.search.search import a_star
 from core.search.search import Search_Node
 from itertools import product
 from proto_board import Proto_Board
-from time import time
 from util import body_opp_section_rows
 from util import dist
 from util import is_body_loc
@@ -263,15 +262,13 @@ def find_wiring(loc_pairs, start_proto_board=Proto_Board()):
   proto_board = start_proto_board
   # connect one pair of locations at a time
   n = len(loc_pairs)
+  print 'making %d connections ...' % n
   while loc_pairs:
     loc_pairs = condense_loc_pairs(loc_pairs, proto_board)
     next_pair = loc_pair_to_connect_next(loc_pairs)
-    print '%d/%d connecting: %s' % (n - len(loc_pairs) + 1, n, next_pair)
-    start_time = time()
+    print '\t%d/%d connecting: %s' % (n - len(loc_pairs) + 1, n, next_pair)
     proto_board = a_star(Proto_Board_Search_Node(proto_board, (next_pair,)),
         goal_test, heuristic)[0]
-    end_time = time()
-    print '\tspent %.2f seconds' % (end_time - start_time)
-    print proto_board
     loc_pairs.remove(next_pair)
+  print '\tdone.'
   return proto_board

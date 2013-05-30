@@ -145,6 +145,7 @@ def get_piece_placement(circuit):
       Also returns a list of the resistor node pairs in the |circuit|.
   """
   assert isinstance(circuit, Circuit), 'circuit must be a Circuit'
+  print 'finding piece placement ...'
   resistors = filter(lambda obj: obj.__class__ == Resistor, circuit.components)
   if RESISTORS_AS_COMPONENTS:
     resistor_pieces = map(resistor_piece_from_resistor, resistors)
@@ -187,5 +188,6 @@ def get_piece_placement(circuit):
       if cost < best_placement_cost:
         best_placement = placement
         best_placement_cost = cost
+  print '\tdone.'
   return best_placement, ([] if RESISTORS_AS_COMPONENTS else
       resistor_node_pairs)
