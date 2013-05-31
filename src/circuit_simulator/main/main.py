@@ -160,6 +160,7 @@ if __name__ == '__main__':
     """
     Displays the plot that are drawn by the |plotters|.
     """
+    global board
     # ensure that circuit was successfully solved
     if circuit.data:
       # show analysis plots
@@ -173,18 +174,22 @@ if __name__ == '__main__':
     Finds a way to layout the given |circuit| on a proto board and displays the
         discovered proto board.
     """
-    placement, resistor_node_pairs = get_piece_placement(circuit)
-    proto_board = Proto_Board()
-    for piece in placement:
-      proto_board = proto_board.with_piece(piece)
-    proto_board = proto_board.with_loc_disjoint_set_forest(
-        node_disjoint_set_forest({node: locs_for_node(placement, node) for node
-        in all_nodes(placement)}))
-    proto_board = find_wiring(loc_pairs_to_connect(placement,
-        resistor_node_pairs), proto_board)
-    show_pwr_gnd_pins = not any([isinstance(component, Robot_Connector) for
-        component in circuit.components])
-    visualize_proto_board(proto_board, Toplevel(), show_pwr_gnd_pins)
+    global board
+    try:
+      placement, resistor_node_pairs = get_piece_placement(circuit)
+      proto_board = Proto_Board()
+      for piece in placement:
+        proto_board = proto_board.with_piece(piece)
+      proto_board = proto_board.with_loc_disjoint_set_forest(
+          node_disjoint_set_forest({node: locs_for_node(placement, node) for
+          node in all_nodes(placement)}))
+      proto_board = find_wiring(loc_pairs_to_connect(placement,
+          resistor_node_pairs), proto_board)
+      show_pwr_gnd_pins = not any([isinstance(component, Robot_Connector) for
+          component in circuit.components])
+      visualize_proto_board(proto_board, Toplevel(), show_pwr_gnd_pins)
+    except:
+      board.display_message('Could not find proto board wiring', ERROR)
   # create empty board
   board = Board(root, width=BOARD_WIDTH, height=BOARD_HEIGHT,
       directed_wires=False, on_changed=on_changed, on_exit=request_save)

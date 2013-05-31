@@ -181,17 +181,18 @@ class Board(Frame):
     assert drawable in self._drawables, 'drawable is not on board'
     x, y = drawable.offset
     drawable.offset = x + dx, y + dy
-  def _draw_guide_lines(self, x, y):
+  def _draw_guide_lines(self, points):
     """
     Draws two drawing guide lines (vertical and horizontal) crossing at the
-        point (|x|, |y|).
+        each of the given |points|.
     """
     # remove previously drawn guide lines
     self._remove_guide_lines()
     # draw new guide lines
-    self._guide_line_parts.extend([self._canvas.create_line(x, 0, x,
-        self.height, fill=GUIDE_LINE_COLOR), self._canvas.create_line(0, y,
-        self.width, y, fill=GUIDE_LINE_COLOR)])
+    for x, y in points:
+      self._guide_line_parts.extend([self._canvas.create_line(x, 0, x,
+          self.height, fill=GUIDE_LINE_COLOR), self._canvas.create_line(0, y,
+          self.width, y, fill=GUIDE_LINE_COLOR)])
     # lower lines below drawables on the board
     for part in self._guide_line_parts:
       self._canvas.tag_lower(part)
@@ -205,12 +206,6 @@ class Board(Frame):
     for part in self._guide_line_parts:
       self._canvas.delete(part)
     self._guide_line_parts = []
-  def _get_drawable_center(self, drawable):
-    """
-    Returns the center point of the given |drawable|.
-    """
-    x1, y1, x2, y2 = drawable.bounding_box(self.get_drawable_offset(drawable))
-    return (x1 + x2) / 2, (y1 + y2) / 2
   def _move_drawable(self, drawable, dx, dy):
     """
     Moves the given |drawable| by (|dx|, |dy|). Assumes that |drawable| is on
@@ -242,7 +237,9 @@ class Board(Frame):
       dy = snap(event.y - last_y)
       self._move_drawable(self._drag_item, dx, dy)
       # redraw guide lines
-      self._draw_guide_lines(*self._get_drawable_center(self._drag_item))
+      x1, y1, x2, y2 = self._drag_item.bounding_box(self.get_drawable_offset(
+          self._drag_item))
+      self._draw_guide_lines([(x1, y1), (x2, y2)])
       # update drag state
       self._drag_last_point = (last_x + dx, last_y + dy)
   def _drag_release(self, event):
@@ -339,7 +336,7 @@ class Board(Frame):
       self._straighten_wire()
       self._draw_current_wire()
       # redraw guide lines
-      self._draw_guide_lines(*self._wire_end)
+      self._draw_guide_lines([self._wire_end])
   def _wire_release(self, event):
     """
     Callback for when wire creation is complete. Updates wire data.
