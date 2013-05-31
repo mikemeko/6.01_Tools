@@ -114,6 +114,7 @@ if __name__ == '__main__':
       # update to new file name
       file_name = new_file_name
       on_changed(False)
+    board.reset_cursor_state()
   def new_file():
     """
     Opens a new board.
