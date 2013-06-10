@@ -5,9 +5,9 @@ Representations for objects that can be placed on the proto board: op amps,
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
-from circuit_simulator.main.constants import DISABLED_PINS_HEAD_CONNECTOR
-from circuit_simulator.main.constants import DISABLED_PINS_MOTOR_CONNECTOR
-from circuit_simulator.main.constants import DISABLED_PINS_ROBOT_CONNECTOR
+from constants import DISABLED_PINS_HEAD_CONNECTOR
+from constants import DISABLED_PINS_MOTOR_CONNECTOR
+from constants import DISABLED_PINS_ROBOT_CONNECTOR
 from constants import N_PIN_CONNECTOR_FILL
 from constants import N_PIN_CONNECTOR_OUTLINE
 from constants import OP_AMP_BODY_COLOR

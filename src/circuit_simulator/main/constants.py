@@ -8,13 +8,12 @@ from circuit_simulator.simulation.constants import NUM_SAMPLES
 from circuit_simulator.simulation.constants import T
 
 # colors
+HEAD_COLOR = '#666'
 LAMP_BOX_COLOR = 'white'
 LAMP_COLOR = 'yellow'
 LAMP_EMPTY_COLOR = '#DDD'
 MOTOR_FILL = '#666'
 MOTOR_POT_FILL = '#666'
-N_PIN_CONNECTOR_FILL = '#EEE'
-N_PIN_CONNECTOR_OUTLINE = 'black'
 NEGATIVE_COLOR = '#1531AE'
 OP_AMP_FILL = '#EEE'
 OP_AMP_OUTLINE = 'black'
@@ -34,14 +33,13 @@ DIRECTION_UP    = 0
 DIRECTION_RIGHT = 1
 DIRECTION_DOWN  = 2
 DIRECTION_LEFT  = 3
+HEAD_SIZE = 40
 LABEL_PADDING = 8
 LAMP_BOX_PADDING = 3
 LAMP_BOX_SIZE = 12
 LAMP_RADIUS = 4
 MOTOR_SIZE = 60
 MOTOR_POT_SIZE = 60
-N_PIN_CONNECTOR_PER_CONNECTOR = 10
-N_PIN_CONNECTOR_TEXT_SIZE = 60
 OP_AMP_BASE = 60
 OP_AMP_HEIGHT = 60
 OP_AMP_DOWN_VERTICES = (0, 0, OP_AMP_BASE / 2, OP_AMP_HEIGHT, OP_AMP_BASE, 0)
@@ -88,16 +86,8 @@ BOARD_WIDTH = 800
 BOARD_HEIGHT = 500
 PALETTE_HEIGHT = 100
 
-# connector piece disabled pins
-DISABLED_PINS_HEAD_CONNECTOR = ()
-DISABLED_PINS_MOTOR_CONNECTOR = (1, 2, 3, 4)
-DISABLED_PINS_ROBOT_CONNECTOR = (1, 3, 5, 6, 7, 8)
-
 # plotter constants
 T_SAMPLES = [(n * T) for n in xrange(NUM_SAMPLES)]
-
-# way to represent connectors
-SCHEMATIC_CONNECTOR_DRAWABLES = True
 
 # regular expressions
 RE_OP_AMP_VERTICES = r'\((\d+), (\d+), (\d+), (\d+), (\d+), (\d+)\)'

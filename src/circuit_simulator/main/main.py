@@ -9,7 +9,6 @@ __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 from analyze_board import run_analysis
 from circuit_drawables import Ground_Drawable
 from circuit_drawables import Head_Connector_Drawable
-from circuit_drawables import Motor_Connector_Drawable
 from circuit_drawables import Motor_Drawable
 from circuit_drawables import Motor_Pot_Drawable
 from circuit_drawables import Op_Amp_Drawable
@@ -20,7 +19,6 @@ from circuit_drawables import Probe_Minus_Drawable
 from circuit_drawables import Probe_Plus_Drawable
 from circuit_drawables import Proto_Board_Run_Drawable
 from circuit_drawables import Resistor_Drawable
-from circuit_drawables import Robot_Connector_Drawable
 from circuit_drawables import Robot_Pin_Drawable
 from circuit_drawables import Simulate_Run_Drawable
 from circuit_simulator.proto_board.circuit_piece_placement import all_nodes
@@ -44,7 +42,6 @@ from constants import FILE_EXTENSION
 from constants import PALETTE_HEIGHT
 from constants import PROBE_INIT_PADDING
 from constants import PROBE_SIZE
-from constants import SCHEMATIC_CONNECTOR_DRAWABLES
 from core.gui.board import Board
 from core.gui.components import Wire
 from core.gui.components import Wire_Connector_Drawable
@@ -135,10 +132,9 @@ if __name__ == '__main__':
     # open a new board with the new file name
     deserializers = (Power_Drawable, Ground_Drawable, Probe_Plus_Drawable,
         Probe_Minus_Drawable, Resistor_Drawable, Op_Amp_Drawable,
-        Pot_Drawable, Motor_Drawable, Motor_Connector_Drawable,
-        Motor_Pot_Drawable, Photosensors_Drawable, Robot_Pin_Drawable,
-        Robot_Connector_Drawable, Head_Connector_Drawable,
-        Wire_Connector_Drawable, Wire)
+        Pot_Drawable, Motor_Drawable, Motor_Pot_Drawable,
+        Photosensors_Drawable, Robot_Pin_Drawable, Wire_Connector_Drawable,
+        Wire)
     if open_board_from_file(board, new_file_name, deserializers,
         FILE_EXTENSION):
       # update to new file name
@@ -204,17 +200,12 @@ if __name__ == '__main__':
   palette.add_drawable_type(Pot_Drawable, LEFT, None,
       on_signal_file_changed=lambda: board.set_changed(True))
   palette.add_drawable_type(Op_Amp_Drawable, LEFT, None)
-  if SCHEMATIC_CONNECTOR_DRAWABLES:
-    palette.add_drawable_type(Motor_Drawable, LEFT, None, True)
-    palette.add_drawable_type(Motor_Pot_Drawable, LEFT, None, True)
-    palette.add_drawable_type(Photosensors_Drawable, LEFT, None, True,
-        on_signal_file_changed=lambda: board.set_changed(True))
-    palette.add_drawable_type(Robot_Pin_Drawable, LEFT, None, True)
-  else:
-    palette.add_drawable_type(Motor_Connector_Drawable, LEFT, None, True)
-    palette.add_drawable_type(Robot_Connector_Drawable, LEFT, None, True)
-    palette.add_drawable_type(Head_Connector_Drawable, LEFT, None, True,
-        on_signal_file_changed=lambda: board.set_changed(True))
+  palette.add_drawable_type(Head_Connector_Drawable, LEFT, None,
+      types_to_add=[(Motor_Drawable, False, {}), (Motor_Pot_Drawable,
+      False, {}), (Photosensors_Drawable, False, {'on_signal_file_changed':
+      lambda: board.set_changed(True)})])
+  palette.add_drawable_type(Motor_Drawable, LEFT, None)
+  palette.add_drawable_type(Robot_Pin_Drawable, LEFT, None, True)
   # add buttons to analyze circuit
   palette.add_drawable_type(Simulate_Run_Drawable, RIGHT,
       lambda event: run_analysis(board, simulate))

@@ -8,10 +8,9 @@ from constants import DIRECTION_DOWN
 from constants import DIRECTION_LEFT
 from constants import DIRECTION_RIGHT
 from constants import DIRECTION_UP
-from constants import DISABLED_PINS_HEAD_CONNECTOR
-from constants import DISABLED_PINS_MOTOR_CONNECTOR
-from constants import DISABLED_PINS_ROBOT_CONNECTOR
 from constants import GROUND
+from constants import HEAD_COLOR
+from constants import HEAD_SIZE
 from constants import LABEL_PADDING
 from constants import LAMP_BOX_COLOR
 from constants import LAMP_BOX_PADDING
@@ -25,10 +24,6 @@ from constants import MOTOR_FILL
 from constants import MOTOR_POT_FILL
 from constants import MOTOR_POT_SIZE
 from constants import MOTOR_SIZE
-from constants import N_PIN_CONNECTOR_FILL
-from constants import N_PIN_CONNECTOR_OUTLINE
-from constants import N_PIN_CONNECTOR_PER_CONNECTOR
-from constants import N_PIN_CONNECTOR_TEXT_SIZE
 from constants import NEGATIVE_COLOR
 from constants import OP_AMP_CONNECTOR_PADDING
 from constants import OP_AMP_DOWN_VERTICES
@@ -332,10 +327,10 @@ class Op_Amp_Drawable(Drawable):
     else: # OP_AMP_UP_VERTICES
       return Op_Amp_Drawable(OP_AMP_RIGHT_VERTICES)
   def serialize(self, offset):
-    return 'Op amp %s %s' % (str(self.vertices), str(offset))
+    return 'Op_Amp %s %s' % (str(self.vertices), str(offset))
   @staticmethod
   def deserialize(item_str, board):
-    m = match(r'Op amp %s %s' % (RE_OP_AMP_VERTICES, RE_INT_PAIR), item_str)
+    m = match(r'Op_Amp %s %s' % (RE_OP_AMP_VERTICES, RE_INT_PAIR), item_str)
     if m:
       x1, y1, x2, y2, x3, y3, ox, oy = map(int, m.groups())
       board.add_drawable(Op_Amp_Drawable((x1, y1, x2, y2, x3, y3)), (ox, oy))
@@ -437,203 +432,18 @@ class Pot_Drawable(Drawable):
       return True
     return False
 
-class N_Pin_Connector_Drawable(Drawable):
-  """
-  Abstract Drawable for n-pin connectors.
-  """
-  def __init__(self, short_name, long_name, n, direction, disabled_pins=()):
-    """
-    |short_name|, |long_name|: names, short and long, to identify this n-pin
-        connector. Two versions needed for different orientations.
-    |n|: a positive integer, the number of pins on this connector.
-    |direction|: the direction of this n-pin connector, one of DIRECTION_DOWN,
-        DIRECTION_LEFT, DIRECTION_RIGHT, or DIRECTION_UP.
-    |disabled_pins|: pins that are not meant to be connected to anything.
-    """
-    assert isinstance(n, int) and n > 0, 'n must be a positive integer'
-    # width and height assuming horizontal orientation
-    width = N_PIN_CONNECTOR_TEXT_SIZE + N_PIN_CONNECTOR_PER_CONNECTOR
-    height = (n + 1) * N_PIN_CONNECTOR_PER_CONNECTOR
-    # switch if orientation is vertical
-    if direction in (DIRECTION_UP, DIRECTION_DOWN):
-      width, height = height, width
-    Drawable.__init__(self, width, height)
-    self.short_name = short_name
-    self.long_name = long_name
-    self.n = n
-    self.direction = direction
-    self.disabled_pins = disabled_pins
-  def draw_on(self, canvas, offset=(0, 0)):
-    ox, oy = offset
-    w, h = self.width, self.height
-    self.parts.add(canvas.create_rectangle(ox, oy, ox + w, oy + h,
-        fill=N_PIN_CONNECTOR_FILL, outline=N_PIN_CONNECTOR_OUTLINE))
-    text = self.short_name if self.direction in (DIRECTION_LEFT,
-        DIRECTION_RIGHT) else self.long_name
-    text_dx = ((self.direction == DIRECTION_LEFT) - (self.direction ==
-        DIRECTION_RIGHT)) * N_PIN_CONNECTOR_PER_CONNECTOR
-    text_dy = ((self.direction == DIRECTION_UP) - (self.direction ==
-        DIRECTION_DOWN)) * N_PIN_CONNECTOR_PER_CONNECTOR
-    self.parts.add(canvas.create_text(ox + w / 2 + text_dx,
-        oy + h / 2 + text_dy, text=text, justify=CENTER,
-        width=N_PIN_CONNECTOR_TEXT_SIZE))
-  def draw_connectors(self, canvas, offset=(0, 0)):
-    ox, oy = offset
-    text_delta = 9
-    sx, sy, dx, dy, text_dx, text_dy = ox, oy, 0, 0, 0, 0
-    if self.direction == DIRECTION_UP:
-      sx += N_PIN_CONNECTOR_PER_CONNECTOR
-      sy += N_PIN_CONNECTOR_PER_CONNECTOR
-      dx = N_PIN_CONNECTOR_PER_CONNECTOR
-      text_dy = text_delta
-    elif self.direction == DIRECTION_RIGHT:
-      sx += self.width - N_PIN_CONNECTOR_PER_CONNECTOR
-      sy += N_PIN_CONNECTOR_PER_CONNECTOR
-      dy = N_PIN_CONNECTOR_PER_CONNECTOR
-      text_dx = -text_delta
-    elif self.direction == DIRECTION_DOWN:
-      sx += self.width - N_PIN_CONNECTOR_PER_CONNECTOR
-      sy += self.height - N_PIN_CONNECTOR_PER_CONNECTOR
-      dx = -N_PIN_CONNECTOR_PER_CONNECTOR
-      text_dy = -text_delta
-    elif self.direction == DIRECTION_LEFT:
-      sx += N_PIN_CONNECTOR_PER_CONNECTOR
-      sy += self.height - N_PIN_CONNECTOR_PER_CONNECTOR
-      dy = -N_PIN_CONNECTOR_PER_CONNECTOR
-      text_dx = text_delta
-    else:
-      # should never get here
-      raise Exception ('Invalid direction %s' % self.direction)
-    # store ordered list of connectors for easy pin lookup at analysis time
-    self.n_connectors = []
-    for i in xrange(self.n):
-      x, y = sx + i * dx, sy + i * dy
-      self.n_connectors.append(self._draw_connector(canvas, (x, y),
-          enabled=((i + 1) not in self.disabled_pins)))
-      # label pin
-      self.parts.add(canvas.create_text(x + text_dx, y + text_dy,
-          text=str(i + 1)))
-  def pin_connector(self, i):
-    """
-    Returns the connector corresponding to the given pin number |i|.
-    """
-    assert 1 <= i <= self.n, 'i=%d must be between 1 and %d' % (i, self.n)
-    return self.n_connectors[i - 1]
-
-class Motor_Connector_Drawable(N_Pin_Connector_Drawable):
-  """
-  Drawable for Motor Connector.
-  """
-  def __init__(self, direction=DIRECTION_UP):
-    N_Pin_Connector_Drawable.__init__(self, 'MC', 'Motor Connector', 6,
-        direction, DISABLED_PINS_MOTOR_CONNECTOR)
-  def rotated(self):
-    return Motor_Connector_Drawable(direction=(self.direction + 1) % 4)
-  def serialize(self, offset):
-    return 'Motor connector %d %s' % (self.direction, str(offset))
-  @staticmethod
-  def deserialize(item_str, board):
-    m = match(r'Motor connector %s %s' % (RE_INT, RE_INT_PAIR), item_str)
-    if m:
-      direction, ox, oy = map(int, m.groups())
-      board.add_drawable(Motor_Connector_Drawable(direction), (ox, oy))
-      return True
-    return False
-
-class Robot_Connector_Drawable(N_Pin_Connector_Drawable):
-  """
-  Drawable for Robot Connector.
-  """
-  def __init__(self, direction=DIRECTION_UP):
-    N_Pin_Connector_Drawable.__init__(self, 'RC', 'Robot Connector', 8,
-        direction, DISABLED_PINS_ROBOT_CONNECTOR)
-  def rotated(self):
-    return Robot_Connector_Drawable(direction=(self.direction + 1) % 4)
-  def serialize(self, offset):
-    return 'Robot connector %d %s' % (self.direction, str(offset))
-  @staticmethod
-  def deserialize(item_str, board):
-    m = match(r'Robot connector %s %s' % (RE_INT, RE_INT_PAIR), item_str)
-    if m:
-      direction, ox, oy = map(int, m.groups())
-      board.add_drawable(Robot_Connector_Drawable(direction), (ox, oy))
-      return True
-    return False
-
-class Head_Connector_Drawable(N_Pin_Connector_Drawable):
-  """
-  Drawable for Head Connector.
-  """
-  def __init__(self, on_signal_file_changed, direction=DIRECTION_UP,
-      signal_file=None):
-    """
-    |on_signal_file_changed|: function to be called when head connector signal
-        file is changed.
-    |signal_file|: the signal file containing lamp angle and distance.
-    """
-    assert is_callable(on_signal_file_changed), ('on_signal_file_changed must '
-        'be callable')
-    N_Pin_Connector_Drawable.__init__(self, 'HC', 'Head Connector', 8,
-        direction, DISABLED_PINS_HEAD_CONNECTOR)
-    self.on_signal_file_changed = on_signal_file_changed
-    self.signal_file= signal_file
-  def rotated(self):
-    return Head_Connector_Drawable(self.on_signal_file_changed,
-        (self.direction + 1) % 4, self.signal_file)
-  def draw_on(self, canvas, offset=(0, 0)):
-    # first draw as regular N_Pin_Connector_Drawable
-    N_Pin_Connector_Drawable.draw_on(self, canvas, offset)
-    # then draw the button that, when right-clicked, lets the user select a
-    #     signal file for this head connector
-    ox, oy = offset
-    w, h = self.width, self.height
-    lamp_box_ox = (ox + LAMP_BOX_PADDING) if self.direction in (DIRECTION_UP,
-        DIRECTION_RIGHT) else (ox + w - LAMP_BOX_SIZE - LAMP_BOX_PADDING)
-    lamp_box_oy = (oy + LAMP_BOX_PADDING) if self.direction in (DIRECTION_DOWN,
-        DIRECTION_RIGHT) else (oy + h - LAMP_BOX_SIZE - LAMP_BOX_PADDING)
-    lamp_box = canvas.create_rectangle(lamp_box_ox, lamp_box_oy,
-        lamp_box_ox + LAMP_BOX_SIZE, lamp_box_oy + LAMP_BOX_SIZE,
-        fill=LAMP_BOX_COLOR)
-    lamp = create_circle(canvas, lamp_box_ox + LAMP_BOX_SIZE / 2,
-        lamp_box_oy + LAMP_BOX_SIZE / 2, LAMP_RADIUS, fill=LAMP_COLOR
-        if self.signal_file else LAMP_EMPTY_COLOR)
-    def set_signal_file(event):
-      """
-      Opens a window to let the user choose a lamp signal file.
-      """
-      new_signal_file = askopenfilename(title=OPEN_LAMP_SIGNAL_FILE_TITLE,
-          filetypes=[('%s files' % LAMP_SIGNAL_FILE_TYPE,
-          LAMP_SIGNAL_FILE_EXTENSION)], initialfile=self.signal_file)
-      if new_signal_file and new_signal_file != self.signal_file:
-        self.signal_file = relpath(new_signal_file)
-        canvas.itemconfig(lamp, fill=LAMP_COLOR)
-        self.on_signal_file_changed()
-    for lamp_part in (lamp_box, lamp):
-      self.parts.add(lamp_part)
-      canvas.tag_bind(lamp_part, '<Button-3>', set_signal_file)
-  def serialize(self, offset):
-    return 'Head connector %s %d %s' % (self.signal_file, self.direction,
-        str(offset))
-  @staticmethod
-  def deserialize(item_str, board):
-    m = match(r'Head connector (.+) %s %s' % (RE_INT, RE_INT_PAIR), item_str)
-    if m:
-      signal_file = m.group(1)
-      if not isfile(signal_file):
-        signal_file = None
-      direction, ox, oy = map(int, m.groups()[1:])
-      board.add_drawable(Head_Connector_Drawable(lambda: board.set_changed(
-          True), direction, signal_file), (ox, oy))
-      return True
-    return False
-
 class Motor_Drawable(Pin_Drawable):
   """
   Drawable for motor (can be independent or can be part of head).
   """
-  def __init__(self, direction=DIRECTION_UP):
-    Pin_Drawable.__init__(self, 'M', MOTOR_FILL, MOTOR_SIZE, MOTOR_SIZE)
+  def __init__(self, direction=DIRECTION_UP, color=MOTOR_FILL, group_id=0):
+    """
+    |group_id|: indicator for the head this Motor_Drawable is a part of.
+    """
+    Pin_Drawable.__init__(self, 'Motor', color, MOTOR_SIZE, MOTOR_SIZE)
     self.direction = direction
+    self.color = color
+    self.group_id = group_id
   def draw_connectors(self, canvas, offset=(0, 0)):
     ox, oy = offset
     w, h = self.width, self.height
@@ -666,15 +476,17 @@ class Motor_Drawable(Pin_Drawable):
         minus_x), minus_y + LABEL_PADDING * sign(cy - minus_y), text='-',
         fill='white', justify=CENTER))
   def rotated(self):
-    return Motor_Drawable((self.direction + 1) % 4)
+    return Motor_Drawable((self.direction + 1) % 4, self.color, self.group_id)
   def serialize(self, offset):
-    return 'Motor %d %s' % (self.direction, str(offset))
+    return 'Motor %s %d %d %s' % (self.color, self.direction, self.group_id,
+        str(offset))
   @staticmethod
   def deserialize(item_str, board):
-    m = match(r'Motor %s %s' % (RE_INT, RE_INT_PAIR), item_str)
+    m = match(r'Motor (.+) %s %s %s' % (RE_INT, RE_INT, RE_INT_PAIR), item_str)
     if m:
-      direction, ox, oy = map(int, m.groups())
-      board.add_drawable(Motor_Drawable(direction), (ox, oy))
+      color = m.group(1)
+      direction, group_id, ox, oy = map(int, m.groups()[1:])
+      board.add_drawable(Motor_Drawable(direction, color, group_id), (ox, oy))
       return True
     return False
 
@@ -682,10 +494,15 @@ class Motor_Pot_Drawable(Pin_Drawable):
   """
   Drawable for motor pot on head.
   """
-  def __init__(self, direction=DIRECTION_RIGHT):
-    Pin_Drawable.__init__(self, 'MP', MOTOR_POT_FILL, MOTOR_POT_SIZE,
-        MOTOR_POT_SIZE)
+  def __init__(self, direction=DIRECTION_RIGHT, color=MOTOR_POT_FILL,
+      group_id=0):
+    """
+    |group_id|: indicator for the head this Motor_Pot_Drawable is a part of.
+    """
+    Pin_Drawable.__init__(self, 'MP', color, MOTOR_POT_SIZE, MOTOR_POT_SIZE)
     self.direction = direction
+    self.color = color
+    self.group_id = group_id
   def draw_connectors(self, canvas, offset=(0, 0)):
     ox, oy = offset
     w, h = self.width, self.height
@@ -730,15 +547,20 @@ class Motor_Pot_Drawable(Pin_Drawable):
         bottom_x), bottom_y + LABEL_PADDING * sign(cy - bottom_y), text='-',
         fill='white', justify=CENTER))
   def rotated(self):
-    return Motor_Pot_Drawable((self.direction + 1) % 4)
+    return Motor_Pot_Drawable((self.direction + 1) % 4, self.color,
+        self.group_id)
   def serialize(self, offset):
-    return 'Motor Pot %d %s' % (self.direction, str(offset))
+    return 'Motor_Pot %s %d %d %s' % (self.color, self.direction,
+        self.group_id, str(offset))
   @staticmethod
   def deserialize(item_str, board):
-    m = match(r'Motor Pot %s %s' % (RE_INT, RE_INT_PAIR), item_str)
+    m = match(r'Motor_Pot (.+) %s %s %s' % (RE_INT, RE_INT, RE_INT_PAIR),
+        item_str)
     if m:
-      direction, ox, oy = map(int, m.groups())
-      board.add_drawable(Motor_Pot_Drawable(direction), (ox, oy))
+      color = m.group(1)
+      direction, group_id, ox, oy = map(int, m.groups()[1:])
+      board.add_drawable(Motor_Pot_Drawable(direction, color, group_id), (ox,
+          oy))
       return True
     return False
 
@@ -747,19 +569,22 @@ class Photosensors_Drawable(Pin_Drawable):
   Drawable for photodetectors on head.
   """
   def __init__(self, on_signal_file_changed, direction=DIRECTION_RIGHT,
-      signal_file=None):
+      signal_file=None, color=PHOTOSENSORS_FILL, group_id=None):
     """
     |on_signal_file_changed|: function to be called when photosensor signal
         file is changed.
     |signal_file|: the signal file containing lamp angle and distance.
+    |group_id|: indicator for the head this Photosensors_Drawable is a part of.
     """
     assert is_callable(on_signal_file_changed), ('on_signal_file_changed must '
         'be callable')
-    Pin_Drawable.__init__(self, 'PS', PHOTOSENSORS_FILL, PHOTOSENSORS_SIZE,
+    Pin_Drawable.__init__(self, 'PS', color, PHOTOSENSORS_SIZE,
         PHOTOSENSORS_SIZE)
     self.on_signal_file_changed = on_signal_file_changed
     self.direction = direction
     self.signal_file = signal_file
+    self.color = color
+    self.group_id = group_id
   def draw_on(self, canvas, offset=(0, 0)):
     Pin_Drawable.draw_on(self, canvas, offset)
     # draw the button that, when right-clicked, lets the user select a signal
@@ -845,20 +670,22 @@ class Photosensors_Drawable(Pin_Drawable):
         fill='white', justify=CENTER))
   def rotated(self):
     return Photosensors_Drawable(self.on_signal_file_changed,
-        (self.direction + 1) % 4, self.signal_file)
+        (self.direction + 1) % 4, self.signal_file, self.color, self.group_id)
   def serialize(self, offset):
-    return 'Photosensors %s %d %s' % (self.signal_file, self.direction,
-        str(offset))
+    return 'Photosensors %s %s %d %d %s' % (self.signal_file, self.color,
+        self.direction, self.group_id, str(offset))
   @staticmethod
   def deserialize(item_str, board):
-    m = match(r'Photosensors (.+) %s %s' % (RE_INT, RE_INT_PAIR), item_str)
+    m = match(r'Photosensors (\S+) (\S+) %s %s %s' % (RE_INT, RE_INT,
+        RE_INT_PAIR), item_str)
     if m:
       signal_file = m.group(1)
       if not isfile(signal_file):
         signal_file = None
-      direction, ox, oy = map(int, m.groups()[1:])
+      color = m.group(2)
+      direction, group_id, ox, oy = map(int, m.groups()[2:])
       board.add_drawable(Photosensors_Drawable(lambda: board.set_changed(
-          True), direction, signal_file), (ox, oy))
+          True), direction, signal_file, color, group_id), (ox, oy))
       return True
     return False
 
@@ -867,7 +694,7 @@ class Robot_Pin_Drawable(Pin_Drawable):
   Drawable for robot (to get power).
   """
   def __init__(self, direction=DIRECTION_UP):
-    Pin_Drawable.__init__(self, 'R', ROBOT_PIN_FILL, ROBOT_PIN_SIZE,
+    Pin_Drawable.__init__(self, 'Robot Power', ROBOT_PIN_FILL, ROBOT_PIN_SIZE,
         ROBOT_PIN_SIZE)
     self.direction = direction
   def draw_connectors(self, canvas, offset=(0, 0)):
@@ -904,15 +731,23 @@ class Robot_Pin_Drawable(Pin_Drawable):
   def rotated(self):
     return Robot_Pin_Drawable((self.direction + 1) % 4)
   def serialize(self, offset):
-    return 'Robot pin %d %s' % (self.direction, str(offset))
+    return 'Robot_Pin %d %s' % (self.direction, str(offset))
   @staticmethod
   def deserialize(item_str, board):
-    m = match(r'Robot pin %s %s' % (RE_INT, RE_INT_PAIR), item_str)
+    m = match(r'Robot_Pin %s %s' % (RE_INT, RE_INT_PAIR), item_str)
     if m:
       direction, ox, oy = map(int, m.groups())
       board.add_drawable(Robot_Pin_Drawable(direction), (ox, oy))
       return True
     return False
+
+class Head_Connector_Drawable(Pin_Drawable):
+  """
+  Drawable that, when clicked, spawns the drawables for items on the head (i.e.
+      Motor_Drawable, Motor_Pot_Drawable, Photosensors_Drawable).
+  """
+  def __init__(self):
+    Pin_Drawable.__init__(self, 'Head', HEAD_COLOR, HEAD_SIZE, HEAD_SIZE)
 
 class Simulate_Run_Drawable(Run_Drawable):
   """

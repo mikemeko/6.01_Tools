@@ -14,6 +14,8 @@ from constants import PALETTE_SEPARATION_LINE_COLOR
 from constants import PALETTE_WIDTH
 from constants import RIGHT
 from constants import WARNING
+from random import randint
+from time import time
 from Tkinter import Canvas
 from Tkinter import Frame
 
@@ -46,7 +48,7 @@ class Palette(Frame):
     self.canvas.pack()
     self.pack()
   def _add_item_callback(self, drawable_type, offset_x, disregard_location,
-      *args, **kwargs):
+      **kwargs):
     """
     Returns a callback method that, when called, adds an item of the given
         |drawable_type| to the board, at the given |offset_x|. Does not allow
@@ -59,7 +61,7 @@ class Palette(Frame):
       # clear current message on the board, if any
       self.board.remove_message()
       # create new drawable
-      new_drawable = drawable_type(*args, **kwargs)
+      new_drawable = drawable_type(**kwargs)
       offset_y = self.board.height - new_drawable.height - PALETTE_PADDING
       offset = (offset_x, offset_y)
       # make sure that there isn't already an identical drawable
@@ -67,9 +69,31 @@ class Palette(Frame):
         self.board.display_message('Item is already on the board', WARNING)
         return
       self.board.add_drawable(new_drawable, offset)
+      return new_drawable
+    return callback
+  def _spawn_types_callback(self, types_to_add, offset_x):
+    """
+    Returns a callback method that, when called, adds the items given in
+        |types_to_add| to the board, starting at the given |offset_x|.
+    """
+    assert isinstance(types_to_add, list), 'types_to_add must be a list'
+    def callback(event):
+      dx = 0
+      # assign the same color and group_id to the types being spawned
+      color = '#%02X%02X%02X' % (randint(0, 200), randint(0, 200),
+          randint(0, 200))
+      group_id = int(round(time() * 1000))
+      # TODO(mikemeko): add jointly for correct undo redo
+      for add_type, add_disregard_location, add_kwargs in types_to_add:
+        add_kwargs['color'] = color
+        add_kwargs['group_id'] = group_id
+        new_drawable = self._add_item_callback(add_type, offset_x + dx,
+            add_disregard_location, **add_kwargs)(event)
+        if new_drawable:
+          dx += new_drawable.width + BOARD_GRID_SEPARATION
     return callback
   def add_drawable_type(self, drawable_type, side, callback,
-      disregard_location=False, *args, **kwargs):
+      disregard_location=False, types_to_add=None, **kwargs):
     """
     Adds a drawable type for display on this palette.
     |drawable_type|: a subclass of Drawable to display.
@@ -79,12 +103,14 @@ class Palette(Frame):
         default callback adds an item of the display type to the board.
     |disregard_location|: when checking for duplicates on the board, if this
         flag is set, the locations of drawables will be disregarded.
-    |*args, **kwargs|: extra arguments needed to initialize the drawable type.
+    |types_to_add|: a list of Drawables to add to the board when this item is
+        clicked on the palette, or None if such a callback is not desired.
+    |**kwargs|: extra arguments needed to initialize the drawable type.
     """
     assert issubclass(drawable_type, Drawable), ('drawable must be a Drawable '
         'subclass')
     # create a sample (display) drawable
-    display = drawable_type(*args, **kwargs)
+    display = drawable_type(**kwargs)
     # draw the display on the appropriate side of the palette
     if side == RIGHT:
       offset_x = self.current_right_x - PALETTE_PADDING - display.width
@@ -110,7 +136,12 @@ class Palette(Frame):
     # default callback adds items of this drawable type to the board
     if callback is None:
       callback = self._add_item_callback(drawable_type, offset_x,
-          disregard_location, *args, **kwargs)
+          disregard_location, **kwargs) if types_to_add is None else (
+          self._spawn_types_callback(types_to_add, offset_x))
+    else:
+      assert types_to_add is None, ('if callback is provided, types_to_add '
+          'will not be used')
+    # bind callback
     for part in display.parts:
       self.canvas.tag_bind(part, '<ButtonPress-1>', callback)
     for connector in display.connectors:

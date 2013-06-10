@@ -53,3 +53,8 @@ CIRCUIT_PIECE_SEPARATION = 2
 
 # whether to treat resistors as components or wires
 RESISTORS_AS_COMPONENTS = True
+
+# connector piece disabled pins
+DISABLED_PINS_HEAD_CONNECTOR = ()
+DISABLED_PINS_MOTOR_CONNECTOR = (1, 2, 3, 4)
+DISABLED_PINS_ROBOT_CONNECTOR = (1, 3, 5, 6, 7, 8)
