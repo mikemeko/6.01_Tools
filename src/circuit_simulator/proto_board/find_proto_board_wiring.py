@@ -131,7 +131,7 @@ class Proto_Board_Search_Node(Search_Node):
           add_resistor = (resistor_flag and not num_piece_crossings and not
               num_wire_crossings and new_wire.length() == 3)
           if add_resistor:
-            n1, n2 = resistor_flag
+            n1, n2, r = resistor_flag
             # find representatives for the two groups, they better be there
             n1_group = proto_board.rep_for(n1)
             assert n1_group
@@ -163,7 +163,7 @@ class Proto_Board_Search_Node(Search_Node):
                 if wire_loc_1_group == n1_group:
                   n1, n2 = n2, n1
               # create Resistor_Piece
-              resistor_piece = Resistor_Piece(n1, n2, new_wire.vertical())
+              resistor_piece = Resistor_Piece(n1, n2, r, new_wire.vertical())
               resistor_piece.top_left_loc = top_left_loc
               # create proto board with resistor
               new_proto_board = proto_board.with_piece(resistor_piece)

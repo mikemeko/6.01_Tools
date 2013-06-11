@@ -19,6 +19,7 @@ from constants import POT_CIRCLE_RADIUS
 from constants import POT_FILL
 from constants import POT_OUTLINE
 from constants import PROTO_BOARD_HEIGHT
+from constants import RESISTOR_COLORS
 from constants import RESISTOR_INNER_COLOR
 from constants import RESISTOR_OUTER_COLOR
 from core.gui.util import create_circle
@@ -228,9 +229,10 @@ class Resistor_Piece(Circuit_Piece):
   TODO(mikemeko): Resistor_Piece is not used exaclty like the other
       Circuit_Pieces since the start of treating resistors as wires.
   """
-  def __init__(self, n_1, n_2, vertical):
+  def __init__(self, n_1, n_2, r, vertical):
     """
     |n_1|, |n_2|: the two nodes of the resistor.
+    |r|: resistance of the resistor.
     |vertical|: True if orientation is vertical, False otherwise.
     """
     assert n_1, 'invalid n_1'
@@ -240,6 +242,7 @@ class Resistor_Piece(Circuit_Piece):
     Circuit_Piece.__init__(self, set([n_1, n_2]), width, height)
     self.n_1 = n_1
     self.n_2 = n_2
+    self.r = r
     self.vertical = vertical
   def locs_for(self, node):
     self._assert_top_left_loc_set()
@@ -251,11 +254,18 @@ class Resistor_Piece(Circuit_Piece):
       locs.append((r + 1, c) if self.vertical else (r, c + 3))
     return locs
   def inverted(self):
-    return Resistor_Piece(self.n_2, self.n_1, self.vertical)
+    return Resistor_Piece(self.n_2, self.n_1, self.r, self.vertical)
   def draw_on(self, canvas, top_left):
-    # TODO(mikemeko): color resistor based on resistance
     x, y = top_left
     dx = (CONNECTOR_SPACING - CONNECTOR_SIZE) / 2
+    # state for color bands
+    coeff, exp = ('%.1E' % max(self.r, 10)).split('E+')
+    color_indices = map(int, str(int(10 * float(coeff)))) + [int(exp) - 1]
+    size = 2 * CONNECTOR_SIZE + 3 * CONNECTOR_SPACING
+    color_size = 5
+    color_spacing = 3
+    colors_size = 3 * color_size + 2 * color_spacing
+    colors_offset = CONNECTOR_SIZE + (size - colors_size) / 2
     if self.vertical:
       # inner rectangle, i.e. the thin one that is partially covered
       canvas.create_rectangle(x, y, x + CONNECTOR_SIZE, y + 4 *
@@ -264,6 +274,11 @@ class Resistor_Piece(Circuit_Piece):
       canvas.create_rectangle(x - dx, y + CONNECTOR_SIZE, x + CONNECTOR_SIZE +
           dx, y + 3 * CONNECTOR_SIZE + 3 * CONNECTOR_SPACING,
           fill=RESISTOR_OUTER_COLOR)
+      for i in xrange(3):
+        canvas.create_rectangle(x - dx, y + colors_offset, x + CONNECTOR_SIZE +
+            dx, y + colors_offset + color_size, fill=RESISTOR_COLORS[
+            color_indices[i]])
+        colors_offset += color_size + color_spacing
     else: # horizontal
       # inner rectangle, i.e. the thin one that is partially covered
       canvas.create_rectangle(x, y, x + 4 * CONNECTOR_SIZE + 3 *
@@ -272,9 +287,14 @@ class Resistor_Piece(Circuit_Piece):
       canvas.create_rectangle(x + CONNECTOR_SIZE, y - dx, x + 3 *
           CONNECTOR_SIZE + 3 * CONNECTOR_SPACING, y + CONNECTOR_SIZE + dx,
           fill=RESISTOR_OUTER_COLOR)
+      for i in xrange(3):
+        canvas.create_rectangle(x + colors_offset, y - dx, x + colors_offset +
+            color_size, y + CONNECTOR_SIZE + dx, fill=RESISTOR_COLORS[
+            color_indices[i]])
+        colors_offset += color_size + color_spacing
   def __str__(self):
-    return 'Resistor_Piece %s vertical=%s' % (str([self.n_1, self.n_2]),
-        self.vertical)
+    return 'Resistor_Piece %s r=%s vertical=%s' % (str([self.n_1, self.n_2]),
+        self.r, self.vertical)
 
 class Pot_Piece(Circuit_Piece):
   """

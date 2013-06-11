@@ -95,13 +95,13 @@ def loc_pairs_to_connect(pieces, resistor_node_pairs):
     occurences[loc_1] += 1
     occurences[loc_2] += 1
     flagged_loc_pairs.append((loc_1, loc_2, False))
-  for n1, n2 in resistor_node_pairs:
+  for n1, n2, r in resistor_node_pairs:
     loc_1, loc_2 = min(product(locs_for_node(pieces, n1), locs_for_node(pieces,
         n2)), key=lambda (loc_1, loc_2): 5 * (occurences[loc_1] +
         occurences[loc_2]) + dist(loc_1, loc_2))
     occurences[loc_1] += 1
     occurences[loc_2] += 1
-    flagged_loc_pairs.append((loc_1, loc_2, (n1, n2)))
+    flagged_loc_pairs.append((loc_1, loc_2, (n1, n2, r)))
   return flagged_loc_pairs
 
 def set_locations(pieces):

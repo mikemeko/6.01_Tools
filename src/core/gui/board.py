@@ -633,14 +633,16 @@ class Board(Frame):
       label = self._label_wires_from(drawable, relabeled_wires, label) + 1
   def _get_drawables(self):
     """
-    Returns a list of the live drawables on this board in the reverse order in
-        which they were put on the board, newest drawable first.
+    Returns a generator of the live drawables on this board in the reverse
+        order in which they were put on the board, newest drawable first.
     """
-    return sorted(filter(lambda drawable: drawable.is_live(), self._drawables),
-        key=lambda drawable: -self._drawables[drawable])
+    for drawable in sorted(self._drawables, key=lambda drawable:
+        -self._drawables[drawable]):
+      if drawable.is_live():
+        yield drawable
   def get_drawables(self):
     """
-    Labels the wires and then returns a list of the live drawables on this
+    Labels the wires and then returns a generator of the live drawables on this
         board, with the newest drawables put first.
     """
     self._label_wires()

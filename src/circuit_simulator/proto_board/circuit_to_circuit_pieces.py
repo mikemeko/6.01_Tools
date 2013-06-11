@@ -79,7 +79,7 @@ def resistor_piece_from_resistor(resistor):
       Resistor.
   """
   assert isinstance(resistor, Resistor), 'resistor must be a Resistor'
-  return Resistor_Piece(resistor.n1, resistor.n2, True)
+  return Resistor_Piece(resistor.n1, resistor.n2, resistor.r, True)
 
 def pot_piece_from_pot(pot):
   """
@@ -150,9 +150,10 @@ def get_piece_placement(circuit):
   if RESISTORS_AS_COMPONENTS:
     resistor_pieces = map(resistor_piece_from_resistor, resistors)
   else:
-    resistor_node_pairs = [(resistor.n1, resistor.n2) for resistor in
-        resistors]
-    resistor_nodes = reduce(set.union, map(set, resistor_node_pairs), set())
+    resistor_node_pairs = [(resistor.n1, resistor.n2, resistor.r) for resistor
+        in resistors]
+    resistor_nodes = reduce(set.union, [set([n1, n2]) for (n1, n2, r) in
+        resistor_node_pairs], set())
   pots = filter(lambda obj: obj.__class__ == Signalled_Pot, circuit.components)
   pot_pieces = map(pot_piece_from_pot, pots)
   motors = filter(lambda obj: obj.__class__ == Motor, circuit.components)

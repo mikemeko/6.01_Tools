@@ -17,8 +17,10 @@ POT_CIRCLE_FILL = '#EEE'
 POT_CIRCLE_RADIUS = 8
 POT_FILL = POT_ALPHA_FILL
 POT_OUTLINE = 'black'
+RESISTOR_COLORS = ('black', 'brown', 'red', 'orange', 'yellow', 'green',
+    'blue', 'violet', 'gray', 'white')
 RESISTOR_INNER_COLOR = '#777'
-RESISTOR_OUTER_COLOR = '#5DCFC3'
+RESISTOR_OUTER_COLOR = '#FFD573'
 
 # dimension constants
 PROTO_BOARD_HEIGHT = 14 # should be even
