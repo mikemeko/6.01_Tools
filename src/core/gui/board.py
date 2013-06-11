@@ -47,6 +47,7 @@ from core.undo.undo import Action
 from core.undo.undo import Action_History
 from core.util.util import is_callable
 from threading import Timer
+from time import time
 from Tkinter import ALL
 from Tkinter import Canvas
 from Tkinter import Frame
@@ -80,7 +81,7 @@ class Board(Frame):
     self._canvas = Canvas(self, width=width, height=height,
         highlightthickness=0, background=BOARD_BACKGROUND_COLOR)
     # the drawables on this board, includes deleted drawables
-    self._drawables = set()
+    self._drawables = {}
     # undo / redo
     self._action_history = Action_History()
     # state for dragging
@@ -145,7 +146,6 @@ class Board(Frame):
     |point|: a tuple of the form (x, y) indicating a location on the canvas.
     Returns the drawable located at canvas location |point|, or None if no such
         item exists.
-    TODO(mikemeko): should return the topmost such drawable.
     """
     for drawable in self._get_drawables():
       if point_inside_bbox(point, drawable.bounding_box(drawable.offset)):
@@ -156,7 +156,6 @@ class Board(Frame):
     |point|: a tuple of the form (x, y) indicating a location on the canvas.
     Returns the connector located at canvas location |point|, or None if no
         such connector exists.
-    TODO(mikemeko): should return the topmost such connector.
     """
     for drawable in self._get_drawables():
       for connector in drawable.connectors:
@@ -565,7 +564,7 @@ class Board(Frame):
     Adds the given |drawable| at the given |offset|.
     """
     # add it to the set of drawables on this board
-    self._drawables.add(drawable)
+    self._drawables[drawable] = time()
     # set drawable offset (TODO(mikemeko): hacky, but convenient storage)
     drawable.offset = offset
     # draw it
@@ -634,15 +633,15 @@ class Board(Frame):
       label = self._label_wires_from(drawable, relabeled_wires, label) + 1
   def _get_drawables(self):
     """
-    Returns a generator for the live drawables on this board.
+    Returns a list of the live drawables on this board in the reverse order in
+        which they were put on the board, newest drawable first.
     """
-    for drawable in self._drawables:
-      if drawable.is_live():
-        yield drawable
+    return sorted(filter(lambda drawable: drawable.is_live(), self._drawables),
+        key=lambda drawable: -self._drawables[drawable])
   def get_drawables(self):
     """
-    Labels the wires and then returns a generator for the live drawables on
-        this board.
+    Labels the wires and then returns a list of the live drawables on this
+        board, with the newest drawables put first.
     """
     self._label_wires()
     return self._get_drawables()
