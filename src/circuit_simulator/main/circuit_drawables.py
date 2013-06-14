@@ -70,6 +70,7 @@ from core.gui.util import create_editable_text
 from core.gui.util import rotate_connector_flags
 from core.save.constants import RE_INT
 from core.save.constants import RE_INT_PAIR
+from core.undo.undo import Action
 from core.util.util import is_callable
 from os.path import isfile
 from os.path import relpath
@@ -195,17 +196,15 @@ class Resistor_Drawable(Drawable):
   """
   Drawable for Resistors.
   """
-  def __init__(self, on_resistance_changed, width=RESISTOR_HORIZONTAL_WIDTH,
+  def __init__(self, board, width=RESISTOR_HORIZONTAL_WIDTH,
       height=RESISTOR_HORIZONTAL_HEIGHT,
       connectors=CONNECTOR_LEFT | CONNECTOR_RIGHT, init_resistance=1):
     """
-    |on_resistance_changed|: function to be called when resistance is changed.
+    |board|: the board on which this Resistor_Drawable is placed.
     |init_resistance|: the initial resistance for this resistor.
     """
-    assert is_callable(on_resistance_changed), ('on_resistance_changed must be'
-        ' callable')
     Drawable.__init__(self, width, height, connectors)
-    self.on_resistance_changed = on_resistance_changed
+    self.board = board
     self.init_resistance = init_resistance
   def draw_on(self, canvas, offset=(0, 0)):
     ox, oy = offset
@@ -214,12 +213,15 @@ class Resistor_Drawable(Drawable):
     if w > h: # horizontal
       resistor_text = create_editable_text(canvas, ox + w / 2,
           oy - RESISTOR_TEXT_PADDING, text=self.init_resistance,
-          on_text_changed=self.on_resistance_changed)
+          on_text_changed=lambda old_r, new_r: self.board.set_changed(True,
+          Action(lambda: self.set_resistance(new_r), lambda:
+          self.set_resistance(old_r), 'set resistance')))
     else: # vertical
       resistor_text = create_editable_text(canvas,
           ox + w + RESISTOR_TEXT_PADDING, oy + h / 2,
-          text=self.init_resistance,
-          on_text_changed=self.on_resistance_changed)
+          text=self.init_resistance, on_text_changed=lambda old_r, new_r:
+          self.board.set_changed(True, Action(lambda: self.set_resistance(
+          new_r), lambda: self.set_resistance(old_r), 'set resistance')))
     self.parts.add(resistor_text)
     def get_resistance():
       """
@@ -227,10 +229,16 @@ class Resistor_Drawable(Drawable):
       """
       return canvas.itemcget(resistor_text, 'text')
     self.get_resistance = get_resistance
+    def set_resistance(r):
+      """
+      Sets the resistance of this resistor to be the string |r|.
+      """
+      assert isinstance(r, str), 'r must be a string'
+      canvas.itemconfig(resistor_text, text=r)
+    self.set_resistance = set_resistance
   def rotated(self):
-    return Resistor_Drawable(self.on_resistance_changed, self.height,
-        self.width, rotate_connector_flags(self.connector_flags),
-        self.get_resistance())
+    return Resistor_Drawable(self.board, self.height, self.width,
+        rotate_connector_flags(self.connector_flags), self.get_resistance())
   def serialize(self, offset):
     return 'Resistor %s %d %d %d %s' % (self.get_resistance(), self.width,
         self.height, self.connector_flags, str(offset))
@@ -241,8 +249,8 @@ class Resistor_Drawable(Drawable):
     if m:
       r = m.group(1)
       width, height, connectors, ox, oy = map(int, m.groups()[1:])
-      board.add_drawable(Resistor_Drawable(lambda: board.set_changed(True),
-          width, height, connectors, r), (ox, oy))
+      board.add_drawable(Resistor_Drawable(board, width, height, connectors,
+          r), (ox, oy))
       return True
     return False
 

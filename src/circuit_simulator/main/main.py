@@ -195,8 +195,7 @@ if __name__ == '__main__':
   # add circuit components to palette
   palette.add_drawable_type(Power_Drawable, LEFT, None)
   palette.add_drawable_type(Ground_Drawable, LEFT, None)
-  palette.add_drawable_type(Resistor_Drawable, LEFT, None,
-      on_resistance_changed=lambda: board.set_changed(True))
+  palette.add_drawable_type(Resistor_Drawable, LEFT, None, board=board)
   palette.add_drawable_type(Pot_Drawable, LEFT, None,
       on_signal_file_changed=lambda: board.set_changed(True))
   palette.add_drawable_type(Op_Amp_Drawable, LEFT, None)

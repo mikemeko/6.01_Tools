@@ -31,7 +31,8 @@ def create_editable_text(canvas, x, y, text='?', on_text_changed=lambda:None):
   """
   Creates an edittable text box on the |canvas| centered at the given position
       (|x|, |y|) and containing the given |text|. |on_text_changed| is called
-      whenever the text is changed.
+      whenever the text is changed, with two arguments: the old text, and the
+      new text.
   Returns the canvas id of the text box.
   Credit to http://effbot.org/zone/editing-canvas-text-items.htm
   """
@@ -78,7 +79,7 @@ def create_editable_text(canvas, x, y, text='?', on_text_changed=lambda:None):
     text_after_key = canvas.itemcget(text_box, 'text')
     # callback if text is changed
     if text_before_key != text_after_key:
-      on_text_changed()
+      on_text_changed(text_before_key, text_after_key)
   canvas.tag_bind(text_box, '<Key>', handle_key)
   return text_box
 

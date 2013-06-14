@@ -37,7 +37,7 @@ from core.gui.util import create_editable_text
 from core.gui.util import rotate_connector_flags
 from core.save.constants import RE_INT
 from core.save.constants import RE_INT_PAIR
-from core.util.util import is_callable
+from core.undo.undo import Action
 from re import match
 from system_simulator.simulation.constants import X
 from system_simulator.simulation.constants import Y
@@ -46,17 +46,15 @@ class Gain_Drawable(Drawable):
   """
   Abstract Drawable for LTI Gain components.
   """
-  def __init__(self, on_gain_changed, vertices=GAIN_RIGHT_VERTICES,
-      init_K=1):
+  def __init__(self, board, vertices=GAIN_RIGHT_VERTICES, init_K=1):
     """
-    |on_gain_changed|: function to be called when the gain is changed.
+    |board|: the board on which this Gain_Drawable is placed.
     |vertices|: the vertices of the triangle for this gain.
     |init_K|: the initial gain constant.
     """
-    assert is_callable(on_gain_changed), 'on_gain_changed must be callable'
     assert vertices in (GAIN_RIGHT_VERTICES, GAIN_DOWN_VERTICES,
         GAIN_LEFT_VERTICES, GAIN_UP_VERTICES), 'invalide gain vertices'
-    self.on_gain_changed = on_gain_changed
+    self.board = board
     self.vertices = vertices
     x1, y1, x2, y2, x3, y3 = vertices
     min_x, max_x = [f(x1, x2, x3) for f in min, max]
@@ -82,7 +80,9 @@ class Gain_Drawable(Drawable):
         fill=GAIN_FILL, outline=GAIN_OUTLINE))
     gain_text = create_editable_text(canvas, (x1 + x2 + x3) / 3,
         (y1 + y2 + y3) / 3, text=self.init_K,
-        on_text_changed=self.on_gain_changed)
+        on_text_changed=lambda old_K, new_K: self.board.set_changed(True,
+        Action(lambda: self.set_K(new_K), lambda: self.set_K(old_K),
+        'set gain')))
     self.parts.add(gain_text)
     def get_K():
       """
@@ -90,19 +90,22 @@ class Gain_Drawable(Drawable):
       """
       return canvas.itemcget(gain_text, 'text')
     self.get_K = get_K
+    def set_K(K):
+      """
+      Sets the constant of this gain to the string |K|.
+      """
+      assert isinstance(K, str), 'K must be a string'
+      canvas.itemconfig(gain_text, text=K)
+    self.set_K = set_K
   def rotated(self):
     if self.vertices == GAIN_RIGHT_VERTICES:
-      return Gain_Drawable(self.on_gain_changed, GAIN_DOWN_VERTICES,
-          self.get_K())
+      return Gain_Drawable(self.board, GAIN_DOWN_VERTICES, self.get_K())
     elif self.vertices == GAIN_DOWN_VERTICES:
-      return Gain_Drawable(self.on_gain_changed, GAIN_LEFT_VERTICES,
-          self.get_K())
+      return Gain_Drawable(self.board, GAIN_LEFT_VERTICES, self.get_K())
     elif self.vertices == GAIN_LEFT_VERTICES:
-      return Gain_Drawable(self.on_gain_changed, GAIN_UP_VERTICES,
-          self.get_K())
+      return Gain_Drawable(self.board, GAIN_UP_VERTICES, self.get_K())
     elif self.vertices == GAIN_UP_VERTICES:
-      return Gain_Drawable(self.on_gain_changed, GAIN_RIGHT_VERTICES,
-          self.get_K())
+      return Gain_Drawable(self.board, GAIN_RIGHT_VERTICES, self.get_K())
     else:
       # should never get here
       raise Exception('Unexpected triangle vertices')
@@ -114,8 +117,8 @@ class Gain_Drawable(Drawable):
     if m:
       K = m.group(1)
       x1, y1, x2, y2, x3, y3, ox, oy = map(int, m.groups()[1:])
-      board.add_drawable(Gain_Drawable(lambda: board.set_changed(True),
-          (x1, y1, x2, y2, x3, y3), K), (ox, oy))
+      board.add_drawable(Gain_Drawable(board, (x1, y1, x2, y2, x3, y3), K), (
+          ox, oy))
       return True
     return False
 

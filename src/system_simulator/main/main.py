@@ -137,8 +137,7 @@ if __name__ == '__main__':
   # create palette
   palette = Palette(root, board)
   # add DT LTI system components to palette
-  palette.add_drawable_type(Gain_Drawable, LEFT, None,
-      on_gain_changed=lambda: board.set_changed(True))
+  palette.add_drawable_type(Gain_Drawable, LEFT, None, board=board)
   palette.add_drawable_type(Delay_Drawable, LEFT, None)
   palette.add_drawable_type(Adder_Drawable, LEFT, None)
   # add buttons to create PZR and USR

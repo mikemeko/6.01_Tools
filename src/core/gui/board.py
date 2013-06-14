@@ -4,7 +4,6 @@ GUI tool on which several items may be drawn. Supports dragging the items
     and displaying messages.
 TODO(mikemeko): enable snapping wires onto other wires? enable starting drawing
     wires from other wires?
-TODO(mikemeko): undo / redo for text changes (gain, resistor).
 TODO(mikemeko): time permitting, it'd be really awesome if we allow doing
     basically anything that can be done on the board only using the keyboard (
     and not the mouse) a la vimium (http://vimium.github.io/).
@@ -549,12 +548,14 @@ class Board(Frame):
         flag was reset to False.
     """
     return self._changed
-  def set_changed(self, changed):
+  def set_changed(self, changed, action=None):
     """
-    Sets the changed status of this board.
+    Sets the changed status of this board, and records an |action| if given.
     """
     assert isinstance(changed, bool), 'changed must be a bool'
     self._changed = changed
+    if action:
+      self._action_history.record_action(action)
     if self._on_changed:
       self._on_changed(changed)
     # remove message since an action has resulted in a board change
