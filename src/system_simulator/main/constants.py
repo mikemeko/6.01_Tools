@@ -46,7 +46,6 @@ DELAY_TEXT = 'R'
 DEV_STAGE = 'Pre-alpha'
 FILE_EXTENSION = '.sysim'
 FR = 'FR' # frequency response
-INIT_UI_HELP = 'Ctrl-click to delete.\nShift-click to rotate.'
 PZD = 'PZD' # pole-zero diagram
 USR = 'USR' # unit sample response
 

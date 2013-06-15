@@ -1,7 +1,5 @@
 """
 Runs circuit simulator.
-TODO(mikemeko): code here and system_simulator/main are almost identical,
-    maybe there should be an app runner.
 """
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
@@ -42,121 +40,43 @@ from constants import FILE_EXTENSION
 from constants import PALETTE_HEIGHT
 from constants import PROBE_INIT_PADDING
 from constants import PROBE_SIZE
-from core.gui.board import Board
+from core.gui.app_runner import App_Runner
 from core.gui.components import Wire
 from core.gui.components import Wire_Connector_Drawable
-from core.gui.constants import CTRL_DOWN
 from core.gui.constants import LEFT
 from core.gui.constants import RIGHT
 from core.gui.constants import ERROR
-from core.gui.palette import Palette
-from core.save.save import get_board_file_name
-from core.save.save import open_board_from_file
-from core.save.save import request_save_board
-from core.save.save import save_board
-from core.save.util import strip_file_name
 from pylab import show
 from sys import argv
-from Tkinter import Menu
-from Tkinter import Tk
 from Tkinter import Toplevel
 
+def on_init(board):
+  """
+  TODO: docstring
+  """
+  # create probe drawables and connect minus probe to ground
+  minus_probe = Probe_Minus_Drawable()
+  board.add_drawable(minus_probe, (PROBE_INIT_PADDING, PROBE_INIT_PADDING))
+  ground = Ground_Drawable().rotated().rotated()
+  board.add_drawable(ground, (PROBE_SIZE + 2 * PROBE_INIT_PADDING,
+      PROBE_INIT_PADDING))
+  x1, y1 = iter(minus_probe.connectors).next().center
+  x2, y2 = iter(ground.connectors).next().center
+  board.add_wire(x1, y1, x2, y2)
+  board.add_drawable(Probe_Plus_Drawable(), (
+      PROBE_INIT_PADDING, PROBE_SIZE + 2 * PROBE_INIT_PADDING))
+
 if __name__ == '__main__':
-  # create root
-  root = Tk()
-  root.resizable(0, 0)
-  # global variables (sorry!) used by various methods below
-  global board
-  global file_name
-  # no opened file initially
-  file_name = None
-  def init_board():
-    """
-    Clears the board and puts the probe drawables.
-    """
-    global board
-    # clear board
-    board.clear()
-    # create probe drawables and connect minus probe to ground
-    minus_probe = Probe_Minus_Drawable()
-    board.add_drawable(minus_probe, (PROBE_INIT_PADDING, PROBE_INIT_PADDING))
-    ground = Ground_Drawable().rotated().rotated()
-    board.add_drawable(ground, (PROBE_SIZE + 2 * PROBE_INIT_PADDING,
-        PROBE_INIT_PADDING))
-    x1, y1 = iter(minus_probe.connectors).next().center
-    x2, y2 = iter(ground.connectors).next().center
-    board.add_wire(x1, y1, x2, y2)
-    board.add_drawable(Probe_Plus_Drawable(), (
-        PROBE_INIT_PADDING, PROBE_SIZE + 2 * PROBE_INIT_PADDING))
-    board.reset()
-  def on_changed(board_changed):
-    """
-    This will be called every time the board is changed. |board_changed| is
-        True if the board has been changed (i.e. requires saving),
-        False otherwise.
-    """
-    global file_name
-    # reset title to indicate need for save
-    root.title('%s (%s) %s %s' % (APP_NAME, DEV_STAGE,
-        strip_file_name(file_name), '*' if board_changed else ''))
-  def save_file():
-    """
-    Saves the current board.
-    """
-    global board
-    global file_name
-    # save board
-    saved_file_name = save_board(board, file_name, APP_NAME, FILE_EXTENSION)
-    if saved_file_name:
-      file_name = saved_file_name
-      # mark the board unchanged
-      board.set_changed(False)
-  def request_save():
-    """
-    Checks if the board has been changed, and asks the user to save the file.
-    """
-    global board
-    if board.changed() and request_save_board():
-      save_file()
-  def open_file(new_file_name=None):
-    """
-    Opens a saved board.
-    """
-    global board
-    global file_name
-    # if the board has been changed, request save first
-    request_save()
-    # get a new file name if not given
-    new_file_name = new_file_name or get_board_file_name(file_name,
-        APP_NAME, FILE_EXTENSION)
-    # open a new board with the new file name
-    deserializers = (Power_Drawable, Ground_Drawable, Probe_Plus_Drawable,
-        Probe_Minus_Drawable, Resistor_Drawable, Op_Amp_Drawable,
-        Pot_Drawable, Motor_Drawable, Motor_Pot_Drawable,
-        Photosensors_Drawable, Robot_Pin_Drawable, Wire_Connector_Drawable,
-        Wire)
-    if open_board_from_file(board, new_file_name, deserializers,
-        FILE_EXTENSION):
-      # update to new file name
-      file_name = new_file_name
-      on_changed(False)
-    board.reset_cursor_state()
-  def new_file():
-    """
-    Opens a new board.
-    """
-    global file_name
-    # if the board has been changed, request save first
-    request_save()
-    # update to no file name
-    file_name = None
-    # reset to empty board
-    init_board()
+  app_runner = App_Runner(on_init, APP_NAME, DEV_STAGE, FILE_EXTENSION, (
+      Power_Drawable, Ground_Drawable, Probe_Plus_Drawable,
+      Probe_Minus_Drawable, Resistor_Drawable, Op_Amp_Drawable, Pot_Drawable,
+      Motor_Drawable, Motor_Pot_Drawable, Photosensors_Drawable,
+      Robot_Pin_Drawable, Wire_Connector_Drawable, Wire), BOARD_WIDTH,
+      BOARD_HEIGHT, PALETTE_HEIGHT, False, argv[1] if len(argv) > 1 else None)
   def simulate(circuit, plotters):
     """
     Displays the plot that are drawn by the |plotters|.
     """
-    global board
     # ensure that circuit was successfully solved
     if circuit.data:
       # show analysis plots
@@ -164,13 +84,12 @@ if __name__ == '__main__':
         plotter.plot(circuit.data)
       show()
     else:
-      board.display_message('Could not solve circuit', ERROR)
+      app_runner.board.display_message('Could not solve circuit', ERROR)
   def proto_board_layout(circuit, plotters):
     """
     Finds a way to layout the given |circuit| on a proto board and displays the
         discovered proto board.
     """
-    global board
     try:
       placement, resistor_node_pairs = get_piece_placement(circuit)
       proto_board = Proto_Board()
@@ -185,66 +104,31 @@ if __name__ == '__main__':
           component in circuit.components])
       visualize_proto_board(proto_board, Toplevel(), show_pwr_gnd_pins)
     except:
-      board.display_message('Could not find proto board wiring', ERROR)
-  # create empty board
-  board = Board(root, width=BOARD_WIDTH, height=BOARD_HEIGHT,
-      directed_wires=False, on_changed=on_changed, on_exit=request_save)
-  init_board()
-  # create palette
-  palette = Palette(root, board, width=BOARD_WIDTH, height=PALETTE_HEIGHT)
+      app_runner.board.display_message('Could not find proto board wiring',
+          ERROR)
   # add circuit components to palette
-  palette.add_drawable_type(Power_Drawable, LEFT, None)
-  palette.add_drawable_type(Ground_Drawable, LEFT, None)
-  palette.add_drawable_type(Resistor_Drawable, LEFT, None, board=board)
-  palette.add_drawable_type(Pot_Drawable, LEFT, None,
-      on_signal_file_changed=lambda: board.set_changed(True))
-  palette.add_drawable_type(Op_Amp_Drawable, LEFT, None)
-  palette.add_drawable_type(Head_Connector_Drawable, LEFT, None,
+  app_runner.palette.add_drawable_type(Power_Drawable, LEFT, None)
+  app_runner.palette.add_drawable_type(Ground_Drawable, LEFT, None)
+  app_runner.palette.add_drawable_type(Resistor_Drawable, LEFT, None,
+      board=app_runner.board)
+  app_runner.palette.add_drawable_type(Pot_Drawable, LEFT, None,
+      on_signal_file_changed=lambda: app_runner.board.set_changed(True))
+  app_runner.palette.add_drawable_type(Op_Amp_Drawable, LEFT, None)
+  app_runner.palette.add_drawable_type(Head_Connector_Drawable, LEFT, None,
       types_to_add=[(Motor_Drawable, False, {}), (Motor_Pot_Drawable,
       False, {}), (Photosensors_Drawable, False, {'on_signal_file_changed':
-      lambda: board.set_changed(True)})])
-  palette.add_drawable_type(Motor_Drawable, LEFT, None)
-  palette.add_drawable_type(Robot_Pin_Drawable, LEFT, None, True)
+      lambda: app_runner.board.set_changed(True)})])
+  app_runner.palette.add_drawable_type(Motor_Drawable, LEFT, None)
+  app_runner.palette.add_drawable_type(Robot_Pin_Drawable, LEFT, None, True)
   # add buttons to analyze circuit
-  palette.add_drawable_type(Simulate_Run_Drawable, RIGHT,
-      lambda event: run_analysis(board, simulate))
-  palette.add_drawable_type(Proto_Board_Run_Drawable, RIGHT,
-      lambda event: run_analysis(board, proto_board_layout))
+  app_runner.palette.add_drawable_type(Simulate_Run_Drawable, RIGHT,
+      lambda event: run_analysis(app_runner.board, simulate))
+  app_runner.palette.add_drawable_type(Proto_Board_Run_Drawable, RIGHT,
+      lambda event: run_analysis(app_runner.board, proto_board_layout))
   # shortcuts
-  board.add_key_binding('a', lambda: run_analysis(board, simulate))
-  board.add_key_binding('n', new_file, CTRL_DOWN)
-  board.add_key_binding('o', open_file, CTRL_DOWN)
-  board.add_key_binding('p', lambda: run_analysis(board, proto_board_layout))
-  board.add_key_binding('q', board.quit, CTRL_DOWN)
-  board.add_key_binding('s', save_file, CTRL_DOWN)
-  board.add_key_binding('y', board.redo, CTRL_DOWN)
-  board.add_key_binding('z', board.undo, CTRL_DOWN)
-  # menu
-  menu = Menu(root, tearoff=0)
-  file_menu = Menu(menu, tearoff=0)
-  file_menu.add_command(label='New', command=new_file, accelerator='Ctrl+N')
-  file_menu.add_command(label='Open', command=open_file, accelerator='Ctrl+O')
-  file_menu.add_command(label='Save', command=save_file, accelerator='Ctrl+S')
-  file_menu.add_separator()
-  file_menu.add_command(label='Quit', command=board.quit, accelerator='Ctrl+Q')
-  menu.add_cascade(label='File', menu=file_menu)
-  edit_menu = Menu(menu, tearoff=0)
-  edit_menu.add_command(label='Undo', command=board.undo, accelerator='Ctrl+Z')
-  edit_menu.add_command(label='Redo', command=board.redo, accelerator='Ctrl+Y')
-  menu.add_cascade(label='Edit', menu=edit_menu)
-  analyze_menu = Menu(menu, tearoff=0)
-  analyze_menu.add_command(label='Analyze', command=lambda: run_analysis(board,
-      simulate), accelerator='A')
-  analyze_menu.add_command(label='Proto Board', command=lambda: run_analysis(
-      board, proto_board_layout), accelerator='P')
-  menu.add_cascade(label='Analyze', menu=analyze_menu)
-  root.config(menu=menu)
-  # clear board undo / redo history
-  board.clear_action_history()
-  # set title
-  root.title('%s (%s)' % (APP_NAME, DEV_STAGE))
-  # open starting file, if given
-  if len(argv) > 1:
-    open_file(argv[1])
-  # run main loop
-  root.mainloop()
+  app_runner.board.add_key_binding('a', lambda: run_analysis(app_runner.board,
+      simulate))
+  app_runner.board.add_key_binding('p', lambda: run_analysis(app_runner.board,
+      proto_board_layout))
+  # run
+  app_runner.run()
