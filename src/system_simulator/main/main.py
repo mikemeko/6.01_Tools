@@ -11,6 +11,7 @@ from constants import DEV_STAGE
 from constants import FILE_EXTENSION
 from constants import IO_PADDING
 from core.gui.app_runner import App_Runner
+from core.gui.board import Board
 from core.gui.components import Wire
 from core.gui.components import Wire_Connector_Drawable
 from core.gui.constants import BOARD_HEIGHT
@@ -37,8 +38,9 @@ from Tkinter import Toplevel
 
 def on_init(board):
   """
-  TODO: docstring
+  Method called when a new system simulator |board| is created.
   """
+  assert isinstance(board, Board), 'board must be a Board'
   # create input and output drawables
   inp = IO_X_Drawable()
   board.add_drawable(inp, (IO_PADDING, (board.height - inp.height) / 2))

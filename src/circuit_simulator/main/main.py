@@ -41,6 +41,7 @@ from constants import PALETTE_HEIGHT
 from constants import PROBE_INIT_PADDING
 from constants import PROBE_SIZE
 from core.gui.app_runner import App_Runner
+from core.gui.board import Board
 from core.gui.components import Wire
 from core.gui.components import Wire_Connector_Drawable
 from core.gui.constants import LEFT
@@ -52,8 +53,9 @@ from Tkinter import Toplevel
 
 def on_init(board):
   """
-  TODO: docstring
+  Method called when a new circuit simulator |board| is created.
   """
+  assert isinstance(board, Board), 'board must be a Board'
   # create probe drawables and connect minus probe to ground
   minus_probe = Probe_Minus_Drawable()
   board.add_drawable(minus_probe, (PROBE_INIT_PADDING, PROBE_INIT_PADDING))
