@@ -126,7 +126,7 @@ if __name__ == '__main__':
   app_runner.palette.add_drawable_type(Proto_Board_Run_Drawable, RIGHT,
       lambda event: run_analysis(app_runner.board, proto_board_layout))
   # shortcuts
-  app_runner.board.add_key_binding('a', lambda: run_analysis(app_runner.board,
+  app_runner.board.add_key_binding('s', lambda: run_analysis(app_runner.board,
       simulate))
   app_runner.board.add_key_binding('p', lambda: run_analysis(app_runner.board,
       proto_board_layout))
