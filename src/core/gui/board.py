@@ -421,8 +421,8 @@ class Board(Frame):
       self.configure(cursor=SHIFT_CURSOR)
     elif event.keysym.lower() in self._key_press_callbacks:
       callback, flags = self._key_press_callbacks[event.keysym.lower()]
-      if (self._ctrl_pressed == flags & CTRL_DOWN) and (
-          self._shift_pressed == flags & SHIFT_DOWN):
+      if (self._ctrl_pressed == bool(flags & CTRL_DOWN)) and (
+          self._shift_pressed == bool(flags & SHIFT_DOWN)):
         callback()
   def _key_release(self, event):
     """

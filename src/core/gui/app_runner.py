@@ -1,5 +1,5 @@
 """
-TODO: docstring
+Bare bones infrastructure to run an app using a Board and a Palette.
 """
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
@@ -17,13 +17,23 @@ from Tkinter import Tk
 
 class App_Runner:
   """
-  TODO: docstring
+  App runner that uses a Board and a Palette.
   """
   def __init__(self, on_init, app_name, dev_stage, file_extension,
       deserializers, board_width, board_height, palette_height,
       directed_wires, init_file=None):
     """
-    TODO: docstring
+    |on_init|: method called every time a new board of this app's type is
+        created.
+    |app_name|: name of this app.
+    |dev_stage|: development stage of this app.
+    |file_extension|: the file extension used for boards of this app's type.
+    |deserializers|: drawabel types to open files of this app's type.
+    |board_width|, |board_height|: board dimensions.
+    |palette_height|: height of palette, width will be the same as board width.
+    |directed_wires|: True if the board is to have directed wires, False
+        otherwise.
+    |init_file|: file to open at init time.
     """
     self._on_init = on_init
     self._app_name = app_name
@@ -40,7 +50,7 @@ class App_Runner:
     self._setup_shortcuts()
   def _init(self):
     """
-    TODO: docstring
+    Creates the board and palette.
     """
     self._file_name = None
     self._root = Tk()
@@ -53,7 +63,7 @@ class App_Runner:
         height=self._palette_height)
   def _setup_menu(self):
     """
-    TODO: docstring
+    Creates the menu.
     """
     self._menu = Menu(self._root, tearoff=0)
     file_menu = Menu(self._menu, tearoff=0)
@@ -76,7 +86,7 @@ class App_Runner:
     self._root.config(menu=self._menu)
   def _setup_shortcuts(self):
     """
-    TODO: docstring
+    Adds basic shortcuts.
     """
     self.board.add_key_binding('n', self._new_file, CTRL_DOWN)
     self.board.add_key_binding('o', self._open_file, CTRL_DOWN)
@@ -86,20 +96,22 @@ class App_Runner:
     self.board.add_key_binding('z', self.board.undo, CTRL_DOWN)
   def _init_board(self):
     """
-    TODO: docstring
+    (Re)Initializes the board based on this app's specific needs, as per
+        self._on_init.
     """
     self.board.clear()
     self._on_init(self.board)
     self.board.reset()
   def _on_changed(self, board_changed):
     """
-    TODO: docstring
+    Callback for when the board is changed. Updates the title of the app window
+        to indicate whether we need to save the file.
     """
     self._root.title('%s (%s) %s %s' % (self._app_name, self._dev_stage,
         strip_file_name(self._file_name), '*' if board_changed else ''))
   def _save_file(self):
     """
-    TODO: docstring
+    Saves the current state of the app.
     """
     saved_file_name = save_board(self.board, self._file_name, self._app_name,
         self._file_extension)
@@ -108,13 +120,13 @@ class App_Runner:
       self.board.set_changed(False)
   def _request_save(self):
     """
-    TODO: docstring
+    Requests for a file save if necessary.
     """
     if self.board.changed() and request_save_board():
       self._save_file()
   def _open_file(self, new_file_name=None):
     """
-    TODO: docstring
+    Opens a saved file of this app's type.
     """
     self._request_save()
     new_file_name = new_file_name or get_board_file_name(self._file_name,
@@ -126,14 +138,14 @@ class App_Runner:
     self.board.reset_cursor_state()
   def _new_file(self):
     """
-    TODO: docstring
+    Opens a new file of this app's type.
     """
     self._request_save()
     self._file_name = None
     self._init_board()
   def run(self):
     """
-    TODO: docstring
+    Runs this app.
     """
     self.board.clear_action_history()
     self._root.title('%s (%s)' % (self._app_name, self._dev_stage))
