@@ -28,11 +28,11 @@ WIRE_CONNECTOR_FILL = 'grey'
 WIRE_CONNECTOR_OUTLINE = 'black'
 
 # connector flags
-CONNECTOR_BOTTOM = 2**0
-CONNECTOR_CENTER = 2**1
-CONNECTOR_LEFT =   2**2
-CONNECTOR_RIGHT =  2**3
-CONNECTOR_TOP =    2**4
+CONNECTOR_BOTTOM = 2 ** 0
+CONNECTOR_CENTER = 2 ** 1
+CONNECTOR_LEFT =   2 ** 2
+CONNECTOR_RIGHT =  2 ** 3
+CONNECTOR_TOP =    2 ** 4
 
 # message types
 ERROR = 0
@@ -65,8 +65,8 @@ MESSAGE_INFO_DURATION = 3 # seconds
 MESSAGE_WARNING_DURATION = 4 # seconds
 
 # key-press flags
-CTRL_DOWN =  2**0
-SHIFT_DOWN = 2**1
+CTRL_DOWN =  2 ** 0
+SHIFT_DOWN = 2 ** 1
 
 # cursors
 CTRL_CURSOR = 'pirate'

@@ -408,7 +408,7 @@ class Board(Frame):
     Adds a key-binding so that whenever |key| is pressed, |callback| is called.
     """
     assert is_callable(callback), 'callback must be callable'
-    self._key_press_callbacks[key.lower()] = (callback, flags)
+    self._key_press_callbacks[(key.lower(), flags)] = callback
   def _key_press(self, event):
     """
     Callback for when a key is pressed.
@@ -419,11 +419,12 @@ class Board(Frame):
     elif event.keysym in ('Shift_L', 'Shift_R'):
       self._shift_pressed = True
       self.configure(cursor=SHIFT_CURSOR)
-    elif event.keysym.lower() in self._key_press_callbacks:
-      callback, flags = self._key_press_callbacks[event.keysym.lower()]
-      if (self._ctrl_pressed == bool(flags & CTRL_DOWN)) and (
-          self._shift_pressed == bool(flags & SHIFT_DOWN)):
-        callback()
+    else:
+      current_key = event.keysym.lower()
+      current_flags = (CTRL_DOWN * self._ctrl_pressed) | (SHIFT_DOWN &
+          self._shift_pressed)
+      if (current_key, current_flags) in self._key_press_callbacks:
+        self._key_press_callbacks[(current_key, current_flags)]()
   def _key_release(self, event):
     """
     Callback for when a key is released.
