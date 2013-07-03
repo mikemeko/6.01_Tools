@@ -97,9 +97,10 @@ if __name__ == '__main__':
       proto_board = Proto_Board()
       for piece in placement:
         proto_board = proto_board.with_piece(piece)
+      nodes = all_nodes(placement)
       proto_board = proto_board.with_loc_disjoint_set_forest(
-          node_disjoint_set_forest({node: locs_for_node(placement, node) for
-          node in all_nodes(placement)}))
+          node_disjoint_set_forest(dict(zip(nodes, map(lambda node:
+          locs_for_node(placement, node), nodes)))))
       proto_board = find_wiring(loc_pairs_to_connect(placement,
           resistor_node_pairs), proto_board)
       show_pwr_gnd_pins = not any([isinstance(component, Robot_Connector) for

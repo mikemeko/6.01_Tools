@@ -23,7 +23,7 @@ def solve_equations(equations):
   # number of variables
   num_vars = len(var_list)
   # the index of each variable in |var_list|
-  var_index = {var_list[i]: i for i in xrange(num_vars)}
+  var_index = dict(zip(var_list, range(num_vars)))
   # matrices to solve system (Ax = b)
   A, b = [], []
   # populate matrices
@@ -39,6 +39,6 @@ def solve_equations(equations):
   try:
     # solve system
     x = solve(matrix(A), matrix(b))
-    return {var_list[i]: x[i, 0] for i in xrange(num_vars)}
+    return dict(zip(var_list, [x[i, 0] for i in xrange(num_vars)]))
   except:
     raise Exception('Could not solve system of equations')
