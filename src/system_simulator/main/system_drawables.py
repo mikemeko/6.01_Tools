@@ -14,6 +14,7 @@ from constants import DELAY_FILL
 from constants import DELAY_OUTLINE
 from constants import DELAY_SIZE
 from constants import DELAY_TEXT
+from constants import FONT
 from constants import FR
 from constants import GAIN_DOWN_VERTICES
 from constants import GAIN_FILL
@@ -82,7 +83,7 @@ class Gain_Drawable(Drawable):
         (y1 + y2 + y3) / 3, text=self.init_K,
         on_text_changed=lambda old_K, new_K: self.board.set_changed(True,
         Action(lambda: self.set_K(new_K), lambda: self.set_K(old_K),
-        'set gain')))
+        'set gain')), font=FONT)
     self.parts.add(gain_text)
     def get_K():
       """
@@ -133,7 +134,7 @@ class Delay_Drawable(Drawable):
     self.parts.add(canvas.create_rectangle((ox, oy, ox + DELAY_SIZE,
         oy + DELAY_SIZE), fill=DELAY_FILL, outline=DELAY_OUTLINE))
     self.parts.add(canvas.create_text((ox + DELAY_SIZE / 2,
-        oy + DELAY_SIZE / 2), text=DELAY_TEXT))
+        oy + DELAY_SIZE / 2), text=DELAY_TEXT, font=FONT))
   def rotated(self):
     return Delay_Drawable(rotate_connector_flags(self.connector_flags))
   def serialize(self, offset):
@@ -192,7 +193,7 @@ class IO_Drawable(Drawable):
     self.parts.add(canvas.create_rectangle((ox, oy, ox + IO_SIZE,
         oy + IO_SIZE), fill=IO_FILL, outline=IO_OUTLINE))
     self.parts.add(canvas.create_text((ox + IO_SIZE / 2, oy + IO_SIZE / 2),
-        text=self.signal))
+        text=self.signal, font=FONT))
   def deletable(self):
     return False
 

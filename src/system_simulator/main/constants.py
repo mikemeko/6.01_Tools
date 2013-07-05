@@ -49,5 +49,8 @@ FR = 'FR' # frequency response
 PZD = 'PZD' # pole-zero diagram
 USR = 'USR' # unit sample response
 
+# fonts
+FONT = ('Helvetica', 12)
+
 # regular expressions
 RE_GAIN_VERTICES = r'\((\d+), (\d+), (\d+), (\d+), (\d+), (\d+)\)'
