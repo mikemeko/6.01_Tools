@@ -394,7 +394,7 @@ class Pot_Drawable(Drawable):
         self.on_signal_file_changed()
     for pot_alpha_part in (pot_alpha_window, pot_alpha_text):
       self.parts.add(pot_alpha_part)
-      canvas.tag_bind(pot_alpha_part, '<Button-3>', set_signal_file)
+      canvas.tag_bind(pot_alpha_part, '<Button-1>', set_signal_file)
   def draw_connectors(self, canvas, offset=(0, 0)):
     ox, oy = offset
     w, h = self.width, self.height
@@ -634,7 +634,7 @@ class Photosensors_Drawable(Pin_Drawable):
         self.on_signal_file_changed()
     for lamp_part in (lamp_box, lamp):
       self.parts.add(lamp_part)
-      canvas.tag_bind(lamp_part, '<Button-3>', set_signal_file)
+      canvas.tag_bind(lamp_part, '<Button-1>', set_signal_file)
   def draw_connectors(self, canvas, offset=(0, 0)):
     ox, oy = offset
     w, h = self.width, self.height
