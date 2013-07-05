@@ -82,7 +82,7 @@ PROTO_BOARD = 'PB'
 SIMULATE = 'SIM'
 
 # fonts
-FONT = ('Helvetica', 12)
+FONT = ('Times', 12)
 
 # window constants
 BOARD_WIDTH = 800

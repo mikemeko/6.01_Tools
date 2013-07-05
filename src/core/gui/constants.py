@@ -78,7 +78,7 @@ DRAG_TAG = 'drag_tag'
 ROTATE_TAG = 'rotate_tag'
 
 # fonts
-DEFAULT_FONT = ('Helvetica', 12)
+DEFAULT_FONT = ('Times', 12)
 
 # debug options
 DISPLAY_WIRE_LABELS = False
