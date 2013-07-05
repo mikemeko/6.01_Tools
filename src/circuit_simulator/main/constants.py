@@ -81,6 +81,9 @@ PROBE_PLUS = '+p'
 PROTO_BOARD = 'PB'
 SIMULATE = 'SIM'
 
+# font
+FONT = ('Helvetica', 12)
+
 # window constants
 BOARD_WIDTH = 800
 BOARD_HEIGHT = 500

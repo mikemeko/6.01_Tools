@@ -8,6 +8,7 @@ from constants import DIRECTION_DOWN
 from constants import DIRECTION_LEFT
 from constants import DIRECTION_RIGHT
 from constants import DIRECTION_UP
+from constants import FONT
 from constants import GROUND
 from constants import HEAD_COLOR
 from constants import HEAD_SIZE
@@ -98,7 +99,7 @@ class Pin_Drawable(Drawable):
         oy + self.height), fill=self.fill, outline=PIN_OUTLINE))
     self.parts.add(canvas.create_text(ox + self.width / 2,
         oy + self.height / 2, text=self.label, fill=PIN_TEXT_COLOR,
-        width=.8 * self.width, justify=CENTER))
+        width=.8 * self.width, justify=CENTER, font=FONT))
 
 class Power_Drawable(Pin_Drawable):
   """
@@ -215,13 +216,14 @@ class Resistor_Drawable(Drawable):
           oy - RESISTOR_TEXT_PADDING, text=self.init_resistance,
           on_text_changed=lambda old_r, new_r: self.board.set_changed(True,
           Action(lambda: self.set_resistance(new_r), lambda:
-          self.set_resistance(old_r), 'set resistance')))
+          self.set_resistance(old_r), 'set resistance')), font=FONT)
     else: # vertical
       resistor_text = create_editable_text(canvas,
           ox + w + RESISTOR_TEXT_PADDING, oy + h / 2,
           text=self.init_resistance, on_text_changed=lambda old_r, new_r:
           self.board.set_changed(True, Action(lambda: self.set_resistance(
-          new_r), lambda: self.set_resistance(old_r), 'set resistance')))
+          new_r), lambda: self.set_resistance(old_r), 'set resistance')),
+          font=FONT)
     self.parts.add(resistor_text)
     def get_resistance():
       """
@@ -278,24 +280,24 @@ class Op_Amp_Drawable(Drawable):
         fill=OP_AMP_FILL, outline=OP_AMP_OUTLINE))
     if self.vertices == OP_AMP_RIGHT_VERTICES:
       self.parts.add(canvas.create_text(x1 + LABEL_PADDING,
-          y1 + OP_AMP_CONNECTOR_PADDING, text='+'))
+          y1 + OP_AMP_CONNECTOR_PADDING, text='+', font=FONT))
       self.parts.add(canvas.create_text(x2 + LABEL_PADDING,
-          y2 - OP_AMP_CONNECTOR_PADDING, text='-'))
+          y2 - OP_AMP_CONNECTOR_PADDING, text='-', font=FONT))
     elif self.vertices == OP_AMP_DOWN_VERTICES:
       self.parts.add(canvas.create_text(x3 - OP_AMP_CONNECTOR_PADDING,
-          y3 + LABEL_PADDING, text='+'))
+          y3 + LABEL_PADDING, text='+', font=FONT))
       self.parts.add(canvas.create_text(x1 + OP_AMP_CONNECTOR_PADDING,
-          y1 + LABEL_PADDING, text='-'))
+          y1 + LABEL_PADDING, text='-', font=FONT))
     elif self.vertices == OP_AMP_LEFT_VERTICES:
       self.parts.add(canvas.create_text(x2 - LABEL_PADDING,
-          y2 - OP_AMP_CONNECTOR_PADDING, text='+'))
+          y2 - OP_AMP_CONNECTOR_PADDING, text='+', font=FONT))
       self.parts.add(canvas.create_text(x3 - LABEL_PADDING,
-          y3 + OP_AMP_CONNECTOR_PADDING, text='-'))
+          y3 + OP_AMP_CONNECTOR_PADDING, text='-', font=FONT))
     else: # OP_AMP_UP_VERTICES
       self.parts.add(canvas.create_text(x2 + OP_AMP_CONNECTOR_PADDING,
-          y2 - LABEL_PADDING, text='+'))
+          y2 - LABEL_PADDING, text='+', font=FONT))
       self.parts.add(canvas.create_text(x3 - OP_AMP_CONNECTOR_PADDING,
-          y3 - LABEL_PADDING, text='-'))
+          y3 - LABEL_PADDING, text='-', font=FONT))
   def draw_connectors(self, canvas, offset=(0, 0)):
     x1, y1, x2, y2, x3, y3 = self.vertices
     ox, oy = offset
@@ -377,7 +379,7 @@ class Pot_Drawable(Drawable):
         self.signal_file else POT_ALPHA_EMPTY_FILL, outline=POT_ALPHA_OUTLINE)
     pot_alpha_text = canvas.create_text(ox + w / 2, oy + h / 2 - 1,
         text=POT_ALPHA_TEXT, justify=CENTER, fill='white' if self.signal_file
-        else 'black')
+        else 'black', font=FONT)
     def set_signal_file(event):
       """
       Opens a window to let the user choose a signal file.
@@ -479,10 +481,10 @@ class Motor_Drawable(Pin_Drawable):
     self.minus = self._draw_connector(canvas, (minus_x, minus_y))
     self.parts.add(canvas.create_text(plus_x + LABEL_PADDING * sign(cx -
         plus_x), plus_y + LABEL_PADDING * sign(cy - plus_y), text='+',
-        fill='white', justify=CENTER))
+        fill='white', justify=CENTER, font=FONT))
     self.parts.add(canvas.create_text(minus_x + LABEL_PADDING * sign(cx -
         minus_x), minus_y + LABEL_PADDING * sign(cy - minus_y), text='-',
-        fill='white', justify=CENTER))
+        fill='white', justify=CENTER, font=FONT))
   def rotated(self):
     return Motor_Drawable((self.direction + 1) % 4, self.color, self.group_id)
   def serialize(self, offset):
@@ -547,13 +549,13 @@ class Motor_Pot_Drawable(Pin_Drawable):
     self.bottom = self._draw_connector(canvas, (bottom_x, bottom_y))
     self.parts.add(canvas.create_text(top_x + LABEL_PADDING * sign(cx - top_x),
         top_y + LABEL_PADDING * sign(cy - top_y), text='+', fill='white',
-        justify=CENTER))
+        justify=CENTER, font=FONT))
     self.parts.add(canvas.create_text(middle_x + LABEL_PADDING * sign(cx -
         middle_x), middle_y + LABEL_PADDING * sign(cy - middle_y), text='m',
-        fill='white', justify=CENTER))
+        fill='white', justify=CENTER, font=FONT))
     self.parts.add(canvas.create_text(bottom_x + LABEL_PADDING * sign(cx -
         bottom_x), bottom_y + LABEL_PADDING * sign(cy - bottom_y), text='-',
-        fill='white', justify=CENTER))
+        fill='white', justify=CENTER, font=FONT))
   def rotated(self):
     return Motor_Pot_Drawable((self.direction + 1) % 4, self.color,
         self.group_id)
@@ -669,13 +671,13 @@ class Photosensors_Drawable(Pin_Drawable):
     self.right = self._draw_connector(canvas, (right_x, right_y))
     self.parts.add(canvas.create_text(left_x + LABEL_PADDING * sign(cx -
         left_x), left_y + LABEL_PADDING * sign(cy - left_y), text='l',
-        fill='white', justify=CENTER))
+        fill='white', justify=CENTER, font=FONT))
     self.parts.add(canvas.create_text(common_x + LABEL_PADDING * sign(cx -
         common_x), common_y + LABEL_PADDING * sign(cy - common_y), text='c',
-        fill='white', justify=CENTER))
+        fill='white', justify=CENTER, font=FONT))
     self.parts.add(canvas.create_text(right_x + LABEL_PADDING * sign(cx -
         right_x), right_y + LABEL_PADDING * sign(cy - right_y), text='r',
-        fill='white', justify=CENTER))
+        fill='white', justify=CENTER, font=FONT))
   def rotated(self):
     return Photosensors_Drawable(self.on_signal_file_changed,
         (self.direction + 1) % 4, self.signal_file, self.color, self.group_id)
@@ -732,10 +734,10 @@ class Robot_Pin_Drawable(Pin_Drawable):
     self.gnd = self._draw_connector(canvas, (gnd_x, gnd_y))
     self.parts.add(canvas.create_text(pwr_x + LABEL_PADDING * sign(cx - pwr_x),
         pwr_y + LABEL_PADDING * sign(cy - pwr_y), text='+', fill='white',
-        justify=CENTER))
+        justify=CENTER, font=FONT))
     self.parts.add(canvas.create_text(gnd_x + LABEL_PADDING * sign(cx - gnd_x),
         gnd_y + LABEL_PADDING * sign(cy - gnd_y), text='-', fill='white',
-        justify=CENTER))
+        justify=CENTER, font=FONT))
   def rotated(self):
     return Robot_Pin_Drawable((self.direction + 1) % 4)
   def serialize(self, offset):

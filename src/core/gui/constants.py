@@ -77,5 +77,8 @@ CONNECTOR_TAG = 'connector_tag'
 DRAG_TAG = 'drag_tag'
 ROTATE_TAG = 'rotate_tag'
 
+# fonts
+DEFAULT_FONT = ('Helvetica', 12)
+
 # debug options
 DISPLAY_WIRE_LABELS = False

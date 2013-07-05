@@ -12,6 +12,7 @@ from constants import CONNECTOR_RADIUS
 from constants import CONNECTOR_RIGHT
 from constants import CONNECTOR_TAG
 from constants import CONNECTOR_TOP
+from constants import DEFAULT_FONT
 from constants import WIRE_ARROW_LENGTH
 from constants import WIRE_COLOR
 from constants import WIRE_WIDTH
@@ -27,18 +28,19 @@ from Tkinter import INSERT
 from Tkinter import SEL_FIRST
 from Tkinter import SEL_LAST
 
-def create_editable_text(canvas, x, y, text='?', on_text_changed=lambda:None):
+def create_editable_text(canvas, x, y, text='?', on_text_changed=lambda:None,
+    font=DEFAULT_FONT):
   """
   Creates an edittable text box on the |canvas| centered at the given position
-      (|x|, |y|) and containing the given |text|. |on_text_changed| is called
-      whenever the text is changed, with two arguments: the old text, and the
-      new text.
+      (|x|, |y|) and containing the given |text| with the given |font|.
+      |on_text_changed| is called whenever the text is changed, with two
+      arguments: the old text, and the new text.
   Returns the canvas id of the text box.
   Credit to http://effbot.org/zone/editing-canvas-text-items.htm
   """
   assert isinstance(canvas, Canvas), 'canvas must be a Canvas'
   # create the text box
-  text_box = canvas.create_text(x, y, text=text)
+  text_box = canvas.create_text(x, y, text=text, font=font)
   def set_focus(event):
     """
     Focus text box. Selects all the text inside the text box.
