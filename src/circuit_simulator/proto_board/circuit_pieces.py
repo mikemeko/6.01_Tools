@@ -24,6 +24,7 @@ from constants import RESISTOR_INNER_COLOR
 from constants import RESISTOR_OUTER_COLOR
 from core.gui.util import create_circle
 from Tkinter import CENTER
+from util import loc_to_cmax_rep
 from util import rects_overlap
 from visualization.constants import CONNECTOR_SIZE
 from visualization.constants import CONNECTOR_SPACING
@@ -68,6 +69,12 @@ class Circuit_Piece:
     Should draw this piece on the given |canvas|, assuming the given coordinate
         |top_left| to be the place to locate its top left corner. All
         subclasses should implement this.
+    """
+    raise NotImplementedError('subclasses should implement this')
+  def to_cmax_str(self):
+    """
+    Should return a string for the CMax representation (when saved in a file) of
+        this Circuit_Piece. All subclasses should implement this.
     """
     raise NotImplementedError('subclasses should implement this')
   def _assert_top_left_loc_set(self):
@@ -192,6 +199,13 @@ class Op_Amp_Piece(Circuit_Piece):
         self.dot_bottom_left else (OP_AMP_DOT_OFFSET + CONNECTOR_SIZE / 2))
     create_circle(canvas, x + dot_dx, y + dot_dy, OP_AMP_DOT_RADIUS,
         fill=OP_AMP_DOT_COLOR)
+  def to_cmax_str(self):
+    self._assert_top_left_loc_set()
+    c, r = loc_to_cmax_rep(self.top_left_loc)
+    if self.dot_bottom_left:
+      return 'opamp: (%d,%d)--(%d,%d)' % (c, r + 3, c, r)
+    else:
+      return 'opamp: (%d,%d)--(%d,%d)' % (c + 3, r, c + 3, r + 3)
   def __str__(self):
     return 'Op_Amp_Piece %s %s' % (str([self.n_1, self.n_2, self.n_3, self.n_4,
         self.n_5, self.n_6, self.n_7, self.n_8]), self.dot_bottom_left)
@@ -220,6 +234,9 @@ class Place_Holder_Piece(Circuit_Piece):
   def draw_on(self, canvas, top_left):
     # nothing to draw
     pass
+  def to_cmax_str(self):
+    # won't be seen on CMax
+    return ''
   def __str__(self):
     return 'Place_Holder_Piece %s' % self.n
 
@@ -255,12 +272,18 @@ class Resistor_Piece(Circuit_Piece):
     return locs
   def inverted(self):
     return Resistor_Piece(self.n_2, self.n_1, self.r, self.vertical)
+  def _get_color_indices(self):
+    """
+    Returns a list of the indices (in RESISTOR_COLORS) of the three colors that
+        display the resistance of this resistor.
+    """
+    coeff, exp = ('%.1E' % max(self.r, 10)).split('E+')
+    return map(int, str(int(10 * float(coeff)))) + [int(exp) - 1]
   def draw_on(self, canvas, top_left):
     x, y = top_left
     dx = (CONNECTOR_SPACING - CONNECTOR_SIZE) / 2
     # state for color bands
-    coeff, exp = ('%.1E' % max(self.r, 10)).split('E+')
-    color_indices = map(int, str(int(10 * float(coeff)))) + [int(exp) - 1]
+    color_indices = self._get_color_indices()
     size = 2 * CONNECTOR_SIZE + 3 * CONNECTOR_SPACING
     color_size = 5
     color_spacing = 3
@@ -292,6 +315,11 @@ class Resistor_Piece(Circuit_Piece):
             color_size, y + CONNECTOR_SIZE + dx, fill=RESISTOR_COLORS[
             color_indices[i]])
         colors_offset += color_size + color_spacing
+  def to_cmax_str(self):
+    self._assert_top_left_loc_set()
+    c, r = loc_to_cmax_rep(self.top_left_loc)
+    i1, i2, i3 = self._get_color_indices()
+    return 'resistor(%d,%d,%d): (%d,%d)--(%d,%d)' % (i1, i2, i3, c, r, c, r + 3)
   def __str__(self):
     return 'Resistor_Piece %s r=%s vertical=%s' % (str([self.n_1, self.n_2]),
         self.r, self.vertical)
@@ -343,6 +371,14 @@ class Pot_Piece(Circuit_Piece):
       pin_y = y + r * (CONNECTOR_SIZE + CONNECTOR_SPACING)
       canvas.create_rectangle(pin_x, pin_y, pin_x + CONNECTOR_SIZE,
           pin_y + CONNECTOR_SIZE, fill='#777', outline='black')
+  def to_cmax_str(self):
+    self._assert_top_left_loc_set()
+    c, r = loc_to_cmax_rep(self.top_left_loc)
+    if self.directed_up:
+      return 'pot: (%d,%d)--(%d,%d)--(%d,%d)' % (c, r + 2, c + 1, r, c + 2,
+          r + 2)
+    else:
+      return 'pot: (%d,%d)--(%d,%d)--(%d,%d)' % (c + 2, r, c + 1, r + 2, c, r)
   def __str__(self):
     return 'Pot_Piece %s %s' % (str([self.n_top, self.n_middle,
         self.n_bottom]), self.directed_up)
@@ -441,6 +477,10 @@ class Motor_Connector_Piece(N_Pin_Connector_Piece):
     if node == self.n_pin_6:
       locs.append(self.loc_for_pin(6))
     return locs
+  def to_cmax_str(self):
+    c1, r1 = loc_to_cmax_rep(self.loc_for_pin(1))
+    c6, r6 = loc_to_cmax_rep(self.loc_for_pin(6))
+    return 'motor: (%d,%d)--(%d,%d)' % (c1, r1, c6, r6)
   def __str__(self):
     return 'Motor_Connector_Piece pin 5: %s, pin 6: %s' % (self.n_pin_5,
         self.n_pin_6)
@@ -467,6 +507,10 @@ class Robot_Connector_Piece(N_Pin_Connector_Piece):
     if node == self.n_pin_4:
       locs.append(self.loc_for_pin(4))
     return locs
+  def to_cmax_str(self):
+    c1, r1 = loc_to_cmax_rep(self.loc_for_pin(1))
+    c8, r8 = loc_to_cmax_rep(self.loc_for_pin(8))
+    return 'robot: (%d,%d)--(%d,%d)' % (c1, r1, c8, r8)
   def __str__(self):
     return 'Robot_Connector_Piece pin 2: %s, pin 4: %s' % (self.n_pin_2,
         self.n_pin_4)
@@ -487,6 +531,10 @@ class Head_Connector_Piece(N_Pin_Connector_Piece):
   def locs_for(self, node):
     return [self.loc_for_pin(i + 1) for i, pin_node in enumerate(
         self.pin_nodes) if node == pin_node]
+  def to_cmax_str(self):
+    c1, r1 = loc_to_cmax_rep(self.loc_for_pin(1))
+    c8, r8 = loc_to_cmax_rep(self.loc_for_pin(8))
+    return 'head: (%d,%d)--(%d,%d)' % (c1, r1, c8, r8)
   def _disconnected_pins(self):
     return tuple(i + 1 for i, pin_node in enumerate(self.pin_nodes) if not
         pin_node)

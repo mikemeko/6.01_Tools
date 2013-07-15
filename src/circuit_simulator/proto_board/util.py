@@ -115,3 +115,10 @@ def rects_overlap(rect_1, rect_2):
   r_min_2, c_min_2, r_max_2, c_max_2 = rect_2
   return (overlap((r_min_1, r_max_1), (r_min_2, r_max_2)) and overlap((c_min_1,
       c_max_1), (c_min_2, c_max_2)))
+
+def loc_to_cmax_rep(loc):
+  """
+  Returns a tuple for the CMax representation of the given |loc|.
+  """
+  r, c = loc
+  return c + 1, r + 2 * num_vertical_separators(r) + 1

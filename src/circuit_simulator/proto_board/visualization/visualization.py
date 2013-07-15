@@ -12,9 +12,11 @@ from circuit_simulator.proto_board.constants import POWER_RAIL
 from circuit_simulator.proto_board.constants import PROTO_BOARD_HEIGHT
 from circuit_simulator.proto_board.constants import PROTO_BOARD_WIDTH
 from circuit_simulator.proto_board.constants import ROWS
+from circuit_simulator.proto_board.util import loc_to_cmax_rep
 from circuit_simulator.proto_board.util import num_vertical_separators
 from circuit_simulator.proto_board.util import valid_loc
 from constants import BACKGROUND_COLOR
+from constants import CMAX_FILE_EXTENSION
 from constants import CONNECTOR_COLOR
 from constants import CONNECTOR_SIZE
 from constants import CONNECTOR_SPACING
@@ -25,8 +27,10 @@ from constants import WIDTH
 from constants import WINDOW_TITLE
 from constants import WIRE_COLORS
 from constants import WIRE_OUTLINE
+from tkFileDialog import asksaveasfilename
 from Tkinter import Canvas
 from Tkinter import Frame
+from Tkinter import Menu
 
 class Proto_Board_Visualizer(Frame):
   """
@@ -39,12 +43,14 @@ class Proto_Board_Visualizer(Frame):
         connect to a power supply.
     """
     Frame.__init__(self, parent, background=BACKGROUND_COLOR)
-    parent.title(WINDOW_TITLE)
-    parent.resizable(0, 0)
+    self._parent = parent
+    self._parent.title(WINDOW_TITLE)
+    self._parent.resizable(0, 0)
     self._proto_board = proto_board
     self._show_pwr_gnd_pins = show_pwr_gnd_pins
     self._canvas = Canvas(self, width=WIDTH, height=HEIGHT,
         background=BACKGROUND_COLOR)
+    self._setup_menu()
     self._draw_proto_board()
   def _rc_to_xy(self, loc):
     """
@@ -192,6 +198,56 @@ class Proto_Board_Visualizer(Frame):
       self._draw_gnd_pwr_pins()
     self._canvas.pack()
     self.pack()
+  def _wire_to_cmax_str(self, wire):
+    """
+    Returns a CMax representation (when saved in a file) of the given |wire|.
+    """
+    c1, r1 = loc_to_cmax_rep(wire.loc_1)
+    c2, r2 = loc_to_cmax_rep(wire.loc_2)
+    return 'wire: (%d,%d)--(%d,%d)' % (c1, r1, c2, r2)
+  def _to_cmax_str(self):
+    """
+    Returns a string CMax representation of the proto board we are visualizing.
+    """
+    # header
+    lines = ['#CMax circuit']
+    # wires
+    for wire in self._proto_board.get_wires():
+      lines.append(self._wire_to_cmax_str(wire))
+    # circuit pieces
+    for piece in self._proto_board.get_pieces():
+      cmax_str = piece.to_cmax_str()
+      if cmax_str:
+        lines.append(cmax_str)
+    # power and ground pins
+    if self._show_pwr_gnd_pins:
+      lines.append('+10: (61,20)')
+      lines.append('gnd: (61,19)')
+    return '\n'.join(lines)
+  def _save_as_cmax_file(self):
+    """
+    Presents a dialog box that will save the proto board we are visualizing as a
+        CMax file.
+    """
+    file_name = asksaveasfilename(title='Save as CMax file ...',
+        filetypes=[('CMax files', CMAX_FILE_EXTENSION)])
+    if file_name and not file_name.endswith(CMAX_FILE_EXTENSION):
+      file_name += CMAX_FILE_EXTENSION
+    if file_name:
+      save_file = open(file_name, 'w')
+      save_file.write(self._to_cmax_str())
+      save_file.close()
+  def _setup_menu(self):
+    """
+    Sets up a menu that lets the user save the proto board we are visualizing as
+        a CMax file.
+    """
+    menu = Menu(self._parent, tearoff=0)
+    save_menu = Menu(menu, tearoff=0)
+    save_menu.add_command(label='Save as CMax file',
+        command=self._save_as_cmax_file)
+    menu.add_cascade(label='File', menu=save_menu)
+    self._parent.config(menu=menu)
 
 def visualize_proto_board(proto_board, toplevel, show_pwr_gnd_pins=True):
   """

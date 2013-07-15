@@ -65,8 +65,8 @@ class App_Runner:
     """
     Creates the menu.
     """
-    self._menu = Menu(self._root, tearoff=0)
-    file_menu = Menu(self._menu, tearoff=0)
+    menu = Menu(self._root, tearoff=0)
+    file_menu = Menu(menu, tearoff=0)
     file_menu.add_command(label='New', command=self._new_file,
         accelerator='Ctrl+N')
     file_menu.add_command(label='Open', command=self._open_file,
@@ -76,14 +76,14 @@ class App_Runner:
     file_menu.add_separator()
     file_menu.add_command(label='Quit', command=self.board.quit,
         accelerator='Ctrl+Q')
-    self._menu.add_cascade(label='File', menu=file_menu)
-    edit_menu = Menu(self._menu, tearoff=0)
+    menu.add_cascade(label='File', menu=file_menu)
+    edit_menu = Menu(menu, tearoff=0)
     edit_menu.add_command(label='Undo', command=self.board.undo,
         accelerator='Ctrl+Z')
     edit_menu.add_command(label='Redo', command=self.board.redo,
         accelerator='Ctrl+Y')
-    self._menu.add_cascade(label='Edit', menu=edit_menu)
-    self._root.config(menu=self._menu)
+    menu.add_cascade(label='Edit', menu=edit_menu)
+    self._root.config(menu=menu)
   def _setup_shortcuts(self):
     """
     Adds basic shortcuts.
