@@ -433,7 +433,7 @@ class Pot_Drawable(Drawable):
     m = match(r'Pot (.+) %s %s %s %s' % (RE_INT, RE_INT, RE_INT, RE_INT_PAIR),
         item_str)
     if m:
-      signal_file = m.group(1)
+      signal_file = m.group(1).replace('\\', '//')
       if not isfile(signal_file):
         signal_file = None
       width, height, direction, ox, oy = map(int, m.groups()[1:])
@@ -689,7 +689,7 @@ class Photosensors_Drawable(Pin_Drawable):
     m = match(r'Photosensors (\S+) (\S+) %s %s %s' % (RE_INT, RE_INT,
         RE_INT_PAIR), item_str)
     if m:
-      signal_file = m.group(1)
+      signal_file = m.group(1).replace('\\', '//')
       if not isfile(signal_file):
         signal_file = None
       color = m.group(2)
