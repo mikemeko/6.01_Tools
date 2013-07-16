@@ -105,23 +105,19 @@ class Power_Drawable(Pin_Drawable):
   """
   Power pin.
   """
-  def __init__(self, width=PIN_HORIZONTAL_WIDTH, height=PIN_HORIZONTAL_HEIGHT,
-      connectors=CONNECTOR_RIGHT):
-    Pin_Drawable.__init__(self, '+%d' % POWER_VOLTS, POSITIVE_COLOR, width,
-        height, connectors)
+  def __init__(self, connectors=CONNECTOR_RIGHT):
+    Pin_Drawable.__init__(self, '+%d' % POWER_VOLTS, POSITIVE_COLOR,
+        PIN_HORIZONTAL_WIDTH, PIN_HORIZONTAL_HEIGHT, connectors)
   def rotated(self):
-    return Power_Drawable(self.height, self.width,
-        rotate_connector_flags(self.connector_flags))
+    return Power_Drawable(rotate_connector_flags(self.connector_flags))
   def serialize(self, offset):
-    return 'Power %d %d %d %s' % (self.width, self.height,
-        self.connector_flags, str(offset))
+    return 'Power %d %s' % (self.connector_flags, str(offset))
   @staticmethod
   def deserialize(item_str, board):
-    m = match(r'Power %s %s %s %s' % (RE_INT, RE_INT, RE_INT, RE_INT_PAIR),
-        item_str)
+    m = match(r'Power %s %s' % (RE_INT, RE_INT_PAIR), item_str)
     if m:
-      width, height, connectors, ox, oy = map(int, m.groups())
-      board.add_drawable(Power_Drawable(width, height, connectors), (ox, oy))
+      connectors, ox, oy = map(int, m.groups())
+      board.add_drawable(Power_Drawable(connectors), (ox, oy))
       return True
     return False
 
@@ -129,23 +125,19 @@ class Ground_Drawable(Pin_Drawable):
   """
   Ground pin.
   """
-  def __init__(self, width=PIN_HORIZONTAL_WIDTH, height=PIN_HORIZONTAL_HEIGHT,
-      connectors=CONNECTOR_RIGHT):
-    Pin_Drawable.__init__(self, GROUND, NEGATIVE_COLOR, width, height,
-        connectors)
+  def __init__(self, connectors=CONNECTOR_RIGHT):
+    Pin_Drawable.__init__(self, GROUND, NEGATIVE_COLOR, PIN_HORIZONTAL_WIDTH,
+        PIN_HORIZONTAL_HEIGHT, connectors)
   def rotated(self):
-    return Ground_Drawable(self.height, self.width,
-        rotate_connector_flags(self.connector_flags))
+    return Ground_Drawable(rotate_connector_flags(self.connector_flags))
   def serialize(self, offset):
-    return 'Ground %d %d %d %s' % (self.width, self.height,
-        self.connector_flags, str(offset))
+    return 'Ground %d %s' % (self.connector_flags, str(offset))
   @staticmethod
   def deserialize(item_str, board):
-    m = match(r'Ground %s %s %s %s' % (RE_INT, RE_INT, RE_INT, RE_INT_PAIR),
-        item_str)
+    m = match(r'Ground %s %s' % (RE_INT, RE_INT_PAIR), item_str)
     if m:
-      width, height, connectors, ox, oy = map(int, m.groups())
-      board.add_drawable(Ground_Drawable(width, height, connectors), (ox, oy))
+      connectors, ox, oy = map(int, m.groups())
+      board.add_drawable(Ground_Drawable(connectors), (ox, oy))
       return True
     return False
 
