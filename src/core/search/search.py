@@ -29,6 +29,16 @@ class Search_Node:
     Should return a list of the Search_Nodes that are reachable from this node.
     """
     raise NotImplementedError('subclasses should implement this')
+  def get_path(self):
+    """
+    TODO: docstring
+    """
+    path = []
+    current = self
+    while current is not None:
+      path = [current.state] + path
+      current = current.parent
+    return path
 
 def a_star(start_node, goal_test, heuristic=lambda state: 0,
     progress=lambda state, cost: None):
@@ -46,7 +56,7 @@ def a_star(start_node, goal_test, heuristic=lambda state: 0,
       was just popped.
   """
   if goal_test(start_node.state):
-    return start_node.state
+    return start_node
   agenda = Priority_Queue()
   agenda.push(start_node, start_node.cost + heuristic(start_node.state))
   expanded = set()
@@ -56,7 +66,7 @@ def a_star(start_node, goal_test, heuristic=lambda state: 0,
     if parent.state not in expanded:
       expanded.add(parent.state)
       if goal_test(parent.state):
-        return parent.state
+        return parent
       for child in parent.get_children():
         if child.state not in expanded:
           agenda.push(child, child.cost + heuristic(child.state))

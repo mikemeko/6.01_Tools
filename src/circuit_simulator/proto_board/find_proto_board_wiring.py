@@ -268,7 +268,7 @@ def find_wiring(loc_pairs, start_proto_board=Proto_Board()):
     next_pair = loc_pair_to_connect_next(loc_pairs)
     print '\t%d/%d connecting: %s' % (n - len(loc_pairs) + 1, n, next_pair)
     proto_board = a_star(Proto_Board_Search_Node(proto_board, (next_pair,)),
-        goal_test, heuristic)[0]
+        goal_test, heuristic).state[0]
     loc_pairs.remove(next_pair)
   print '\tdone.'
   return proto_board
