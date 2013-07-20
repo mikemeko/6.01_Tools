@@ -31,7 +31,7 @@ class Search_Node:
     raise NotImplementedError('subclasses should implement this')
   def get_path(self):
     """
-    TODO: docstring
+    Returns a list of the states of the nodes from the root to this node.
     """
     path = []
     current = self

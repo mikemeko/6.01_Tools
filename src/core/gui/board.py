@@ -45,7 +45,7 @@ from constants import WARNING
 from core.undo.undo import Action
 from core.undo.undo import Action_History
 from core.util.util import is_callable
-from find_wire_path import find_wire_path
+from find_wire_path_simple import find_wire_path
 from threading import Timer
 from time import time
 from Tkinter import ALL
@@ -91,8 +91,7 @@ class Board(Frame):
     # state for drawing wires
     self._wire_start = None
     self._wire_end = None
-    self._wire_parts = {}
-    self._wire_path_connectors = []
+    self._wire_parts = []
     # state for key-press callbacks
     self._ctrl_pressed = False
     self._shift_pressed = False
@@ -266,25 +265,20 @@ class Board(Frame):
     self._drag_last_point = None
   def _erase_previous_wire_path(self):
     """
-    Erases the previous version (if any) of the wire currently being drawn.
-    TODO: update
+    Erases the previous version (if any) of the wire path currently being drawn.
     """
-    for connector in self._wire_path_connectors:
-      connector.delete_from(self._canvas)
-    self._wire_path_connectors = []
-    for key in self._wire_parts:
-      for part in self._wire_parts[key]:
+    for start, end, parts in self._wire_parts:
+      for part in parts:
         self._canvas.delete(part)
-    self._wire_parts.clear()
+    self._wire_parts = []
   def _draw_wire(self, start, end):
     """
-    Draws the wire currently being created.
-    TODO: update
+    Draws a wire from |start| to |end|. Updates wire data.
     """
     x1, y1 = start
     x2, y2 = end
-    self._wire_parts[(start, end)] = create_wire(self._canvas, x1, y1, x2, y2,
-        self._directed_wires)
+    self._wire_parts.append([start, end, create_wire(self._canvas, x1, y1, x2,
+        y2, self._directed_wires)])
   def _add_wire(self, wire_parts, start_connector, end_connector):
     """
     Creates a Wire object using the given parameters. This method assumes that
@@ -318,13 +312,12 @@ class Board(Frame):
     # if there isn't a connector at wire start, or if that connector is
     #     disabled, don't allow drawing wire
     start_connector = self._connector_at(self._wire_start)
-    # TODO: get rid of the idea of disabled connectors
+    # TODO(mikemeko): get rid of the idea of disabled connectors
     if not start_connector or not start_connector.enabled:
       self._wire_start = None
   def _wire_move(self, event):
     """
     Callback for when a wire is changed while being created. Updates wire data.
-    TODO: update
     """
     if self._wire_start:
       wire_end = (snap(event.x), snap(event.y))
@@ -333,34 +326,29 @@ class Board(Frame):
         # erase previous wire path
         self._erase_previous_wire_path()
         # find new wire path
-        wire_path = find_wire_path(self._wire_start, wire_end)
+        wire_path = find_wire_path(self, self._wire_start, wire_end)
         # draw wires
         for i in xrange(len(wire_path) - 1):
           self._draw_wire(wire_path[i], wire_path[i + 1])
-        # create all necessary connectors
-        for point in wire_path:
-          if not self._connector_at(point):
-            self._add_drawable(Wire_Connector_Drawable(), point)
-            self._wire_path_connectors.append(self._connector_at(point))
   def _wire_release(self, event):
     """
     Callback for when wire creation is complete. Updates wire data.
-    TODO: update
     """
-    # TODO: fix undo redo
-    for start, end in self._wire_parts:
+    # TODO(mikemeko): undo/redo currently deals with one wire at a time
+    for start, end, parts in self._wire_parts:
+      for point in (start, end):
+        if not self._connector_at(point):
+          self._add_drawable(Wire_Connector_Drawable(), point)
       start_connector = self._connector_at(start)
       end_connector = self._connector_at(end)
       # create wire
-      self._add_wire(self._wire_parts[(start, end)], start_connector,
-          end_connector)
-      # mark the board changed
-      self.set_changed(True)
+      self._add_wire(parts, start_connector, end_connector)
+    # mark the board changed
+    self.set_changed(True)
     # reset
     self._wire_start = None
     self._wire_end = None
-    self._wire_parts.clear()
-    self._wire_path_connectors = []
+    self._wire_parts = []
   def add_wire(self, x1, y1, x2, y2):
     """
     Adds a wire to this board going from (|x1|, |y1|) to (|x2|, |y2|). This
