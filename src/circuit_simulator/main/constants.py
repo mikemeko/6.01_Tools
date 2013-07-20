@@ -25,7 +25,7 @@ POT_ALPHA_EMPTY_FILL = '#EEE'
 POT_ALPHA_FILL = '#3AAACF'
 POT_ALPHA_OUTLINE = '#888'
 RESISTOR_FILL = 'white'
-RESISTOR_OUTLINE = 'grey'
+RESISTOR_OUTLINE = '#DDD'
 ROBOT_PIN_FILL = '#666'
 
 # circuit drawable component constants
