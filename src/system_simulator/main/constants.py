@@ -8,6 +8,7 @@ from core.gui.constants import CONNECTOR_BOTTOM
 from core.gui.constants import CONNECTOR_LEFT
 from core.gui.constants import CONNECTOR_RIGHT
 from core.gui.constants import CONNECTOR_TOP
+from platform import system
 
 # colors
 ADDER_FILL = '#93E1D4'
@@ -49,8 +50,8 @@ FR = 'FR' # frequency response
 PZD = 'PZD' # pole-zero diagram
 USR = 'USR' # unit sample response
 
-# fonts
-FONT = ('Times', 12)
+# fonts, use different font on Mac OS
+FONT = ('Helvetica', 12 if system() == 'Darwin' else 10)
 
 # regular expressions
 RE_GAIN_VERTICES = r'\((\d+), (\d+), (\d+), (\d+), (\d+), (\d+)\)'

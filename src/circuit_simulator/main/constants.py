@@ -6,6 +6,7 @@ __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
 from circuit_simulator.simulation.constants import NUM_SAMPLES
 from circuit_simulator.simulation.constants import T
+from platform import system
 
 # colors
 HEAD_COLOR = '#666'
@@ -81,8 +82,8 @@ PROBE_PLUS = '+p'
 PROTO_BOARD = 'PB'
 SIMULATE = 'SIM'
 
-# fonts
-FONT = ('Times', 12)
+# fonts, use different font on Mac OS
+FONT = ('Helvetica', 12 if system() == 'Darwin' else 10)
 
 # window constants
 BOARD_WIDTH = 800
