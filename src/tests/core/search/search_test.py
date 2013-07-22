@@ -30,10 +30,11 @@ class Search_Test(TestCase):
   Tests for core/search/search.
   """
   def test_search(self):
-    assert a_star(Test_Search_Node(), lambda state: state == 'S') == 'S'
-    assert a_star(Test_Search_Node(), lambda state: state == 'E') == 'E'
+    assert a_star(Test_Search_Node(), lambda state: state == 'S').state == 'S'
+    assert a_star(Test_Search_Node(), lambda state: state == 'E').state == 'E'
     assert a_star(Test_Search_Node(), lambda state: state == 'F') is None
-    assert a_star(Test_Search_Node(), lambda state: state in ['A', 'D']) == 'A'
+    assert a_star(Test_Search_Node(), lambda state: state in ['A',
+        'D']).state == 'A'
 
 if __name__ == '__main__':
   main()
