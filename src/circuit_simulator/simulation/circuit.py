@@ -55,7 +55,6 @@ class Component:
         this super method.
     """
     self.current_time += T
-  @property
   def equations(self):
     """
     Returns a list of the equations that represent the constraints imposed by
@@ -63,7 +62,6 @@ class Component:
     All subclasses should implement this method.
     """
     raise NotImplementedError('subclasses should implement this')
-  @property
   def KCL_update(self, KCL):
     """
     |KCL|: a dictionary mapping circuit nodes to a list of the currents
@@ -88,7 +86,6 @@ class One_Port(Component):
     self.n1 = n1
     self.n2 = n2
     self.i = i
-  @property
   def equation(self):
     """
     Returns an equation representing the constraint that needs to be satisfied

@@ -25,14 +25,12 @@ class Component:
     """
     self.inp_vars = inp_vars
     self.out_var = out_var
-  @property
   def get_poly(self):
     """
     Returns a Polynomial in the variables in self.inp_vars that describes
         self.out_var.
     """
     raise NotImplementedError('subclasses should implement this')
-  @property
   def response_update(self, signals):
     """
     |signals| is a dictionary mapping variables to lists. This appends, if

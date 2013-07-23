@@ -23,7 +23,6 @@ class Search_Node:
     self.state = state
     self.parent = parent
     self.cost = cost
-  @property
   def get_children(self):
     """
     Should return a list of the Search_Nodes that are reachable from this node.

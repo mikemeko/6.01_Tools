@@ -54,7 +54,6 @@ class Drawable:
     self.connectors = set()
     # flag for whether this drawable is on the board / deleted
     self._live = True
-  @property
   def draw_on(self, canvas, offset):
     """
     Draws the parts of this item on the |canvas| at the given |offset|. Should
@@ -68,7 +67,6 @@ class Drawable:
         result in this rotation. The default implementation is no rotation.
     """
     return self
-  @property
   def serialize(self, offset):
     """
     Should return a string representation of this drawable at the given
@@ -77,7 +75,6 @@ class Drawable:
     All subclasses should implement this.
     """
     raise NotImplementedError('subclasses should implement this')
-  @property
   @staticmethod
   def deserialize(item_str, board):
     """

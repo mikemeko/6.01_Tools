@@ -12,7 +12,6 @@ class CT_Signal:
   Representation for CT signals.
   TODO(mikemeko): create nice means of combining CT_Signals, adding, etc.
   """
-  @property
   def sample(t):
     """
     Returns the value of this signal at the given time |t|. Every subclass
