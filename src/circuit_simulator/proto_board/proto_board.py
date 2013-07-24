@@ -87,6 +87,16 @@ class Proto_Board:
         node name, belongs.
     """
     return self._loc_disjoint_set_forest.find_set(item)
+  def node_for(self, loc):
+    """
+    Returns the node associated with the location |loc|, or None if the location
+        is not linked to a node.
+    """
+    connected_locs = self.locs_connected_to(loc)
+    for wire in self._wires:
+      if wire.loc_1 in connected_locs or wire.loc_2 in connected_locs:
+        return wire.node
+    return None
   def with_loc_disjoint_set_forest(self, loc_disjoint_set_forest):
     """
     Returns a copy of this board with a new forest of disjoint location sets to

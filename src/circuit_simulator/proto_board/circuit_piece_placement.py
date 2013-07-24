@@ -34,17 +34,17 @@ def closest_rail_loc(loc, rail_r):
 
 def loc_pairs_for_node(node_locs, node):
   """
-  Returns a list of pairs of nodes to connect so that all of the locations in
-      |node_locs| are connected. This is essentially an MST problem where the
+  Returns a list of tuples of the form  (loc_1, loc_2, node) such that the set
+      of locations in |nodes_locs| is fully connected if all the output pairs of
+      locations are connected. This is essentially an MST problem where the
       locations are the nodes and the weight of an edge between two locations
       is the distance (manhattan) between the two locations. We use Kruskal's
       greedy algorithm. |node| is the corresponding node in for the locations
-      in the circuit, it is used to connect power and ground nodes to the
-      appropriate rail on the proto board.
+      in the circuit.
   """
   if node == GROUND or node == POWER:
     return [(loc, closest_rail_loc(loc, GROUND_RAIL if node == GROUND else
-        POWER_RAIL)) for loc in node_locs]
+        POWER_RAIL), node) for loc in node_locs]
   # find all possible pairs of locations
   all_loc_pairs = [(loc_1, loc_2) for i, loc_1 in enumerate(node_locs) for
       loc_2 in node_locs[i + 1:]]
@@ -61,7 +61,7 @@ def loc_pairs_for_node(node_locs, node):
     if (disjoint_loc_pair_sets.find_set(loc_1) !=
         disjoint_loc_pair_sets.find_set(loc_2)):
       disjoint_loc_pair_sets.union(loc_1, loc_2)
-      mst_loc_pairs.append((loc_1, loc_2))
+      mst_loc_pairs.append((loc_1, loc_2, node))
   return mst_loc_pairs
 
 def locs_for_node(pieces, node):
@@ -82,7 +82,11 @@ def loc_pairs_to_connect(pieces, resistor_node_pairs):
   """
   Returns a tuple of the locations pairs to connect so that the |pieces| and
       |resistor_node_pairs| are appropriately connected. Each location pairs
-      comes with a flag indicating whether or not to include a resistor.
+      comes with a flag indicating whether or not to include a resistor. Each
+      location pair also comes with the node for the pair. If there is to be a
+      resistor between the locations, the node of the first location is given (
+      both nodes can be obtained from the flag, the first is given for the sake
+      of consistency).
   """
   # find loc pairs to connect not taking resistors into account
   loc_pairs = reduce(list.__add__, (loc_pairs_for_node(locs_for_node(pieces,
@@ -91,17 +95,17 @@ def loc_pairs_to_connect(pieces, resistor_node_pairs):
   # TODO(mikemeko): method here is very ad hoc
   occurences = defaultdict(int)
   flagged_loc_pairs = []
-  for loc_1, loc_2 in loc_pairs:
+  for loc_1, loc_2, node in loc_pairs:
     occurences[loc_1] += 1
     occurences[loc_2] += 1
-    flagged_loc_pairs.append((loc_1, loc_2, False))
+    flagged_loc_pairs.append((loc_1, loc_2, False, node))
   for n1, n2, r in resistor_node_pairs:
     loc_1, loc_2 = min(product(locs_for_node(pieces, n1), locs_for_node(pieces,
         n2)), key=lambda (loc_1, loc_2): 5 * (occurences[loc_1] +
         occurences[loc_2]) + dist(loc_1, loc_2))
     occurences[loc_1] += 1
     occurences[loc_2] += 1
-    flagged_loc_pairs.append((loc_1, loc_2, (n1, n2, r)))
+    flagged_loc_pairs.append((loc_1, loc_2, (n1, n2, r), n1))
   return flagged_loc_pairs
 
 def set_locations(pieces):
@@ -127,7 +131,7 @@ def cost(placement):
       around the pieces.
   """
   set_locations(placement)
-  return sum(dist(loc_1, loc_2) for loc_1, loc_2, resistor_flag in
+  return sum(dist(loc_1, loc_2) for loc_1, loc_2, resistor_flag, node in
       loc_pairs_to_connect(placement, []))
 
 def find_placement(pieces):

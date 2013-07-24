@@ -11,9 +11,10 @@ class Wire:
   """
   Wire representation.
   """
-  def __init__(self, loc_1, loc_2):
+  def __init__(self, loc_1, loc_2, node):
     """
     |loc_1|, |loc_2|: start end end locations of this wire.
+    |node|: the circuit node this wire is a part of.
     """
     r_1, c_1 = loc_1
     r_2, c_2 = loc_2
@@ -27,6 +28,7 @@ class Wire:
     # row and column supports, i.e. min's and max's
     self.row_support = min(r_1, r_2), max(r_1, r_2)
     self.column_support = min(c_1, c_2), max(c_1, c_2)
+    self.node = node
   def crosses(self, other):
     """
     Returns True if this wire and the |other| wire intersect, False otherwise.

@@ -4,6 +4,8 @@ GUI constants.
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
+from platform import system
+
 # colors
 BOARD_BACKGROUND_COLOR = 'white'
 BOARD_MARKER_LINE_COLOR = '#DDD'
@@ -23,6 +25,7 @@ RUN_RECT_FILL = 'white'
 RUN_RECT_OUTLINE = 'black'
 RUN_TEXT_ACTIVE_FILL = 'red'
 RUN_TEXT_FILL = 'black'
+TOOLTIP_BACKGROUND = '#FFFFE0'
 WIRE_COLOR = '#777'
 WIRE_CONNECTOR_FILL = 'grey'
 WIRE_CONNECTOR_OUTLINE = 'black'
@@ -78,7 +81,7 @@ DRAG_TAG = 'drag_tag'
 ROTATE_TAG = 'rotate_tag'
 
 # fonts
-DEFAULT_FONT = ('Times', 12)
+DEFAULT_FONT = ('Helvetica', 12 if system() == 'Darwin' else 10)
 
 # debug options
 DISPLAY_WIRE_LABELS = False

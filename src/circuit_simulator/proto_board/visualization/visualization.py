@@ -27,10 +27,16 @@ from constants import WIDTH
 from constants import WINDOW_TITLE
 from constants import WIRE_COLORS
 from constants import WIRE_OUTLINE
+from core.gui.tooltip_helper import Tooltip_Helper
 from tkFileDialog import asksaveasfilename
 from Tkinter import Canvas
 from Tkinter import Frame
+from Tkinter import Label
+from Tkinter import LEFT
 from Tkinter import Menu
+from Tkinter import SOLID
+from Tkinter import TclError
+from Tkinter import Toplevel
 
 class Proto_Board_Visualizer(Frame):
   """
@@ -50,8 +56,42 @@ class Proto_Board_Visualizer(Frame):
     self._show_pwr_gnd_pins = show_pwr_gnd_pins
     self._canvas = Canvas(self, width=WIDTH, height=HEIGHT,
         background=BACKGROUND_COLOR)
+    self._tooltip_helper = Tooltip_Helper(self._canvas)
+    self._wire_bbox = {}
+    self._setup_bindings()
     self._setup_menu()
     self._draw_proto_board()
+  def _point_inside_wire(self, wire, x, y):
+    """
+    Returns True if the point (|x|, |y|) is on the given |wire|. |wire| must be
+        one of the wires on the proto board.
+    """
+    assert wire in self._wire_bbox
+    x_1, y_1, x_2, y_2 = self._wire_bbox[wire]
+    return x_1 <= x <= x_2 and y_1 <= y <= y_2
+  def _maybe_show_tooltip(self, event):
+    """
+    Shows a tooltip of the respective node if the cursor is on a wire or a valid
+        location on the proto board.
+    """
+    text = None
+    for wire in self._proto_board.get_wires():
+      if self._point_inside_wire(wire, event.x, event.y):
+        text = wire.node
+        break
+    else:
+      loc = self._xy_to_rc(event.x, event.y)
+      if loc:
+        text = self._proto_board.node_for(loc)
+    if text is not None:
+      self._tooltip_helper.show_tooltip(event.x, event.y, text)
+    else:
+      self._tooltip_helper.hide_tooltip()
+  def _setup_bindings(self):
+    """
+    Sets up event bindings.
+    """
+    self._canvas.bind('<Motion>', self._maybe_show_tooltip)
   def _rc_to_xy(self, loc):
     """
     Returns the top left corner of the connector located at row |r| column |c|.
@@ -61,6 +101,19 @@ class Proto_Board_Visualizer(Frame):
     y = r * (CONNECTOR_SIZE + CONNECTOR_SPACING) + PADDING + (
         num_vertical_separators(r) * (VERTICAL_SEPARATION - CONNECTOR_SPACING))
     return x, y
+  def _xy_to_rc(self, x, y):
+    """
+    Returns the row and column of the valid location on the proto board
+        containing the point (|x|, |y|), or None if no such location exists.
+    """
+    for r in xrange(PROTO_BOARD_HEIGHT):
+      for c in xrange(PROTO_BOARD_WIDTH):
+        if valid_loc((r, c)):
+          x1, y1 = self._rc_to_xy((r, c))
+          x2, y2 = x1 + CONNECTOR_SIZE, y1 + CONNECTOR_SIZE
+          if x1 <= x <= x2 and y1 <= y <= y2:
+            return r, c
+    return None
   def _draw_connector(self, x, y, fill=CONNECTOR_COLOR,
       outline=CONNECTOR_COLOR):
     """
@@ -163,6 +216,8 @@ class Proto_Board_Visualizer(Frame):
     x_2, y_2 = self._rc_to_xy(wire.loc_2)
     if x_1 > x_2 or y_1 > y_2:
       x_1, y_1, x_2, y_2 = x_2, y_2, x_1, y_1
+    self._wire_bbox[wire] = (x_1, y_1, x_2 + CONNECTOR_SIZE,
+        y_2 + CONNECTOR_SIZE)
     length = wire.length()
     fill = 'white'
     if 1 < length < 10:
@@ -172,9 +227,8 @@ class Proto_Board_Visualizer(Frame):
     def draw_wire(wire_id=None):
       if wire_id:
         self._canvas.delete(wire_id)
-      new_wire_id = self._canvas.create_rectangle(x_1, y_1,
-          x_2 + CONNECTOR_SIZE, y_2 + CONNECTOR_SIZE, fill=fill,
-          outline=WIRE_OUTLINE)
+      new_wire_id = self._canvas.create_rectangle(self._wire_bbox[wire],
+          fill=fill, outline=WIRE_OUTLINE)
       self._canvas.tag_bind(new_wire_id, '<Button-1>', lambda event: draw_wire(
           new_wire_id))
     draw_wire()

@@ -51,6 +51,12 @@ from time import time
 from Tkinter import ALL
 from Tkinter import Canvas
 from Tkinter import Frame
+from Tkinter import Label
+from Tkinter import LEFT
+from Tkinter import SOLID
+from Tkinter import TclError
+from Tkinter import Toplevel
+from tooltip_helper import Tooltip_Helper
 from util import create_circle
 from util import create_wire
 from util import point_inside_bbox
@@ -105,6 +111,9 @@ class Board(Frame):
     self._grid_line_parts = []
     # state to track whether this board has been changed
     self._changed = False
+    # state for wire label tooltips
+    self._tooltip_helper = Tooltip_Helper(self._canvas)
+    self._show_label_tooltips = False
     # setup ui
     self._setup_drawing_board()
     self._setup_bindings()
@@ -119,6 +128,27 @@ class Board(Frame):
           self.height), fill=BOARD_MARKER_LINE_COLOR))
     self._canvas.pack()
     self.pack()
+  def _maybe_show_tooltip(self, event):
+    """
+    If the cursor is on a wire or wire connector, and we are showing wire
+        labels, displays a tooltip of the wire label close to the cursor.
+    """
+    if self._show_label_tooltips:
+      # check if the cursor is on a wire connector
+      connector = self._connector_at((event.x, event.y))
+      if connector:
+        if isinstance(connector.drawable, Wire_Connector_Drawable):
+          wires = list(connector.wires())
+          if wires:
+            self._tooltip_helper.show_tooltip(event.x, event.y, wires[0].label)
+        return
+      # check if the cursor is on a wire
+      canvas_id = self._canvas.find_closest(event.x, event.y)[0]
+      wire = self._wire_with_id(canvas_id)
+      if wire:
+        self._tooltip_helper.show_tooltip(event.x, event.y, wire.label)
+      else:
+        self._tooltip_helper.hide_tooltip()
   def _setup_bindings(self):
     """
     Makes all necessary event bindings.
@@ -139,6 +169,8 @@ class Board(Frame):
     self.parent.bind('<KeyRelease>', self._key_release)
     # rotate binding
     self._canvas.tag_bind(ROTATE_TAG, '<Shift-Button-1>', self._rotate)
+    # tooltip binding
+    self._canvas.bind('<Motion>', self._maybe_show_tooltip)
     # on quit
     self.parent.protocol('WM_DELETE_WINDOW', self.quit)
   def _drawable_at(self, point):
@@ -548,6 +580,8 @@ class Board(Frame):
       self._on_changed(changed)
     # remove message since an action has resulted in a board change
     self.remove_message()
+    # once the board is changed, don't show wire label tooltips
+    self._show_label_tooltips = False
   def _add_drawable(self, drawable, offset):
     """
     Adds the given |drawable| at the given |offset|.
@@ -620,6 +654,8 @@ class Board(Frame):
       # increment label to pass to the next drawable so that disconnected wires
       #     are never given the same label
       label = self._label_wires_from(drawable, relabeled_wires, label) + 1
+    # once wires are labeled, show wire tooltips
+    self._show_label_tooltips = True
   def _get_drawables(self):
     """
     Returns a generator of the live drawables on this board in the reverse
