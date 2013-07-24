@@ -23,7 +23,7 @@ class Tooltip_Helper:
     """
     self._canvas = canvas
     self._tip = None
-  def show_tooltip(self, x, y, text):
+  def show_tooltip(self, x, y, text, background=TOOLTIP_BACKGROUND):
     """
     Shows a tooltip containing the given |text| close to the point (|x|, |y|) on
         the canvas.
@@ -42,12 +42,11 @@ class Tooltip_Helper:
       except TclError:
         pass
       self.label = Label(self._tip, text=text, justify=LEFT,
-          background=TOOLTIP_BACKGROUND, relief=SOLID, borderwidth=1,
-          font=DEFAULT_FONT)
+          background=background, relief=SOLID, borderwidth=1, font=DEFAULT_FONT)
       self.label.pack()
     else:
       self._tip.geometry(geometry)
-      self.label.config(text=text)
+      self.label.config(text=text, background=background)
   def hide_tooltip(self):
     """
     Hides the previously added tooltip, if any.

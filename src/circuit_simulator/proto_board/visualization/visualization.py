@@ -27,6 +27,7 @@ from constants import WIDTH
 from constants import WINDOW_TITLE
 from constants import WIRE_COLORS
 from constants import WIRE_OUTLINE
+from core.gui.constants import TOOLTIP_DRAWABLE_LABEL_BACKGROUND
 from core.gui.tooltip_helper import Tooltip_Helper
 from tkFileDialog import asksaveasfilename
 from Tkinter import Canvas
@@ -69,24 +70,40 @@ class Proto_Board_Visualizer(Frame):
     assert wire in self._wire_bbox
     x_1, y_1, x_2, y_2 = self._wire_bbox[wire]
     return x_1 <= x <= x_2 and y_1 <= y <= y_2
+  def _point_inside_piece(self, piece, x, y):
+    """
+    Returns True if the point (|x|, |y|) is on the gien |piece|.
+    """
+    r1, c1, r2, c2 = piece.bbox()
+    x1, y1 = self._rc_to_xy((r1, c1))
+    x2, y2 = self._rc_to_xy((r2, c2))
+    return x1 <= x <= x2 + CONNECTOR_SIZE and y1 <= y <= y2 + CONNECTOR_SIZE
   def _maybe_show_tooltip(self, event):
     """
     Shows a tooltip of the respective node if the cursor is on a wire or a valid
-        location on the proto board.
+        location on the proto board, or the respective piece label if the cursor
+        is on a piece.
     """
-    text = None
+    # check if cursor is on a piece
+    for piece in self._proto_board.get_pieces():
+      if self._point_inside_piece(piece, event.x, event.y):
+        self._tooltip_helper.show_tooltip(event.x, event.y, piece.label,
+            background=TOOLTIP_DRAWABLE_LABEL_BACKGROUND)
+        return
+    # check if cursor is on a wire
     for wire in self._proto_board.get_wires():
       if self._point_inside_wire(wire, event.x, event.y):
-        text = wire.node
-        break
-    else:
-      loc = self._xy_to_rc(event.x, event.y)
-      if loc:
-        text = self._proto_board.node_for(loc)
-    if text is not None:
-      self._tooltip_helper.show_tooltip(event.x, event.y, text)
-    else:
-      self._tooltip_helper.hide_tooltip()
+        self._tooltip_helper.show_tooltip(event.x, event.y, wire.node)
+        return
+    # check if cursor is on a valid proto board location
+    loc = self._xy_to_rc(event.x, event.y)
+    if loc:
+      node = self._proto_board.node_for(loc)
+      if node:
+        self._tooltip_helper.show_tooltip(event.x, event.y, node)
+        return
+    # if none of the above, remove previous tooltip, if any
+    self._tooltip_helper.hide_tooltip()
   def _setup_bindings(self):
     """
     Sets up event bindings.

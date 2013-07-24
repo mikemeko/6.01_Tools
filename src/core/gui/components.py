@@ -16,7 +16,7 @@ from constants import CONNECTOR_LEFT
 from constants import CONNECTOR_RADIUS
 from constants import CONNECTOR_RIGHT
 from constants import CONNECTOR_TOP
-from constants import DISPLAY_WIRE_LABELS
+from constants import DEBUG_DISPLAY_WIRE_LABELS
 from constants import DRAG_TAG
 from constants import ROTATE_TAG
 from constants import RUN_RECT_FILL
@@ -441,7 +441,7 @@ class Wire:
     x2, y2 = self.end_connector.center
     self.parts = create_wire(canvas, x1, y1, x2, y2, self.directed)
     # redraw label
-    if DISPLAY_WIRE_LABELS:
+    if DEBUG_DISPLAY_WIRE_LABELS:
       self._draw_label(canvas)
     # lift connectors to make it easy to draw other wires
     for connector in self.connectors():

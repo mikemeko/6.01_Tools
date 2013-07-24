@@ -38,12 +38,12 @@ class Motor_Plotter(Plotter):
     # motor angle
     figure()
     xlabel('t')
-    ylabel('Motor angle')
+    ylabel('Motor %s angle' % self._motor.label)
     stem(T_SAMPLES, self._motor.angle_samples[:-1])
     # motor speed
     figure()
     xlabel('t')
-    ylabel('Motor speed')
+    ylabel('Motor %s speed' % self._motor.label)
     stem(T_SAMPLES, self._motor.speed_samples[:-1])
 
 class Head_Plotter(Plotter):
@@ -57,19 +57,20 @@ class Head_Plotter(Plotter):
   def plot(self, data):
     # motor
     if self._head_connector.motor_present:
+      self._head_connector.motor.label = self._head_connector.motor_label
       Motor_Plotter(self._head_connector.motor).plot(data)
     # lamp distance signal
     if self._head_connector.lamp_distance_signal:
       figure()
       xlabel('t')
-      ylabel('Lamp distance')
+      ylabel('Lamp %s distance' % self._head_connector.photo_label)
       stem(T_SAMPLES, self._head_connector.lamp_distance_signal.samples(0, T,
           NUM_SAMPLES))
     # lamp angle signal
     if self._head_connector.lamp_angle_signal:
       figure()
       xlabel('t')
-      ylabel('Lamp angle')
+      ylabel('Lamp %s angle' % self._head_connector.photo_label)
       stem(T_SAMPLES, self._head_connector.lamp_angle_signal.samples(0, T,
           NUM_SAMPLES))
 
@@ -80,7 +81,7 @@ class Signalled_Pot_Plotter(Plotter):
   def plot(self, data):
     figure()
     xlabel('t')
-    ylabel('Pot alpha')
+    ylabel('Pot %s alpha' % self._pot.label)
     stem(T_SAMPLES, self._pot.signal.samples(0, T, NUM_SAMPLES))
 
 class Probe_Plotter(Plotter):

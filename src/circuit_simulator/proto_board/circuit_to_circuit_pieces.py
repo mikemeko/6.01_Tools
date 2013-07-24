@@ -79,14 +79,15 @@ def resistor_piece_from_resistor(resistor):
       Resistor.
   """
   assert isinstance(resistor, Resistor), 'resistor must be a Resistor'
-  return Resistor_Piece(resistor.n1, resistor.n2, resistor.r, True)
+  return Resistor_Piece(resistor.n1, resistor.n2, resistor.r, True,
+      resistor.label)
 
 def pot_piece_from_pot(pot):
   """
   Returns a Pot_Piece constructed using |pot|, an instance of Signalled_Pot.
   """
   assert isinstance(pot, Signalled_Pot), 'pot must be a Signalled_Pot'
-  return Pot_Piece(pot.n_top, pot.n_middle, pot.n_bottom)
+  return Pot_Piece(pot.n_top, pot.n_middle, pot.n_bottom, pot.label)
 
 def motor_connector_piece_from_motor(motor):
   """
@@ -94,7 +95,7 @@ def motor_connector_piece_from_motor(motor):
       Motor.
   """
   assert isinstance(motor, Motor), ('motor must be a Motor')
-  return Motor_Connector_Piece(motor.motor_plus, motor.motor_minus)
+  return Motor_Connector_Piece(motor.motor_plus, motor.motor_minus, motor.label)
 
 def robot_connector_piece_from_robot_connector(robot_connector):
   """
@@ -103,7 +104,7 @@ def robot_connector_piece_from_robot_connector(robot_connector):
   """
   assert isinstance(robot_connector, Robot_Connector), ('robot_connector must '
       'be a Robot_Connector')
-  return Robot_Connector_Piece(POWER, GROUND)
+  return Robot_Connector_Piece(POWER, GROUND, robot_connector.label)
 
 def head_connector_piece_from_head_connector(head_connector):
   """
@@ -112,7 +113,9 @@ def head_connector_piece_from_head_connector(head_connector):
   """
   assert isinstance(head_connector, Head_Connector), ('head_connector must be '
       'a Head_Connector')
-  return Head_Connector_Piece(head_connector.pin_nodes)
+  return Head_Connector_Piece(head_connector.pin_nodes, ','.join(filter(bool, [
+      head_connector.motor_label, head_connector.motor_pot_label,
+      head_connector.photo_label])))
 
 def op_amp_piece_from_op_amp(op_amp_set):
   """
@@ -136,7 +139,8 @@ def op_amp_piece_from_op_amp(op_amp_set):
   n_6 = op_amp_2.na1 if op_amp_2 else GROUND
   n_7 = op_amp_1.na1
   n_8 = op_amp_1.na2
-  return Op_Amp_Piece(n_1, n_2, n_3, n_4, n_5, n_6, n_7, n_8)
+  return Op_Amp_Piece(n_1, n_2, n_3, n_4, n_5, n_6, n_7, n_8, ','.join(map(
+      lambda op_amp: op_amp.label, op_amp_set)))
 
 def get_piece_placement(circuit):
   """

@@ -21,7 +21,7 @@ class App_Runner:
   """
   def __init__(self, on_init, app_name, dev_stage, file_extension,
       deserializers, board_width, board_height, palette_height,
-      directed_wires, wire_label_tooltips_enabled, init_file=None):
+      directed_wires, label_tooltips_enabled, init_file=None):
     """
     |on_init|: method called every time a new board of this app's type is
         created.
@@ -33,8 +33,7 @@ class App_Runner:
     |palette_height|: height of palette, width will be the same as board width.
     |directed_wires|: True if the board is to have directed wires, False
         otherwise.
-    |wire_label_tooltips_enabled|: if True, show wire label tooltips after wires
-        are labeled.
+    |label_tooltips_enabled|: if True, show wire and drawable label tooltips.
     |init_file|: file to open at init time.
     """
     self._on_init = on_init
@@ -46,7 +45,7 @@ class App_Runner:
     self._board_height = board_height
     self._palette_height = palette_height
     self._directed_wires = directed_wires
-    self._wire_label_tooltips_enabled = wire_label_tooltips_enabled
+    self._label_tooltips_enabled = label_tooltips_enabled
     self._init_file = init_file
     self._init()
     self._setup_menu()
@@ -60,7 +59,7 @@ class App_Runner:
     self._root.resizable(0, 0)
     self.board = Board(self._root, width=self._board_width,
         height=self._board_height, directed_wires=self._directed_wires,
-        wire_label_tooltips_enabled=self._wire_label_tooltips_enabled,
+        label_tooltips_enabled=self._label_tooltips_enabled,
         on_changed=self._on_changed, on_exit=self._request_save)
     self._init_board()
     self.palette = Palette(self._root, self.board, width=self._board_width,

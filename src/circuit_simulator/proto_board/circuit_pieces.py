@@ -39,15 +39,17 @@ class Circuit_Piece:
   # top left location row possibilities, subclasses can changes this as needed
   # default puts piece in the middle strip of the proto board
   possible_top_left_rows = [PROTO_BOARD_HEIGHT / 2 - 1]
-  def __init__(self, nodes, width, height):
+  def __init__(self, nodes, width, height, label=None):
     """
     |nodes|: a set of the nodes this piece is connected to.
     |width|: the width of this piece (in number of columns).
     |height|: the height of this piece (in number of rows).
+    |label|: a label for this Circuit_Piece to show as a tooltip.
     """
     self.nodes = nodes
     self.width = width
     self.height = height
+    self.label = label
     # the (r, c) location of the top left corner of this piece
     # this is set (and possibly reset) during the piece placement process, see
     #     circuit_piece_placement.py
@@ -134,7 +136,7 @@ class Op_Amp_Piece(Circuit_Piece):
   Representation for the op amp piece.
   See: http://mit.edu/6.01/www/circuits/opAmpCkt.jpg
   """
-  def __init__(self, n_1, n_2, n_3, n_4, n_5, n_6, n_7, n_8,
+  def __init__(self, n_1, n_2, n_3, n_4, n_5, n_6, n_7, n_8, label,
       dot_bottom_left=True):
     """
     |n_1|, ..., |n_8|: the nodes for this op amp piece, see image linked above.
@@ -142,7 +144,7 @@ class Op_Amp_Piece(Circuit_Piece):
         top right (indicates orientation of piece).
     """
     Circuit_Piece.__init__(self, set(filter(bool, [n_1, n_2, n_3, n_4, n_5,
-        n_6, n_7, n_8])), 4, 2)
+        n_6, n_7, n_8])), 4, 2, label)
     self.n_1 = n_1
     self.n_2 = n_2
     self.n_3 = n_3
@@ -175,7 +177,7 @@ class Op_Amp_Piece(Circuit_Piece):
     return locs
   def inverted(self):
     return Op_Amp_Piece(self.n_1, self.n_2, self.n_3, self.n_4, self.n_5,
-        self.n_6, self.n_7, self.n_8, not self.dot_bottom_left)
+        self.n_6, self.n_7, self.n_8, self.label, not self.dot_bottom_left)
   def draw_on(self, canvas, top_left):
     x, y = top_left
     # pins
@@ -246,7 +248,7 @@ class Resistor_Piece(Circuit_Piece):
   TODO(mikemeko): Resistor_Piece is not used exaclty like the other
       Circuit_Pieces since the start of treating resistors as wires.
   """
-  def __init__(self, n_1, n_2, r, vertical):
+  def __init__(self, n_1, n_2, r, vertical, label):
     """
     |n_1|, |n_2|: the two nodes of the resistor.
     |r|: resistance of the resistor.
@@ -256,7 +258,7 @@ class Resistor_Piece(Circuit_Piece):
     assert n_2, 'invalid n_2'
     width = 1 if vertical else 4
     height = 2 if vertical else 1
-    Circuit_Piece.__init__(self, set([n_1, n_2]), width, height)
+    Circuit_Piece.__init__(self, set([n_1, n_2]), width, height, label)
     self.n_1 = n_1
     self.n_2 = n_2
     self.r = r
@@ -271,7 +273,7 @@ class Resistor_Piece(Circuit_Piece):
       locs.append((r + 1, c) if self.vertical else (r, c + 3))
     return locs
   def inverted(self):
-    return Resistor_Piece(self.n_2, self.n_1, self.r, self.vertical)
+    return Resistor_Piece(self.n_2, self.n_1, self.r, self.vertical, self.label)
   def _get_color_indices(self):
     """
     Returns a list of the indices (in RESISTOR_COLORS) of the three colors that
@@ -329,7 +331,7 @@ class Pot_Piece(Circuit_Piece):
   Representation for the pot piece.
   """
   possible_top_left_rows = [3, PROTO_BOARD_HEIGHT / 2 + 1]
-  def __init__(self, n_top, n_middle, n_bottom, directed_up=True):
+  def __init__(self, n_top, n_middle, n_bottom, label, directed_up=True):
     """
     |n_top|, |n_middle|, |n_bottom|: the terminal nodes for this pot.
     |directed_up|: True if this pot is placed with the middle terminal facing
@@ -338,7 +340,7 @@ class Pot_Piece(Circuit_Piece):
     assert n_top, 'invalid n_top'
     assert n_middle, 'invalid n_middle'
     assert n_bottom, 'invalid n_bottom'
-    Circuit_Piece.__init__(self, set([n_top, n_middle, n_bottom]), 3, 3)
+    Circuit_Piece.__init__(self, set([n_top, n_middle, n_bottom]), 3, 3, label)
     self.n_top = n_top
     self.n_middle = n_middle
     self.n_bottom = n_bottom
@@ -355,7 +357,7 @@ class Pot_Piece(Circuit_Piece):
       locs.append((r + 2, c + 2) if self.directed_up else (r, c))
     return locs
   def inverted(self):
-    return Pot_Piece(self.n_top, self.n_middle, self.n_bottom,
+    return Pot_Piece(self.n_top, self.n_middle, self.n_bottom, self.label,
         not self.directed_up)
   def draw_on(self, canvas, top_left):
     x, y = top_left
@@ -389,13 +391,13 @@ class N_Pin_Connector_Piece(Circuit_Piece):
       connector, and robot connector).
   """
   possible_top_left_rows = [0, PROTO_BOARD_HEIGHT - 3]
-  def __init__(self, nodes, n, name, disabled_pins):
+  def __init__(self, nodes, n, name, disabled_pins, label):
     """
     |n|: the number of pins for this connector.
     |name|: the name for this connector.
     |disabled_pins|: pins that are not meant to be connected to anything.
     """
-    Circuit_Piece.__init__(self, set(filter(bool, nodes)), n + 2, 3)
+    Circuit_Piece.__init__(self, set(filter(bool, nodes)), n + 2, 3, label)
     self.n = n
     self.name = name
     self.disabled_pins = disabled_pins
@@ -459,7 +461,7 @@ class Motor_Connector_Piece(N_Pin_Connector_Piece):
   """
   Representation for the motor connecotor piece.
   """
-  def __init__(self, n_pin_5, n_pin_6):
+  def __init__(self, n_pin_5, n_pin_6, label):
     """
     |n_pin_5|: node at pin 5, motor+.
     |n_pin_6|: node at pin 6, motor-.
@@ -467,7 +469,7 @@ class Motor_Connector_Piece(N_Pin_Connector_Piece):
     assert n_pin_5, 'invalid n_pin_5'
     assert n_pin_6, 'invalid n_pin_6'
     N_Pin_Connector_Piece.__init__(self, [n_pin_5, n_pin_6], 6,
-        'Motor Connector', DISABLED_PINS_MOTOR_CONNECTOR)
+        'Motor Connector', DISABLED_PINS_MOTOR_CONNECTOR, label)
     self.n_pin_5 = n_pin_5
     self.n_pin_6 = n_pin_6
   def locs_for(self, node):
@@ -489,7 +491,7 @@ class Robot_Connector_Piece(N_Pin_Connector_Piece):
   """
   Representation for the robot connector piece.
   """
-  def __init__(self, n_pin_2, n_pin_4):
+  def __init__(self, n_pin_2, n_pin_4, label):
     """
     |n_pin_2|: node at pin 2, power.
     |n_pin_4|: node at pin 4, ground.
@@ -497,7 +499,7 @@ class Robot_Connector_Piece(N_Pin_Connector_Piece):
     assert n_pin_2, 'invalid n_pin_2'
     assert n_pin_4, 'invalid n_pin_4'
     N_Pin_Connector_Piece.__init__(self, [n_pin_2, n_pin_4], 8,
-        'Robot Connector', DISABLED_PINS_ROBOT_CONNECTOR)
+        'Robot Connector', DISABLED_PINS_ROBOT_CONNECTOR, label)
     self.n_pin_2 = n_pin_2
     self.n_pin_4 = n_pin_4
   def locs_for(self, node):
@@ -519,14 +521,14 @@ class Head_Connector_Piece(N_Pin_Connector_Piece):
   """
   Representation for the head connector piece.
   """
-  def __init__(self, pin_nodes):
+  def __init__(self, pin_nodes, label):
     """
     |pin_nodes|: a list containing the nodes from pin 1 to pin 8 in that order.
     """
     assert isinstance(pin_nodes, list) and len(pin_nodes) == 8, ('pin_nodes '
         'should be a list containing 8 values')
     N_Pin_Connector_Piece.__init__(self, pin_nodes, 8, 'Head Connector',
-        DISABLED_PINS_HEAD_CONNECTOR)
+        DISABLED_PINS_HEAD_CONNECTOR, label)
     self.pin_nodes = pin_nodes
   def locs_for(self, node):
     return [self.loc_for_pin(i + 1) for i, pin_node in enumerate(

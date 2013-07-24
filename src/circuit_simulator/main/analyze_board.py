@@ -1,6 +1,5 @@
 """
 Contains the method to analyze the circuit drawn on a board.
-TODO(mikemeko): some items need to be labeled in case there are multiple.
 """
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
@@ -47,8 +46,6 @@ def run_analysis(board, analyze):
   Extracts a Circuit object from what is drawn on the given |board| and calls
       the given function |analyze| on it. The funtion |analyze| should take as
       arguments the circuit, as well as the plotters that are collected.
-  TODO(mikemeko): run_analysis gets the job done, but work on a cleaner
-      implementation.
   """
   assert isinstance(board, Board), 'board must be a Board'
   # remove current message on board, if any
@@ -79,7 +76,9 @@ def run_analysis(board, analyze):
         ground_nodes.add(node)
       # add robot connector to circuit components, so that we know it's there
       #     and that we don't need to connect to a power supply
-      circuit_components.append(Robot_Connector())
+      robot_connector = Robot_Connector()
+      robot_connector.label = drawable.label
+      circuit_components.append(robot_connector)
   # ensure that there is at least one power component
   if not power_nodes:
     board.display_message('No power nodes', ERROR)
@@ -113,11 +112,13 @@ def run_analysis(board, analyze):
   n_motor_plus = defaultdict(str)
   n_motor_minus = defaultdict(str)
   i_motor = defaultdict(str)
+  motor_label = defaultdict(str)
   n_motor_pot_top = defaultdict(str)
   n_motor_pot_middle = defaultdict(str)
   n_motor_pot_bottom = defaultdict(str)
   i_motor_pot_top_middle = defaultdict(str)
   i_motor_pot_middle_bottom = defaultdict(str)
+  motor_pot_label = defaultdict(str)
   n_photo_left = defaultdict(str)
   n_photo_common = defaultdict(str)
   n_photo_right = defaultdict(str)
@@ -125,6 +126,7 @@ def run_analysis(board, analyze):
   i_photo_common_right = defaultdict(str)
   photo_lamp_angle_signal = defaultdict(str)
   photo_lamp_distance_signal = defaultdict(str)
+  photo_label = defaultdict(str)
   for drawable in board.get_drawables():
     # wires attached to this component
     nodes = [wire.label for wire in drawable.wires()]
@@ -161,8 +163,9 @@ def run_analysis(board, analyze):
         board.display_message('Could not obtain resistance constant', ERROR)
         return
       n1, n2 = map(maybe_rename_node, nodes)
-      circuit_components.append(Resistor(n1, n2, current_name(drawable, n1,
-          n2), r))
+      resistor = Resistor(n1, n2, current_name(drawable, n1, n2), r)
+      resistor.label = drawable.label
+      circuit_components.append(resistor)
     # op amp component
     elif isinstance(drawable, Op_Amp_Drawable):
       plus_nodes = [wire.label for wire in drawable.plus_port.wires()]
@@ -182,8 +185,10 @@ def run_analysis(board, analyze):
         return
       na1, na2, nb1, nb2 = map(maybe_rename_node, (plus_nodes[0],
           minus_nodes[0], out_nodes[0], GROUND))
-      circuit_components.append(Op_Amp(na1, na2, current_name(drawable, na1,
-          na2), nb1, nb2, current_name(drawable, nb1, nb2)))
+      op_amp = Op_Amp(na1, na2, current_name(drawable, na1, na2), nb1, nb2,
+          current_name(drawable, nb1, nb2))
+      op_amp.label = drawable.label
+      circuit_components.append(op_amp)
     # pot component
     elif isinstance(drawable, Pot_Drawable):
       if not drawable.signal_file:
@@ -214,6 +219,7 @@ def run_analysis(board, analyze):
       pot = Signalled_Pot(n_top, n_middle, n_bottom, current_name(drawable,
           n_top, n_middle), current_name(drawable, n_middle, n_bottom),
           pot_variables['pot_r'], pot_variables['pot_signal'])
+      pot.label = drawable.label
       circuit_components.append(pot)
       plotters.append(Signalled_Pot_Plotter(pot))
     # motor component
@@ -231,6 +237,7 @@ def run_analysis(board, analyze):
       i = current_name(drawable, n_motor_plus, n_motor_minus)
       if not drawable.group_id:
         motor = Motor(plus_node, minus_node, i)
+        motor.label = drawable.label
         circuit_components.append(motor)
         plotters.append(Motor_Plotter(motor))
       else:
@@ -238,6 +245,7 @@ def run_analysis(board, analyze):
         n_motor_plus[drawable.group_id] = plus_node
         n_motor_minus[drawable.group_id] = minus_node
         i_motor[drawable.group_id] = i
+        motor_label[drawable.group_id] = drawable.label
     # motor pot component
     elif isinstance(drawable, Motor_Pot_Drawable):
       pot_top_nodes = [wire.label for wire in drawable.top.wires()]
@@ -265,6 +273,7 @@ def run_analysis(board, analyze):
           n_motor_pot_top, n_motor_pot_middle)
       i_motor_pot_middle_bottom[drawable.group_id] = current_name(drawable,
           n_motor_pot_middle, n_motor_pot_bottom)
+      motor_pot_label[drawable.group_id] = drawable.label
     # photosensor component
     elif isinstance(drawable, Photosensors_Drawable):
       if not drawable.signal_file:
@@ -301,6 +310,7 @@ def run_analysis(board, analyze):
           n_photo_left, n_photo_common)
       i_photo_common_right[drawable.group_id] = current_name(drawable,
           n_photo_common, n_photo_right)
+      photo_label[drawable.group_id] = drawable.label
   # collect robot head pieces together
   for group_id in head_connector_group_ids:
     head_connector = Head_Connector(n_motor_pot_top[group_id],
@@ -311,6 +321,9 @@ def run_analysis(board, analyze):
         group_id], n_motor_plus[group_id], n_motor_minus[group_id], i_motor[
         group_id], photo_lamp_angle_signal[group_id],
         photo_lamp_distance_signal[group_id])
+    head_connector.motor_label = motor_label[group_id]
+    head_connector.motor_pot_label = motor_pot_label[group_id]
+    head_connector.photo_label = photo_label[group_id]
     circuit_components.append(head_connector)
     plotters.append(Head_Plotter(head_connector))
   # if both probes are given, display probe voltage difference graph

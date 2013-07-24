@@ -23,7 +23,7 @@ from constants import CONNECTOR_RADIUS
 from constants import CONNECTOR_TAG
 from constants import CTRL_CURSOR
 from constants import CTRL_DOWN
-from constants import DISPLAY_WIRE_LABELS
+from constants import DEBUG_DISPLAY_WIRE_LABELS
 from constants import DRAG_TAG
 from constants import ERROR
 from constants import GUIDE_LINE_COLOR
@@ -41,6 +41,7 @@ from constants import MESSAGE_WIDTH
 from constants import ROTATE_TAG
 from constants import SHIFT_CURSOR
 from constants import SHIFT_DOWN
+from constants import TOOLTIP_DRAWABLE_LABEL_BACKGROUND
 from constants import WARNING
 from core.undo.undo import Action
 from core.undo.undo import Action_History
@@ -69,15 +70,15 @@ class Board(Frame):
   """
   def __init__(self, parent, width=BOARD_WIDTH, height=BOARD_HEIGHT,
       on_changed=None, on_exit=None, directed_wires=True,
-      wire_label_tooltips_enabled=False):
+      label_tooltips_enabled=False):
     """
     |width|: the width of this board.
     |height|: the height of this board.
     |on_changed|: a function to call when changed status is reset.
     |on_exit|: a function to call on exit.
     |directed_wires|: if True, wires will be directed (i.e. have arrows).
-    |wire_label_tooltips_enabled|: if True, after every self._label_wires()
-        call, tooltips will show the wire labels.
+    |label_tooltips_enabled|: if True, tooltips will show wire and drawable
+        labels.
     """
     Frame.__init__(self, parent, background=BOARD_BACKGROUND_COLOR)
     self.parent = parent
@@ -86,7 +87,7 @@ class Board(Frame):
     self._on_changed = on_changed
     self._on_exit = on_exit
     self._directed_wires = directed_wires
-    self._wire_label_tooltips_enabled = wire_label_tooltips_enabled
+    self._label_tooltips_enabled = label_tooltips_enabled
     # canvas on which items are drawn
     self._canvas = Canvas(self, width=width, height=height,
         highlightthickness=0, background=BOARD_BACKGROUND_COLOR)
@@ -136,6 +137,8 @@ class Board(Frame):
     """
     If the cursor is on a wire or wire connector, and we are showing wire
         labels, displays a tooltip of the wire label close to the cursor.
+        If the cursor is on a drawable, displays a tooltip of the drawable
+        label.
     """
     if self._show_label_tooltips:
       # check if the cursor is on a wire connector
@@ -145,6 +148,12 @@ class Board(Frame):
           wires = list(connector.wires())
           if wires:
             self._tooltip_helper.show_tooltip(event.x, event.y, wires[0].label)
+        return
+      drawable = self._drawable_at((event.x, event.y))
+      if drawable:
+        if not isinstance(drawable, Wire_Connector_Drawable):
+          self._tooltip_helper.show_tooltip(event.x, event.y, drawable.label,
+              background=TOOLTIP_DRAWABLE_LABEL_BACKGROUND)
         return
       # check if the cursor is on a wire
       canvas_id = self._canvas.find_closest(event.x, event.y)[0]
@@ -637,7 +646,7 @@ class Board(Frame):
           wire.label = str(label)
           relabeled_wires.add(wire)
           # display label for debugging
-          if DISPLAY_WIRE_LABELS:
+          if DEBUG_DISPLAY_WIRE_LABELS:
             wire.redraw(self._canvas)
           # propagate labeling if the other end of the wire is a wire connector
           # use the same label for wires that follow
@@ -659,8 +668,18 @@ class Board(Frame):
       #     are never given the same label
       label = self._label_wires_from(drawable, relabeled_wires, label) + 1
     # once wires are labeled, show wire tooltips
-    if self._wire_label_tooltips_enabled:
+    if self._label_tooltips_enabled:
       self._show_label_tooltips = True
+  def _label_drawables(self):
+    """
+    Labels the drawables (other than Wire_Connector_Drawables) on the board in
+        the order in which they were added to the board.
+    """
+    for i, drawable in enumerate(sorted(filter(lambda drawable:
+        drawable.is_live() and not isinstance(drawable,
+        Wire_Connector_Drawable), self._drawables), key=lambda drawable:
+        self._drawables[drawable])):
+      drawable.label = str(i)
   def _get_drawables(self):
     """
     Returns a generator of the live drawables on this board in the reverse
@@ -672,10 +691,11 @@ class Board(Frame):
         yield drawable
   def get_drawables(self):
     """
-    Labels the wires and then returns a generator of the live drawables on this
-        board, with the newest drawables put first.
+    Labels the wires and drawables and then returns a generator of the live
+        drawables on this board, with the newest drawables put first.
     """
     self._label_wires()
+    self._label_drawables()
     return self._get_drawables()
   def get_drawable_offset(self, drawable):
     """
