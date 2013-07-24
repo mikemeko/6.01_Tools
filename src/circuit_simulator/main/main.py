@@ -74,7 +74,8 @@ if __name__ == '__main__':
       Probe_Minus_Drawable, Resistor_Drawable, Op_Amp_Drawable, Pot_Drawable,
       Motor_Drawable, Motor_Pot_Drawable, Photosensors_Drawable,
       Robot_Pin_Drawable, Wire_Connector_Drawable, Wire), BOARD_WIDTH,
-      BOARD_HEIGHT, PALETTE_HEIGHT, False, argv[1] if len(argv) > 1 else None)
+      BOARD_HEIGHT, PALETTE_HEIGHT, False, True, argv[1] if len(argv) > 1 else
+      None)
   def simulate(circuit, plotters):
     """
     Displays the plot that are drawn by the |plotters|.

@@ -68,13 +68,16 @@ class Board(Frame):
   Tkinter Frame that supports drawing and manipulating various items.
   """
   def __init__(self, parent, width=BOARD_WIDTH, height=BOARD_HEIGHT,
-      on_changed=None, on_exit=None, directed_wires=True):
+      on_changed=None, on_exit=None, directed_wires=True,
+      wire_label_tooltips_enabled=False):
     """
     |width|: the width of this board.
     |height|: the height of this board.
     |on_changed|: a function to call when changed status is reset.
     |on_exit|: a function to call on exit.
     |directed_wires|: if True, wires will be directed (i.e. have arrows).
+    |wire_label_tooltips_enabled|: if True, after every self._label_wires()
+        call, tooltips will show the wire labels.
     """
     Frame.__init__(self, parent, background=BOARD_BACKGROUND_COLOR)
     self.parent = parent
@@ -83,6 +86,7 @@ class Board(Frame):
     self._on_changed = on_changed
     self._on_exit = on_exit
     self._directed_wires = directed_wires
+    self._wire_label_tooltips_enabled = wire_label_tooltips_enabled
     # canvas on which items are drawn
     self._canvas = Canvas(self, width=width, height=height,
         highlightthickness=0, background=BOARD_BACKGROUND_COLOR)
@@ -655,7 +659,8 @@ class Board(Frame):
       #     are never given the same label
       label = self._label_wires_from(drawable, relabeled_wires, label) + 1
     # once wires are labeled, show wire tooltips
-    self._show_label_tooltips = True
+    if self._wire_label_tooltips_enabled:
+      self._show_label_tooltips = True
   def _get_drawables(self):
     """
     Returns a generator of the live drawables on this board in the reverse
