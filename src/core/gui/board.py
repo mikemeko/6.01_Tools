@@ -141,7 +141,7 @@ class Board(Frame):
         If the cursor is on a drawable, displays a tooltip of the drawable
         label.
     """
-    if self._show_label_tooltips:
+    if self._label_tooltips_enabled and self._show_label_tooltips:
       # check if the cursor is on a wire connector
       connector = self._connector_at((event.x, event.y))
       if connector:
