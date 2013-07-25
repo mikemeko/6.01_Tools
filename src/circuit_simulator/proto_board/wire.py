@@ -53,10 +53,9 @@ class Wire:
     return self.c_1 == self.c_2
   def __eq__(self, other):
     return (isinstance(other, Wire) and self.row_support == other.row_support
-        and self.column_support == other.column_support)
-  def __ne__(self, other):
-    return not self == other
+        and self.column_support == other.column_support and
+        self.node == other.node)
   def __hash__(self):
-    return hash((self.row_support, self.column_support))
+    return hash((self.row_support, self.column_support, self.node))
   def __str__(self):
-    return '%s-%s' % (self.loc_1, self.loc_2)
+    return '%s-%s %s' % (self.loc_1, self.loc_2, self.node)

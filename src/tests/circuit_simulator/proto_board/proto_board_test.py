@@ -19,9 +19,9 @@ class Proto_Board_Test(TestCase):
       board = board.with_wire(wire)
     return board
   def test_connected(self):
-    board = self._board_with_wires([Wire((2, 0), (2, 10)),
-        Wire((3, 10), (9, 10)), Wire((8, 10), (12, 10)),
-        Wire((4, 45), (7, 45)), Wire((8, 45), (8, 50))])
+    board = self._board_with_wires([Wire((2, 0), (2, 10), None),
+        Wire((3, 10), (9, 10), None), Wire((8, 10), (12, 10), None),
+        Wire((4, 45), (7, 45), None), Wire((8, 45), (8, 50), None)])
     group_1 = [(2, 0), (2, 10), (3, 10), (9, 10), (8, 10), (12, 10)]
     group_2 = [(4, 45), (7, 45), (8, 45), (8, 50)]
     for group in group_1, group_2:

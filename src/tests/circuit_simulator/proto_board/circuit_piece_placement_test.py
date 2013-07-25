@@ -16,9 +16,12 @@ class Circuit_Piece_Placement_Test(TestCase):
   def test_loc_pairs_for_node(self):
     loc_pairs = loc_pairs_for_node([(0, 0), (2, 0), (1, 0), (3, 0)], None)
     assert len(loc_pairs) == 3
-    assert ((0, 0), (1, 0)) in loc_pairs or ((1, 0), (0, 0)) in loc_pairs
-    assert ((1, 0), (2, 0)) in loc_pairs or ((2, 0), (1, 0)) in loc_pairs
-    assert ((2, 0), (3, 0)) in loc_pairs or ((3, 0), (2, 0)) in loc_pairs
+    assert ((0, 0), (1, 0), None) in loc_pairs or ((1, 0), (0, 0), None) in (
+        loc_pairs)
+    assert ((1, 0), (2, 0), None) in loc_pairs or ((2, 0), (1, 0), None) in (
+        loc_pairs)
+    assert ((2, 0), (3, 0), None) in loc_pairs or ((3, 0), (2, 0), None) in (
+        loc_pairs)
 
 if __name__ == '__main__':
   main()
