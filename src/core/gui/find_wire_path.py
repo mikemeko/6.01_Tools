@@ -10,6 +10,7 @@ __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 from constants import BOARD_GRID_SEPARATION
 from core.search.search import a_star
 from core.search.search import Search_Node
+from util import snap
 
 def drawable_coverage(drawable):
   """
@@ -23,18 +24,22 @@ def drawable_coverage(drawable):
 
 def wire_coverage(start, end):
   """
-  Returns a set of all the crossing points on the board that would be covered by
-      a wire going from point |start| to point |end|.
+  Returns a set of the crossing points on the board that would be covered by a
+      wire going from point |start| to point |end|.
   """
   x1, y1 = start
   x2, y2 = end
-  assert x1 == x2 or y1 == y2
   if x1 == x2:
     return set([(x1, y) for y in xrange(min(y1, y2), max(y1, y2) + 1,
         BOARD_GRID_SEPARATION)])
-  else: # y1 == y2
-    return set([(x, y1) for x in xrange(min(x1, x2), max(x1, x2) + 1,
-        BOARD_GRID_SEPARATION)])
+  elif abs(x1 - x2) > abs(y1 - y2):
+    m = (y2 - y1) / float(x2 - x1)
+    return set([(x, snap(y1 + m * (x - x1))) for x in xrange(min(x1, x2), max(
+        x1, x2) + 1, BOARD_GRID_SEPARATION)])
+  else:
+    m = (x2 - x1) / float(y2 - y1)
+    return set([(snap(x1 + m * (y - y1)), y) for y in xrange(min(y1, y2), max(
+        y1, y2) + 1, BOARD_GRID_SEPARATION)])
 
 def manhattan_dist(start, end):
   """
