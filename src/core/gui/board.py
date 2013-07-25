@@ -594,7 +594,8 @@ class Board(Frame):
     # remove message since an action has resulted in a board change
     self.remove_message()
     # once the board is changed, don't show wire label tooltips
-    self._show_label_tooltips = False
+    if self._label_tooltips_enabled:
+      self.hide_label_tooltips()
   def _add_drawable(self, drawable, offset):
     """
     Adds the given |drawable| at the given |offset|.
@@ -667,9 +668,6 @@ class Board(Frame):
       # increment label to pass to the next drawable so that disconnected wires
       #     are never given the same label
       label = self._label_wires_from(drawable, relabeled_wires, label) + 1
-    # once wires are labeled, show wire tooltips
-    if self._label_tooltips_enabled:
-      self._show_label_tooltips = True
   def _label_drawables(self):
     """
     Labels the drawables (other than Wire_Connector_Drawables) on the board in
@@ -697,6 +695,19 @@ class Board(Frame):
     self._label_wires()
     self._label_drawables()
     return self._get_drawables()
+  def show_label_tooltips(self):
+    """
+    Starts showing label tooltips. Tooltips will be hidden on call to
+        self.hide_label_tooltips or if the board is changed.
+    Label tooltips must be enabled for this board.
+    """
+    assert self._label_tooltips_enabled, 'label tooltips are not enabled'
+    self._show_label_tooltips = True
+  def hide_label_tooltips(self):
+    """
+    Stops showing label tooltips.
+    """
+    self._show_label_tooltips = False
   def get_drawable_offset(self, drawable):
     """
     Returns the offset with which the given |drawable| is drawn. Assumes that

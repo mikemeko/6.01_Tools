@@ -82,6 +82,8 @@ if __name__ == '__main__':
     """
     # ensure that circuit was successfully solved
     if circuit.data:
+      # show label tooltips on board
+      app_runner.board.show_label_tooltips()
       # show analysis plots
       for plotter in plotters:
         plotter.plot(circuit.data)
@@ -107,6 +109,7 @@ if __name__ == '__main__':
       show_pwr_gnd_pins = not any([isinstance(component, Robot_Connector) for
           component in circuit.components])
       visualize_proto_board(proto_board, Toplevel(), show_pwr_gnd_pins)
+      app_runner.board.show_label_tooltips()
     except:
       app_runner.board.display_message('Could not find proto board wiring',
           ERROR)
