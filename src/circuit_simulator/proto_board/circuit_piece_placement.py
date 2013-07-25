@@ -78,10 +78,10 @@ def all_nodes(pieces):
   """
   return reduce(set.union, (piece.nodes for piece in pieces), set())
 
-def loc_pairs_to_connect(pieces, resistor_node_pairs):
+def loc_pairs_to_connect(pieces, resistors):
   """
   Returns a tuple of the locations pairs to connect so that the |pieces| and
-      |resistor_node_pairs| are appropriately connected. Each location pairs
+      |resistors| are appropriately connected. Each location pairs
       comes with a flag indicating whether or not to include a resistor. Each
       location pair also comes with the node for the pair. If there is to be a
       resistor between the locations, the node of the first location is given (
@@ -98,14 +98,14 @@ def loc_pairs_to_connect(pieces, resistor_node_pairs):
   for loc_1, loc_2, node in loc_pairs:
     occurences[loc_1] += 1
     occurences[loc_2] += 1
-    flagged_loc_pairs.append((loc_1, loc_2, False, node))
-  for n1, n2, r in resistor_node_pairs:
-    loc_1, loc_2 = min(product(locs_for_node(pieces, n1), locs_for_node(pieces,
-        n2)), key=lambda (loc_1, loc_2): 5 * (occurences[loc_1] +
-        occurences[loc_2]) + dist(loc_1, loc_2))
+    flagged_loc_pairs.append((loc_1, loc_2, None, node))
+  for resistor in resistors:
+    loc_1, loc_2 = min(product(locs_for_node(pieces, resistor.n1),
+        locs_for_node(pieces, resistor.n2)), key=lambda (loc_1, loc_2): 5 * (
+        occurences[loc_1] + occurences[loc_2]) + dist(loc_1, loc_2))
     occurences[loc_1] += 1
     occurences[loc_2] += 1
-    flagged_loc_pairs.append((loc_1, loc_2, (n1, n2, r), n1))
+    flagged_loc_pairs.append((loc_1, loc_2, resistor, resistor.n1))
   return flagged_loc_pairs
 
 def set_locations(pieces):

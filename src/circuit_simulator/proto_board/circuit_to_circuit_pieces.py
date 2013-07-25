@@ -146,7 +146,7 @@ def get_piece_placement(circuit):
   """
   Returns a *good* ordering of Circuit_Pieces for the given |circuit|. Finding
       the best one (i.e. the one the requires minimal wiring) is too expensive.
-      Also returns a list of the resistor node pairs in the |circuit|.
+      Also returns a list of the resistors the |circuit|.
   """
   assert isinstance(circuit, Circuit), 'circuit must be a Circuit'
   print 'finding piece placement ...'
@@ -154,10 +154,8 @@ def get_piece_placement(circuit):
   if RESISTORS_AS_COMPONENTS:
     resistor_pieces = map(resistor_piece_from_resistor, resistors)
   else:
-    resistor_node_pairs = [(resistor.n1, resistor.n2, resistor.r) for resistor
-        in resistors]
-    resistor_nodes = reduce(set.union, [set([n1, n2]) for (n1, n2, r) in
-        resistor_node_pairs], set())
+    resistor_nodes = reduce(set.union, [set([resistor.n1, resistor.n2]) for
+        resistor in resistors], set())
   pots = filter(lambda obj: obj.__class__ == Signalled_Pot, circuit.components)
   pot_pieces = map(pot_piece_from_pot, pots)
   motors = filter(lambda obj: obj.__class__ == Motor, circuit.components)
@@ -195,4 +193,4 @@ def get_piece_placement(circuit):
         best_placement_cost = cost
   print '\tdone.'
   return best_placement, ([] if RESISTORS_AS_COMPONENTS else
-      resistor_node_pairs)
+      resistors)

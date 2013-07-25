@@ -26,6 +26,7 @@ from core.gui.util import create_circle
 from Tkinter import CENTER
 from util import loc_to_cmax_rep
 from util import rects_overlap
+from util import section_locs
 from visualization.constants import CONNECTOR_SIZE
 from visualization.constants import CONNECTOR_SPACING
 from visualization.constants import VERTICAL_SEPARATION
@@ -84,6 +85,17 @@ class Circuit_Piece:
     Ensures that top_left_loc is set, or throws an Exeption.
     """
     assert self.top_left_loc, 'top left location has not been set'
+  def node_for(self, loc):
+    """
+    If |loc| is internally connected to one of the locations on the proto board
+        occupied by this piece, returns the node for |loc|. Returns None
+        otherwise.
+    """
+    for node in self.nodes:
+      for node_loc in self.locs_for(node):
+        if loc in section_locs(node_loc):
+          return node
+    return None
   def all_locs(self):
     """
     Return a set of all the locations on the proto board occupied by this

@@ -54,6 +54,7 @@ ALLOW_WIRE_CROSSINGS = True # of opposite orientation, no wire crossings of
 CIRCUIT_PIECE_SEPARATION = 2
 
 # whether to treat resistors as components or wires
+# if treat components as wires, set CIRCUIT_PIECE_SEPARATION to 3
 RESISTORS_AS_COMPONENTS = True
 
 # connector piece disabled pins

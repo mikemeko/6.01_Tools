@@ -29,9 +29,10 @@ class Proto_Board_Search_Node(Search_Node):
   def __init__(self, proto_board, loc_pairs, parent=None, cost=0):
     """
     |proto_board|: current Proto_Board in the search.
-    |loc_pairs|: a tuple of tuples of the form (loc_1, loc_2, resistor_flag),
-        where loc_1 and loc_2 are to be connected and resistor_flag indicates
-        whether there needs to be a resistor between them.
+    |loc_pairs|: a tuple of tuples of the form (loc_1, loc_2, resistor, label),
+        where loc_1 and loc_2 are to be connected and resistor indicates
+        whether there needs to be a resistor between them. label gives the label
+        for the path of wires connected to loc_1.
     |parent|: this node's parent node, or None if this is the root node.
     |cost|: the cost of getting from the root node to this node.
     """
@@ -78,12 +79,9 @@ class Proto_Board_Search_Node(Search_Node):
       wire_ends.append((rail_r, c))
     return filter(self._valid_not_occupied_filter(proto_board), wire_ends)
   def get_children(self):
-    """
-    Returns the children of this Proto_Board_Search_Node.
-    """
     children = []
     proto_board, loc_pairs = self.state
-    for i, (loc_1, loc_2, resistor_flag, node) in enumerate(loc_pairs):
+    for i, (loc_1, loc_2, resistor, node) in enumerate(loc_pairs):
       # can extend a wire from |loc_1| towards |loc_2| from any of the
       #     the locations |loc_1| is internally connected to
       for neighbor_loc in filter(proto_board.free,
@@ -128,54 +126,42 @@ class Proto_Board_Search_Node(Search_Node):
               not proto_board)
           # potentially create another proto board with a resistor in place of
           #     the new wire
-          add_resistor = (resistor_flag and not num_piece_crossings and not
-              num_wire_crossings and new_wire.length() == 3)
+          add_resistor = (resistor is not None and not num_piece_crossings and
+              not num_wire_crossings and new_wire.length() == 3)
           if add_resistor:
-            n1, n2, r = resistor_flag
-            # find representatives for the two groups, they better be there
+            n1, n2, r, label = (resistor.n1, resistor.n2, resistor.r,
+                resistor.label)
+            # find representatives for the two nodes, they better be there
             n1_group = proto_board.rep_for(n1)
             assert n1_group
             n2_group = proto_board.rep_for(n2)
             assert n2_group
-            # find representative for the location we're trying to extend this
-            #     resistor, representative better be there and match one of the
-            #     node representatives
-            wire_loc_1_group = proto_board.rep_for(new_wire.loc_1)
-            if wire_loc_1_group == n1_group:
-              new_group = n2_group
-            elif wire_loc_1_group == n2_group:
-              new_group = n1_group
-            else:
-              # should never get here
-              raise Exception('unexpected: n1_group=%s, n2_group=%s, '
-                  'wire_loc_1_group=%s' % (n1_group, n2_group,
-                  wire_loc_1_group))
-            # find representative for opposite location, might not be there
+            # check that wire loc 1 is in the same group as node n1
+            assert proto_board.rep_for(new_wire.loc_1) == n1_group
+            # find representative for wire loc 2, might not be there
             wire_loc_2_group = proto_board.rep_for(new_wire.loc_2)
-            if (not wire_loc_2_group) or wire_loc_2_group == new_group:
+            # if it is there, it better be the same as n2_group, or we can't put
+            #     a resistor here
+            if (not wire_loc_2_group) or wire_loc_2_group == n2_group:
               # figure out correct orientation of Resistor_Piece n1 and n2
+              vertical = new_wire.vertical()
               if new_wire.c_1 < new_wire.c_2 or new_wire.r_1 < new_wire.r_2:
-                top_left_loc = new_wire.loc_1
-                if wire_loc_1_group == n2_group:
-                  n1, n2 = n2, n1
+                resistor_piece = Resistor_Piece(n1, n2, r, vertical, label)
+                resistor_piece.top_left_loc = new_wire.loc_1
               else:
-                top_left_loc = new_wire.loc_2
-                if wire_loc_1_group == n1_group:
-                  n1, n2 = n2, n1
-              # create Resistor_Piece
-              resistor_piece = Resistor_Piece(n1, n2, r, new_wire.vertical())
-              resistor_piece.top_left_loc = top_left_loc
+                resistor_piece = Resistor_Piece(n2, n1, r, vertical, label)
+                resistor_piece.top_left_loc = new_wire.loc_2
               # create proto board with resistor
               new_proto_board = proto_board.with_piece(resistor_piece)
               if not wire_loc_2_group:
                 # ensure to mark the oposite location with its apporpriate node
-                new_proto_board = new_proto_board.with_loc_repped(new_group,
+                new_proto_board = new_proto_board.with_loc_repped(n2_group,
                     new_wire.loc_2)
               # would no longer need a resistor for this pair of locations
-              new_resistor_flag = False
+              new_resistor = None
               # and the node for the rest of the wires will be the node for the
               #     other end of the resistor
-              new_node = n2 if n1 == node else n1
+              new_node = n2
             else:
               # placing the resistor would create a violating connection
               add_resistor = False
@@ -183,7 +169,7 @@ class Proto_Board_Search_Node(Search_Node):
             if wire_proto_board_valid:
               # can still put a wire down if allowed
               new_proto_board = wire_proto_board
-              new_resistor_flag = resistor_flag
+              new_resistor = resistor
               new_node = node
             else:
               continue
@@ -195,7 +181,7 @@ class Proto_Board_Search_Node(Search_Node):
             # favor connectedness a lot
             new_cost -= 100
           else:
-            new_loc_pairs[i] = (wire_end, loc_2, new_resistor_flag, new_node)
+            new_loc_pairs[i] = (wire_end, loc_2, new_resistor, new_node)
           # penalize long wires
           new_cost += new_wire.length()
           # penalize many wires
@@ -213,7 +199,7 @@ class Proto_Board_Search_Node(Search_Node):
           #     instead of the resistor
           if add_resistor and wire_proto_board_valid:
             wire_loc_pairs = list(loc_pairs)
-            wire_loc_pairs[i] = (wire_end, loc_2, resistor_flag, node)
+            wire_loc_pairs[i] = (wire_end, loc_2, resistor, node)
             children.append(Proto_Board_Search_Node(wire_proto_board,
                 tuple(wire_loc_pairs), self, new_cost))
     return children
@@ -225,8 +211,8 @@ def goal_test(state):
       False otherwise.
   """
   proto_board, loc_pairs = state
-  return all((not resistor_flag) and proto_board.connected(loc_1, loc_2) for
-      (loc_1, loc_2, resistor_flag, node) in loc_pairs)
+  return all((resistor is None) and proto_board.connected(loc_1, loc_2) for
+      (loc_1, loc_2, resistor, node) in loc_pairs)
 
 def heuristic(state):
   """
@@ -234,16 +220,15 @@ def heuristic(state):
       |state| and a goal state.
   """
   proto_board, loc_pairs = state
-  return sum(dist(loc_1, loc_2) for loc_1, loc_2, resistor_flag, node in
-      loc_pairs)
+  return sum(dist(loc_1, loc_2) for loc_1, loc_2, resistor, node in loc_pairs)
 
 def loc_pair_to_connect_next(loc_pairs):
   """
   Returns the loc pair to connect next out of the given |loc_pairs|.
   """
   assert loc_pairs, 'loc_pairs is empty'
-  return max(loc_pairs, key=lambda (loc_1, loc_2, resistor_flag, node): dist(
-      loc_1, loc_2) + 10 * bool(resistor_flag))
+  return max(loc_pairs, key=lambda (loc_1, loc_2, resistor, node): dist(
+      loc_1, loc_2) + 10 * bool(resistor))
 
 def condense_loc_pairs(loc_pairs, proto_board):
   """
@@ -251,11 +236,11 @@ def condense_loc_pairs(loc_pairs, proto_board):
       structural change is made.
   """
   condensed_loc_pairs = []
-  for (loc_1, loc_2, resistor_flag, node) in loc_pairs:
+  for (loc_1, loc_2, resistor, node) in loc_pairs:
     condensed_loc_pairs.append(tuple(min(product(filter(proto_board.free,
         proto_board.locs_connected_to(loc_1)), filter(proto_board.free,
         proto_board.locs_connected_to(loc_2))), key=lambda (l1, l2): dist(l1,
-        l2))) + (resistor_flag, node))
+        l2))) + (resistor, node))
   return condensed_loc_pairs
 
 def find_wiring(loc_pairs, start_proto_board=Proto_Board()):

@@ -92,10 +92,16 @@ class Proto_Board:
     Returns the node associated with the location |loc|, or None if the location
         is not linked to a node.
     """
+    # check if the loc is on some path of wires
     connected_locs = self.locs_connected_to(loc)
     for wire in self._wires:
       if wire.loc_1 in connected_locs or wire.loc_2 in connected_locs:
         return wire.node
+    # check if the loc is internally connected to one of the circuit pieces
+    for piece in self._pieces:
+      piece_loc_node = piece.node_for(loc)
+      if piece_loc_node:
+        return piece_loc_node
     return None
   def with_loc_disjoint_set_forest(self, loc_disjoint_set_forest):
     """
