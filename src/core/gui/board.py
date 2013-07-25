@@ -117,8 +117,9 @@ class Board(Frame):
     # state to track whether this board has been changed
     self._changed = False
     # state for wire label tooltips
-    self._tooltip_helper = Tooltip_Helper(self._canvas)
-    self._show_label_tooltips = False
+    if self._label_tooltips_enabled:
+      self._tooltip_helper = Tooltip_Helper(self._canvas)
+      self._show_label_tooltips = False
     # setup ui
     self._setup_drawing_board()
     self._setup_bindings()
@@ -594,8 +595,7 @@ class Board(Frame):
     # remove message since an action has resulted in a board change
     self.remove_message()
     # once the board is changed, don't show wire label tooltips
-    if self._label_tooltips_enabled:
-      self.hide_label_tooltips()
+    self.hide_label_tooltips()
   def _add_drawable(self, drawable, offset):
     """
     Adds the given |drawable| at the given |offset|.
@@ -707,7 +707,9 @@ class Board(Frame):
     """
     Stops showing label tooltips.
     """
-    self._show_label_tooltips = False
+    if self._label_tooltips_enabled:
+      self._tooltip_helper.hide_tooltip()
+      self._show_label_tooltips = False
   def get_drawable_offset(self, drawable):
     """
     Returns the offset with which the given |drawable| is drawn. Assumes that
