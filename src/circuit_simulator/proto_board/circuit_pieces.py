@@ -223,6 +223,17 @@ class Op_Amp_Piece(Circuit_Piece):
   def __str__(self):
     return 'Op_Amp_Piece %s %s' % (str([self.n_1, self.n_2, self.n_3, self.n_4,
         self.n_5, self.n_6, self.n_7, self.n_8]), self.dot_bottom_left)
+  def __eq__(self, other):
+    return (isinstance(other, Op_Amp_Piece) and self.n_1 == other.n_1 and
+        self.n_2 == other.n_2 and self.n_3 == other.n_3 and self.n_4 ==
+        other.n_4 and self.n_5 == other.n_5 and self.n_6 == other.n_6 and
+        self.n_7 == other.n_7 and self.n_8 == other.n_8 and self.label ==
+        other.label and self.top_left_loc == other.top_left_loc and
+        self.dot_bottom_left == other.dot_bottom_left)
+  def __hash__(self):
+    return hash((self.n_1, self.n_2, self.n_3, self.n_4, self.n_5, self.n_6,
+        self.n_7, self.n_8, self.label, self.top_left_loc,
+        self.dot_bottom_left))
 
 class Place_Holder_Piece(Circuit_Piece):
   """
@@ -253,6 +264,11 @@ class Place_Holder_Piece(Circuit_Piece):
     return ''
   def __str__(self):
     return 'Place_Holder_Piece %s' % self.n
+  def __eq__(self, other):
+    return (isinstance(other, Place_Holder_Piece) and self.n == other.n and
+        self.top_left_loc == other.top_left_loc)
+  def __hash__(self):
+    return hash((self.n, self.top_left_loc))
 
 class Resistor_Piece(Circuit_Piece):
   """
@@ -337,6 +353,14 @@ class Resistor_Piece(Circuit_Piece):
   def __str__(self):
     return 'Resistor_Piece %s r=%s vertical=%s' % (str([self.n_1, self.n_2]),
         self.r, self.vertical)
+  def __eq__(self, other):
+    return (isinstance(other, Resistor_Piece) and self.n_1 == other.n_1 and
+        self.n_2 == other.n_2 and self.label == other.label and
+        self.top_left_loc == other.top_left_loc and self.r == other.r and
+        self.vertical == other.vertical)
+  def __hash__(self):
+    return hash((self.n_1, self.n_2, self.label, self.top_left_loc, self.r,
+        self.vertical))
 
 class Pot_Piece(Circuit_Piece):
   """
@@ -396,6 +420,14 @@ class Pot_Piece(Circuit_Piece):
   def __str__(self):
     return 'Pot_Piece %s %s' % (str([self.n_top, self.n_middle,
         self.n_bottom]), self.directed_up)
+  def __eq__(self, other):
+    return (isinstance(other, Pot_Piece) and self.n_top == other.n_top and
+        self.n_middle == other.n_middle and self.n_bottom == other.n_bottom and
+        self.label == other.label and self.top_left_loc == other.top_left_loc
+        and self.directed_up == other.directed_up)
+  def __hash__(self):
+    return hash((self.n_top, self.n_middle, self.n_bottom, self.label,
+        self.top_left_loc, self.directed_up))
 
 class N_Pin_Connector_Piece(Circuit_Piece):
   """
@@ -498,6 +530,12 @@ class Motor_Connector_Piece(N_Pin_Connector_Piece):
   def __str__(self):
     return 'Motor_Connector_Piece pin 5: %s, pin 6: %s' % (self.n_pin_5,
         self.n_pin_6)
+  def __eq__(self, other):
+    return (isinstance(other, Motor_Connector_Piece) and self.n_pin_5 ==
+        other.n_pin_5 and self.n_pin_6 == other.n_pin_6 and self.label ==
+        other.label and self.top_left_loc == other.top_left_loc)
+  def __hash__(self):
+    return hash((self.n_pin_5, self.n_pin_6, self.label, self.top_left_loc))
 
 class Robot_Connector_Piece(N_Pin_Connector_Piece):
   """
@@ -528,6 +566,12 @@ class Robot_Connector_Piece(N_Pin_Connector_Piece):
   def __str__(self):
     return 'Robot_Connector_Piece pin 2: %s, pin 4: %s' % (self.n_pin_2,
         self.n_pin_4)
+  def __eq__(self, other):
+    return (isinstance(other, Robot_Connector_Piece) and self.n_pin_2 ==
+        other.n_pin_2 and self.n_pin_4 == other.n_pin_4 and self.label ==
+        other.label and self.top_left_loc == other.top_left_loc)
+  def __hash__(self):
+    return hash((self.n_pin_2, self.n_pin_4, self.label, self.top_left_loc))
 
 class Head_Connector_Piece(N_Pin_Connector_Piece):
   """
@@ -554,3 +598,9 @@ class Head_Connector_Piece(N_Pin_Connector_Piece):
         pin_node)
   def __str__(self):
     return 'Head_Connector_Piece pin_nodes: %s' % str(self.pin_nodes)
+  def __eq__(self, other):
+    return (isinstance(other, Head_Connector_Piece) and self.pin_nodes ==
+        other.pin_nodes and self.label == other.label and self.top_left_loc ==
+        other.top_left_loc)
+  def __hash__(self):
+    return hash(tuple(self.pin_nodes) + (self.label, self.top_left_loc))

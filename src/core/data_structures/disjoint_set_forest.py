@@ -65,3 +65,10 @@ class Disjoint_Set_Forest:
     for x in self._parent:
       disjoint_sets[self.find_set(x)].append(x)
     return '\n'.join(map(str, disjoint_sets.values()))
+  def __eq__(self, other):
+    return (isinstance(other, Disjoint_Set_Forest) and frozenset(
+        self._parent.items()) == frozenset(other._parent.items()) and frozenset(
+        self._rank.items()) == frozenset(other._rank.items()))
+  def __hash__(self):
+    return hash((frozenset(self._parent.items()), frozenset(
+        self._rank.items())))

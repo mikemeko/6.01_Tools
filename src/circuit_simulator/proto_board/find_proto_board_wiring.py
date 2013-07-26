@@ -194,14 +194,14 @@ class Proto_Board_Search_Node(Search_Node):
           #     that get us farther away
           new_cost += dist(wire_end, loc_2) - dist(loc_1, loc_2)
           children.append(Proto_Board_Search_Node(new_proto_board,
-              tuple(new_loc_pairs), self, new_cost))
+              frozenset(new_loc_pairs), self, new_cost))
           # if added a resistor, also create a proto board where we use a wire
           #     instead of the resistor
           if add_resistor and wire_proto_board_valid:
             wire_loc_pairs = list(loc_pairs)
             wire_loc_pairs[i] = (wire_end, loc_2, resistor, node)
             children.append(Proto_Board_Search_Node(wire_proto_board,
-                tuple(wire_loc_pairs), self, new_cost))
+                frozenset(wire_loc_pairs), self, new_cost))
     return children
 
 def goal_test(state):
@@ -257,8 +257,8 @@ def find_wiring(loc_pairs, start_proto_board=Proto_Board()):
     loc_pairs = condense_loc_pairs(loc_pairs, proto_board)
     next_pair = loc_pair_to_connect_next(loc_pairs)
     print '\t%d/%d connecting: %s' % (n - len(loc_pairs) + 1, n, next_pair)
-    proto_board = a_star(Proto_Board_Search_Node(proto_board, (next_pair,)),
-        goal_test, heuristic).state[0]
+    proto_board = a_star(Proto_Board_Search_Node(proto_board, frozenset([
+        next_pair])), goal_test, heuristic).state[0]
     loc_pairs.remove(next_pair)
   print '\tdone.'
   return proto_board

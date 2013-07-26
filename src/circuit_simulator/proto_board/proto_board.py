@@ -222,3 +222,11 @@ class Proto_Board:
         for c in xrange(c_min, c_max + 1):
           grid[r + 1][c + 1] = chars[i % len(chars)]
     return '\n'.join([''.join(row) for row in grid])
+  def __eq__(self, other):
+    return (isinstance(other, Proto_Board) and frozenset(self._wires) ==
+        frozenset(other._wires) and frozenset(self._pieces) == frozenset(
+        other._pieces) and self._loc_disjoint_set_forest ==
+        other._loc_disjoint_set_forest)
+  def __hash__(self):
+    return hash((frozenset(self._wires), frozenset(self._pieces),
+        self._loc_disjoint_set_forest))
