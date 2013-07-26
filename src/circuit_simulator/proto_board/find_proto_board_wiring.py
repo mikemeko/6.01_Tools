@@ -175,7 +175,7 @@ class Proto_Board_Search_Node(Search_Node):
               continue
           # we have a candidate proto board, compute state and cost
           new_loc_pairs = list(loc_pairs)
-          new_cost = self.cost
+          new_cost = self.cost + new_wire.length()
           if proto_board.connected(wire_end, loc_2):
             new_loc_pairs.pop(i)
             # favor connectedness a lot
