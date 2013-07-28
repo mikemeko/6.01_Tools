@@ -108,6 +108,15 @@ class Action_History:
     self._redo_stack = []
     if DEBUG_UNDO:
       print 'Action_History cleared'
+  def combine_last_n(self, n):
+    """
+    Combines the last |n| actions into one action. |n| must be an integer
+        greater than 1. This is kind of hacky, but useful :P
+    """
+    assert isinstance(n, int) and n > 1
+    assert len(self._undo_stack) >= n
+    self._undo_stack = self._undo_stack[:-n] + [Multi_Action(
+        self._undo_stack[-n:])]
   def __str__(self):
     return '%s <|> %s' % (', '.join(map(str, self._undo_stack)),
         ', '.join(map(str, reversed(self._redo_stack))))

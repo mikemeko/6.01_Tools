@@ -380,7 +380,6 @@ class Board(Frame):
     """
     Callback for when wire creation is complete. Updates wire data.
     """
-    # TODO(mikemeko): undo/redo currently deals with one wire at a time
     for start, end, parts in self._wire_parts:
       for point in (start, end):
         if not self._connector_at(point):
@@ -389,6 +388,8 @@ class Board(Frame):
       end_connector = self._connector_at(end)
       # create wire
       self._add_wire(parts, start_connector, end_connector)
+    if len(self._wire_parts) > 1:
+      self._action_history.combine_last_n(len(self._wire_parts))
     # mark the board changed
     self.set_changed(True)
     # reset

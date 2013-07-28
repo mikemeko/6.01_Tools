@@ -83,14 +83,17 @@ class Palette(Frame):
       color = '#%02X%02X%02X' % (randint(0, 200), randint(0, 200),
           randint(0, 200))
       group_id = int(round(time() * 1000))
-      # TODO(mikemeko): add jointly for correct undo redo
+      num_drawables_added = 0
       for add_type, add_disregard_location, add_kwargs in types_to_add:
         add_kwargs['color'] = color
         add_kwargs['group_id'] = group_id
         new_drawable = self._add_item_callback(add_type, offset_x + dx,
             add_disregard_location, **add_kwargs)(event)
         if new_drawable:
+          num_drawables_added += 1
           dx += new_drawable.width + BOARD_GRID_SEPARATION
+      if num_drawables_added > 1:
+        self.board._action_history.combine_last_n(num_drawables_added)
     return callback
   def add_drawable_type(self, drawable_type, side, callback,
       disregard_location=False, types_to_add=None, **kwargs):
