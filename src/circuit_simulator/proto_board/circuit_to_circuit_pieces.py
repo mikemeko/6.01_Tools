@@ -23,7 +23,6 @@ from circuit_pieces import Place_Holder_Piece
 from circuit_pieces import Pot_Piece
 from circuit_pieces import Resistor_Piece
 from circuit_pieces import Robot_Connector_Piece
-# TODO(mikemeko): this is kind of hacky, coupled with board parsing
 from circuit_simulator.main.constants import GROUND
 from circuit_simulator.main.constants import POWER
 from circuit_simulator.simulation.circuit import Circuit

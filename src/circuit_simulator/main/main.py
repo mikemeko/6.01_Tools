@@ -26,6 +26,9 @@ from circuit_simulator.proto_board.circuit_piece_placement import (
     locs_for_node)
 from circuit_simulator.proto_board.circuit_to_circuit_pieces import (
     get_piece_placement)
+from circuit_simulator.proto_board.constants import GROUND_RAIL
+from circuit_simulator.proto_board.constants import POWER_RAIL
+from circuit_simulator.proto_board.constants import RAIL_LEGAL_COLUMNS
 from circuit_simulator.proto_board.find_proto_board_wiring import find_wiring
 from circuit_simulator.proto_board.proto_board import Proto_Board
 from circuit_simulator.proto_board.util import node_disjoint_set_forest
@@ -37,7 +40,9 @@ from constants import BOARD_HEIGHT
 from constants import BOARD_WIDTH
 from constants import DEV_STAGE
 from constants import FILE_EXTENSION
+from constants import GROUND
 from constants import PALETTE_HEIGHT
+from constants import POWER
 from constants import PROBE_INIT_PADDING
 from constants import PROBE_SIZE
 from core.gui.app_runner import App_Runner
@@ -96,23 +101,37 @@ if __name__ == '__main__':
         discovered proto board.
     """
     try:
+      # get a placement for the appropriate circuit pieces
       placement, resistor_node_pairs = get_piece_placement(circuit)
+      # put each of the pieces on the proto board
       proto_board = Proto_Board()
       for piece in placement:
         proto_board = proto_board.with_piece(piece)
+      # get all the nodes in the circuit and their respective locations on the
+      #     proto board
       nodes = all_nodes(placement)
+      node_locs_mapping = dict(zip(nodes, map(lambda node: locs_for_node(
+          placement, node), nodes)))
+      # force the bottom two rails to be power and ground rails
+      node_locs_mapping[GROUND].append((GROUND_RAIL, iter(
+          RAIL_LEGAL_COLUMNS).next()))
+      node_locs_mapping[POWER].append((POWER_RAIL, iter(
+          RAIL_LEGAL_COLUMNS).next()))
+      # find wiring on the proto board to interconnect all locations of the same
+      #     node
       proto_board = proto_board.with_loc_disjoint_set_forest(
-          node_disjoint_set_forest(dict(zip(nodes, map(lambda node:
-          locs_for_node(placement, node), nodes)))))
+          node_disjoint_set_forest(node_locs_mapping))
       proto_board = find_wiring(loc_pairs_to_connect(placement,
           resistor_node_pairs), proto_board)
+      # show labels on board for easy schematic-layout matching
+      app_runner.board.show_label_tooltips()
+      # visualize proto board
       show_pwr_gnd_pins = not any([isinstance(component, Robot_Connector) for
           component in circuit.components])
       visualize_proto_board(proto_board, Toplevel(), show_pwr_gnd_pins)
-      app_runner.board.show_label_tooltips()
     except:
       app_runner.board.display_message('Could not find proto board wiring',
-          ERROR)
+          ERROR, False)
   # add circuit components to palette
   app_runner.palette.add_drawable_type(Power_Drawable, LEFT, None)
   app_runner.palette.add_drawable_type(Ground_Drawable, LEFT, None)

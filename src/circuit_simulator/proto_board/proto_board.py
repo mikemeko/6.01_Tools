@@ -202,12 +202,12 @@ class Proto_Board:
     """
     # represent proto board as a grid
     grid = [[' '] * (PROTO_BOARD_WIDTH + 1) for row in xrange(
-        PROTO_BOARD_HEIGHT + 1)]
+        PROTO_BOARD_HEIGHT + 2)]
     # write out row and column numbers
     for r in xrange(PROTO_BOARD_HEIGHT):
       grid[r + 1][0] = str(r % 10)
     for c in xrange(PROTO_BOARD_WIDTH):
-      grid[0][c + 1] = str(c % 10)
+      grid[0][c + 1] = grid[PROTO_BOARD_HEIGHT + 1][c + 1] = str(c % 10)
     # write out a box of !s for each piece
     for piece in self._pieces:
       for (r, c) in piece.all_locs():

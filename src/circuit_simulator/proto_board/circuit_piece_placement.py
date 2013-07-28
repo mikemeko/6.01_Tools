@@ -6,7 +6,6 @@ Tools to figure out a good placement of circuit pieces on the proto board given
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
 from circuit_pieces import Circuit_Piece
-# TODO(mikemeko): this is kind of hacky, coupled with board parsing
 from circuit_simulator.main.constants import GROUND
 from circuit_simulator.main.constants import POWER
 from collections import defaultdict

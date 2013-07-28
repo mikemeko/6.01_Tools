@@ -40,7 +40,7 @@ class Search_Node:
     return path
 
 def a_star(start_node, goal_test, heuristic=lambda state: 0,
-    progress=lambda state, cost: None):
+    progress=lambda state, cost: None, max_states_to_expand=None):
   """
   Runs an A* search starting at |start_node| until a node that satisfies the
       |goal_test| is found. |goal_test| should be a function that takes in a
@@ -53,6 +53,8 @@ def a_star(start_node, goal_test, heuristic=lambda state: 0,
   For progress checks, everytime a node is popped out of the priority queue,
       this methods calls |progress| with the state and cost of the node that
       was just popped.
+  So that a search problem does not take too long without success, may give a
+      |max_states_to_expand| after which the search stops and returns None.
   """
   if goal_test(start_node.state):
     return start_node
@@ -69,4 +71,6 @@ def a_star(start_node, goal_test, heuristic=lambda state: 0,
       for child in parent.get_children():
         if child.state not in expanded:
           agenda.push(child, child.cost + heuristic(child.state))
+    if max_states_to_expand and len(agenda) > max_states_to_expand:
+      return None
   return None

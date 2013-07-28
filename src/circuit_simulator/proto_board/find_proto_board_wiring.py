@@ -8,6 +8,7 @@ __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 from circuit_pieces import Resistor_Piece
 from constants import ALLOW_PIECE_CROSSINGS
 from constants import ALLOW_WIRE_CROSSINGS
+from constants import MAX_STATES_TO_EXPAND
 from constants import RAIL_ROWS
 from constants import ROWS
 from core.search.search import a_star
@@ -24,7 +25,6 @@ from wire import Wire
 class Proto_Board_Search_Node(Search_Node):
   """
   Search_Node for proto board wiring problem.
-  TODO(mikemeko): implement smart __eq__ and __hash__ for state.
   """
   def __init__(self, proto_board, loc_pairs, parent=None, cost=0):
     """
@@ -258,7 +258,8 @@ def find_wiring(loc_pairs, start_proto_board=Proto_Board()):
     next_pair = loc_pair_to_connect_next(loc_pairs)
     print '\t%d/%d connecting: %s' % (n - len(loc_pairs) + 1, n, next_pair)
     proto_board = a_star(Proto_Board_Search_Node(proto_board, frozenset([
-        next_pair])), goal_test, heuristic).state[0]
+        next_pair])), goal_test, heuristic,
+        max_states_to_expand=MAX_STATES_TO_EXPAND).state[0]
     loc_pairs.remove(next_pair)
   print '\tdone.'
   return proto_board
