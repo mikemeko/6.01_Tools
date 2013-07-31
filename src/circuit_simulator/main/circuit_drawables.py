@@ -85,20 +85,20 @@ class Pin_Drawable(Drawable):
   """
   Abstract Drawable to represent basic pins. Draws a box with a label.
   """
-  def __init__(self, label, fill, width, height, connectors=0):
+  def __init__(self, text, fill, width, height, connectors=0):
     """
-    |label|: label for this pin.
+    |text|: label for this pin.
     |fill|: color for this pin.
     """
     Drawable.__init__(self, width, height, connectors)
-    self.label = label
+    self.text = text
     self.fill = fill
   def draw_on(self, canvas, offset=(0, 0)):
     ox, oy = offset
     self.parts.add(canvas.create_rectangle((ox, oy, ox + self.width,
         oy + self.height), fill=self.fill, outline=PIN_OUTLINE))
     self.parts.add(canvas.create_text(ox + self.width / 2,
-        oy + self.height / 2, text=self.label, fill=PIN_TEXT_COLOR,
+        oy + self.height / 2, text=self.text, fill=PIN_TEXT_COLOR,
         width=.8 * self.width, justify=CENTER, font=FONT))
 
 class Power_Drawable(Pin_Drawable):

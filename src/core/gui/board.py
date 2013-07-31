@@ -20,11 +20,10 @@ from constants import BOARD_MARKER_LINE_COLOR
 from constants import BOARD_GRID_SEPARATION
 from constants import BOARD_WIDTH
 from constants import CONNECTOR_RADIUS
-from constants import CONNECTOR_TAG
+from constants import CONNECTOR_WIDTH
 from constants import CTRL_CURSOR
 from constants import CTRL_DOWN
 from constants import DEBUG_DISPLAY_WIRE_LABELS
-from constants import DRAG_TAG
 from constants import ERROR
 from constants import GUIDE_LINE_COLOR
 from constants import INFO
@@ -45,7 +44,9 @@ from constants import TOOLTIP_DRAWABLE_LABEL_BACKGROUND
 from constants import WARNING
 from core.undo.undo import Action
 from core.undo.undo import Action_History
+from core.undo.undo import Multi_Action
 from core.util.util import is_callable
+from core.util.util import rects_overlap
 from find_wire_path_simple import find_wire_path
 from threading import Timer
 from time import time
@@ -95,10 +96,16 @@ class Board(Frame):
     self._drawables = {}
     # undo / redo
     self._action_history = Action_History()
+    # state for button click: dragging or selection or wire drawing
+    self._current_button_action = None
     # state for dragging
-    self._drag_item = None
+    self._drag_drawables = set()
     self._drag_start_point = None
     self._drag_last_point = None
+    # state for selection
+    self._selection_start_point = None
+    self._selection_end_point = None
+    self._selection_outline_canvas_id = None
     # state for drawing wires
     self._wire_start = None
     self._wire_end = None
@@ -134,48 +141,14 @@ class Board(Frame):
           self.height), fill=BOARD_MARKER_LINE_COLOR))
     self._canvas.pack()
     self.pack()
-  def _maybe_show_tooltip(self, event):
-    """
-    If the cursor is on a wire or wire connector, and we are showing wire
-        labels, displays a tooltip of the wire label close to the cursor.
-        If the cursor is on a drawable, displays a tooltip of the drawable
-        label.
-    """
-    if self._label_tooltips_enabled and self._show_label_tooltips:
-      # check if the cursor is on a wire connector
-      connector = self._connector_at((event.x, event.y))
-      if connector:
-        if isinstance(connector.drawable, Wire_Connector_Drawable):
-          wires = list(connector.wires())
-          if wires:
-            self._tooltip_helper.show_tooltip(event.x, event.y, wires[0].label)
-        return
-      drawable = self._drawable_at((event.x, event.y))
-      if drawable:
-        if not isinstance(drawable, Wire_Connector_Drawable):
-          self._tooltip_helper.show_tooltip(event.x, event.y, drawable.label,
-              background=TOOLTIP_DRAWABLE_LABEL_BACKGROUND)
-        return
-      # check if the cursor is on a wire
-      canvas_id = self._canvas.find_closest(event.x, event.y)[0]
-      wire = self._wire_with_id(canvas_id)
-      if wire:
-        self._tooltip_helper.show_tooltip(event.x, event.y, wire.label)
-      else:
-        self._tooltip_helper.hide_tooltip()
   def _setup_bindings(self):
     """
     Makes all necessary event bindings.
     """
-    # drag bindings
-    self._canvas.tag_bind(DRAG_TAG, '<ButtonPress-1>', self._drag_press)
-    self._canvas.tag_bind(DRAG_TAG, '<B1-Motion>', self._drag_move)
-    self._canvas.tag_bind(DRAG_TAG, '<ButtonRelease-1>', self._drag_release)
-    # wire drawing bindings
-    self._canvas.tag_bind(CONNECTOR_TAG, '<ButtonPress-1>', self._wire_press)
-    self._canvas.tag_bind(CONNECTOR_TAG, '<B1-Motion>', self._wire_move)
-    self._canvas.tag_bind(CONNECTOR_TAG, '<ButtonRelease-1>',
-        self._wire_release)
+    # drag, selection, and wire drawing bindings
+    self._canvas.bind('<ButtonPress-1>', self._canvas_button_press)
+    self._canvas.bind('<B1-Motion>', self._canvas_button_move)
+    self._canvas.bind('<ButtonRelease-1>', self._canvas_button_release)
     # delete binding
     self._canvas.tag_bind(ALL, '<Control-Button-1>', self._delete)
     # key-press and key-release bindings
@@ -206,7 +179,8 @@ class Board(Frame):
     for drawable in self._get_drawables():
       for connector in drawable.connectors:
         cx, cy = connector.center
-        if point_inside_circle(point, (cx, cy, CONNECTOR_RADIUS)):
+        if point_inside_circle(point, (cx, cy, CONNECTOR_RADIUS +
+            CONNECTOR_WIDTH)):
           return connector
     return None
   def _wire_with_id(self, canvas_id):
@@ -264,51 +238,137 @@ class Board(Frame):
       drawable.move(self._canvas, dx, dy)
       # update the drawable's offset
       self._update_drawable_offset(drawable, dx, dy)
+  def _empty_current_drawable_selection(self):
+    """
+    Voids the current selection of drawables, if any.
+    """
+    if self._drag_drawables:
+      # hide all bounding box outlines
+      for drawable in self._drag_drawables:
+        drawable.hide_bounding_box_outline(self._canvas)
+      self._drag_drawables.clear()
+  def _remove_current_selection_outline(self):
+    """
+    Removes the currently drawn rectangle that shows drawable selection.
+    """
+    if self._selection_outline_canvas_id is not None:
+      self._canvas.delete(self._selection_outline_canvas_id)
+      self._selection_outline_canvas_id = None
+  def _redraw_selection_outline(self):
+    """
+    Redraws the rectangle that shows drawable selection.
+    """
+    assert (self._selection_start_point is not None and
+        self._selection_end_point is not None)
+    self._remove_current_selection_outline()
+    self._selection_outline_canvas_id = self._canvas.create_rectangle(
+        self._selection_start_point, self._selection_end_point, fill='')
+  def _select(self, drawable):
+    """
+    Selects the given |drawable| by adding it to the set of selected items and
+        outlining it to indicate selection. Outline is not drawn for
+        Wire_Connector_Drawables.
+    """
+    if not isinstance(drawable, Wire_Connector_Drawable):
+      drawable.show_bounding_box_outline(self._canvas, self.get_drawable_offset(
+          drawable))
+    self._drag_drawables.add(drawable)
+  def _deselect(self, drawable):
+    """
+    Deselects the given |drawable|, if it had been selected, by removing it from
+        the set of selected items and removing the selection outline.
+    """
+    if drawable in self._drag_drawables:
+      self._drag_drawables.remove(drawable)
+      drawable.hide_bounding_box_outline(self._canvas)
   def _drag_press(self, event):
     """
-    Callback for when a drawable item is clicked. Updates drag state.
+    Callback for button press for dragging.
     """
-    self._drag_item = self._drawable_at((event.x, event.y))
-    if self._drag_item:
-      self._drag_start_point = self._drag_last_point = (event.x, event.y)
+    selected_drawable = self._drawable_at((event.x, event.y))
+    assert selected_drawable
+    # if this drawable is not one of the currently selected drawables, clear
+    #     current selection
+    if selected_drawable not in self._drag_drawables:
+      self._empty_current_drawable_selection()
+    # select this drawable
+    self._select(selected_drawable)
+    # record drag state
+    self._drag_start_point = self._drag_last_point = (event.x, event.y)
   def _drag_move(self, event):
     """
-    Callback for when a drawable item is being moved. Updates drag state.
+    Callback for button move for dragging.
     """
-    if self._drag_item:
-      # move the drawable being dragged
-      last_x, last_y = self._drag_last_point
-      dx = snap(event.x - last_x)
-      dy = snap(event.y - last_y)
-      self._move_drawable(self._drag_item, dx, dy)
-      # redraw guide lines
-      x1, y1, x2, y2 = self._drag_item.bounding_box(self.get_drawable_offset(
-          self._drag_item))
-      self._draw_guide_lines([(x1, y1), (x2, y2)])
-      # update drag state
+    # there better be drawables to drag on call to this callback
+    assert self._drag_drawables and self._drag_last_point is not None
+    last_x, last_y = self._drag_last_point
+    # drag movement amount
+    dx = snap(event.x - last_x)
+    dy = snap(event.y - last_y)
+    # move each of the selected drawables
+    for drawable in self._drag_drawables:
+      self._move_drawable(drawable, dx, dy)
       self._drag_last_point = (last_x + dx, last_y + dy)
+    # if there's only one drawable being dragged, show guide lines
+    if len(self._drag_drawables) == 1:
+      drawable = iter(self._drag_drawables).next()
+      x1, y1, x2, y2 = drawable.bounding_box(self.get_drawable_offset(drawable))
+      self._draw_guide_lines([(x1, y1), (x2, y2)])
   def _drag_release(self, event):
     """
-    Callback for when a drawable item is released. Updates drag state.
+    Callback for button release for dragging.
     """
-    if self._drag_item:
-      # save drag item to enable undo / redo
-      drawable = self._drag_item
-      start_x, start_y = self._drag_start_point
-      end_x, end_y = self._drag_last_point
-      dx = end_x - start_x
-      dy = end_y - start_y
-      if dx or dy:
-        # +dx, +dy to do move, -dx, -dy to undo move
-        self._action_history.record_action(Action(
-            lambda: self._move_drawable(drawable, dx, dy),
-            lambda: self._move_drawable(drawable, -dx, -dy), 'move'))
-      # remove last drawn guide lines
-      self._remove_guide_lines()
+    assert (self._drag_start_point is not None and self._drag_last_point is not
+        None)
+    sx, sy = self._drag_start_point
+    ex, ey = self._drag_last_point
+    dx, dy = ex - sx, ey - sy
+    if dx or dy:
+      # record movement action for undo / redo
+      self._action_history.record_action(Multi_Action(map(lambda drawable:
+          Action(lambda: self._move_drawable(drawable, dx, dy),
+          lambda: self._move_drawable(drawable, -dx, -dy), 'move'),
+          self._drag_drawables), 'moves'))
+    # remove guide lines if shown
+    self._remove_guide_lines()
     # reset
-    self._drag_item = None
     self._drag_start_point = None
     self._drag_last_point = None
+  def _select_press(self, event):
+    """
+    Callback for button press for selection.
+    """
+    # empty current selection
+    self._empty_current_drawable_selection()
+    # record selection start point
+    self._selection_start_point = (snap(event.x), snap(event.y))
+  def _select_move(self, event):
+    """
+    Callback for button move for selection.
+    """
+    assert self._selection_start_point
+    # redraw selection rectangle
+    self._selection_end_point = (snap(event.x), snap(event.y))
+    self._redraw_selection_outline()
+    # outline each of the overlapping drawables
+    sx, sy = self._selection_start_point
+    ex, ey = self._selection_end_point
+    selection_bbox = (min(sx, ex), min(sy, ey), max(sx, ex), max(sy, ey))
+    for drawable in self._get_drawables():
+      if rects_overlap(drawable.bounding_box(self.get_drawable_offset(
+          drawable)), selection_bbox):
+        self._select(drawable)
+      else:
+        self._deselect(drawable)
+  def _select_release(self, event):
+    """
+    Callback for button release for selection.
+    """
+    # remove selection rectangle
+    self._remove_current_selection_outline()
+    # reset
+    self._selection_start_point = None
+    self._selection_end_point = None
   def _erase_previous_wire_path(self):
     """
     Erases the previous version (if any) of the wire path currently being drawn.
@@ -351,9 +411,9 @@ class Board(Frame):
         lambda: wire.delete_from(self._canvas), 'wire'))
   def _wire_press(self, event):
     """
-    Callback for when a connector is pressed to start creating a wire. Updates
-        wire data.
+    Callback for when a connector is pressed to start creating a wire.
     """
+    self._empty_current_drawable_selection()
     self._wire_start = (snap(event.x), snap(event.y))
     # if there isn't a connector at wire start, or if that connector is
     #     disabled, don't allow drawing wire
@@ -363,7 +423,7 @@ class Board(Frame):
       self._wire_start = None
   def _wire_move(self, event):
     """
-    Callback for when a wire is changed while being created. Updates wire data.
+    Callback for when a wire is changed while being created.
     """
     if self._wire_start:
       wire_end = (snap(event.x), snap(event.y))
@@ -378,7 +438,7 @@ class Board(Frame):
           self._draw_wire(wire_path[i], wire_path[i + 1])
   def _wire_release(self, event):
     """
-    Callback for when wire creation is complete. Updates wire data.
+    Callback for when wire creation is complete.
     """
     for start, end, parts in self._wire_parts:
       for point in (start, end):
@@ -396,6 +456,50 @@ class Board(Frame):
     self._wire_start = None
     self._wire_end = None
     self._wire_parts = []
+  def _canvas_button_press(self, event):
+    """
+    Callback for button press.
+    """
+    drawable = self._drawable_at((event.x, event.y))
+    if self._connector_at((event.x, event.y)) or (drawable and isinstance(
+      drawable, Wire_Connector_Drawable)):
+      self._current_button_action = 'wire'
+      self._wire_press(event)
+    elif drawable:
+      self._current_button_action = 'drag'
+      self._drag_press(event)
+    else:
+      self._current_button_action = 'select'
+      self._select_press(event)
+  def _canvas_button_move(self, event):
+    """
+    Callback for button move.
+    """
+    assert self._current_button_action
+    if self._current_button_action == 'wire':
+      self._wire_move(event)
+    elif self._current_button_action == 'drag':
+      self._drag_move(event)
+    elif self._current_button_action == 'select':
+      self._select_move(event)
+    else:
+      # should never get here
+      raise Exception('Unexpected current button action')
+  def _canvas_button_release(self, event):
+    """
+    Callback for button release.
+    """
+    assert self._current_button_action
+    if self._current_button_action == 'wire':
+      self._wire_release(event)
+    elif self._current_button_action == 'drag':
+      self._drag_release(event)
+    elif self._current_button_action == 'select':
+      self._select_release(event)
+    else:
+      # should never get here
+      raise Exception('Unexpected current button action')
+    self._current_button_action = None
   def add_wire(self, x1, y1, x2, y2):
     """
     Adds a wire to this board going from (|x1|, |y1|) to (|x2|, |y2|). This
@@ -447,6 +551,7 @@ class Board(Frame):
     """
     Callback for when a key is pressed.
     """
+    # TODO(mikemeko): arrow keys and delete for selected drawables
     if event.keysym in ('Control_L', 'Control_R'):
       self._ctrl_pressed = True
       self.configure(cursor=CTRL_CURSOR)
@@ -497,6 +602,35 @@ class Board(Frame):
         self._action_history.record_action(Action(
             lambda: switch(drawable_to_rotate, rotated_drawable),
             lambda: switch(rotated_drawable, drawable_to_rotate), 'rotate'))
+  def _maybe_show_tooltip(self, event):
+    """
+    If the cursor is on a wire or wire connector, and we are showing wire
+        labels, displays a tooltip of the wire label close to the cursor.
+        If the cursor is on a drawable, displays a tooltip of the drawable
+        label.
+    """
+    if self._label_tooltips_enabled and self._show_label_tooltips:
+      # check if the cursor is on a wire connector
+      connector = self._connector_at((event.x, event.y))
+      if connector:
+        if isinstance(connector.drawable, Wire_Connector_Drawable):
+          wires = list(connector.wires())
+          if wires:
+            self._tooltip_helper.show_tooltip(event.x, event.y, wires[0].label)
+        return
+      drawable = self._drawable_at((event.x, event.y))
+      if drawable:
+        if not isinstance(drawable, Wire_Connector_Drawable):
+          self._tooltip_helper.show_tooltip(event.x, event.y, drawable.label,
+              background=TOOLTIP_DRAWABLE_LABEL_BACKGROUND)
+        return
+      # check if the cursor is on a wire
+      canvas_id = self._canvas.find_closest(event.x, event.y)[0]
+      wire = self._wire_with_id(canvas_id)
+      if wire:
+        self._tooltip_helper.show_tooltip(event.x, event.y, wire.label)
+      else:
+        self._tooltip_helper.hide_tooltip()
   def quit(self):
     """
     Callback on exit.
@@ -621,6 +755,7 @@ class Board(Frame):
         action in the action history.
     """
     assert isinstance(drawable, Drawable), 'drawable must be a Drawable'
+    self._empty_current_drawable_selection()
     self._add_drawable(drawable, offset)
     self._action_history.record_action(Action(
         lambda: drawable.redraw(self._canvas),

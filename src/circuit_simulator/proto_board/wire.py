@@ -4,8 +4,8 @@ Representation for a wire on a proto board.
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
+from core.util.util import overlap
 from util import dist
-from util import overlap
 
 class Wire:
   """

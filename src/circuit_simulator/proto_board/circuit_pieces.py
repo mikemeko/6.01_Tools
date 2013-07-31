@@ -23,9 +23,9 @@ from constants import RESISTOR_COLORS
 from constants import RESISTOR_INNER_COLOR
 from constants import RESISTOR_OUTER_COLOR
 from core.gui.util import create_circle
+from core.util.util import rects_overlap
 from Tkinter import CENTER
 from util import loc_to_cmax_rep
-from util import rects_overlap
 from util import section_locs
 from visualization.constants import CONNECTOR_SIZE
 from visualization.constants import CONNECTOR_SPACING

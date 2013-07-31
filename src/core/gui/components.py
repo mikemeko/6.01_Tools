@@ -17,7 +17,6 @@ from constants import CONNECTOR_RADIUS
 from constants import CONNECTOR_RIGHT
 from constants import CONNECTOR_TOP
 from constants import DEBUG_DISPLAY_WIRE_LABELS
-from constants import DRAG_TAG
 from constants import ROTATE_TAG
 from constants import RUN_RECT_FILL
 from constants import RUN_RECT_OUTLINE
@@ -54,6 +53,8 @@ class Drawable:
     self.connectors = set()
     # flag for whether this drawable is on the board / deleted
     self._live = True
+    # bounding box outline
+    self._bbox_outline_canvas_id = None
   def draw_on(self, canvas, offset):
     """
     Draws the parts of this item on the |canvas| at the given |offset|. Should
@@ -108,6 +109,25 @@ class Drawable:
     x1, y1 = offset
     x2, y2 = x1 + self.width, y1 + self.height
     return x1, y1, x2, y2
+  def show_bounding_box_outline(self, canvas, offset):
+    """
+    Draws a rectangle on the given |canvas| outlining the bounding box of this
+        Drawable.
+    """
+    if self._bbox_outline_canvas_id is None:
+      x1, y1, x2, y2 = self.bounding_box(offset)
+      self._bbox_outline_canvas_id = canvas.create_rectangle(x1 - 1, y1 - 1,
+          x2 + 2, y2 + 2, fill='', outline='red', width=2)
+      self.parts.add(self._bbox_outline_canvas_id)
+  def hide_bounding_box_outline(self, canvas):
+    """
+    Hides the bounding box outline drawn on the given |canvas|, if drawn.
+    """
+    if self._bbox_outline_canvas_id is not None:
+      canvas.delete(self._bbox_outline_canvas_id)
+      if self._bbox_outline_canvas_id in self.parts:
+        self.parts.remove(self._bbox_outline_canvas_id)
+      self._bbox_outline_canvas_id = None
   def _draw_connector(self, canvas, point, enabled=True):
     """
     |point|: a tuple of the form (x, y) indicating where the connecter should
@@ -139,7 +159,7 @@ class Drawable:
       self._draw_connector(canvas, (x2, (y1 + y2) / 2))
     if self.connector_flags & CONNECTOR_TOP:
       self._draw_connector(canvas, ((x1 + x2) / 2, y1))
-  def attach_tags(self, canvas, tags=(DRAG_TAG, ROTATE_TAG)):
+  def attach_tags(self, canvas, tags=ROTATE_TAG):
     """
     |tags|: a tuple of the tags to attach.
     Attaches the given |tags| to every part of this drawable on the canvas.

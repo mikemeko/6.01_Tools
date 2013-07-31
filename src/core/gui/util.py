@@ -10,8 +10,8 @@ from constants import CONNECTOR_CENTER
 from constants import CONNECTOR_LEFT
 from constants import CONNECTOR_RADIUS
 from constants import CONNECTOR_RIGHT
-from constants import CONNECTOR_TAG
 from constants import CONNECTOR_TOP
+from constants import CONNECTOR_WIDTH
 from constants import DEFAULT_FONT
 from constants import WIRE_ARROW_LENGTH
 from constants import WIRE_COLOR
@@ -101,7 +101,7 @@ def create_connector(canvas, x, y, fill, outline, active_width):
   Returns the canvas id of the created object.
   """
   return create_circle(canvas, x, y, CONNECTOR_RADIUS, fill=fill,
-      outline=outline, activewidth=active_width, tags=CONNECTOR_TAG)
+      outline=outline, width=CONNECTOR_WIDTH, activewidth=active_width)
 
 def create_wire(canvas, x1, y1, x2, y2, directed=True):
   """
