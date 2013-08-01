@@ -99,10 +99,10 @@ class Board(Frame):
     # state for button click: dragging or selection or wire drawing
     self._current_button_action = None
     # state for dragging
-    self._drag_drawables = set()
     self._drag_start_point = None
     self._drag_last_point = None
     # state for selection
+    self._selected_drawables = set()
     self._selection_start_point = None
     self._selection_end_point = None
     self._selection_outline_canvas_id = None
@@ -242,11 +242,11 @@ class Board(Frame):
     """
     Voids the current selection of drawables, if any.
     """
-    if self._drag_drawables:
+    if self._selected_drawables:
       # hide all bounding box outlines
-      for drawable in self._drag_drawables:
+      for drawable in self._selected_drawables:
         drawable.hide_bounding_box_outline(self._canvas)
-      self._drag_drawables.clear()
+      self._selected_drawables.clear()
   def _remove_current_selection_outline(self):
     """
     Removes the currently drawn rectangle that shows drawable selection.
@@ -272,14 +272,14 @@ class Board(Frame):
     if not isinstance(drawable, Wire_Connector_Drawable):
       drawable.show_bounding_box_outline(self._canvas, self.get_drawable_offset(
           drawable))
-    self._drag_drawables.add(drawable)
+    self._selected_drawables.add(drawable)
   def _deselect(self, drawable):
     """
     Deselects the given |drawable|, if it had been selected, by removing it from
         the set of selected items and removing the selection outline.
     """
-    if drawable in self._drag_drawables:
-      self._drag_drawables.remove(drawable)
+    if drawable in self._selected_drawables:
+      self._selected_drawables.remove(drawable)
       drawable.hide_bounding_box_outline(self._canvas)
   def _drag_press(self, event):
     """
@@ -289,7 +289,7 @@ class Board(Frame):
     assert selected_drawable
     # if this drawable is not one of the currently selected drawables, clear
     #     current selection
-    if selected_drawable not in self._drag_drawables:
+    if selected_drawable not in self._selected_drawables:
       self._empty_current_drawable_selection()
     # select this drawable
     self._select(selected_drawable)
@@ -300,18 +300,18 @@ class Board(Frame):
     Callback for button move for dragging.
     """
     # there better be drawables to drag on call to this callback
-    assert self._drag_drawables and self._drag_last_point is not None
+    assert self._selected_drawables and self._drag_last_point is not None
     last_x, last_y = self._drag_last_point
     # drag movement amount
     dx = snap(event.x - last_x)
     dy = snap(event.y - last_y)
     # move each of the selected drawables
-    for drawable in self._drag_drawables:
+    for drawable in self._selected_drawables:
       self._move_drawable(drawable, dx, dy)
       self._drag_last_point = (last_x + dx, last_y + dy)
     # if there's only one drawable being dragged, show guide lines
-    if len(self._drag_drawables) == 1:
-      drawable = iter(self._drag_drawables).next()
+    if len(self._selected_drawables) == 1:
+      drawable = iter(self._selected_drawables).next()
       x1, y1, x2, y2 = drawable.bounding_box(self.get_drawable_offset(drawable))
       self._draw_guide_lines([(x1, y1), (x2, y2)])
   def _drag_release(self, event):
@@ -328,7 +328,7 @@ class Board(Frame):
       self._action_history.record_action(Multi_Action(map(lambda drawable:
           Action(lambda: self._move_drawable(drawable, dx, dy),
           lambda: self._move_drawable(drawable, -dx, -dy), 'move'),
-          self._drag_drawables), 'moves'))
+          self._selected_drawables), 'moves'))
     # remove guide lines if shown
     self._remove_guide_lines()
     # reset
@@ -547,17 +547,36 @@ class Board(Frame):
     """
     assert is_callable(callback), 'callback must be callable'
     self._key_press_callbacks[(key.lower(), flags)] = callback
+  def _move_selected_items(self, dx, dy):
+    """
+    Moves the currently selected items by |dx| in the x-direction and |dy| in
+        the y-direction.
+    """
+    if self._selected_drawables and (dx or dy):
+      for drawable in self._selected_drawables:
+        self._move_drawable(drawable, dx, dy)
+      self._action_history.record_action(Multi_Action(map(lambda drawable:
+          Action(lambda: self._move_drawable(drawable, dx, dy),
+          lambda: self._move_drawable(drawable, -dx, -dy), 'move'),
+          self._selected_drawables), 'moves'))
   def _key_press(self, event):
     """
     Callback for when a key is pressed.
     """
-    # TODO(mikemeko): arrow keys and delete for selected drawables
     if event.keysym in ('Control_L', 'Control_R'):
       self._ctrl_pressed = True
       self.configure(cursor=CTRL_CURSOR)
     elif event.keysym in ('Shift_L', 'Shift_R'):
       self._shift_pressed = True
       self.configure(cursor=SHIFT_CURSOR)
+    elif event.keysym == 'Down':
+      self._move_selected_items(0, BOARD_GRID_SEPARATION)
+    elif event.keysym == 'Left':
+      self._move_selected_items(-BOARD_GRID_SEPARATION, 0)
+    elif event.keysym == 'Right':
+      self._move_selected_items(BOARD_GRID_SEPARATION, 0)
+    elif event.keysym == 'Up':
+      self._move_selected_items(0, -BOARD_GRID_SEPARATION)
     else:
       current_key = event.keysym.lower()
       current_flags = (CTRL_DOWN * self._ctrl_pressed) | (SHIFT_DOWN &
