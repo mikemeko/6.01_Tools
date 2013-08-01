@@ -559,6 +559,17 @@ class Board(Frame):
           Action(lambda: self._move_drawable(drawable, dx, dy),
           lambda: self._move_drawable(drawable, -dx, -dy), 'move'),
           self._selected_drawables), 'moves'))
+  def _delete_selected_items(self):
+    """
+    Deletes the currently selected items.
+    """
+    if self._selected_drawables:
+      if all([drawable.deletable() for drawable in self._selected_drawables]):
+        self._action_history.record_action(Multi_Action([drawable.delete_from(
+            self._canvas) for drawable in self._selected_drawables], 'deletes'))
+      else:
+        self.display_message('At least one of the selected items cannot be '
+            'deleted', WARNING)
   def _key_press(self, event):
     """
     Callback for when a key is pressed.
@@ -577,6 +588,8 @@ class Board(Frame):
       self._move_selected_items(BOARD_GRID_SEPARATION, 0)
     elif event.keysym == 'Up':
       self._move_selected_items(0, -BOARD_GRID_SEPARATION)
+    elif event.keysym in ('BackSpace', 'Delete'):
+      self._delete_selected_items()
     else:
       current_key = event.keysym.lower()
       current_flags = (CTRL_DOWN * self._ctrl_pressed) | (SHIFT_DOWN &
