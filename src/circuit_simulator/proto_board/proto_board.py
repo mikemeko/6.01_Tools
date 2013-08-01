@@ -6,6 +6,7 @@ __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
 from constants import PROTO_BOARD_WIDTH
 from constants import PROTO_BOARD_HEIGHT
+from constants import RAIL_ILLEGAL_COLUMNS
 from core.data_structures.disjoint_set_forest import Disjoint_Set_Forest
 from string import ascii_lowercase
 from string import ascii_uppercase
@@ -207,7 +208,8 @@ class Proto_Board:
     for r in xrange(PROTO_BOARD_HEIGHT):
       grid[r + 1][0] = str(r % 10)
     for c in xrange(PROTO_BOARD_WIDTH):
-      grid[0][c + 1] = grid[PROTO_BOARD_HEIGHT + 1][c + 1] = str(c % 10)
+      if c not in RAIL_ILLEGAL_COLUMNS:
+        grid[0][c + 1] = grid[PROTO_BOARD_HEIGHT + 1][c + 1] = str(c % 10)
     # write out a box of !s for each piece
     for piece in self._pieces:
       for (r, c) in piece.all_locs():
