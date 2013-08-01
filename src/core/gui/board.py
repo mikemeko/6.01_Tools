@@ -558,7 +558,7 @@ class Board(Frame):
       self._action_history.record_action(Multi_Action(map(lambda drawable:
           Action(lambda: self._move_drawable(drawable, dx, dy),
           lambda: self._move_drawable(drawable, -dx, -dy), 'move'),
-          self._selected_drawables), 'moves'))
+          self._selected_drawables), 'move selected'))
   def _delete_selected_items(self):
     """
     Deletes the currently selected items.
@@ -566,7 +566,8 @@ class Board(Frame):
     if self._selected_drawables:
       if all([drawable.deletable() for drawable in self._selected_drawables]):
         self._action_history.record_action(Multi_Action([drawable.delete_from(
-            self._canvas) for drawable in self._selected_drawables], 'deletes'))
+            self._canvas) for drawable in self._selected_drawables if
+            drawable.is_live()], 'delete selected'))
       else:
         self.display_message('At least one of the selected items cannot be '
             'deleted', WARNING)
