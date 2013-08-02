@@ -180,7 +180,7 @@ class Board(Frame):
       for connector in drawable.connectors:
         cx, cy = connector.center
         if point_inside_circle(point, (cx, cy, CONNECTOR_RADIUS +
-            CONNECTOR_WIDTH)):
+            CONNECTOR_WIDTH + 2)):
           return connector
     return None
   def _wire_with_id(self, canvas_id):
