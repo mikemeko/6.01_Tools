@@ -66,7 +66,7 @@ ROBOT_PIN_SIZE = 60
 
 # text
 APP_NAME = 'Circuit Simulator'
-DEV_STAGE = 'Pre-alpha'
+DEV_STAGE = 'alpha'
 FILE_EXTENSION = '.circsim'
 GROUND = 'gnd'
 LAMP_SIGNAL_FILE_EXTENSION = '.lampsig'
