@@ -77,8 +77,9 @@ class Gain_Drawable(Drawable):
     ox, oy = offset
     x1, x2, x3 = x1 + ox, x2 + ox, x3 + ox
     y1, y2, y3 = y1 + oy, y2 + oy, y3 + oy
-    self.parts.add(canvas.create_polygon(x1, y1, x2, y2, x3, y3,
-        fill=GAIN_FILL, outline=GAIN_OUTLINE))
+    self._triangle_id = canvas.create_polygon(x1, y1, x2, y2, x3, y3,
+        fill=GAIN_FILL, outline=GAIN_OUTLINE)
+    self.parts.add(self._triangle_id)
     gain_text = create_editable_text(canvas, (x1 + x2 + x3) / 3,
         (y1 + y2 + y3) / 3, text=self.init_K,
         on_text_changed=lambda old_K, new_K: self.board.set_changed(True,
@@ -110,6 +111,10 @@ class Gain_Drawable(Drawable):
     else:
       # should never get here
       raise Exception('Unexpected triangle vertices')
+  def show_selected_highlight(self, canvas):
+    canvas.itemconfig(self._triangle_id, width=2)
+  def hide_selected_highlight(self, canvas):
+    canvas.itemconfig(self._triangle_id, width=1)
   def serialize(self, offset):
     return 'Gain %s %s %s' % (self.get_K(), str(self.vertices), str(offset))
   @staticmethod
@@ -131,12 +136,17 @@ class Delay_Drawable(Drawable):
     Drawable.__init__(self, DELAY_SIZE, DELAY_SIZE, connectors)
   def draw_on(self, canvas, offset=(0, 0)):
     ox, oy = offset
-    self.parts.add(canvas.create_rectangle((ox, oy, ox + DELAY_SIZE,
-        oy + DELAY_SIZE), fill=DELAY_FILL, outline=DELAY_OUTLINE))
+    self._rect_id = canvas.create_rectangle((ox, oy, ox + DELAY_SIZE,
+        oy + DELAY_SIZE), fill=DELAY_FILL, outline=DELAY_OUTLINE)
+    self.parts.add(self._rect_id)
     self.parts.add(canvas.create_text((ox + DELAY_SIZE / 2,
         oy + DELAY_SIZE / 2), text=DELAY_TEXT, font=FONT))
   def rotated(self):
     return Delay_Drawable(rotate_connector_flags(self.connector_flags))
+  def show_selected_highlight(self, canvas):
+    canvas.itemconfig(self._rect_id, width=2)
+  def hide_selected_highlight(self, canvas):
+    canvas.itemconfig(self._rect_id, width=1)
   def serialize(self, offset):
     return 'Delay %d %s' % (self.connector_flags, str(offset))
   @staticmethod
@@ -159,14 +169,19 @@ class Adder_Drawable(Drawable):
     r = ADDER_RADIUS
     d = 2 * r
     ox, oy = offset
-    self.parts.add(canvas.create_oval(ox, oy, ox + d, oy + d, fill=ADDER_FILL,
-        outline=ADDER_OUTLINE))
+    self._oval_id = canvas.create_oval(ox, oy, ox + d, oy + d, fill=ADDER_FILL,
+        outline=ADDER_OUTLINE)
+    self.parts.add(self._oval_id)
     self.parts.add(canvas.create_line(ox + r, oy + r - ADDER_SEGMENT_SIZE / 2,
         ox + r, oy + r + ADDER_SEGMENT_SIZE / 2))
     self.parts.add(canvas.create_line(ox + r - ADDER_SEGMENT_SIZE / 2, oy + r,
         ox + r + ADDER_SEGMENT_SIZE / 2, oy + r))
   def rotated(self):
     return Adder_Drawable(rotate_connector_flags(self.connector_flags))
+  def show_selected_highlight(self, canvas):
+    canvas.itemconfig(self._oval_id, width=2)
+  def hide_selected_highlight(self, canvas):
+    canvas.itemconfig(self._oval_id, width=1)
   def serialize(self, offset):
     return 'Adder %d %s' % (self.connector_flags, str(offset))
   @staticmethod
@@ -190,10 +205,15 @@ class IO_Drawable(Drawable):
     self.signal = signal
   def draw_on(self, canvas, offset=(0, 0)):
     ox, oy = offset
-    self.parts.add(canvas.create_rectangle((ox, oy, ox + IO_SIZE,
-        oy + IO_SIZE), fill=IO_FILL, outline=IO_OUTLINE))
+    self._rect_id = canvas.create_rectangle((ox, oy, ox + IO_SIZE,
+        oy + IO_SIZE), fill=IO_FILL, outline=IO_OUTLINE)
+    self.parts.add(self._rect_id)
     self.parts.add(canvas.create_text((ox + IO_SIZE / 2, oy + IO_SIZE / 2),
         text=self.signal, font=FONT))
+  def show_selected_highlight(self, canvas):
+    canvas.itemconfig(self._rect_id, width=2)
+  def hide_selected_highlight(self, canvas):
+    canvas.itemconfig(self._rect_id, width=1)
   def deletable(self):
     return False
 

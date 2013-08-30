@@ -95,11 +95,16 @@ class Pin_Drawable(Drawable):
     self.fill = fill
   def draw_on(self, canvas, offset=(0, 0)):
     ox, oy = offset
-    self.parts.add(canvas.create_rectangle((ox, oy, ox + self.width,
-        oy + self.height), fill=self.fill, outline=PIN_OUTLINE))
+    self._rect_id = canvas.create_rectangle((ox, oy, ox + self.width,
+        oy + self.height), fill=self.fill, outline=PIN_OUTLINE)
+    self.parts.add(self._rect_id)
     self.parts.add(canvas.create_text(ox + self.width / 2,
         oy + self.height / 2, text=self.text, fill=PIN_TEXT_COLOR,
         width=.8 * self.width, justify=CENTER, font=FONT))
+  def show_selected_highlight(self, canvas):
+    canvas.itemconfig(self._rect_id, width=2)
+  def hide_selected_highlight(self, canvas):
+    canvas.itemconfig(self._rect_id, width=1)
 
 class Power_Drawable(Pin_Drawable):
   """
@@ -202,7 +207,8 @@ class Resistor_Drawable(Drawable):
   def draw_on(self, canvas, offset=(0, 0)):
     ox, oy = offset
     w, h = self.width, self.height
-    self.parts |= draw_resistor_zig_zags(canvas, ox, oy, w, h)
+    self._resistor_zig_zags = draw_resistor_zig_zags(canvas, ox, oy, w, h)
+    self.parts |= self._resistor_zig_zags
     if w > h: # horizontal
       resistor_text = create_editable_text(canvas, ox + w / 2,
           oy - RESISTOR_TEXT_PADDING, text=self.init_resistance,
@@ -233,6 +239,12 @@ class Resistor_Drawable(Drawable):
   def rotated(self):
     return Resistor_Drawable(self.board, self.height, self.width,
         rotate_connector_flags(self.connector_flags), self.get_resistance())
+  def show_selected_highlight(self, canvas):
+    for item in self._resistor_zig_zags:
+      canvas.itemconfig(item, width=2)
+  def hide_selected_highlight(self, canvas):
+    for item in self._resistor_zig_zags:
+      canvas.itemconfig(item, width=1)
   def serialize(self, offset):
     return 'Resistor %s %d %d %d %s' % (self.get_resistance(), self.width,
         self.height, self.connector_flags, str(offset))
@@ -268,8 +280,9 @@ class Op_Amp_Drawable(Drawable):
     ox, oy = offset
     x1, x2, x3 = x1 + ox, x2 + ox, x3 + ox
     y1, y2, y3 = y1 + oy, y2 + oy, y3 + oy
-    self.parts.add(canvas.create_polygon(x1, y1, x2, y2, x3, y3,
-        fill=OP_AMP_FILL, outline=OP_AMP_OUTLINE))
+    self._triangle_id = canvas.create_polygon(x1, y1, x2, y2, x3, y3,
+        fill=OP_AMP_FILL, outline=OP_AMP_OUTLINE)
+    self.parts.add(self._triangle_id)
     if self.vertices == OP_AMP_RIGHT_VERTICES:
       self.parts.add(canvas.create_text(x1 + LABEL_PADDING,
           y1 + OP_AMP_CONNECTOR_PADDING, text='+', font=FONT))
@@ -328,6 +341,10 @@ class Op_Amp_Drawable(Drawable):
       return Op_Amp_Drawable(OP_AMP_UP_VERTICES)
     else: # OP_AMP_UP_VERTICES
       return Op_Amp_Drawable(OP_AMP_RIGHT_VERTICES)
+  def show_selected_highlight(self, canvas):
+    canvas.itemconfig(self._triangle_id, width=2)
+  def hide_selected_highlight(self, canvas):
+    canvas.itemconfig(self._triangle_id, width=1)
   def serialize(self, offset):
     return 'Op_Amp %s %s' % (str(self.vertices), str(offset))
   @staticmethod
@@ -362,7 +379,8 @@ class Pot_Drawable(Drawable):
   def draw_on(self, canvas, offset=(0, 0)):
     ox, oy = offset
     w, h = self.width, self.height
-    self.parts |= draw_resistor_zig_zags(canvas, ox, oy, w, h)
+    self._resistor_zig_zags = draw_resistor_zig_zags(canvas, ox, oy, w, h)
+    self.parts |= self._resistor_zig_zags
     # create button that lets user select a signal file for this pot when
     #     right-clicked
     pot_alpha_window = canvas.create_rectangle(ox + (w - POT_ALPHA_WIDTH) / 2,
@@ -421,6 +439,12 @@ class Pot_Drawable(Drawable):
   def serialize(self, offset):
     return 'Pot %s %d %d %d %s' % (self.signal_file, self.width, self.height,
         self.direction, str(offset))
+  def show_selected_highlight(self, canvas):
+    for item in self._resistor_zig_zags:
+      canvas.itemconfig(item, width=2)
+  def hide_selected_highlight(self, canvas):
+    for item in self._resistor_zig_zags:
+      canvas.itemconfig(item, width=1)
   @staticmethod
   def deserialize(item_str, board):
     m = match(r'Pot (.+) %s %s %s %s' % (RE_INT, RE_INT, RE_INT, RE_INT_PAIR),

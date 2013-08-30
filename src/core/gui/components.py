@@ -53,8 +53,6 @@ class Drawable:
     self.connectors = set()
     # flag for whether this drawable is on the board / deleted
     self._live = True
-    # bounding box outline
-    self._bbox_outline_canvas_id = None
   def draw_on(self, canvas, offset):
     """
     Draws the parts of this item on the |canvas| at the given |offset|. Should
@@ -68,6 +66,19 @@ class Drawable:
         result in this rotation. The default implementation is no rotation.
     """
     return self
+  def show_selected_highlight(self, canvas):
+    """
+    Enhances this drawable to show that it has been selected.
+    All subclasses should implement this.
+    """
+    raise NotImplementedError('subclasses should implement this')
+  def hide_selected_highlight(self, canvas):
+    """
+    Hides the selected enhancement to show that this drawable is no longer
+        selected.
+    All subclasses should implement this.
+    """
+    raise NotImplementedError('subclasses should implement this')
   def serialize(self, offset):
     """
     Should return a string representation of this drawable at the given
@@ -109,25 +120,6 @@ class Drawable:
     x1, y1 = offset
     x2, y2 = x1 + self.width, y1 + self.height
     return x1, y1, x2, y2
-  def show_bounding_box_outline(self, canvas, offset):
-    """
-    Draws a rectangle on the given |canvas| outlining the bounding box of this
-        Drawable.
-    """
-    if self._bbox_outline_canvas_id is None:
-      x1, y1, x2, y2 = self.bounding_box(offset)
-      self._bbox_outline_canvas_id = canvas.create_rectangle(x1 - 1, y1 - 1,
-          x2 + 2, y2 + 2, fill='', outline='red', width=2)
-      self.parts.add(self._bbox_outline_canvas_id)
-  def hide_bounding_box_outline(self, canvas):
-    """
-    Hides the bounding box outline drawn on the given |canvas|, if drawn.
-    """
-    if self._bbox_outline_canvas_id is not None:
-      canvas.delete(self._bbox_outline_canvas_id)
-      if self._bbox_outline_canvas_id in self.parts:
-        self.parts.remove(self._bbox_outline_canvas_id)
-      self._bbox_outline_canvas_id = None
   def _draw_connector(self, canvas, point, enabled=True):
     """
     |point|: a tuple of the form (x, y) indicating where the connecter should
@@ -465,7 +457,7 @@ class Wire:
       self._draw_label(canvas)
     # lift connectors to make it easy to draw other wires
     for connector in self.connectors():
-      connector.redraw(canvas)
+      connector.lift(canvas)
   def serialize(self):
     """
     Returns a string representing this wire at it's current location.
@@ -496,6 +488,12 @@ class Wire_Connector_Drawable(Drawable):
   def draw_on(self, canvas, offset=(0, 0)):
     # nothing to draw
     pass
+  def show_selected_highlight(self, canvas):
+    connector = iter(self.connectors).next()
+    canvas.itemconfig(connector.canvas_id, width=2)
+  def hide_selected_highlight(self, canvas):
+    connector = iter(self.connectors).next()
+    canvas.itemconfig(connector.canvas_id, width=1)
   def serialize(self, offset):
     return 'Wire connector %s' % str(offset)
   @staticmethod
@@ -521,6 +519,12 @@ class Run_Drawable(Drawable):
     self.parts.add(canvas.create_text(ox + RUN_RECT_SIZE / 2, oy +
         RUN_RECT_SIZE / 2, text=self.text, fill=RUN_TEXT_FILL,
         activefill=RUN_TEXT_ACTIVE_FILL))
+  def show_selected_highlight(self, canvas):
+    # should never be needed
+    pass
+  def hide_selected_highlight(self, canvas):
+    # should never be needed
+    pass
   def serialize(self, offset):
     # should never be needed
     return ''

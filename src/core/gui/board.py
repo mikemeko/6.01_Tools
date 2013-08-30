@@ -245,7 +245,7 @@ class Board(Frame):
     if self._selected_drawables:
       # hide all bounding box outlines
       for drawable in self._selected_drawables:
-        drawable.hide_bounding_box_outline(self._canvas)
+        drawable.hide_selected_highlight(self._canvas)
       self._selected_drawables.clear()
   def _remove_current_selection_outline(self):
     """
@@ -266,12 +266,9 @@ class Board(Frame):
   def _select(self, drawable):
     """
     Selects the given |drawable| by adding it to the set of selected items and
-        outlining it to indicate selection. Outline is not drawn for
-        Wire_Connector_Drawables.
+        outlining it to indicate selection.
     """
-    if not isinstance(drawable, Wire_Connector_Drawable):
-      drawable.show_bounding_box_outline(self._canvas, self.get_drawable_offset(
-          drawable))
+    drawable.show_selected_highlight(self._canvas)
     self._selected_drawables.add(drawable)
   def _deselect(self, drawable):
     """
@@ -280,7 +277,7 @@ class Board(Frame):
     """
     if drawable in self._selected_drawables:
       self._selected_drawables.remove(drawable)
-      drawable.hide_bounding_box_outline(self._canvas)
+      drawable.hide_selected_highlight(self._canvas)
   def _drag_press(self, event):
     """
     Callback for button press for dragging.
@@ -398,13 +395,14 @@ class Board(Frame):
       Adds the wire to the board.
       """
       start_connector.start_wires.add(wire)
+      start_connector.redraw(self._canvas)
       # in case the end_connector was created for the purpose of this wire,
       # set it live since it will have been deleted on undo
       # see self._wire_release
       if isinstance(end_connector.drawable, Wire_Connector_Drawable):
         end_connector.drawable.set_live()
       end_connector.end_wires.add(wire)
-      wire.redraw(self._canvas)
+      end_connector.redraw(self._canvas)
     # do add wire
     add_wire()
     self._action_history.record_action(Action(add_wire,
