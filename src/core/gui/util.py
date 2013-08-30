@@ -56,13 +56,7 @@ def create_editable_text(canvas, x, y, text='?', on_text_changed=lambda:None,
     """
     text_before_key = canvas.itemcget(text_box, 'text')
     insert = canvas.index(text_box, INSERT)
-    if event.char >= ' ':
-      # printable character
-      if canvas.select_item():
-        canvas.dchars(text_box, SEL_FIRST, SEL_LAST)
-        canvas.select_clear()
-      canvas.insert(text_box, 'insert', event.char)
-    elif event.keysym == 'BackSpace':
+    if event.keysym == 'BackSpace':
       if canvas.select_item():
         canvas.dchars(text_box, SEL_FIRST, SEL_LAST)
         canvas.select_clear()
@@ -78,6 +72,12 @@ def create_editable_text(canvas, x, y, text='?', on_text_changed=lambda:None,
     elif event.keysym in ('Escape', 'Return'):
       canvas.select_clear()
       canvas.focus('')
+    elif event.char >= ' ':
+      # printable character
+      if canvas.select_item():
+        canvas.dchars(text_box, SEL_FIRST, SEL_LAST)
+        canvas.select_clear()
+      canvas.insert(text_box, 'insert', event.char)
     text_after_key = canvas.itemcget(text_box, 'text')
     # callback if text is changed
     if text_before_key != text_after_key:
