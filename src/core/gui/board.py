@@ -416,7 +416,6 @@ class Board(Frame):
     # if there isn't a connector at wire start, or if that connector is
     #     disabled, don't allow drawing wire
     start_connector = self._connector_at(self._wire_start)
-    # TODO(mikemeko): get rid of the idea of disabled connectors
     if not start_connector or not start_connector.enabled:
       self._wire_start = None
   def _wire_move(self, event):
