@@ -1,6 +1,6 @@
 All things TODO
 Michael Mekonnen
-Last updated: 8/31/2013
+Last updated: 8/31/13
 
 ================================================================================
 FORMAT:
@@ -45,7 +45,6 @@ UI:
     time.
 - [8/31/13] Somehow show the simulation file selected clearly (either name, or
     a graph of the signal).
-- [8/31/13] Selection rectangle looks a lot like wires, make it look different.
 - [8/31/13] A wire that is drawn and snapped to an existing wire should be
     connected to that wire (break existing wire into two pieces).
 - [8/31/13] Click and drag on a wire should start drawing a new wire that is
@@ -85,6 +84,8 @@ PROTOBOARD LAYOUT:
 SYSTEM ANALYSIS:
 
 UI:
+- [8/31/13] [8/31/13] Selection rectangle looks a lot like wires, make it look
+    different.
 
 MISC:
 
