@@ -1,6 +1,5 @@
 """
 Runs system simulator.
-TODO(mikemeko): bug: USR or FR blocks UI.
 """
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'

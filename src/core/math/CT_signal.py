@@ -10,7 +10,6 @@ from core.util.util import is_number
 class CT_Signal:
   """
   Representation for CT signals.
-  TODO(mikemeko): create nice means of combining CT_Signals, adding, etc.
   """
   def sample(t):
     """

@@ -61,7 +61,6 @@ def all_groupings(items, partition):
   """
   Returns a list of all possible groupings of the given |items| respecting the
       given |partition|.
-  TODO(mikemeko): better way to avoid duplicates
   """
   assert len(items) == sum(partition), ('partition elements must sum to number'
       ' of items')

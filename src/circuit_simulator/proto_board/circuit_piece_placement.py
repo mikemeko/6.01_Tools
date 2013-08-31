@@ -91,13 +91,13 @@ def loc_pairs_to_connect(pieces, resistors):
   loc_pairs = reduce(list.__add__, (loc_pairs_for_node(locs_for_node(pieces,
       node), node) for node in all_nodes(pieces) if node))
   # find loc pairs to connect for resistors
-  # TODO(mikemeko): method here is very ad hoc
   occurences = defaultdict(int)
   flagged_loc_pairs = []
   for loc_1, loc_2, node in loc_pairs:
     occurences[loc_1] += 1
     occurences[loc_2] += 1
     flagged_loc_pairs.append((loc_1, loc_2, None, node))
+  # where resistors are treated as wires, what we have here is very ad hoc!
   for resistor in resistors:
     loc_1, loc_2 = min(product(locs_for_node(pieces, resistor.n1),
         locs_for_node(pieces, resistor.n2)), key=lambda (loc_1, loc_2): 5 * (
@@ -112,7 +112,6 @@ def set_locations(pieces):
   Given a (ordered) list of |pieces|, assigns them locations on the proto
       board. Tries to center the pieces in the middle of the proto board, and
       leaves a space of 2 columns between each consecuitive pair of pieces.
-  TODO(mikemeko): can we do better?
   """
   # put the pieces as much at the center of the proto board as possible
   col = (PROTO_BOARD_WIDTH - sum(piece.width + CIRCUIT_PIECE_SEPARATION for
@@ -125,9 +124,6 @@ def cost(placement):
   """
   Returns a heuristic cost of the given |placement| - the sum of the distances
       between the loc pairs that would need to be connected.
-  TODO(mikemeko): here, the concept of distance should take into account the
-      presence of the circuit pieces, i.e. it should factor having to wire
-      around the pieces.
   """
   set_locations(placement)
   return sum(dist(loc_1, loc_2) for loc_1, loc_2, resistor_flag, node in
@@ -163,7 +159,7 @@ def find_placement(pieces):
       # all indicies in which the piece can be inserted
       for i in xrange(len(placement) + 1):
         # both regular and inverted piece
-        for piece in [current_piece, current_piece.inverted()]:
+        for piece in set([current_piece, current_piece.inverted()]):
           for top_left_row in piece.possible_top_left_rows:
             piece.top_left_row = top_left_row
             new_placement = deepcopy(placement)
@@ -187,7 +183,7 @@ def _find_placement(pieces):
   piece_options = []
   for piece in pieces:
     options = []
-    for p in [piece, piece.inverted()]:
+    for p in set([piece, piece.inverted()]):
       for top_left_row in piece.possible_top_left_rows:
         option = deepcopy(p)
         option.top_left_row = top_left_row

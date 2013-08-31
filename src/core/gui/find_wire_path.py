@@ -1,8 +1,8 @@
 """
 Script to find a good path of wires from one point on a board to another,
     attempting not to cross drawables and other wires already on the board.
-TODO(mikemeko): this script is currently NOT used as it is too slow, maybe
-    improve and use. We currently use the simpler file_wire_path_simple.py.
+NOTE: this script is currently NOT used as it is too slow, maybe improve and
+    use. We currently use the simpler file_wire_path_simple.py.
 """
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'

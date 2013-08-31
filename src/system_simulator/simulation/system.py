@@ -1,6 +1,5 @@
 """
 Representation for DT LTI systems.
-TODO(mikemeko): do a better job of finding feedback loops without delays.
 """
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
@@ -151,7 +150,6 @@ class System:
         for out_var in out_var_reps:
           out_var_reps[out_var] = out_var_reps[out_var].substitute(
               out_var_to_eliminate, new_rep)
-    # TODO(mikemeko): better error messages here
     if len(out_var_reps) != 1 or self.Y not in out_var_reps or not (
         set(out_var_reps[self.Y].variables()).issubset(set([self.X, self.Y]))):
       if self.display_error:

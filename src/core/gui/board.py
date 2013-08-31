@@ -2,11 +2,6 @@
 GUI tool on which several items may be drawn. Supports dragging the items
     around, connecting the items with wires, deleting items, rotating items,
     and displaying messages.
-TODO(mikemeko): enable snapping wires onto other wires? enable starting drawing
-    wires from other wires?
-TODO(mikemeko): time permitting, it'd be really awesome if we allow doing
-    basically anything that can be done on the board only using the keyboard (
-    and not the mouse) a la vimium (http://vimium.github.io/).
 """
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
@@ -767,7 +762,7 @@ class Board(Frame):
     """
     # add it to the set of drawables on this board
     self._drawables[drawable] = time()
-    # set drawable offset (TODO(mikemeko): hacky, but convenient storage)
+    # set drawable offset (hacky, but convenient storage)
     drawable.offset = offset
     # draw it
     drawable.draw_on(self._canvas, offset)

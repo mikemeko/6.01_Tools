@@ -9,9 +9,9 @@ from system_simulator.simulation.poly import R_Polynomial
 from system_simulator.simulation.poly import R_Ratio
 from unittest import main
 from unittest import TestCase
-from util import assert_polys_equal
-from util import assert_r_polys_equal
-from util import assert_r_ratios_equal
+from util import assert_polys_identical
+from util import assert_r_polys_identical
+from util import assert_r_ratios_identical
 
 class R_Polynomial_Test(TestCase):
   """
@@ -33,19 +33,21 @@ class R_Polynomial_Test(TestCase):
     assert self.r_poly_1.coeff(2) == 2
     assert self.r_poly_1.coeff(3) == 0
   def test_scalar_mult(self):
-    assert_r_polys_equal(self.r_poly_1.scalar_mult(2), R_Polynomial([2,0,4]))
+    assert_r_polys_identical(self.r_poly_1.scalar_mult(2),
+        R_Polynomial([2,0,4]))
   def test_shift(self):
-    assert_r_polys_equal(self.r_poly_1.shift(), R_Polynomial([0,1,0,2]))
+    assert_r_polys_identical(self.r_poly_1.shift(), R_Polynomial([0,1,0,2]))
   def test_is_zero(self):
     assert not self.r_poly_1.is_zero()
     assert R_Polynomial([0]).is_zero()
   def test_add(self):
-    assert_r_polys_equal(self.r_poly_1 + self.r_poly_2, R_Polynomial([3,1,2]))
+    assert_r_polys_identical(self.r_poly_1 + self.r_poly_2,
+        R_Polynomial([3,1,2]))
   def test_sub(self):
-    assert_r_polys_equal(self.r_poly_1 - self.r_poly_2,
+    assert_r_polys_identical(self.r_poly_1 - self.r_poly_2,
         R_Polynomial([-1,-1,2]))
   def test_mul(self):
-    assert_r_polys_equal(self.r_poly_1 * self.r_poly_2,
+    assert_r_polys_identical(self.r_poly_1 * self.r_poly_2,
         R_Polynomial([2, 1, 4, 2]))
   def test_str(self):
     self.assertEquals('0', str(R_Polynomial.zero()))
@@ -69,22 +71,22 @@ class R_Ratio_Test(TestCase):
     self.assertRaises(Exception, R_Ratio, R_Polynomial.one(),
         R_Polynomial.zero())
   def test_scalar_mult(self):
-    assert_r_ratios_equal(self.ratio_1.scalar_mult(22),
+    assert_r_ratios_identical(self.ratio_1.scalar_mult(22),
         R_Ratio(R_Polynomial([22]), R_Polynomial([1, 0, 1])))
   def test_shift(self):
-    assert_r_ratios_equal(self.ratio_1.shift(),
+    assert_r_ratios_identical(self.ratio_1.shift(),
         R_Ratio(R_Polynomial([0,1]), R_Polynomial([1, 0, 1])))
   def test_add(self):
-    assert_r_ratios_equal(self.ratio_1 + self.ratio_2,
+    assert_r_ratios_identical(self.ratio_1 + self.ratio_2,
         R_Ratio(R_Polynomial([2,2,0,1]), R_Polynomial([2,1,2,1])))
   def test_sub(self):
-    assert_r_ratios_equal(self.ratio_1 - self.ratio_2,
+    assert_r_ratios_identical(self.ratio_1 - self.ratio_2,
         R_Ratio(R_Polynomial([2,0,0,-1]), R_Polynomial([2,1,2,1])))
   def test_mul(self):
-    assert_r_ratios_equal(self.ratio_1 * self.ratio_2,
+    assert_r_ratios_identical(self.ratio_1 * self.ratio_2,
         R_Ratio(R_Polynomial([0,1]), R_Polynomial([2,1,2,1])))
   def test_div(self):
-    assert_r_ratios_equal(self.ratio_1 / self.ratio_2,
+    assert_r_ratios_identical(self.ratio_1 / self.ratio_2,
         R_Ratio(R_Polynomial([2,1]), R_Polynomial([0,1,0,1])))
 
 class Polynomial_Test(TestCase):
@@ -102,16 +104,16 @@ class Polynomial_Test(TestCase):
     assert self.poly_1.has_variable('A')
     assert not self.poly_1.has_variable('C')
   def test_coeff(self):
-    assert_r_ratios_equal(self.poly_1.coeff('A'), R_Ratio(R_Polynomial.one(),
-        R_Polynomial([0,1])))
-    assert_r_ratios_equal(self.poly_1.coeff('C'), R_Ratio.zero())
+    assert_r_ratios_identical(self.poly_1.coeff('A'),
+        R_Ratio(R_Polynomial.one(), R_Polynomial([0,1])))
+    assert_r_ratios_identical(self.poly_1.coeff('C'), R_Ratio.zero())
   def test_substitute(self):
-    assert_polys_equal(self.poly_1.substitute('A', Polynomial({'C':
+    assert_polys_identical(self.poly_1.substitute('A', Polynomial({'C':
         R_Ratio(R_Polynomial([0, 1]))})), Polynomial({'C': R_Ratio(
         R_Polynomial([0,1]), R_Polynomial([0,1])), 'B': R_Ratio(
         R_Polynomial([1,1]))}))
   def test_add(self):
-    assert_polys_equal(self.poly_1 + self.poly_2, Polynomial({'A': R_Ratio(
+    assert_polys_identical(self.poly_1 + self.poly_2, Polynomial({'A': R_Ratio(
         R_Polynomial([1,0,1]), R_Polynomial([0,1])), 'B': R_Ratio(
         R_Polynomial([1,1])), 'C': R_Ratio(R_Polynomial.one())}))
 

@@ -1,6 +1,5 @@
 """
 Unittests for undo.py.
-TODO(mikemeko): better test for Multi_Action.
 """
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonne)'

@@ -1,6 +1,5 @@
 """
 Support for undo/redo.
-TODO(mikemeko): efficiently limit how big the undo/redo stacks can be.
 """
 
 __author__ = 'mikemeko@mit.edu (Mihchael Mekonnen)'

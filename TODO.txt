@@ -8,17 +8,31 @@ FORMAT:
 - DONE: [date done] TODO
 ================================================================================
 
-ANALYSIS:
+**************************
+*                        *
+*         TODOs          *
+*                        *
+**************************
+
+CIRCUIT ANALYSIS:
 - [8/31/13] It should not be necessary that all nodes are connected to perform
     analysis, allow disconnected items.
 - [8/31/13] Allow multiple sets of probes.
 - [8/31/13] Should have multiple output options (values as text; graph; both)
+- [8/31/13] Use CMax simulator, or emulate it; one important issue is detecting
+    Op Amp positive feedback.
 
 PROTOBOARD LAYOUT:
 - [8/31/13] For a particular pair of locations, try multiple pairs of locations
     by randomly sampling, don't give up if the heuristically best pair fails.
 - [8/31/13] If the layout generation fails at a particular pair of locations,
     output what it has found so far. Better yet, let the user help it out!
+- [8/31/13] Should know where there are too many items to be put on the
+    protoboard, and output an error message if that is the case.
+- [8/31/13] post process protoboards to make them prettier.
+
+SYSTEM ANALYSIS:
+- [8/31/13] Do a better job of finding feedback loops without delays.
 
 UI:
 - [8/31/13] Don't allow drawing 0-length wires.
@@ -48,5 +62,29 @@ UI:
     at different places on the board).
 - [8/31/13] Maybe the palette should have buttons instead of things that don't
     look like buttons?
+- [8/31/13] Time permitting, it'd be really awesome if we allow doing basically
+    anything that can be done on the board using only the keayboard (and not the
+    mouse) a la vimium (http://vimium.github.io/).
+- [8/31/13] Wrapper for matplotlib plotters (something similar already exists
+    in lib601), matplotlib plotters block everything else.
 
-DONE:
+MISC:
+- [8/31/13] Efficiently limit size of undor/redo stacks.
+- [8/31/13] More unittests.
+
+**************************
+*                        *
+*         DONEs          *
+*                        *
+**************************
+
+CIRCUIT ANALYSIS:
+
+PROTOBOARD LAYOUT:
+
+SYSTEM ANALYSIS:
+
+UI:
+
+MISC:
+

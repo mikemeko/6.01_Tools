@@ -273,8 +273,6 @@ class Place_Holder_Piece(Circuit_Piece):
 class Resistor_Piece(Circuit_Piece):
   """
   Representation for the resistor piece.
-  TODO(mikemeko): Resistor_Piece is not used exaclty like the other
-      Circuit_Pieces since the start of treating resistors as wires.
   """
   def __init__(self, n_1, n_2, r, vertical, label):
     """
@@ -456,7 +454,6 @@ class N_Pin_Connector_Piece(Circuit_Piece):
     assert r in self.possible_top_left_rows, 'invalid top left row'
     return (2, c + self.n + 1 - i) if r == 0 else (r, c + i)
   def inverted(self):
-    # TODO(mikemeko): better infrastructure to avoid doing this
     return self
   def draw_on(self, canvas, top_left):
     self._assert_top_left_loc_set()

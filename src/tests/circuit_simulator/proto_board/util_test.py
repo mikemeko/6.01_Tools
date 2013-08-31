@@ -1,6 +1,5 @@
 """
 Unittests for util.py.
-TODO(mikemeko): more tests once util methods are in good shape.
 """
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'

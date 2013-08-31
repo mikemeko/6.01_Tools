@@ -137,7 +137,6 @@ class Proto_Board:
         nodes that are already connected, this method returns this proto board.
         If the wire connects nodes that are meant not to be connected, as per
         |self._loc_disjoint_set_forest|, this method returns None.
-    TODO(mikemeko): can we do more here?
     """
     # if locations are already connected, no need for the wire
     if self.connected(new_wire.loc_1, new_wire.loc_2):
@@ -164,10 +163,8 @@ class Proto_Board:
   def with_piece(self, piece):
     """
     Returns a new Proto_Board containing the given |piece|. If the piece
-        collides with another object on the board, this method returns raises
-        an Exception.
-    TODO(mikemeko): check that the piece is placed so that it's not connected
-        to anything else that is already on the proto board.
+        collides with another object on the board, this method raises an
+        Exception.
     """
     # check for intersections with current objects on the board
     if any(piece.crossed_by(wire) for wire in self._wires) or any(

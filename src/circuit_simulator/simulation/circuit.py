@@ -194,7 +194,6 @@ class Op_Amp(Component):
   """
   Representation for an op amp as a two port: composed of a voltage sensor and
       a voltage-controlled voltage source.
-  TODO(mikemeko): detect positive feedback
   """
   def __init__(self, na1, na2, ia, nb1, nb2, ib, K=OP_AMP_K):
     """
@@ -399,7 +398,6 @@ class Head_Connector(Component):
     """
     assert side in ('left', 'right'), ('side=%s must be either "left" or '
         '"right"' % side)
-    # TODO(mikemeko): improve current constant estimation
     lamp_angle = self.lamp_angle_signal(self.current_time)
     lamp_distance = self.lamp_distance_signal(self.current_time)
     motor_angle = self.motor.angle_samples[-1] if self.motor_present else (
