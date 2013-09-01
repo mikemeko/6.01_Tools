@@ -372,12 +372,14 @@ class Board(Frame):
     self._wire_parts = []
   def _draw_wire(self, start, end):
     """
-    Draws a wire from |start| to |end|. Updates wire data.
+    Draws a wire from |start| to |end|. Updates wire data. Does nothing if the
+        |start| and |end| are identical.
     """
-    x1, y1 = start
-    x2, y2 = end
-    self._wire_parts.append([start, end, create_wire(self._canvas, x1, y1, x2,
-        y2, self._directed_wires)])
+    if start != end:
+      x1, y1 = start
+      x2, y2 = end
+      self._wire_parts.append([start, end, create_wire(self._canvas, x1, y1, x2,
+          y2, self._directed_wires)])
   def _add_wire(self, wire_parts, start_connector, end_connector):
     """
     Creates a Wire object using the given parameters. This method assumes that

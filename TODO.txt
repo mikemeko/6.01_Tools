@@ -35,7 +35,6 @@ SYSTEM ANALYSIS:
 - [8/31/13] Do a better job of finding feedback loops without delays.
 
 UI:
-- [8/31/13] Don't allow drawing 0-length wires.
 - [8/31/13] When hover over an item on the board, highlight respective item on
     protoboard, and vice versa.
 - [8/31/13] Ensure that the tooltip label for Op Amps is written in the correct
@@ -86,6 +85,7 @@ SYSTEM ANALYSIS:
 UI:
 - [8/31/13] [8/31/13] Selection rectangle looks a lot like wires, make it look
     different.
+- [8/31/13] [8/31/13] Don't allow drawing 0-length wires.
 
 MISC:
 
