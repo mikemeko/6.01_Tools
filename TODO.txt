@@ -37,8 +37,6 @@ SYSTEM ANALYSIS:
 UI:
 - [8/31/13] When hover over an item on the board, highlight respective item on
     protoboard, and vice versa.
-- [8/31/13] Ensure that the tooltip label for Op Amps is written in the correct
-    order, and make the same consideration for highlighting.
 - [8/31/13] Separate simulation from schematic, signal files should not have to
     be specified in the schematic, they only need to be specified at simulation
     time.
@@ -86,6 +84,8 @@ UI:
 - [8/31/13] [8/31/13] Selection rectangle looks a lot like wires, make it look
     different.
 - [8/31/13] [8/31/13] Don't allow drawing 0-length wires.
+- [9/2/13] [8/31/13] Ensure that the tooltip label for Op Amps is written in the
+    correct order, and make the same consideration for highlighting.
 
 MISC:
 

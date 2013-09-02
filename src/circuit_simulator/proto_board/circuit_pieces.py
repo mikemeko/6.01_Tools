@@ -152,6 +152,9 @@ class Op_Amp_Piece(Circuit_Piece):
       dot_bottom_left=True):
     """
     |n_1|, ..., |n_8|: the nodes for this op amp piece, see image linked above.
+    |label|: label for the two op amps contained in this package, separated by
+        a comma. Order is important. If there is only one op amp in this
+        package, |label| should just be the label of that op amp (no commas).
     |dot_bottom_left|: boolean indicating whether the dot is bottom left or
         top right (indicates orientation of piece).
     """
@@ -188,8 +191,10 @@ class Op_Amp_Piece(Circuit_Piece):
       locs.append((r, c) if self.dot_bottom_left else (r + 1, c + 3))
     return locs
   def inverted(self):
+    new_label = (','.join(reversed(self.label.split(','))) if ',' in self.label
+        else self.label)
     return Op_Amp_Piece(self.n_1, self.n_2, self.n_3, self.n_4, self.n_5,
-        self.n_6, self.n_7, self.n_8, self.label, not self.dot_bottom_left)
+        self.n_6, self.n_7, self.n_8, new_label, not self.dot_bottom_left)
   def draw_on(self, canvas, top_left):
     x, y = top_left
     # pins

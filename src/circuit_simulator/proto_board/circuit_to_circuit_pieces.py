@@ -115,20 +115,20 @@ def head_connector_piece_from_head_connector(head_connector):
       head_connector.motor_label, head_connector.motor_pot_label,
       head_connector.photo_label])))
 
-def op_amp_piece_from_op_amp(op_amp_set):
+def op_amp_piece_from_op_amp(op_amp_tup):
   """
-  Returns an Op_Amp_Piece constructed using |op_amp_set|, a set of 1 or 2
-      instances of Op_Amp. The first op_amp in op_amp_set takes the first
+  Returns an Op_Amp_Piece constructed using |op_amp_tup|, a tuple of 1 or 2
+      instances of Op_Amp. The first op_amp in op_amp_tup takes the first
       position in the Op_Amp_Piece (i.e. pins 1, 7, and 8).
   """
-  assert 1 <= len(op_amp_set) <= 2, 'op_amp_set should have 1 or 2 items'
-  assert all(isinstance(obj, Op_Amp) for obj in op_amp_set), ('all items in '
-      'op_amp_set must be Op_Amps')
+  assert 1 <= len(op_amp_tup) <= 2, 'op_amp_tup should have 1 or 2 items'
+  assert all(isinstance(obj, Op_Amp) for obj in op_amp_tup), ('all items in '
+      'op_amp_tup must be Op_Amps')
   # if only one of the two op amps is used, tie unused op amp negative input
   #     to output (pins 3 and 5), and tie positive input to ground (pin 6)
-  unused_op_amp_node = str(id(op_amp_set))
-  op_amp_1 = op_amp_set[0]
-  op_amp_2 = op_amp_set[1] if len(op_amp_set) == 2 else None
+  unused_op_amp_node = str(id(op_amp_tup))
+  op_amp_1 = op_amp_tup[0]
+  op_amp_2 = op_amp_tup[1] if len(op_amp_tup) == 2 else None
   n_1 = op_amp_1.nb1
   n_2 = POWER
   n_3 = op_amp_2.nb1 if op_amp_2 else unused_op_amp_node
@@ -137,8 +137,8 @@ def op_amp_piece_from_op_amp(op_amp_set):
   n_6 = op_amp_2.na1 if op_amp_2 else GROUND
   n_7 = op_amp_1.na1
   n_8 = op_amp_1.na2
-  return Op_Amp_Piece(n_1, n_2, n_3, n_4, n_5, n_6, n_7, n_8, ','.join(map(
-      lambda op_amp: op_amp.label, op_amp_set)))
+  return Op_Amp_Piece(n_1, n_2, n_3, n_4, n_5, n_6, n_7, n_8, ','.join(
+      op_amp.label for op_amp in op_amp_tup))
 
 def get_piece_placement(circuit):
   """
