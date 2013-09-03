@@ -48,11 +48,6 @@ from time import time
 from Tkinter import ALL
 from Tkinter import Canvas
 from Tkinter import Frame
-from Tkinter import Label
-from Tkinter import LEFT
-from Tkinter import SOLID
-from Tkinter import TclError
-from Tkinter import Toplevel
 from tooltip_helper import Tooltip_Helper
 from util import create_circle
 from util import create_wire
