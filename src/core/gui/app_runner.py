@@ -91,12 +91,12 @@ class App_Runner:
     """
     Adds basic shortcuts.
     """
-    self.board.add_key_binding('n', self._new_file, CTRL_DOWN)
-    self.board.add_key_binding('o', self._open_file, CTRL_DOWN)
-    self.board.add_key_binding('q', self.board.quit, CTRL_DOWN)
-    self.board.add_key_binding('s', self._save_file, CTRL_DOWN)
-    self.board.add_key_binding('y', self.board.redo, CTRL_DOWN)
-    self.board.add_key_binding('z', self.board.undo, CTRL_DOWN)
+    self.board.parent.bind('<Control-n>', lambda event: self._new_file())
+    self.board.parent.bind('<Control-o>', lambda event: self._open_file())
+    self.board.parent.bind('<Control-q>', lambda event: self.board.quit())
+    self.board.parent.bind('<Control-s>', lambda event: self._save_file())
+    self.board.parent.bind('<Control-y>', lambda event: self.board.redo())
+    self.board.parent.bind('<Control-z>', lambda event: self.board.undo())
   def _init_board(self):
     """
     (Re)Initializes the board based on this app's specific needs, as per
