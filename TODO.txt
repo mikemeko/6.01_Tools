@@ -30,6 +30,8 @@ PROTOBOARD LAYOUT:
 - [8/31/13] Should know where there are too many items to be put on the
     protoboard, and output an error message if that is the case.
 - [8/31/13] post process protoboards to make them prettier.
+- [9/3/13] Setup testing automated framework for how well protoboard generation
+    is working.
 
 SYSTEM ANALYSIS:
 - [8/31/13] Do a better job of finding feedback loops without delays.
@@ -58,15 +60,15 @@ UI:
     at different places on the board).
 - [8/31/13] Maybe the palette should have buttons instead of things that don't
     look like buttons?
-- [8/31/13] Time permitting, it'd be really awesome if we allow doing basically
-    anything that can be done on the board using only the keayboard (and not the
-    mouse) a la vimium (http://vimium.github.io/).
 - [8/31/13] Wrapper for matplotlib plotters (something similar already exists
     in lib601), matplotlib plotters block everything else.
 
 MISC:
 - [8/31/13] Efficiently limit size of undor/redo stacks.
 - [8/31/13] More unittests.
+- [8/31/13] Time permitting, it'd be really awesome if we allow doing basically
+    anything that can be done on the board using only the keayboard (and not the
+    mouse) a la vimium (http://vimium.github.io/).
 
 **************************
 *                        *

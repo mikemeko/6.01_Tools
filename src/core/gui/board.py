@@ -269,6 +269,35 @@ class Board(Frame):
     if drawable in self._selected_drawables:
       self._selected_drawables.remove(drawable)
       drawable.hide_selected_highlight(self._canvas)
+  def _drawable_within_board_bounds(self, drawable, offset):
+    """
+    Returns True if the |drawable| with the given |offset| is completely within
+        the bounds of the board (with 1 grid padding), False otherwise.
+    """
+    x1, y1, x2, y2 = drawable.bounding_box(offset)
+    return all(BOARD_GRID_SEPARATION <= x <= self.width - BOARD_GRID_SEPARATION
+        for x in (x1, x2)) and all(BOARD_GRID_SEPARATION <= y <= self.height -
+        BOARD_GRID_SEPARATION for y in (y1, y2))
+  def _move_good_for_selected_drawables(self, dx, dy):
+    """
+    Returns True if moving the currently selected drawables by (|dx|, |dy|)
+        keeps all of the selected drawables within the bounds of the board and
+        results in no overlapping drawables, False otherwise.
+    """
+    unselected_drawables = set(self._get_drawables()) - self._selected_drawables
+    for drawable in self._selected_drawables:
+      ox, oy = self.get_drawable_offset(drawable)
+      new_offset = (ox + dx, oy + dy)
+      # check that this drawable is within the board bounds
+      if not self._drawable_within_board_bounds(drawable, new_offset):
+        return False
+      # check that this drawable does not overlap other drawables
+      new_bbox = drawable.bounding_box(new_offset)
+      for other_drawable in unselected_drawables:
+        if rects_overlap(new_bbox, other_drawable.bounding_box(
+            self.get_drawable_offset(other_drawable))):
+          return False
+    return True
   def _drag_press(self, event):
     """
     Callback for button press for dragging.
@@ -289,19 +318,21 @@ class Board(Frame):
     """
     # there better be drawables to drag on call to this callback
     assert self._selected_drawables and self._drag_last_point is not None
-    last_x, last_y = self._drag_last_point
-    # drag movement amount
-    dx = snap(event.x - last_x)
-    dy = snap(event.y - last_y)
-    # move each of the selected drawables
-    for drawable in self._selected_drawables:
-      self._move_drawable(drawable, dx, dy)
-      self._drag_last_point = (last_x + dx, last_y + dy)
     # if there's only one drawable being dragged, show guide lines
     if len(self._selected_drawables) == 1:
       drawable = iter(self._selected_drawables).next()
       x1, y1, x2, y2 = drawable.bounding_box(self.get_drawable_offset(drawable))
       self._draw_guide_lines([(x1, y1), (x2, y2)])
+    last_x, last_y = self._drag_last_point
+    # drag movement amount
+    dx = snap(event.x - last_x)
+    dy = snap(event.y - last_y)
+    if self._move_good_for_selected_drawables(dx, dy):
+      # move each of the selected drawables
+      for drawable in self._selected_drawables:
+        self._move_drawable(drawable, dx, dy)
+      # update drag last point
+      self._drag_last_point = (last_x + dx, last_y + dy)
   def _drag_release(self, event):
     """
     Callback for button release for dragging.
@@ -450,6 +481,7 @@ class Board(Frame):
     """
     Callback for button press.
     """
+    assert self._current_button_action is None
     drawable = self._drawable_at((event.x, event.y))
     if self._connector_at((event.x, event.y)) or (drawable and isinstance(
       drawable, Wire_Connector_Drawable)):
@@ -542,7 +574,8 @@ class Board(Frame):
     Moves the currently selected items by |dx| in the x-direction and |dy| in
         the y-direction.
     """
-    if self._selected_drawables and (dx or dy):
+    if self._selected_drawables and (dx or dy) and (
+        self._move_good_for_selected_drawables(dx, dy)):
       for drawable in self._selected_drawables:
         self._move_drawable(drawable, dx, dy)
       self._action_history.record_action(Multi_Action(map(lambda drawable:
