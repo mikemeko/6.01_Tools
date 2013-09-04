@@ -6,6 +6,7 @@ Tools to figure out a good placement of circuit pieces on the proto board given
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
 from circuit_pieces import Circuit_Piece
+from circuit_pieces import Resistor_Piece
 from circuit_simulator.main.constants import GROUND
 from circuit_simulator.main.constants import POWER
 from collections import defaultdict
@@ -112,13 +113,20 @@ def set_locations(pieces):
   Given a (ordered) list of |pieces|, assigns them locations on the proto
       board. Tries to center the pieces in the middle of the proto board, and
       leaves a space of 2 columns between each consecuitive pair of pieces.
+  TODO: update
   """
-  # put the pieces as much at the center of the proto board as possible
-  col = (PROTO_BOARD_WIDTH - sum(piece.width + CIRCUIT_PIECE_SEPARATION for
-      piece in pieces)) / 2 + 1
-  for piece in pieces:
+  # find spaces (in number of columns) between each consecutive pair of pieces
+  separations = []
+  for i in xrange(len(pieces) - 1):
+    separations.append(1 if isinstance(pieces[i], Resistor_Piece) and
+        isinstance(pieces[i + 1], Resistor_Piece) else CIRCUIT_PIECE_SEPARATION)
+  # set piece locations, trying to center the group
+  separations.append(0)
+  col = (PROTO_BOARD_WIDTH - sum(piece.width for piece in pieces) - sum(
+      separations)) / 2 + 1
+  for i, piece in enumerate(pieces):
     piece.top_left_loc = (piece.top_left_row, col)
-    col += piece.width + CIRCUIT_PIECE_SEPARATION
+    col += piece.width + separations[i]
 
 def cost(placement):
   """
