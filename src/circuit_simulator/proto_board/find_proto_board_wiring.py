@@ -165,7 +165,7 @@ class Proto_Board_Search_Node(Search_Node):
             else:
               # placing the resistor would create a violating connection
               add_resistor = False
-          else:
+          if not add_resistor:
             if wire_proto_board_valid:
               # can still put a wire down if allowed
               new_proto_board = wire_proto_board
