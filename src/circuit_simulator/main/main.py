@@ -141,11 +141,11 @@ if __name__ == '__main__':
       on_signal_file_changed=lambda: app_runner.board.set_changed(True))
   app_runner.palette.add_drawable_type(Op_Amp_Drawable, LEFT, None)
   app_runner.palette.add_drawable_type(Head_Connector_Drawable, LEFT, None,
-      types_to_add=[(Motor_Drawable, False, {}), (Motor_Pot_Drawable,
-      False, {}), (Photosensors_Drawable, False, {'on_signal_file_changed':
+      types_to_add=[(Motor_Drawable, {}), (Motor_Pot_Drawable, {}), (
+      Photosensors_Drawable, {'on_signal_file_changed':
       lambda: app_runner.board.set_changed(True)})])
   app_runner.palette.add_drawable_type(Motor_Drawable, LEFT, None)
-  app_runner.palette.add_drawable_type(Robot_Pin_Drawable, LEFT, None, True)
+  app_runner.palette.add_drawable_type(Robot_Pin_Drawable, LEFT, None)
   # add buttons to analyze circuit
   app_runner.palette.add_drawable_type(Simulate_Run_Drawable, RIGHT,
       lambda event: run_analysis(app_runner.board, simulate))

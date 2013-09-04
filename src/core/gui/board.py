@@ -695,19 +695,6 @@ class Board(Frame):
     if self._on_exit:
       self._on_exit()
     Frame.quit(self)
-  def is_duplicate(self, drawable, offset=(0, 0), disregard_location=False):
-    """
-    Returns True if the exact |drawable| at the given |offset| is already on
-        the board, False otherwise. If |disregard_location| is True, the
-        |offset| will be ignored.
-    """
-    assert isinstance(drawable, Drawable), 'drawable must be a Drawable'
-    bbox = drawable.bounding_box(offset)
-    for other in self._get_drawables():
-      if (drawable.__class__ == other.__class__ and
-          (disregard_location or bbox == other.bounding_box(other.offset))):
-        return True
-    return False
   def _cancel_message_remove_timer(self):
     """
     Cancles timer that has been set to remove current message (if any).
@@ -805,17 +792,58 @@ class Board(Frame):
     self.set_changed(True)
     # if this drawable had been deleted previously, set it live
     drawable.set_live()
-  def add_drawable(self, drawable, offset=(0, 0)):
+  def _offset_good_for_new_drawable(self, new_drawable, offset):
     """
-    Adds the given |drawable| to this board at the given |offset|. Records this
-        action in the action history.
+    Returns True if the given |new_drawable| at the given |offset| is completely
+        within the bounds of the baord, and does not overlap with any of the
+        drawables currently on the board, False otherwise.
+    """
+    # check that the drawable fits inside the board
+    if not self._drawable_within_board_bounds(new_drawable, offset):
+      return False
+    # check that the drawable does not overlap with the current drawables
+    bbox = new_drawable.bounding_box(offset)
+    for other_drawable in self._get_drawables():
+      if rects_overlap(bbox, other_drawable.bounding_box(
+          self.get_drawable_offset(other_drawable))):
+        return False
+    return True
+  def add_drawable(self, drawable, desired_offset=(0, 0)):
+    """
+    Adds the given |drawable| to this board at the closest offset to the given
+        |desired_offset| so that this new |drawable| does not overlap with any
+        other drawables already on the board. Records the action in the action
+        history.
     """
     assert isinstance(drawable, Drawable), 'drawable must be a Drawable'
+    # get rid of current drawable selection
     self._empty_current_drawable_selection()
-    self._add_drawable(drawable, offset)
-    self._action_history.record_action(Action(
-        lambda: drawable.redraw(self._canvas),
-        lambda: drawable.delete_from(self._canvas), 'add_drawable'))
+    # find a good offset as close to |desired_offset| as possible
+    offset = None
+    if self._offset_good_for_new_drawable(drawable, desired_offset):
+      offset = desired_offset
+    else:
+      ox, oy = desired_offset
+      def closest_offset():
+        for d in xrange(BOARD_GRID_SEPARATION, max(ox, self.width - ox) + max(
+              oy, self.height - oy) + 1, BOARD_GRID_SEPARATION):
+          for i in xrange(0, d + 1, BOARD_GRID_SEPARATION):
+            for dx, dy in set([(i, d - i), (i, i - d), (-i, d - i),
+                  (-i, i - d)]):
+              test_offset = (ox + dx, oy + dy)
+              if self._offset_good_for_new_drawable(drawable, test_offset):
+                return test_offset
+      offset = closest_offset()
+    # if we found a good offset, add the drawable at that offset and select it,
+    #     otherwise show an error message
+    if offset is not None:
+      self._add_drawable(drawable, offset)
+      self._select(drawable)
+      self._action_history.record_action(Action(
+          lambda: drawable.redraw(self._canvas),
+          lambda: drawable.delete_from(self._canvas), 'add_drawable'))
+    else:
+      self.display_message('There\'s no more space :(', ERROR)
   def _label_wires_from(self, drawable, relabeled_wires, label):
     """
     Labels wires starting from the given |drawable|. Labels all wires that are
