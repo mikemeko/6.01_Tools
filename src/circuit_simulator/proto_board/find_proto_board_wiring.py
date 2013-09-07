@@ -220,7 +220,8 @@ def heuristic(state):
       |state| and a goal state.
   """
   proto_board, loc_pairs = state
-  return sum(dist(loc_1, loc_2) for loc_1, loc_2, resistor, node in loc_pairs)
+  return sum(min(dist(loc_1, loc) for loc in proto_board.locs_connected_to(
+      loc_2)) for loc_1, loc_2, resistor, node in loc_pairs)
 
 def loc_pair_to_connect_next(loc_pairs):
   """
@@ -237,10 +238,10 @@ def condense_loc_pairs(loc_pairs, proto_board):
   """
   condensed_loc_pairs = []
   for (loc_1, loc_2, resistor, node) in loc_pairs:
-    condensed_loc_pairs.append(tuple(min(product(filter(proto_board.free,
+    condensed_loc_pairs.append(min(product(filter(proto_board.free,
         proto_board.locs_connected_to(loc_1)), filter(proto_board.free,
         proto_board.locs_connected_to(loc_2))), key=lambda (l1, l2): dist(l1,
-        l2))) + (resistor, node))
+        l2)) + (resistor, node))
   return condensed_loc_pairs
 
 def find_wiring(loc_pairs, start_proto_board=Proto_Board()):
@@ -256,10 +257,27 @@ def find_wiring(loc_pairs, start_proto_board=Proto_Board()):
   while loc_pairs:
     loc_pairs = condense_loc_pairs(loc_pairs, proto_board)
     next_pair = loc_pair_to_connect_next(loc_pairs)
-    print '\t%d/%d connecting: %s' % (n - len(loc_pairs) + 1, n, next_pair)
-    proto_board = a_star(Proto_Board_Search_Node(proto_board, frozenset([
-        next_pair])), goal_test, heuristic,
-        max_states_to_expand=MAX_STATES_TO_EXPAND).state[0]
-    loc_pairs.remove(next_pair)
-  print '\tdone.'
+    loc_1, loc_2, resistor, node = next_pair
+    print '\t%d/%d connecting: %s -- %s' % (n - len(loc_pairs) + 1, n, loc_1,
+        loc_2)
+    equivalent_loc_pairs = list(product(filter(proto_board.free,
+        proto_board.locs_connected_to(loc_1)), filter(proto_board.free,
+        proto_board.locs_connected_to(loc_2))))
+    for trial_num in xrange(5):
+      trial_loc_pair = min(equivalent_loc_pairs, key=lambda (loc_1, loc_2):
+          dist(loc_1, loc_2))
+      equivalent_loc_pairs.remove(trial_loc_pair)
+      trial_loc_1, trial_loc_2 = trial_loc_pair
+      print '\t\ttrial %d: %s -- %s' % (trial_num, trial_loc_1, trial_loc_2)
+      trial_result = a_star(Proto_Board_Search_Node(proto_board, frozenset([
+          (trial_loc_1, trial_loc_2, resistor, node)])), goal_test, heuristic,
+          max_states_to_expand=MAX_STATES_TO_EXPAND)
+      if trial_result is not None:
+        proto_board = trial_result.state[0]
+        loc_pairs.remove(next_pair)
+        print '\t\tdone.'
+        break
+    else:
+      print '\t\tCouldn\'t do it :('
+      return None
   return proto_board

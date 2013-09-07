@@ -136,14 +136,20 @@ class Proto_Board:
     Returns a new Proto_Board containing the |new_wire|. If the wire connects
         nodes that are already connected, this method returns this proto board.
         If the wire connects nodes that are meant not to be connected, as per
-        |self._loc_disjoint_set_forest|, this method returns None.
+        |self._loc_disjoint_set_forest|, this method returns None. If the wire's
+        locations don't match the wire's node, this method returns None.
     """
     # if locations are already connected, no need for the wire
     if self.connected(new_wire.loc_1, new_wire.loc_2):
       return self
     # if the wire results in a short, no new proto board
+    new_wire_node_rep = self.rep_for(new_wire.node)
     group_1 = self.rep_for(new_wire.loc_1)
+    if group_1 and group_1 is not new_wire_node_rep:
+      return None
     group_2 = self.rep_for(new_wire.loc_2)
+    if group_2 and group_2 is not new_wire_node_rep:
+      return None
     if group_1 and group_2 and group_1 != group_2:
       return None
     new_wire_mappings = self._wire_mappings.copy()

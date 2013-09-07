@@ -111,9 +111,10 @@ def loc_pairs_to_connect(pieces, resistors):
 def set_locations(pieces):
   """
   Given a (ordered) list of |pieces|, assigns them locations on the proto
-      board. Tries to center the pieces in the middle of the proto board, and
-      leaves a space of 2 columns between each consecuitive pair of pieces.
-  TODO: update
+      board. Tries to center the pieces in the middle of the proto board. Leaves
+      a separation of |CIRCUIT_PIECE_SEPARATION| columns between each
+      consecuitive pair of pieces, unless the pieces are both resistors, in
+      which case only 1 column is left.
   """
   # find spaces (in number of columns) between each consecutive pair of pieces
   separations = []
@@ -123,7 +124,7 @@ def set_locations(pieces):
   # set piece locations, trying to center the group
   separations.append(0)
   col = (PROTO_BOARD_WIDTH - sum(piece.width for piece in pieces) - sum(
-      separations)) / 2 + 1
+      separations)) / 2
   for i, piece in enumerate(pieces):
     piece.top_left_loc = (piece.top_left_row, col)
     col += piece.width + separations[i]
