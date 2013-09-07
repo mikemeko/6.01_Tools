@@ -543,37 +543,30 @@ class Robot_Connector_Piece(N_Pin_Connector_Piece):
   """
   Representation for the robot connector piece.
   """
-  def __init__(self, n_pin_2, n_pin_4, label):
+  def __init__(self, pin_nodes, label):
     """
-    |n_pin_2|: node at pin 2, power.
-    |n_pin_4|: node at pin 4, ground.
+    |pin_nodes|: a list containin the nodes from pin 1 to pin 7 in that order.
     """
-    assert n_pin_2, 'invalid n_pin_2'
-    assert n_pin_4, 'invalid n_pin_4'
-    N_Pin_Connector_Piece.__init__(self, [n_pin_2, n_pin_4], 8,
-        'Robot Connector', DISABLED_PINS_ROBOT_CONNECTOR, label)
-    self.n_pin_2 = n_pin_2
-    self.n_pin_4 = n_pin_4
+    assert isinstance(pin_nodes, list) and len(pin_nodes) == 7, ('pin_nodes '
+        'should be a list containing 7 values')
+    N_Pin_Connector_Piece.__init__(self, pin_nodes, 8, 'Robot Connector',
+        DISABLED_PINS_ROBOT_CONNECTOR, label)
+    self.pin_nodes = pin_nodes
   def locs_for(self, node):
-    locs = []
-    if node == self.n_pin_2:
-      locs.append(self.loc_for_pin(2))
-    if node == self.n_pin_4:
-      locs.append(self.loc_for_pin(4))
-    return locs
+    return [self.loc_for_pin(i + 1) for i, pin_node in enumerate(
+        self.pin_nodes) if node == pin_node]
   def to_cmax_str(self):
     c1, r1 = loc_to_cmax_rep(self.loc_for_pin(1))
     c8, r8 = loc_to_cmax_rep(self.loc_for_pin(8))
     return 'robot: (%d,%d)--(%d,%d)' % (c1, r1, c8, r8)
   def __str__(self):
-    return 'Robot_Connector_Piece pin 2: %s, pin 4: %s' % (self.n_pin_2,
-        self.n_pin_4)
+    return 'Robot_Connector_Piece pin nodes: %s' % str(self.pin_nodes)
   def __eq__(self, other):
-    return (isinstance(other, Robot_Connector_Piece) and self.n_pin_2 ==
-        other.n_pin_2 and self.n_pin_4 == other.n_pin_4 and self.label ==
-        other.label and self.top_left_loc == other.top_left_loc)
+    return (isinstance(other, Robot_Connector_Piece) and self.pin_nodes ==
+        other.pin_nodes and self.label == other.label and self.top_left_loc ==
+        other.top_left_loc)
   def __hash__(self):
-    return hash((self.n_pin_2, self.n_pin_4, self.label, self.top_left_loc))
+    return hash(tuple(self.pin_nodes) + (self.label, self.top_left_loc))
 
 class Head_Connector_Piece(N_Pin_Connector_Piece):
   """

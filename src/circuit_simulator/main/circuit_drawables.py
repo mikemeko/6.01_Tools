@@ -22,7 +22,6 @@ from constants import LAMP_RADIUS
 from constants import LAMP_SIGNAL_FILE_EXTENSION
 from constants import LAMP_SIGNAL_FILE_TYPE
 from constants import MOTOR_FILL
-from constants import MOTOR_POT_FILL
 from constants import MOTOR_POT_SIZE
 from constants import MOTOR_SIZE
 from constants import NEGATIVE_COLOR
@@ -35,7 +34,6 @@ from constants import OP_AMP_RIGHT_VERTICES
 from constants import OP_AMP_UP_VERTICES
 from constants import OPEN_LAMP_SIGNAL_FILE_TITLE
 from constants import OPEN_POT_SIGNAL_FILE_TITLE
-from constants import PHOTOSENSORS_FILL
 from constants import PHOTOSENSORS_SIZE
 from constants import PIN_HORIZONTAL_HEIGHT
 from constants import PIN_HORIZONTAL_WIDTH
@@ -59,8 +57,10 @@ from constants import RE_OP_AMP_VERTICES
 from constants import RESISTOR_HORIZONTAL_HEIGHT
 from constants import RESISTOR_HORIZONTAL_WIDTH
 from constants import RESISTOR_TEXT_PADDING
-from constants import ROBOT_PIN_FILL
-from constants import ROBOT_PIN_SIZE
+from constants import ROBOT_COLOR
+from constants import ROBOT_IO_DRAWABLE_SIZE
+from constants import ROBOT_POWER_DRAWABLE_SIZE
+from constants import ROBOT_SIZE
 from constants import SIMULATE
 from core.gui.components import Drawable
 from core.gui.components import Run_Drawable
@@ -436,15 +436,15 @@ class Pot_Drawable(Drawable):
   def rotated(self):
     return Pot_Drawable(self.on_signal_file_changed, self.height, self.width,
         (self.direction + 1) % 4, self.signal_file)
-  def serialize(self, offset):
-    return 'Pot %s %d %d %d %s' % (self.signal_file, self.width, self.height,
-        self.direction, str(offset))
   def show_selected_highlight(self, canvas):
     for item in self._resistor_zig_zags:
       canvas.itemconfig(item, width=2)
   def hide_selected_highlight(self, canvas):
     for item in self._resistor_zig_zags:
       canvas.itemconfig(item, width=1)
+  def serialize(self, offset):
+    return 'Pot %s %d %d %d %s' % (self.signal_file, self.width, self.height,
+        self.direction, str(offset))
   @staticmethod
   def deserialize(item_str, board):
     m = match(r'Pot (.+) %s %s %s %s' % (RE_INT, RE_INT, RE_INT, RE_INT_PAIR),
@@ -463,14 +463,15 @@ class Motor_Drawable(Pin_Drawable):
   """
   Drawable for motor (can be independent or can be part of head).
   """
-  def __init__(self, direction=DIRECTION_UP, color=MOTOR_FILL, group_id=0):
+  def __init__(self, color=MOTOR_FILL, group_id=0, direction=DIRECTION_UP):
     """
-    |group_id|: indicator for the head this Motor_Drawable is a part of.
+    |group_id|: indicator for the head this Motor_Drawable is a part of, if this
+        is not an independent motor.
     """
     Pin_Drawable.__init__(self, 'Motor', color, MOTOR_SIZE, MOTOR_SIZE)
-    self.direction = direction
     self.color = color
     self.group_id = group_id
+    self.direction = direction
   def draw_connectors(self, canvas, offset=(0, 0)):
     ox, oy = offset
     w, h = self.width, self.height
@@ -503,7 +504,7 @@ class Motor_Drawable(Pin_Drawable):
         minus_x), minus_y + LABEL_PADDING * sign(cy - minus_y), text='-',
         fill='white', justify=CENTER, font=FONT))
   def rotated(self):
-    return Motor_Drawable((self.direction + 1) % 4, self.color, self.group_id)
+    return Motor_Drawable(self.color, self.group_id, (self.direction + 1) % 4)
   def serialize(self, offset):
     return 'Motor %s %d %d %s' % (self.color, self.direction, self.group_id,
         str(offset))
@@ -513,7 +514,7 @@ class Motor_Drawable(Pin_Drawable):
     if m:
       color = m.group(1)
       direction, group_id, ox, oy = map(int, m.groups()[1:])
-      board.add_drawable(Motor_Drawable(direction, color, group_id), (ox, oy))
+      board.add_drawable(Motor_Drawable(color, group_id, direction), (ox, oy))
       return True
     return False
 
@@ -521,15 +522,14 @@ class Motor_Pot_Drawable(Pin_Drawable):
   """
   Drawable for motor pot on head.
   """
-  def __init__(self, direction=DIRECTION_RIGHT, color=MOTOR_POT_FILL,
-      group_id=0):
+  def __init__(self, color, group_id, direction=DIRECTION_RIGHT):
     """
     |group_id|: indicator for the head this Motor_Pot_Drawable is a part of.
     """
     Pin_Drawable.__init__(self, 'MP', color, MOTOR_POT_SIZE, MOTOR_POT_SIZE)
-    self.direction = direction
     self.color = color
     self.group_id = group_id
+    self.direction = direction
   def draw_connectors(self, canvas, offset=(0, 0)):
     ox, oy = offset
     w, h = self.width, self.height
@@ -574,8 +574,8 @@ class Motor_Pot_Drawable(Pin_Drawable):
         bottom_x), bottom_y + LABEL_PADDING * sign(cy - bottom_y), text='-',
         fill='white', justify=CENTER, font=FONT))
   def rotated(self):
-    return Motor_Pot_Drawable((self.direction + 1) % 4, self.color,
-        self.group_id)
+    return Motor_Pot_Drawable(self.color, self.group_id,
+        (self.direction + 1) % 4)
   def serialize(self, offset):
     return 'Motor_Pot %s %d %d %s' % (self.color, self.direction,
         self.group_id, str(offset))
@@ -586,7 +586,7 @@ class Motor_Pot_Drawable(Pin_Drawable):
     if m:
       color = m.group(1)
       direction, group_id, ox, oy = map(int, m.groups()[1:])
-      board.add_drawable(Motor_Pot_Drawable(direction, color, group_id), (ox,
+      board.add_drawable(Motor_Pot_Drawable(color, group_id, direction), (ox,
           oy))
       return True
     return False
@@ -595,23 +595,23 @@ class Photosensors_Drawable(Pin_Drawable):
   """
   Drawable for photodetectors on head.
   """
-  def __init__(self, on_signal_file_changed, direction=DIRECTION_RIGHT,
-      signal_file=None, color=PHOTOSENSORS_FILL, group_id=None):
+  def __init__(self, color, group_id, on_signal_file_changed,
+      direction=DIRECTION_RIGHT, signal_file=None):
     """
+    |group_id|: indicator for the head this Photosensors_Drawable is a part of.
     |on_signal_file_changed|: function to be called when photosensor signal
         file is changed.
     |signal_file|: the signal file containing lamp angle and distance.
-    |group_id|: indicator for the head this Photosensors_Drawable is a part of.
     """
     assert is_callable(on_signal_file_changed), ('on_signal_file_changed must '
         'be callable')
     Pin_Drawable.__init__(self, 'PS', color, PHOTOSENSORS_SIZE,
         PHOTOSENSORS_SIZE)
+    self.color = color
+    self.group_id = group_id
     self.on_signal_file_changed = on_signal_file_changed
     self.direction = direction
     self.signal_file = signal_file
-    self.color = color
-    self.group_id = group_id
   def draw_on(self, canvas, offset=(0, 0)):
     Pin_Drawable.draw_on(self, canvas, offset)
     # draw the button that, when right-clicked, lets the user select a signal
@@ -697,8 +697,8 @@ class Photosensors_Drawable(Pin_Drawable):
         right_x), right_y + LABEL_PADDING * sign(cy - right_y), text='r',
         fill='white', justify=CENTER, font=FONT))
   def rotated(self):
-    return Photosensors_Drawable(self.on_signal_file_changed,
-        (self.direction + 1) % 4, self.signal_file, self.color, self.group_id)
+    return Photosensors_Drawable(self.color, self.group_id,
+        self.on_signal_file_changed, (self.direction + 1) % 4, self.signal_file)
   def serialize(self, offset):
     return 'Photosensors %s %s %d %d %s' % (self.signal_file, self.color,
         self.direction, self.group_id, str(offset))
@@ -712,18 +712,31 @@ class Photosensors_Drawable(Pin_Drawable):
         signal_file = None
       color = m.group(2)
       direction, group_id, ox, oy = map(int, m.groups()[2:])
-      board.add_drawable(Photosensors_Drawable(lambda: board.set_changed(
-          True), direction, signal_file, color, group_id), (ox, oy))
+      board.add_drawable(Photosensors_Drawable(color, group_id,
+          lambda: board.set_changed(True), direction, signal_file), (ox, oy))
       return True
     return False
 
-class Robot_Pin_Drawable(Pin_Drawable):
+class Head_Connector_Drawable(Pin_Drawable):
   """
-  Drawable for robot (to get power).
+  Drawable that, when clicked, spawns the drawables for items on the head (i.e.
+      Motor_Drawable, Motor_Pot_Drawable, Photosensors_Drawable).
   """
-  def __init__(self, direction=DIRECTION_UP):
-    Pin_Drawable.__init__(self, 'Robot Power', ROBOT_PIN_FILL, ROBOT_PIN_SIZE,
-        ROBOT_PIN_SIZE)
+  def __init__(self):
+    Pin_Drawable.__init__(self, 'Head', HEAD_COLOR, HEAD_SIZE, HEAD_SIZE)
+
+class Robot_Power_Drawable(Pin_Drawable):
+  """
+  Drawable for robot power.
+  """
+  def __init__(self, color, group_id, direction=DIRECTION_UP):
+    """
+    |group_id|: indicator for the robot this Robot_Power_Drawable is a part of.
+    """
+    Pin_Drawable.__init__(self, 'Robot Power', color,
+        ROBOT_POWER_DRAWABLE_SIZE, ROBOT_POWER_DRAWABLE_SIZE)
+    self.color = color
+    self.group_id = group_id
     self.direction = direction
   def draw_connectors(self, canvas, offset=(0, 0)):
     ox, oy = offset
@@ -757,25 +770,63 @@ class Robot_Pin_Drawable(Pin_Drawable):
         gnd_y + LABEL_PADDING * sign(cy - gnd_y), text='-', fill='white',
         justify=CENTER, font=FONT))
   def rotated(self):
-    return Robot_Pin_Drawable((self.direction + 1) % 4)
+    return Robot_Power_Drawable(self.color, self.group_id,
+        (self.direction + 1) % 4)
   def serialize(self, offset):
-    return 'Robot_Pin %d %s' % (self.direction, str(offset))
+    return 'Robot_Power %s %s %d %s' % (self.color, self.group_id,
+        self.direction, str(offset))
   @staticmethod
   def deserialize(item_str, board):
-    m = match(r'Robot_Pin %s %s' % (RE_INT, RE_INT_PAIR), item_str)
+    m = match(r'Robot_Power (.+) %s %s %s' % (RE_INT, RE_INT, RE_INT_PAIR),
+        item_str)
     if m:
-      direction, ox, oy = map(int, m.groups())
-      board.add_drawable(Robot_Pin_Drawable(direction), (ox, oy))
+      color = m.group(1)
+      group_id, direction, ox, oy = map(int, m.groups()[1:])
+      board.add_drawable(Robot_Power_Drawable(color, group_id, direction), (ox,
+          oy))
       return True
     return False
 
-class Head_Connector_Drawable(Pin_Drawable):
+class Robot_IO_Drawable(Pin_Drawable):
   """
-  Drawable that, when clicked, spawns the drawables for items on the head (i.e.
-      Motor_Drawable, Motor_Pot_Drawable, Photosensors_Drawable).
+  Drawable for robot analog inputs and output.
+  """
+  def __init__(self, name, color, group_id, connectors=CONNECTOR_RIGHT):
+    """
+    name: name of this IO drawable (e.g. Vi1, Vo)
+    |group_id|: indicator for the robot this Robot_IO_Drawable is a part of.
+    """
+    Pin_Drawable.__init__(self, name, color, ROBOT_IO_DRAWABLE_SIZE,
+        ROBOT_IO_DRAWABLE_SIZE, connectors)
+    self.name = name
+    self.color = color
+    self.group_id = group_id
+  def rotated(self):
+    return Robot_IO_Drawable(self.name, self.color, self.group_id,
+        rotate_connector_flags(self.connector_flags))
+  def serialize(self, offset):
+    return 'Robot_IO %s %s %s %d %s' % (self.name, self.color, self.group_id,
+        self.connector_flags, str(offset))
+  @staticmethod
+  def deserialize(item_str, board):
+    m = match(r'Robot_IO (.+) (.+) %s %s %s' % (RE_INT, RE_INT, RE_INT_PAIR),
+        item_str)
+    if m:
+      name, color = m.groups()[:2]
+      group_id, connectors, ox, oy = map(int, m.groups()[2:])
+      board.add_drawable(Robot_IO_Drawable(name, color, group_id, connectors),
+          (ox, oy))
+      return True
+    return False
+
+class Robot_Connector_Drawable(Pin_Drawable):
+  """
+  Drawable that, when clicked, spawns the drawables for items on the robot
+      connector (i.e. Robot_Power_Drawable and 5 Robot_IO_Drawables, 4 input and
+      1 output).
   """
   def __init__(self):
-    Pin_Drawable.__init__(self, 'Head', HEAD_COLOR, HEAD_SIZE, HEAD_SIZE)
+    Pin_Drawable.__init__(self, 'Robot', ROBOT_COLOR, ROBOT_SIZE, ROBOT_SIZE)
 
 class Simulate_Run_Drawable(Run_Drawable):
   """

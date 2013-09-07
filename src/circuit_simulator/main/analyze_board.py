@@ -14,7 +14,8 @@ from circuit_drawables import Power_Drawable
 from circuit_drawables import Probe_Minus_Drawable
 from circuit_drawables import Probe_Plus_Drawable
 from circuit_drawables import Resistor_Drawable
-from circuit_drawables import Robot_Pin_Drawable
+from circuit_drawables import Robot_IO_Drawable
+from circuit_drawables import Robot_Power_Drawable
 from circuit_simulator.simulation.circuit import Circuit
 from circuit_simulator.simulation.circuit import Head_Connector
 from circuit_simulator.simulation.circuit import Motor
@@ -54,6 +55,39 @@ def run_analysis(board, analyze):
   circuit_components = []
   # analysis plotters
   plotters = []
+  # probe labels
+  probe_plus, probe_minus = None, None
+  # constants for motors, motor_pots, and photosensors
+  # we use this state to be able to identify robot head groups
+  head_connector_group_ids = set()
+  n_motor_plus = defaultdict(str)
+  n_motor_minus = defaultdict(str)
+  i_motor = defaultdict(str)
+  motor_label = defaultdict(str)
+  n_motor_pot_top = defaultdict(str)
+  n_motor_pot_middle = defaultdict(str)
+  n_motor_pot_bottom = defaultdict(str)
+  i_motor_pot_top_middle = defaultdict(str)
+  i_motor_pot_middle_bottom = defaultdict(str)
+  motor_pot_label = defaultdict(str)
+  n_photo_left = defaultdict(str)
+  n_photo_common = defaultdict(str)
+  n_photo_right = defaultdict(str)
+  i_photo_left_common = defaultdict(str)
+  i_photo_common_right = defaultdict(str)
+  photo_lamp_angle_signal = defaultdict(str)
+  photo_lamp_distance_signal = defaultdict(str)
+  photo_label = defaultdict(str)
+  # constants for robot power and robot analog inputs and outputs
+  robot_connector_group_ids = set()
+  robot_pwr = defaultdict(str)
+  robot_gnd = defaultdict(str)
+  robot_power_label = defaultdict(str)
+  robot_vi1 = defaultdict(lambda: (None, None))
+  robot_vi2 = defaultdict(lambda: (None, None))
+  robot_vi3 = defaultdict(lambda: (None, None))
+  robot_vi4 = defaultdict(lambda: (None, None))
+  robot_vo = defaultdict(lambda: (None, None))
   # first identify all power and ground nodes and use the same name for all
   #     power nodes, as well as the same name for all ground nodes
   power_nodes, ground_nodes = set(), set()
@@ -69,16 +103,15 @@ def run_analysis(board, analyze):
       for node in nodes:
         ground_nodes.add(node)
     # robot connector component
-    elif isinstance(drawable, Robot_Pin_Drawable):
+    elif isinstance(drawable, Robot_Power_Drawable):
       for node in [wire.label for wire in drawable.pwr.wires()]:
         power_nodes.add(node)
       for node in [wire.label for wire in drawable.gnd.wires()]:
         ground_nodes.add(node)
-      # add robot connector to circuit components, so that we know it's there
-      #     and that we don't need to connect to a power supply
-      robot_connector = Robot_Connector()
-      robot_connector.label = drawable.label
-      circuit_components.append(robot_connector)
+      robot_connector_group_ids.add(drawable.group_id)
+      robot_pwr[drawable.group_id] = POWER
+      robot_gnd[drawable.group_id] = GROUND
+      robot_power_label[drawable.group_id] = drawable.label
   # ensure that there is at least one power component
   if not power_nodes:
     board.display_message('No power nodes', ERROR)
@@ -104,29 +137,6 @@ def run_analysis(board, analyze):
     elif node in ground_nodes:
       return GROUND
     return node
-  # probe labels
-  probe_plus, probe_minus = None, None
-  # constants for motors, motor_pots, and photosensors
-  # we use this state to keep be able to identify robot head groups
-  head_connector_group_ids = set()
-  n_motor_plus = defaultdict(str)
-  n_motor_minus = defaultdict(str)
-  i_motor = defaultdict(str)
-  motor_label = defaultdict(str)
-  n_motor_pot_top = defaultdict(str)
-  n_motor_pot_middle = defaultdict(str)
-  n_motor_pot_bottom = defaultdict(str)
-  i_motor_pot_top_middle = defaultdict(str)
-  i_motor_pot_middle_bottom = defaultdict(str)
-  motor_pot_label = defaultdict(str)
-  n_photo_left = defaultdict(str)
-  n_photo_common = defaultdict(str)
-  n_photo_right = defaultdict(str)
-  i_photo_left_common = defaultdict(str)
-  i_photo_common_right = defaultdict(str)
-  photo_lamp_angle_signal = defaultdict(str)
-  photo_lamp_distance_signal = defaultdict(str)
-  photo_label = defaultdict(str)
   for drawable in board.get_drawables():
     # wires attached to this component
     nodes = [wire.label for wire in drawable.wires()]
@@ -311,6 +321,23 @@ def run_analysis(board, analyze):
       i_photo_common_right[drawable.group_id] = current_name(drawable,
           n_photo_common, n_photo_right)
       photo_label[drawable.group_id] = drawable.label
+    # motor analog i/o component
+    elif isinstance(drawable, Robot_IO_Drawable):
+      if len(nodes) != 1:
+        board.display_message('Robot IO must be connected to 1 wire', ERROR)
+        return
+      node = maybe_rename_node(nodes[0])
+      robot_connector_group_ids.add(drawable.group_id)
+      if drawable.name == 'Vi1':
+        robot_vi1[drawable.group_id] = (node, drawable.label)
+      elif drawable.name == 'Vi2':
+        robot_vi2[drawable.group_id] = (node, drawable.label)
+      elif drawable.name == 'Vi3':
+        robot_vi3[drawable.group_id] = (node, drawable.label)
+      elif drawable.name == 'Vi4':
+        robot_vi4[drawable.group_id] = (node, drawable.label)
+      elif drawable.name == 'Vo':
+        robot_vo[drawable.group_id] = (node, drawable.label)
   # collect robot head pieces together
   for group_id in head_connector_group_ids:
     head_connector = Head_Connector(n_motor_pot_top[group_id],
@@ -326,6 +353,18 @@ def run_analysis(board, analyze):
     head_connector.photo_label = photo_label[group_id]
     circuit_components.append(head_connector)
     plotters.append(Head_Plotter(head_connector))
+  # collect robot connector pieces together
+  for group_id in robot_connector_group_ids:
+    vi1_node, vi1_label = robot_vi1[group_id]
+    vi2_node, vi2_label = robot_vi2[group_id]
+    vi3_node, vi3_label = robot_vi3[group_id]
+    vi4_node, vi4_label = robot_vi4[group_id]
+    vo_node, vo_label = robot_vo[group_id]
+    robot_connector = Robot_Connector(robot_pwr[group_id], robot_gnd[group_id],
+        vi1_node, vi2_node, vi3_node, vi4_node, vo_node)
+    robot_connector.label = ','.join(filter(bool, [robot_power_label[group_id],
+        vi1_label, vi2_label, vi3_label, vi4_label, vo_label]))
+    circuit_components.append(robot_connector)
   # if both probes are given, display probe voltage difference graph
   if probe_plus and probe_minus:
     plotters.append(Probe_Plotter(probe_plus, probe_minus))

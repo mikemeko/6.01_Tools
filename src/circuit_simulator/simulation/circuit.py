@@ -332,6 +332,20 @@ class Robot_Connector(Component):
   """
   Representation for robot connector.
   """
+  def __init__(self, pwr, gnd, Vi1, Vi2, Vi3, Vi4, Vo):
+    """
+    |pwr|, |gnd|: power and ground nodes, if used from this robot connector.
+    |Vi1|, |Vi2|, |Vi3|, |Vi4|: analog input nodes.
+    |Vo|: analog output node.
+    """
+    Component.__init__(self)
+    self.pwr = pwr
+    self.gnd = gnd
+    self.Vi1 = Vi1
+    self.Vi2 = Vi2
+    self.Vi3 = Vi3
+    self.Vi4 = Vi4
+    self.Vo = Vo
   def equations(self):
     return []
   def KCL_update(self, KCL):

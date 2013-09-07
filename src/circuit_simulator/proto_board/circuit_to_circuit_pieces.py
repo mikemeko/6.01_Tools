@@ -102,7 +102,9 @@ def robot_connector_piece_from_robot_connector(robot_connector):
   """
   assert isinstance(robot_connector, Robot_Connector), ('robot_connector must '
       'be a Robot_Connector')
-  return Robot_Connector_Piece(POWER, GROUND, robot_connector.label)
+  return Robot_Connector_Piece([robot_connector.Vi1, robot_connector.pwr,
+      robot_connector.Vi2, robot_connector.gnd, robot_connector.Vi3,
+      robot_connector.Vo, robot_connector.Vi4], robot_connector.label)
 
 def head_connector_piece_from_head_connector(head_connector):
   """

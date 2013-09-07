@@ -36,7 +36,6 @@ CIRCUIT ANALYSIS:
 - [8/31/13] Should have multiple output options (values as text; graph; both)
 - [8/31/13] Use CMax simulator, or emulate it; one important issue is detecting
     Op Amp positive feedback.
-- [9/7/13] Must support robot analog input/output.
 
 UI:
 - [8/31/13] When hover over an item on the board, highlight respective item on
@@ -80,6 +79,7 @@ MISC:
 THESIS:
 
 CIRCUIT ANALYSIS:
+- [9/7/13] [9/7/13] Must support robot analog input/output.
 
 PROTOBOARD LAYOUT:
 
