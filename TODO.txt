@@ -15,7 +15,8 @@ FORMAT:
 **************************
 
 THESIS:
-- [9/3/13]: write it!
+- [9/7/13] Prepare a test suite of schematics + automated testing and stats.
+- [9/7/13] Outline paper.
 
 PROTOBOARD LAYOUT:
 - [8/31/13] For a particular pair of locations, try multiple pairs of locations
@@ -35,6 +36,7 @@ CIRCUIT ANALYSIS:
 - [8/31/13] Should have multiple output options (values as text; graph; both)
 - [8/31/13] Use CMax simulator, or emulate it; one important issue is detecting
     Op Amp positive feedback.
+- [9/7/13] Must support robot analog input/output.
 
 UI:
 - [8/31/13] When hover over an item on the board, highlight respective item on
