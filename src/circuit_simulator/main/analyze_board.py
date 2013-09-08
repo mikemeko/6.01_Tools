@@ -28,7 +28,6 @@ from collections import defaultdict
 from constants import GROUND
 from constants import POWER
 from constants import POWER_VOLTS
-from core.gui.board import Board
 from core.gui.constants import ERROR
 from plotters import Head_Plotter
 from plotters import Motor_Plotter
@@ -48,7 +47,6 @@ def run_analysis(board, analyze):
       the given function |analyze| on it. The funtion |analyze| should take as
       arguments the circuit, as well as the plotters that are collected.
   """
-  assert isinstance(board, Board), 'board must be a Board'
   # remove current message on board, if any
   board.remove_message()
   # components in the circuit
@@ -370,4 +368,4 @@ def run_analysis(board, analyze):
     plotters.append(Probe_Plotter(probe_plus, probe_minus))
   # create and analyze circuit
   circuit = Circuit(circuit_components, GROUND)
-  analyze(circuit, plotters)
+  return analyze(circuit, plotters)

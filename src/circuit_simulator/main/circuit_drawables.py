@@ -204,6 +204,8 @@ class Resistor_Drawable(Drawable):
     Drawable.__init__(self, width, height, connectors)
     self.board = board
     self.init_resistance = init_resistance
+    # for automated tests
+    self.get_resistance = lambda: init_resistance
   def draw_on(self, canvas, offset=(0, 0)):
     ox, oy = offset
     w, h = self.width, self.height

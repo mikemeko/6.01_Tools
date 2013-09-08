@@ -90,7 +90,6 @@ def create_circle(canvas, x, y, r, *args, **kwargs):
   Draws a circle of radius |r| centered at (|x|, |y|) on the |canvas|.
   Returns the canvas id of the circle.
   """
-  assert isinstance(canvas, Canvas), 'canvas must be a Canvas'
   return canvas.create_oval(x - r, y - r, x + r, y + r, *args, **kwargs)
 
 def create_connector(canvas, x, y, fill, outline, active_width):

@@ -54,6 +54,7 @@ from util import create_wire
 from util import point_inside_bbox
 from util import point_inside_circle
 from util import snap
+from wire_labeling import label_wires
 
 class Board(Frame):
   """
@@ -844,50 +845,6 @@ class Board(Frame):
           lambda: drawable.delete_from(self._canvas), 'add_drawable'))
     else:
       self.display_message('There\'s no more space :(', ERROR)
-  def _label_wires_from(self, drawable, relabeled_wires, label):
-    """
-    Labels wires starting from the given |drawable|. Labels all wires that are
-        not already |relabeled_wires|. |label| is the smallest possible label
-        to use. Recursively labels wire connected by wire connectors. Returns
-        the maximum label used in the process.
-    """
-    # maximum label that could have been used in this step of labeling
-    max_label = label
-    for connector in drawable.connectors:
-      for wire in connector.wires():
-        # if the drawable is a wire connector, then reuse the same label
-        # otherwise, use a new label for each wire
-        # Note: only wires that are connected by wire connectors can have the
-        #     same label
-        if not isinstance(drawable, Wire_Connector_Drawable):
-          label = max_label = max_label + 1
-        # only label a wire if it has not already been labeled
-        if wire not in relabeled_wires:
-          # label wire and mark it labeled
-          wire.label = str(label)
-          relabeled_wires.add(wire)
-          # display label for debugging
-          if DEBUG_DISPLAY_WIRE_LABELS:
-            wire.redraw(self._canvas)
-          # propagate labeling if the other end of the wire is a wire connector
-          # use the same label for wires that follow
-          next_drawable = wire.other_connector(connector).drawable
-          if isinstance(next_drawable, Wire_Connector_Drawable):
-            max_label = max(max_label,
-                self._label_wires_from(next_drawable, relabeled_wires, label))
-    return max_label
-  def _label_wires(self):
-    """
-    Labels the wires on this board such that two wires have the same label if
-        and only if they are connected via wire connectors.
-    """
-    # relabel all wires from scratch
-    relabeled_wires = set()
-    label = 0
-    for drawable in self._get_drawables():
-      # increment label to pass to the next drawable so that disconnected wires
-      #     are never given the same label
-      label = self._label_wires_from(drawable, relabeled_wires, label) + 1
   def _label_drawables(self):
     """
     Labels the drawables (other than Wire_Connector_Drawables) on the board in
@@ -912,7 +869,7 @@ class Board(Frame):
     Labels the wires and drawables and then returns a generator of the live
         drawables on this board, with the newest drawables put first.
     """
-    self._label_wires()
+    label_wires(self._get_drawables())
     self._label_drawables()
     return self._get_drawables()
   def show_label_tooltips(self):
