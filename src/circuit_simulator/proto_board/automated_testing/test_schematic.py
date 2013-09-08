@@ -26,16 +26,10 @@ def _run_test(circuit, *args):
 def test_schematic(schematic_file):
   """
   Attempts to produce the protoboard layout for the given |schematic_file|, a
-      netlist file. Prints out statistics for the attempt.
+      netlist file. Returns whether a layout was found, and how much time (in
+      seconds) the process took.
   """
-  print 'Schematic: %s' % schematic_file
-  print
   board = Mock_Board()
   open_board_from_file(board, schematic_file, DESERIALIZERS, FILE_EXTENSION)
   proto_board, running_time = run_analysis(board, _run_test)
-  print
-  print 'Success: %s' % (proto_board is not None)
-  print 'Time spent: %s seconds' % running_time
-
-if __name__ == '__main__':
-  test_schematic('circuit_simulator/main/samples/angle_controller.circsim')
+  return proto_board is not None, running_time

@@ -15,7 +15,7 @@ FORMAT:
 **************************
 
 THESIS:
-- [9/7/13] Prepare a test suite of schematics + automated testing and stats.
+- [9/7/13] Prepare a large test suite of schematics.
 - [9/7/13] Outline paper.
 
 PROTOBOARD LAYOUT:
@@ -77,6 +77,7 @@ MISC:
 **************************
 
 THESIS:
+- [9/7/13] [9/7/13] Automate testing on a set of schematic files.
 
 CIRCUIT ANALYSIS:
 - [9/7/13] [9/7/13] Must support robot analog input/output.
