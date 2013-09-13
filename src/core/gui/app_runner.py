@@ -76,6 +76,7 @@ class App_Runner:
         accelerator='Ctrl+O')
     file_menu.add_command(label='Save', command=self._save_file,
         accelerator='Ctrl+S')
+    file_menu.add_command(label='Save as', command=self._save_as)
     file_menu.add_separator()
     file_menu.add_command(label='Quit', command=self.board.quit,
         accelerator='Ctrl+Q')
@@ -112,15 +113,21 @@ class App_Runner:
     """
     self._root.title('%s (%s) %s %s' % (self._app_name, self._dev_stage,
         strip_file_name(self._file_name), '*' if board_changed else ''))
-  def _save_file(self):
+  def _save_as(self, file_name=None):
     """
-    Saves the current state of the app.
+    Saves the current state of the app with the given |file_name|.
     """
-    saved_file_name = save_board(self.board, self._file_name, self._app_name,
+    saved_file_name = save_board(self.board, file_name, self._app_name,
         self._file_extension)
     if saved_file_name:
       self._file_name = saved_file_name
       self.board.set_changed(False)
+  def _save_file(self):
+    """
+    Saves the current state of the app with its current file name (asks for a
+        a file path if it currently does not have one).
+    """
+    self._save_as(self._file_name)
   def _request_save(self):
     """
     Requests for a file save if necessary.
