@@ -779,20 +779,28 @@ class Board(Frame):
     """
     Adds the given |drawable| at the given |offset|.
     """
-    # add it to the set of drawables on this board
-    self._drawables[drawable] = time()
-    # set drawable offset (hacky, but convenient storage)
-    drawable.offset = offset
-    # draw it
-    drawable.draw_on(self._canvas, offset)
-    # draw its connectors
-    drawable.draw_connectors(self._canvas, offset)
-    # attach drag tag
-    drawable.attach_tags(self._canvas)
-    # mark this board changed
-    self.set_changed(True)
-    # if this drawable had been deleted previously, set it live
-    drawable.set_live()
+    if drawable in self._drawables:
+      # if this drawable had been on the board, it must have been deleted
+      assert not drawable.is_live()
+      # set it back alive
+      drawable.set_live()
+      # redraw it on the canvas
+      drawable.redraw(self._canvas)
+      # mark this board changed
+      self.set_changed(True)
+    else:
+      # add it to the set of drawables on this board
+      self._drawables[drawable] = time()
+      # set drawable offset (hacky, but convenient storage)
+      drawable.offset = offset
+      # draw it
+      drawable.draw_on(self._canvas, offset)
+      # draw its connectors
+      drawable.draw_connectors(self._canvas, offset)
+      # attach drag tag
+      drawable.attach_tags(self._canvas)
+      # mark this board changed
+      self.set_changed(True)
   def _offset_good_for_new_drawable(self, new_drawable, offset):
     """
     Returns True if the given |new_drawable| at the given |offset| is completely

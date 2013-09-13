@@ -312,6 +312,7 @@ class Connector:
     active_width = 2 if self.enabled else 1
     self.canvas_id = create_connector(canvas, x, y, fill, outline,
         active_width)
+    self._redraw_wires(canvas)
   def wires(self):
     """
     Returns a generator of the wires attached to this connector.
