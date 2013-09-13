@@ -29,4 +29,6 @@ if __name__ == '__main__':
       color=['green' if s else 'red' for f, s, t in results])
   pyplot.xlabel('Test schematics')
   pyplot.ylabel('Time (seconds)')
+  pyplot.xticks([i + 0.5 for i in xrange(len(results))],
+      [f.split('.')[0] for f, s, t in results], rotation=60, size='small')
   pyplot.show()
