@@ -15,7 +15,6 @@ FORMAT:
 **************************
 
 THESIS:
-- [9/7/13] Prepare a large test suite of schematics.
 
 PROTOBOARD LAYOUT:
 - [8/31/13] For a particular pair of locations, try multiple pairs of locations
@@ -25,8 +24,6 @@ PROTOBOARD LAYOUT:
 - [8/31/13] Should know where there are too many items to be put on the
     protoboard, and output an error message if that is the case.
 - [8/31/13] post process protoboards to make them prettier.
-- [9/3/13] Setup testing automated framework for how well protoboard generation
-    is working.
 
 CIRCUIT ANALYSIS:
 - [8/31/13] It should not be necessary that all nodes are connected to perform
@@ -53,7 +50,7 @@ UI:
 - [8/31/13] Should be able to select and manipulate wires just like items.
 - [8/31/13] Would be nice if we only allow drawing wires from connector to
     connector, and have very smart wire drawing.
-- [8/31/13] Copy and paste (use copy module?)
+- [8/31/13] Copy/paste (? probes, grouped things)
 - [8/31/13] Maybe the palette should have buttons instead of things that don't
     look like buttons?
 - [8/31/13] Wrapper for matplotlib plotters (something similar already exists
@@ -78,11 +75,14 @@ MISC:
 THESIS:
 - [9/7/13] [9/7/13] Automate testing on a set of schematic files.
 - [9/11/13] [9/7/13] Outline paper.
+- [9/13/13] [9/7/13] Prepare a large test suite of schematics.
 
 CIRCUIT ANALYSIS:
 - [9/7/13] [9/7/13] Must support robot analog input/output.
 
 PROTOBOARD LAYOUT:
+- [9/13/13] [9/3/13] Setup testing automated framework for how well protoboard
+    generation is working.
 
 SYSTEM ANALYSIS:
 

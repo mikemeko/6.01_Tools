@@ -1,2 +1,2 @@
 # Script to run automated protoboard layout test.
-python -m circuit_simulator.proto_board.automated_testing.test circuit_simulator/proto_board/automated_testing/training_dataset
+python -m circuit_simulator.proto_board.automated_testing.test circuit_simulator/proto_board/automated_testing/test_dataset
