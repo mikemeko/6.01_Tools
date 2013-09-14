@@ -41,7 +41,8 @@ def current_name(item, n1, n2):
   """
   return '%d %s->%s' % (id(item), n1, n2)
 
-def run_analysis(board, analyze):
+def run_analysis(board, analyze, solve_circuit=False,
+    ensure_pwr_gnd_nodes=False, no_shorts=False, ensure_signal_files=False):
   """
   Extracts a Circuit object from what is drawn on the given |board| and calls
       the given function |analyze| on it. The funtion |analyze| should take as
@@ -111,15 +112,15 @@ def run_analysis(board, analyze):
       robot_gnd[drawable.group_id] = GROUND
       robot_power_label[drawable.group_id] = drawable.label
   # ensure that there is at least one power component
-  if not power_nodes:
+  if ensure_pwr_gnd_nodes and not power_nodes:
     board.display_message('No power nodes', ERROR)
     return
   # ensure that there is at least one ground component
-  if not ground_nodes:
+  if ensure_pwr_gnd_nodes and not ground_nodes:
     board.display_message('No ground nodes', ERROR)
     return
   # ensure that power nodes and ground nodes are disjoint (no short circuit)
-  if power_nodes.intersection(ground_nodes):
+  if no_shorts and power_nodes.intersection(ground_nodes):
     board.display_message('Short circuit', ERROR)
     return
   # add voltage source to circuit
@@ -160,9 +161,9 @@ def run_analysis(board, analyze):
       connector_1_nodes = list(resistor_connector_it.next().wires())
       connector_2_nodes = list(resistor_connector_it.next().wires())
       # resistor is proper only if it has exactly one wire attached to each end
-      if len(connector_1_nodes) != 1 or len(connector_2_nodes) != 1:
-        board.display_message('Each end of resistor must be connected to 1 '
-            'wire', ERROR)
+      if len(connector_1_nodes) > 1 or len(connector_2_nodes) > 1:
+        board.display_message('Each end of resistor must be connected to at '
+            'most 1 wire', ERROR)
         return
       # get its resistance
       try:
@@ -170,60 +171,66 @@ def run_analysis(board, analyze):
       except:
         board.display_message('Could not obtain resistance constant', ERROR)
         return
-      n1, n2 = map(maybe_rename_node, nodes)
+      n1 = maybe_rename_node(nodes[0]) if len(nodes) > 0 else None
+      n2 = maybe_rename_node(nodes[1]) if len(nodes) > 1 else None
       resistor = Resistor(n1, n2, current_name(drawable, n1, n2), r)
       resistor.label = drawable.label
       circuit_components.append(resistor)
     # op amp component
     elif isinstance(drawable, Op_Amp_Drawable):
       plus_nodes = [wire.label for wire in drawable.plus_port.wires()]
-      if len(plus_nodes) != 1:
-        board.display_message('Op amp + port must be connected to 1 wire',
-            ERROR)
+      if len(plus_nodes) > 1:
+        board.display_message('Op amp + port must be connected to at most 1 '
+            'wire', ERROR)
         return
       minus_nodes = [wire.label for wire in drawable.minus_port.wires()]
-      if len(minus_nodes) != 1:
-        board.display_message('Op amp - port must be connected to 1 wire',
-            ERROR)
+      if len(minus_nodes) > 1:
+        board.display_message('Op amp - port must be connected to at most 1 '
+            'wire', ERROR)
         return
       out_nodes = [wire.label for wire in drawable.out_port.wires()]
-      if len(out_nodes) != 1:
-        board.display_message('Op amp output port must be connected to 1 wire',
-            ERROR)
+      if len(out_nodes) > 1:
+        board.display_message('Op amp output port must be connected to at most '
+            '1 wire', ERROR)
         return
-      na1, na2, nb1, nb2 = map(maybe_rename_node, (plus_nodes[0],
-          minus_nodes[0], out_nodes[0], GROUND))
+      na1 = maybe_rename_node(plus_nodes[0]) if plus_nodes else None
+      na2 = maybe_rename_node(minus_nodes[0]) if minus_nodes else None
+      nb1 = maybe_rename_node(out_nodes[0]) if out_nodes else None
+      nb2 = GROUND
       op_amp = Op_Amp(na1, na2, current_name(drawable, na1, na2), nb1, nb2,
           current_name(drawable, nb1, nb2))
       op_amp.label = drawable.label
       circuit_components.append(op_amp)
     # pot component
     elif isinstance(drawable, Pot_Drawable):
-      if not drawable.signal_file:
+      if ensure_signal_files and not drawable.signal_file:
         board.display_message('No signal file loaded for Pot', ERROR)
         return
       pot_variables = {'pot_r': None, 'pot_signal': None}
-      execfile(drawable.signal_file, pot_variables)
-      if not pot_variables['pot_r'] or not pot_variables['pot_signal']:
-        board.display_message('Invalid Pot signal file', ERROR)
-        return
+      if drawable.signal_file:
+        execfile(drawable.signal_file, pot_variables)
+        if ensure_signal_files and not (pot_variables['pot_r'] and
+            pot_variables['pot_signal']):
+          board.display_message('Invalid Pot signal file', ERROR)
+          return
       top_nodes = [wire.label for wire in drawable.top_connector.wires()]
-      if len(top_nodes) != 1:
-        board.display_message('Pot top node must be connected to 1 wire',
-            ERROR)
+      if len(top_nodes) > 1:
+        board.display_message('Pot top node must be connected to at most 1 '
+            'wire', ERROR)
         return
       middle_nodes = [wire.label for wire in drawable.middle_connector.wires()]
-      if len(middle_nodes) != 1:
-        board.display_message('Pot middle node must be connected to 1 wire',
-            ERROR)
+      if len(middle_nodes) > 1:
+        board.display_message('Pot middle node must be connected to at most 1 '
+            'wire', ERROR)
         return
       bottom_nodes = [wire.label for wire in drawable.bottom_connector.wires()]
-      if len(bottom_nodes) != 1:
-        board.display_message('Pot bottom node must be connected to 1 wire',
-            ERROR)
+      if len(bottom_nodes) > 1:
+        board.display_message('Pot bottom node must be connected to at most 1 '
+            'wire', ERROR)
         return
-      n_top, n_middle, n_bottom = map(maybe_rename_node, (top_nodes[0],
-          middle_nodes[0], bottom_nodes[0]))
+      n_top = maybe_rename_node(top_nodes[0]) if top_nodes else None
+      n_middle = maybe_rename_node(middle_nodes[0]) if middle_nodes else None
+      n_bottom = maybe_rename_node(bottom_nodes[0]) if bottom_nodes else None
       pot = Signalled_Pot(n_top, n_middle, n_bottom, current_name(drawable,
           n_top, n_middle), current_name(drawable, n_middle, n_bottom),
           pot_variables['pot_r'], pot_variables['pot_signal'])
@@ -233,15 +240,17 @@ def run_analysis(board, analyze):
     # motor component
     elif isinstance(drawable, Motor_Drawable):
       plus_nodes = [wire.label for wire in drawable.plus.wires()]
-      if len(plus_nodes) != 1:
-        board.display_message('Motor+ must be connected to 1 wire', ERROR)
+      if len(plus_nodes) > 1:
+        board.display_message('Motor+ must be connected to at most 1 wire',
+            ERROR)
         return
       minus_nodes = [wire.label for wire in drawable.minus.wires()]
-      if len(minus_nodes) != 1:
-        board.display_message('Motor- must be connected to 1 wire', ERROR)
+      if len(minus_nodes) > 1:
+        board.display_message('Motor- must be connected to at most 1 wire',
+            ERROR)
         return
-      plus_node = maybe_rename_node(plus_nodes[0])
-      minus_node = maybe_rename_node(minus_nodes[0])
+      plus_node = maybe_rename_node(plus_nodes[0]) if plus_nodes else None
+      minus_node = maybe_rename_node(minus_nodes[0]) if minus_nodes else None
       i = current_name(drawable, n_motor_plus, n_motor_minus)
       if not drawable.group_id:
         motor = Motor(plus_node, minus_node, i)
@@ -257,26 +266,27 @@ def run_analysis(board, analyze):
     # motor pot component
     elif isinstance(drawable, Motor_Pot_Drawable):
       pot_top_nodes = [wire.label for wire in drawable.top.wires()]
-      if len(pot_top_nodes) != 1:
-        board.display_message('Motor pot top must be connected to 1 wire',
-            ERROR)
+      if len(pot_top_nodes) > 1:
+        board.display_message('Motor pot top must be connected to at most 1 '
+            'wire', ERROR)
         return
       pot_middle_nodes = [wire.label for wire in drawable.middle.wires()]
-      if len(pot_middle_nodes) != 1:
-        board.display_message('Motor pot middle must be connected to 1 wire',
-            ERROR)
+      if len(pot_middle_nodes) > 1:
+        board.display_message('Motor pot middle must be connected to at most 1 '
+            'wire', ERROR)
         return
       pot_bottom_nodes = [wire.label for wire in drawable.bottom.wires()]
-      if len(pot_bottom_nodes) != 1:
-        board.display_message('Motor pot bottom must be connected to 1 wire',
-            ERROR)
+      if len(pot_bottom_nodes) > 1:
+        board.display_message('Motor pot bottom must be connected to at most 1 '
+            'wire', ERROR)
         return
       head_connector_group_ids.add(drawable.group_id)
-      n_motor_pot_top[drawable.group_id] = maybe_rename_node(pot_top_nodes[0])
+      n_motor_pot_top[drawable.group_id] = (maybe_rename_node(pot_top_nodes[0])
+          if pot_top_nodes else None)
       n_motor_pot_middle[drawable.group_id] = maybe_rename_node(
-          pot_middle_nodes[0])
+          pot_middle_nodes[0]) if pot_middle_nodes else None
       n_motor_pot_bottom[drawable.group_id] = maybe_rename_node(
-          pot_bottom_nodes[0])
+          pot_bottom_nodes[0]) if pot_bottom_nodes else None
       i_motor_pot_top_middle[drawable.group_id] = current_name(drawable,
           n_motor_pot_top, n_motor_pot_middle)
       i_motor_pot_middle_bottom[drawable.group_id] = current_name(drawable,
@@ -284,36 +294,38 @@ def run_analysis(board, analyze):
       motor_pot_label[drawable.group_id] = drawable.label
     # photosensor component
     elif isinstance(drawable, Photosensors_Drawable):
-      if not drawable.signal_file:
+      if ensure_signal_files and not drawable.signal_file:
         board.display_message('No signal file loaded for Photosensors', ERROR)
         return
       lamp_signals = {'lamp_angle_signal': None, 'lamp_distance_signal': None}
-      execfile(drawable.signal_file, lamp_signals)
+      if drawable.signal_file:
+        execfile(drawable.signal_file, lamp_signals)
       photo_lamp_angle_signal[drawable.group_id] = lamp_signals[
           'lamp_angle_signal']
       photo_lamp_distance_signal[drawable.group_id] = lamp_signals[
           'lamp_distance_signal']
       photo_left_nodes = [wire.label for wire in drawable.left.wires()]
-      if len(photo_left_nodes) != 1:
-        board.display_message('Photosensor left must be connected to 1 wire',
-            ERROR)
+      if len(photo_left_nodes) > 1:
+        board.display_message('Photosensor left must be connected to at most 1 '
+            'wire', ERROR)
         return
       photo_common_nodes = [wire.label for wire in drawable.common.wires()]
-      if len(photo_common_nodes) != 1:
-        board.display_message('Photosensor common must be connected to 1 wire',
-            ERROR)
+      if len(photo_common_nodes) > 1:
+        board.display_message('Photosensor common must be connected to at most '
+            '1 wire', ERROR)
         return
       photo_right_nodes = [wire.label for wire in drawable.right.wires()]
-      if len(photo_right_nodes) != 1:
-        board.display_message('Photosensor right must be connected to 1 wire',
-            ERROR)
+      if len(photo_right_nodes) > 1:
+        board.display_message('Photosensor right must be connected to at most 1'
+            ' wire', ERROR)
         return
       head_connector_group_ids.add(drawable.group_id)
-      n_photo_left[drawable.group_id] = maybe_rename_node(photo_left_nodes[0])
+      n_photo_left[drawable.group_id] = (maybe_rename_node(photo_left_nodes[0])
+          if photo_left_nodes else None)
       n_photo_common[drawable.group_id] = maybe_rename_node(
-          photo_common_nodes[0])
+          photo_common_nodes[0]) if photo_common_nodes else None
       n_photo_right[drawable.group_id] = maybe_rename_node(
-          photo_right_nodes[0])
+          photo_right_nodes[0]) if photo_right_nodes else None
       i_photo_left_common[drawable.group_id] = current_name(drawable,
           n_photo_left, n_photo_common)
       i_photo_common_right[drawable.group_id] = current_name(drawable,
@@ -321,10 +333,11 @@ def run_analysis(board, analyze):
       photo_label[drawable.group_id] = drawable.label
     # motor analog i/o component
     elif isinstance(drawable, Robot_IO_Drawable):
-      if len(nodes) != 1:
-        board.display_message('Robot IO must be connected to 1 wire', ERROR)
+      if len(nodes) > 1:
+        board.display_message('Robot IO must be connected to at most 1 wire',
+            ERROR)
         return
-      node = maybe_rename_node(nodes[0])
+      node = maybe_rename_node(nodes[0]) if nodes else None
       robot_connector_group_ids.add(drawable.group_id)
       if drawable.name == 'Vi1':
         robot_vi1[drawable.group_id] = (node, drawable.label)
@@ -367,5 +380,5 @@ def run_analysis(board, analyze):
   if probe_plus and probe_minus:
     plotters.append(Probe_Plotter(probe_plus, probe_minus))
   # create and analyze circuit
-  circuit = Circuit(circuit_components, GROUND)
+  circuit = Circuit(circuit_components, GROUND, solve_circuit)
   return analyze(circuit, plotters)

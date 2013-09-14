@@ -90,7 +90,7 @@ def loc_pairs_to_connect(pieces, resistors):
   """
   # find loc pairs to connect not taking resistors into account
   loc_pairs = reduce(list.__add__, (loc_pairs_for_node(locs_for_node(pieces,
-      node), node) for node in all_nodes(pieces) if node))
+      node), node) for node in all_nodes(pieces) if node), [])
   # find loc pairs to connect for resistors
   occurences = defaultdict(int)
   flagged_loc_pairs = []

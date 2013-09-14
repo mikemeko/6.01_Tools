@@ -190,6 +190,27 @@ class Op_Amp_Piece(Circuit_Piece):
     if node == self.n_8:
       locs.append((r, c) if self.dot_bottom_left else (r + 1, c + 3))
     return locs
+  def get_sacred_locs(self):
+    self._assert_top_left_loc_set()
+    r, c = self.top_left_loc
+    locs = []
+    if self.n_1 is None:
+      locs.append((r + 1, c) if self.dot_bottom_left else (r, c + 3))
+    if self.n_2 is None:
+      locs.append((r + 1, c + 1) if self.dot_bottom_left else (r, c + 2))
+    if self.n_3 is None:
+      locs.append((r + 1, c + 2) if self.dot_bottom_left else (r, c + 1))
+    if self.n_4 is None:
+      locs.append((r + 1, c + 3) if self.dot_bottom_left else (r, c))
+    if self.n_5 is None:
+      locs.append((r, c + 3) if self.dot_bottom_left else (r + 1, c))
+    if self.n_6 is None:
+      locs.append((r, c + 2) if self.dot_bottom_left else (r + 1, c + 1))
+    if self.n_7 is None:
+      locs.append((r, c + 1) if self.dot_bottom_left else (r + 1, c + 2))
+    if self.n_8 is None:
+      locs.append((r, c) if self.dot_bottom_left else (r + 1, c + 3))
+    return locs
   def inverted(self):
     new_label = (','.join(reversed(self.label.split(','))) if ',' in self.label
         else self.label)
@@ -253,12 +274,14 @@ class Place_Holder_Piece(Circuit_Piece):
     """
     |n|: the node for this Place_Holder_Piece.
     """
-    assert n, 'invalid n'
-    Circuit_Piece.__init__(self, set([n]), 0, 0)
+    Circuit_Piece.__init__(self, set(filter(bool, [n])), 0, 0)
     self.n = n
   def locs_for(self, node):
     self._assert_top_left_loc_set()
     return [self.top_left_loc] if node == self.n else []
+  def get_sacred_locs(self):
+    self._assert_top_left_loc_set()
+    return [self.top_left_loc] if self.n is None else []
   def inverted(self):
     return self
   def draw_on(self, canvas, top_left):
@@ -285,11 +308,10 @@ class Resistor_Piece(Circuit_Piece):
     |r|: resistance of the resistor.
     |vertical|: True if orientation is vertical, False otherwise.
     """
-    assert n_1, 'invalid n_1'
-    assert n_2, 'invalid n_2'
     width = 1 if vertical else 4
     height = 2 if vertical else 1
-    Circuit_Piece.__init__(self, set([n_1, n_2]), width, height, label)
+    Circuit_Piece.__init__(self, set(filter(bool, [n_1, n_2])), width, height,
+        label)
     self.n_1 = n_1
     self.n_2 = n_2
     self.r = r
@@ -301,6 +323,15 @@ class Resistor_Piece(Circuit_Piece):
     if node == self.n_1:
       locs.append((r, c))
     if node == self.n_2:
+      locs.append((r + 1, c) if self.vertical else (r, c + 3))
+    return locs
+  def get_sacred_locs(self):
+    self._assert_top_left_loc_set()
+    r, c = self.top_left_loc
+    locs = []
+    if self.n_1 is None:
+      locs.append((r, c))
+    if self.n_2 is None:
       locs.append((r + 1, c) if self.vertical else (r, c + 3))
     return locs
   def inverted(self):
@@ -376,10 +407,8 @@ class Pot_Piece(Circuit_Piece):
     |directed_up|: True if this pot is placed with the middle terminal facing
         up, False otherwise (facing down).
     """
-    assert n_top, 'invalid n_top'
-    assert n_middle, 'invalid n_middle'
-    assert n_bottom, 'invalid n_bottom'
-    Circuit_Piece.__init__(self, set([n_top, n_middle, n_bottom]), 3, 3, label)
+    Circuit_Piece.__init__(self, set(filter(bool, [n_top, n_middle, n_bottom])),
+        3, 3, label)
     self.n_top = n_top
     self.n_middle = n_middle
     self.n_bottom = n_bottom
@@ -393,6 +422,17 @@ class Pot_Piece(Circuit_Piece):
     if node == self.n_middle:
       locs.append((r, c + 1) if self.directed_up else (r + 2, c + 1))
     if node == self.n_bottom:
+      locs.append((r + 2, c + 2) if self.directed_up else (r, c))
+    return locs
+  def get_sacred_locs(self):
+    self._assert_top_left_loc_set()
+    r, c = self.top_left_loc
+    locs = []
+    if self.n_top is None:
+      locs.append((r + 2, c) if self.directed_up else (r, c + 2))
+    if self.n_middle is None:
+      locs.append((r, c + 1) if self.directed_up else (r + 2, c + 1))
+    if self.n_bottom is None:
       locs.append((r + 2, c + 2) if self.directed_up else (r, c))
     return locs
   def inverted(self):
@@ -512,8 +552,6 @@ class Motor_Connector_Piece(N_Pin_Connector_Piece):
     |n_pin_5|: node at pin 5, motor+.
     |n_pin_6|: node at pin 6, motor-.
     """
-    assert n_pin_5, 'invalid n_pin_5'
-    assert n_pin_6, 'invalid n_pin_6'
     N_Pin_Connector_Piece.__init__(self, [n_pin_5, n_pin_6], 6,
         'Motor Connector', DISABLED_PINS_MOTOR_CONNECTOR, label)
     self.n_pin_5 = n_pin_5
@@ -525,6 +563,13 @@ class Motor_Connector_Piece(N_Pin_Connector_Piece):
     if node == self.n_pin_6:
       locs.append(self.loc_for_pin(6))
     return locs
+  def _disconnected_pins(self):
+    pins = []
+    if self.n_pin_5 is None:
+      pins.append(5)
+    if self.n_pin_6 is None:
+      pins.append(6)
+    return tuple(pins)
   def to_cmax_str(self):
     c1, r1 = loc_to_cmax_rep(self.loc_for_pin(1))
     c6, r6 = loc_to_cmax_rep(self.loc_for_pin(6))
@@ -559,6 +604,9 @@ class Robot_Connector_Piece(N_Pin_Connector_Piece):
     c1, r1 = loc_to_cmax_rep(self.loc_for_pin(1))
     c8, r8 = loc_to_cmax_rep(self.loc_for_pin(8))
     return 'robot: (%d,%d)--(%d,%d)' % (c1, r1, c8, r8)
+  def _disconnected_pins(self):
+    return tuple(i + 1 for i, pin_node in enumerate(self.pin_nodes) if pin_node
+        is None)
   def __str__(self):
     return 'Robot_Connector_Piece pin nodes: %s' % str(self.pin_nodes)
   def __eq__(self, other):
@@ -589,8 +637,8 @@ class Head_Connector_Piece(N_Pin_Connector_Piece):
     c8, r8 = loc_to_cmax_rep(self.loc_for_pin(8))
     return 'head: (%d,%d)--(%d,%d)' % (c1, r1, c8, r8)
   def _disconnected_pins(self):
-    return tuple(i + 1 for i, pin_node in enumerate(self.pin_nodes) if not
-        pin_node)
+    return tuple(i + 1 for i, pin_node in enumerate(self.pin_nodes) if pin_node
+        is None)
   def __str__(self):
     return 'Head_Connector_Piece pin_nodes: %s' % str(self.pin_nodes)
   def __eq__(self, other):

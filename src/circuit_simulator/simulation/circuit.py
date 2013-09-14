@@ -231,17 +231,27 @@ class Pot(Component):
     |r|: total resistance.
     |init_alpha|: the initial value of alpha for this pot.
     """
-    assert is_number(init_alpha), 'init_alpha must be a number'
     Component.__init__(self)
     self.n_top = n_top
     self.n_middle = n_middle
     self.n_bottom = n_bottom
+    self.i_top_middle = i_top_middle
+    self.i_middle_bottom = i_middle_bottom
     self.r = r
-    init_alpha = clip(init_alpha, 0, 1)
-    self._resistor_1 = Resistor(n_top, n_middle, i_top_middle,
-        (1 - init_alpha) * r)
-    self._resistor_2 = Resistor(n_middle, n_bottom, i_middle_bottom,
-        init_alpha * r)
+    self.init_alpha = init_alpha
+    self._initialized = False
+  def _maybe_init(self):
+    """
+    Setup for simulation.
+    """
+    if not self._initialized:
+      assert is_number(self.init_alpha), 'init_alpha must be a number'
+      self.init_alpha = clip(self.init_alpha, 0, 1)
+      self._resistor_1 = Resistor(self.n_top, self.n_middle, self.i_top_middle,
+          (1 - self.init_alpha) * self.r)
+      self._resistor_2 = Resistor(self.n_middle, self.n_bottom,
+          self.i_middle_bottom, self.init_alpha * self.r)
+      self._initialized = True
   def set_alpha(self, alpha):
     """
     Sets alpha for this Pot.
@@ -249,8 +259,10 @@ class Pot(Component):
     self._resistor_1.set_r((1 - alpha) * self.r)
     self._resistor_2.set_r(alpha * self.r)
   def equations(self):
+    self._maybe_init()
     return [self._resistor_1.equation(), self._resistor_2.equation()]
   def KCL_update(self, KCL):
+    self._maybe_init()
     self._resistor_1.KCL_update(KCL)
     self._resistor_2.KCL_update(KCL)
 
@@ -264,15 +276,22 @@ class Signalled_Pot(Pot):
     """
     |signal|: CT_Signal dictating the values of alpha for this pot.
     """
-    assert isinstance(signal, CT_Signal), 'signal must be a CT_Signal'
-    init_alpha = signal(0)
     Pot.__init__(self, n_top, n_middle, n_bottom, i_top_middle,
-        i_middle_bottom, r, init_alpha)
+        i_middle_bottom, r, None)
     self.signal = signal
+  def _maybe_init_with_signal(self):
+    assert isinstance(self.signal, CT_Signal), 'signal must be a CT_Signal'
+    self.init_alpha = self.signal(0)
   def step(self, current_solution):
     # set pot alpha to its new value
     self.set_alpha(self.signal(self.current_time))
     Pot.step(self, current_solution)
+  def equations(self):
+    self._maybe_init_with_signal()
+    return Pot.equations(self)
+  def KCL_update(self, KCL):
+    self._maybe_init_with_signal()
+    Pot.KCL_update(self, KCL)
 
 class Motor(Component):
   """
@@ -372,40 +391,63 @@ class Head_Connector(Component):
     |lamp_distance_signal|: CT_Signal for lamp distance.
     """
     Component.__init__(self)
-    # lamp signals
+    self.n_pot_top = n_pot_top
+    self.n_pot_middle = n_pot_middle
+    self.n_pot_bottom = n_pot_bottom
+    self.i_pot_top_middle = i_pot_top_middle
+    self.i_pot_middle_bottom = i_pot_middle_bottom
+    self.n_photo_left = n_photo_left
+    self.n_photo_common = n_photo_common
+    self.n_photo_right = n_photo_right
+    self.i_photo_left_common = i_photo_left_common
+    self.i_photo_common_right = i_photo_common_right
+    self.n_motor_plus = n_motor_plus
+    self.n_motor_minus = n_motor_minus
+    self.i_motor = i_motor
     self.lamp_angle_signal = lamp_angle_signal
     self.lamp_distance_signal = lamp_distance_signal
-    # motor
-    self.motor_present = all([n_motor_plus, n_motor_minus, i_motor])
-    if self.motor_present:
-      self.motor = Motor(n_motor_plus, n_motor_minus, i_motor,
-          B=MOTOR_B_LOADED, angle_min=-pi, angle_max=pi)
-    # pot
-    self.pot_present = all([n_pot_top, n_pot_middle, n_pot_bottom,
-        i_pot_top_middle, i_pot_middle_bottom])
-    if self.pot_present:
-      self.pot = Pot(n_pot_top, n_pot_middle, n_pot_bottom, i_pot_top_middle,
-          i_pot_middle_bottom, HEAD_POT_RESISTANCE, HEAD_POT_INIT_ALPHA)
-    # photodetectors
-    self.photo_left_present = all([n_photo_left, n_photo_common,
-        i_photo_left_common])
-    self.photo_right_present = all([n_photo_right, n_photo_common,
-        i_photo_common_right])
-    # check that lamp signals are available if we need them
-    if self.photo_left_present or self.photo_right_present:
-      assert isinstance(self.lamp_angle_signal, CT_Signal), (
-          'lamp_angle_signal must be a CT_Signal')
-      assert isinstance(self.lamp_distance_signal, CT_Signal), (
-          'lamp_distance_signal must be a CT_Signal')
-    if self.photo_left_present:
-      self.photo_left = Current_Source(n_photo_left, n_photo_common,
-          i_photo_left_common, self._photodetector_current_constant('left'))
-    if self.photo_right_present:
-      self.photo_right = Current_Source(n_photo_right, n_photo_common,
-          i_photo_common_right, self._photodetector_current_constant('right'))
     # all pin nodes in order
     self.pin_nodes = [n_pot_top, n_pot_middle, n_pot_bottom, n_photo_left,
         n_photo_common, n_photo_right, n_motor_plus, n_motor_minus]
+    self._initialized = False
+  def _maybe_init(self):
+    """
+    Setup for simulation.
+    """
+    if not self._initialized:
+      # motor
+      self.motor_present = all([self.n_motor_plus, self.n_motor_minus,
+          self.i_motor])
+      if self.motor_present:
+        self.motor = Motor(self.n_motor_plus, self.n_motor_minus, self.i_motor,
+            B=MOTOR_B_LOADED, angle_min=-pi, angle_max=pi)
+      # pot
+      self.pot_present = all([self.n_pot_top, self.n_pot_middle,
+          self.n_pot_bottom, self.i_pot_top_middle, self.i_pot_middle_bottom])
+      if self.pot_present:
+        self.pot = Pot(self.n_pot_top, self.n_pot_middle, self.n_pot_bottom,
+            self.i_pot_top_middle, self.i_pot_middle_bottom,
+            HEAD_POT_RESISTANCE, HEAD_POT_INIT_ALPHA)
+      # photodetectors
+      self.photo_left_present = all([self.n_photo_left, self.n_photo_common,
+          self.i_photo_left_common])
+      self.photo_right_present = all([self.n_photo_right, self.n_photo_common,
+          self.i_photo_common_right])
+      # check that lamp signals are available if we need them
+      if self.photo_left_present or self.photo_right_present:
+        assert isinstance(self.lamp_angle_signal, CT_Signal), (
+            'lamp_angle_signal must be a CT_Signal')
+        assert isinstance(self.lamp_distance_signal, CT_Signal), (
+            'lamp_distance_signal must be a CT_Signal')
+      if self.photo_left_present:
+        self.photo_left = Current_Source(self.n_photo_left, self.n_photo_common,
+            self.i_photo_left_common,
+            self._photodetector_current_constant('left'))
+      if self.photo_right_present:
+        self.photo_right = Current_Source(self.n_photo_right,
+            self.n_photo_common, self.i_photo_common_right,
+            self._photodetector_current_constant('right'))
+      self._initialized = True
   def _photodetector_current_constant(self, side):
     """
     |side|: 'left' or 'right'.
@@ -453,9 +495,11 @@ class Head_Connector(Component):
       components.append(self.motor)
     return components
   def equations(self):
+    self._maybe_init()
     return reduce(list.__add__, (component.equations() for component in
         self._present_components()), [])
   def KCL_update(self, KCL):
+    self._maybe_init()
     for component in self._present_components():
       component.KCL_update(KCL)
 
@@ -463,7 +507,7 @@ class Circuit:
   """
   Representation for a circuit.
   """
-  def __init__(self, components, gnd):
+  def __init__(self, components, gnd, solve=True):
     """
     |components|: a list of the Components in this circuit.
     |gnd|: the ground node in this circuit.
@@ -471,12 +515,13 @@ class Circuit:
     self.components = components
     self.gnd = gnd
     # try to solve the circuit
-    try:
-      self.data = self._solve()
-    except:
-      self.data = None
-      if DEBUG:
-        print format_exc()
+    if solve:
+      try:
+        self.data = self._solve()
+      except:
+        self.data = None
+        if DEBUG:
+          print format_exc()
   def _solve(self):
     """
     Solves this circuit and returns a dictionary mapping all the sampled times

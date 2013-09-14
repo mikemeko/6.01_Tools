@@ -15,6 +15,8 @@ from constants import POWER_RAIL
 from constants import RAIL_LEGAL_COLUMNS
 from find_proto_board_wiring import find_wiring
 from proto_board import Proto_Board
+from sys import stdout
+from traceback import print_exc
 from util import node_disjoint_set_forest
 
 def solve_layout(circuit):
@@ -35,6 +37,9 @@ def solve_layout(circuit):
     node_locs_mapping = dict(zip(nodes, map(lambda node: locs_for_node(
         placement, node), nodes)))
     # force the bottom two rails to be power and ground rails
+    for node in (GROUND, POWER):
+      if node not in node_locs_mapping:
+        node_locs_mapping[node] = []
     node_locs_mapping[GROUND].append((GROUND_RAIL, iter(
         RAIL_LEGAL_COLUMNS).next()))
     node_locs_mapping[POWER].append((POWER_RAIL, iter(
@@ -46,4 +51,5 @@ def solve_layout(circuit):
     return find_wiring(loc_pairs_to_connect(placement, resistor_node_pairs),
         proto_board)
   except:
+    print_exc(file=stdout)
     return None
