@@ -18,6 +18,7 @@ from constants import CONNECTOR_RADIUS
 from constants import CONNECTOR_WIDTH
 from constants import CTRL_CURSOR
 from constants import CTRL_DOWN
+from constants import DEBUG_CONNECTOR_CENTER_TOOLTIP
 from constants import DEBUG_DISPLAY_WIRE_LABELS
 from constants import ERROR
 from constants import GUIDE_LINE_COLOR
@@ -115,8 +116,8 @@ class Board(Frame):
     # state to track whether this board has been changed
     self._changed = False
     # state for wire label tooltips
+    self._tooltip_helper = Tooltip_Helper(self._canvas)
     if self._label_tooltips_enabled:
-      self._tooltip_helper = Tooltip_Helper(self._canvas)
       self._show_label_tooltips = False
     # setup ui
     self._setup_drawing_board()
@@ -483,9 +484,15 @@ class Board(Frame):
     Callback for button press.
     """
     assert self._current_button_action is None
+    connector = self._connector_at((event.x, event.y))
     drawable = self._drawable_at((event.x, event.y))
-    if self._connector_at((event.x, event.y)) or (drawable and isinstance(
-      drawable, Wire_Connector_Drawable)):
+    if connector or (drawable and isinstance(drawable,
+        Wire_Connector_Drawable)):
+      if DEBUG_CONNECTOR_CENTER_TOOLTIP:
+        if not connector:
+          connector = iter(drawable.connectors).next()
+        x, y = connector.center
+        self._tooltip_helper.show_tooltip(x, y, str(connector.center))
       self._current_button_action = 'wire'
       self._wire_press(event)
     elif drawable:
@@ -514,6 +521,7 @@ class Board(Frame):
     """
     assert self._current_button_action
     if self._current_button_action == 'wire':
+      self._tooltip_helper.hide_tooltip()
       self._wire_release(event)
     elif self._current_button_action == 'drag':
       self._drag_release(event)

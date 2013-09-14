@@ -85,3 +85,4 @@ DEFAULT_FONT = ('Helvetica', 12 if system() == 'Darwin' else 10)
 
 # debug options
 DEBUG_DISPLAY_WIRE_LABELS = False
+DEBUG_CONNECTOR_CENTER_TOOLTIP = True
