@@ -34,7 +34,6 @@ from circuit_simulator.simulation.circuit import Signalled_Pot
 from circuit_simulator.simulation.circuit import Robot_Connector
 from constants import RESISTORS_AS_COMPONENTS
 from itertools import permutations
-from sys import maxint
 
 def all_1_2_partitions(n):
   """
@@ -171,7 +170,7 @@ def get_piece_placement(circuit):
   op_amps = filter(lambda obj: obj.__class__ == Op_Amp, circuit.components)
   num_op_amps = len(op_amps)
   best_placement = None
-  best_placement_cost = maxint
+  best_placement_cost = float('inf')
   # search through all the ways of packaging up the op amps
   for partition in all_1_2_partitions(num_op_amps):
     for grouping in all_groupings(op_amps, partition):

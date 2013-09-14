@@ -21,7 +21,6 @@ from core.data_structures.disjoint_set_forest import Disjoint_Set_Forest
 from core.data_structures.queue import Queue
 from itertools import permutations
 from itertools import product
-from sys import maxint
 from util import dist
 
 def closest_rail_loc(loc, rail_r):
@@ -114,7 +113,9 @@ def set_locations(pieces):
       board. Tries to center the pieces in the middle of the proto board. Leaves
       a separation of |CIRCUIT_PIECE_SEPARATION| columns between each
       consecuitive pair of pieces, unless the pieces are both resistors, in
-      which case only 1 column is left.
+      which case only 1 column is left. Returns True if the pieces are
+      successfully assigned top_left_locs (i.e. if they fit on the board), False
+      otherwise.
   """
   # find spaces (in number of columns) between each consecutive pair of pieces
   separations = []
@@ -125,24 +126,31 @@ def set_locations(pieces):
   separations.append(0)
   col = (PROTO_BOARD_WIDTH - sum(piece.width for piece in pieces) - sum(
       separations)) / 2
+  if col < 0:
+    return False
   for i, piece in enumerate(pieces):
     piece.top_left_loc = (piece.top_left_row, col)
     col += piece.width + separations[i]
+  return True
 
 def cost(placement):
   """
   Returns a heuristic cost of the given |placement| - the sum of the distances
-      between the loc pairs that would need to be connected.
+      between the loc pairs that would need to be connected. Returns
+      float('inf') if the |placement| does not fit on a board.
   """
-  set_locations(placement)
-  return sum(dist(loc_1, loc_2) for loc_1, loc_2, resistor_flag, node in
-      loc_pairs_to_connect(placement, []))
+  if set_locations(placement):
+    return sum(dist(loc_1, loc_2) for loc_1, loc_2, resistor_flag, node in
+        loc_pairs_to_connect(placement, []))
+  else:
+    return float('inf')
 
 def find_placement(pieces):
   """
   Given a list of |pieces|, returns a placement of the pieces that requires
       comparatively small wiring. Finding the absolute best placement is too
-      expensive.
+      expensive. If the |pieces| cannot be placed so as to fit on a protoboard,
+      returns None with a cost of float('inf').
   """
   assert isinstance(pieces, list), 'pieces must be a list'
   assert all(isinstance(piece, Circuit_Piece) for piece in pieces), ('all '
@@ -156,7 +164,7 @@ def find_placement(pieces):
       queue.push(piece)
       pieces.remove(piece)
   placement = []
-  placement_cost = maxint
+  placement_cost = float('inf')
   while pieces:
     add_to_queue(pieces[0])
     while queue:
@@ -164,7 +172,7 @@ def find_placement(pieces):
       # try inserting the current piece at all possible indicies in the current
       #     placement, consider both regular and inverted piece
       best_placement = None
-      best_placement_cost = maxint
+      best_placement_cost = float('inf')
       # all indicies in which the piece can be inserted
       for i in xrange(len(placement) + 1):
         # both regular and inverted piece
@@ -177,6 +185,8 @@ def find_placement(pieces):
             if new_placement_cost < best_placement_cost:
               best_placement = deepcopy(new_placement)
               best_placement_cost = new_placement_cost
+      if best_placement is None:
+        return None, float('inf')
       placement = best_placement
       placement_cost = best_placement_cost
       # add pieces connected to this piece to the queue
@@ -199,7 +209,7 @@ def _find_placement(pieces):
         options.append(option)
     piece_options.append(options)
   best_placement = None
-  best_cost = maxint
+  best_cost = float('inf')
   for perm in permutations(piece_options):
     perm_best = min(product(*perm), key=cost)
     perm_best_cost = cost(perm_best)

@@ -21,8 +21,6 @@ PROTOBOARD LAYOUT:
     by randomly sampling, don't give up if the heuristically best pair fails.
 - [8/31/13] If the layout generation fails at a particular pair of locations,
     output what it has found so far. Better yet, let the user help it out!
-- [8/31/13] Should know where there are too many items to be put on the
-    protoboard, and output an error message if that is the case.
 - [8/31/13] post process protoboards to make them prettier.
 
 CIRCUIT ANALYSIS:
@@ -83,6 +81,8 @@ CIRCUIT ANALYSIS:
 PROTOBOARD LAYOUT:
 - [9/13/13] [9/3/13] Setup testing automated framework for how well protoboard
     generation is working.
+- [9/14/13] [8/31/13] Should know where there are too many items to be put on
+    the protoboard, and output an error message if that is the case.
 
 SYSTEM ANALYSIS:
 

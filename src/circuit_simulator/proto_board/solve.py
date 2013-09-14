@@ -27,6 +27,9 @@ def solve_layout(circuit):
   try:
     # get a placement for the appropriate circuit pieces
     placement, resistor_node_pairs = get_piece_placement(circuit)
+    if placement is None:
+      print "Pieces don't fit on the board."
+      return None
     # put each of the pieces on the proto board
     proto_board = Proto_Board()
     for piece in placement:
