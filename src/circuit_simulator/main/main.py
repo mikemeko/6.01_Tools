@@ -52,12 +52,13 @@ def on_init(board):
   # create probe drawables and connect minus probe to ground
   minus_probe = Probe_Minus_Drawable()
   board.add_drawable(minus_probe, (PROBE_INIT_PADDING, PROBE_INIT_PADDING))
-  ground = Ground_Drawable().rotated().rotated()
-  board.add_drawable(ground, (PROBE_SIZE + 2 * PROBE_INIT_PADDING,
-      PROBE_INIT_PADDING))
-  x1, y1 = iter(minus_probe.connectors).next().center
-  x2, y2 = iter(ground.connectors).next().center
-  board.add_wire(x1, y1, x2, y2)
+  if False:
+    ground = Ground_Drawable().rotated().rotated()
+    board.add_drawable(ground, (PROBE_SIZE + 2 * PROBE_INIT_PADDING,
+        PROBE_INIT_PADDING))
+    x1, y1 = iter(minus_probe.connectors).next().center
+    x2, y2 = iter(ground.connectors).next().center
+    board.add_wire(x1, y1, x2, y2)
   board.add_drawable(Probe_Plus_Drawable(), (
       PROBE_INIT_PADDING, PROBE_SIZE + 2 * PROBE_INIT_PADDING))
 
