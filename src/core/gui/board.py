@@ -463,18 +463,19 @@ class Board(Frame):
     """
     Callback for when wire creation is complete.
     """
-    for start, end, parts in self._wire_parts:
-      for point in (start, end):
-        if not self._connector_at(point):
-          self._add_drawable(Wire_Connector_Drawable(), point)
-      start_connector = self._connector_at(start)
-      end_connector = self._connector_at(end)
-      # create wire
-      self._add_wire(parts, start_connector, end_connector)
-    if len(self._wire_parts) > 1:
-      self._action_history.combine_last_n(len(self._wire_parts))
-    # mark the board changed
-    self.set_changed(True)
+    if self._wire_parts:
+      for start, end, parts in self._wire_parts:
+        for point in (start, end):
+          if not self._connector_at(point):
+            self._add_drawable(Wire_Connector_Drawable(), point)
+        start_connector = self._connector_at(start)
+        end_connector = self._connector_at(end)
+        # create wire
+        self._add_wire(parts, start_connector, end_connector)
+      if len(self._wire_parts) > 1:
+        self._action_history.combine_last_n(len(self._wire_parts))
+      # mark the board changed
+      self.set_changed(True)
     # reset
     self._wire_start = None
     self._wire_end = None
