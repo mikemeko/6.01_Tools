@@ -44,6 +44,12 @@ class Proto_Board:
     Returns the number of wires on this proto board.
     """
     return len(self._wires)
+  def num_wire_crosses(self):
+    """
+    Returns the number of wire crosses on this proto board.
+    """
+    return sum(reduce(list.__add__, [[wire.crosses(other_wire) for other_wire in
+        self._wires[i + 1:]] for i, wire in enumerate(self._wires)], []))
   def get_pieces(self):
     """
     Returns a generator for the Circuit_Pieces on this proto board.

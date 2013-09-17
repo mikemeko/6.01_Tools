@@ -55,6 +55,12 @@ class Component:
         this super method.
     """
     self.current_time += T
+  def nodes(self):
+    """
+    Returns a set of the nodes this Component is connected to.
+    All subclasses should implement this method.
+    """
+    raise NotImplementedError('subclasses should implement this')
   def equations(self):
     """
     Returns a list of the equations that represent the constraints imposed by
@@ -86,6 +92,8 @@ class One_Port(Component):
     self.n1 = n1
     self.n2 = n2
     self.i = i
+  def nodes(self):
+    return set(filter(bool, [self.n1, self.n2]))
   def equation(self):
     """
     Returns an equation representing the constraint that needs to be satisfied
@@ -210,6 +218,8 @@ class Op_Amp(Component):
     self.na2 = na2
     self.nb1 = nb1
     self.nb2 = nb2
+  def nodes(self):
+    return self.voltage_sensor.nodes() | self.vcvs.nodes()
   def equations(self):
     return [self.voltage_sensor.equation(), self.vcvs.equation()]
   def KCL_update(self, KCL):
@@ -258,6 +268,8 @@ class Pot(Component):
     """
     self._resistor_1.set_r((1 - alpha) * self.r)
     self._resistor_2.set_r(alpha * self.r)
+  def nodes(self):
+    return set(filter(bool, [self.n_top, self.n_middle, self.n_bottom]))
   def equations(self):
     self._maybe_init()
     return [self._resistor_1.equation(), self._resistor_2.equation()]
@@ -342,6 +354,8 @@ class Motor(Component):
     self.angle_samples.append(new_angle)
     self.speed_samples.append(new_speed)
     Component.step(self, current_solution)
+  def nodes(self):
+    return set(filter(bool, [self.motor_plus, self.motor_minus]))
   def equations(self):
     return self._resistor.equations()
   def KCL_update(self, KCL):
@@ -365,6 +379,9 @@ class Robot_Connector(Component):
     self.Vi3 = Vi3
     self.Vi4 = Vi4
     self.Vo = Vo
+  def nodes(self):
+    return set(filter(bool, [self.pwr, self.gnd, self.Vi1, self.Vi2, self.Vi3,
+        self.Vi4, self.Vo]))
   def equations(self):
     return []
   def KCL_update(self, KCL):
@@ -479,6 +496,10 @@ class Head_Connector(Component):
       self.pot.set_alpha(current_motor_angle / (2 * pi) + 0.5)
       self.pot.step(current_solution)
     Component.step(self, current_solution)
+  def nodes(self):
+    return set(filter(bool, [self.n_pot_top, self.n_pot_middle,
+        self.n_pot_bottom, self.n_photo_left, self.n_photo_common,
+        self.n_photo_right, self.n_motor_plus, self.n_motor_minus]))
   def _present_components(self):
     """
     Returns a list of the components in the head that are connected to other
