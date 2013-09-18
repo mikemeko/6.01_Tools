@@ -156,6 +156,8 @@ def find_placement(pieces):
   assert all(isinstance(piece, Circuit_Piece) for piece in pieces), ('all '
       'items in pieces must be Circuit_Pieces')
   pieces = deepcopy(pieces)
+  if len(pieces) == 0:
+    return [], 0
   # order pieces in decreasing number of nodes
   pieces.sort(key=lambda piece: -len(piece.nodes))
   queue = Queue()
