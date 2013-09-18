@@ -2,15 +2,122 @@
 
 \chapter{Methods}
 
-\textit{How did we solve the problem? Two step process: placement then
-wiring.}
+In this Section, I discuss my solution to the problem and various alternatives I
+considered along the way.
 
-\section{Circuit Component Placement}
+\section{Overview}
 
-\textit{How do you place the components on the protoboard? Explore various
-possibilities.}
+I solved this problem by formulating it as a search problem. By this I mean,
+given a schematic of a circuit, I start from an empty protoboard, and I consider
+the space of all possible protoboard layouts to find the protoboard
+corresponding to the schematic at hand. The space of all possible protoboards is
+very large \textcolor{red}{\textbf{(?)}}, so I utilize various heuristics to
+facilitate the search.
 
-\section{Wiring}
+I broke down the problem into two parts. The first task is finding a placement
+of all the circuit pieces on the protoboard. The second task is wiring them up
+appropriately.
 
-\textit{Once the components are placed, how do you wire them together? Explore
-various possibilities.}
+\section{Part 1: Piece Placement}
+
+Let us first consider how to place a set of circuit pieces on the protoboard for
+a given circuit schematic.
+
+\subsection{The Pieces}
+
+Any given circuit may contain resistors, Op Amps, pots, motors, head connector
+parts, or robot connector parts. For each of these components, we must put down
+a corresponding piece on the circuit.
+
+\subsubsection{Resistors}
+
+For the sake of simplicity, and to significantly reduce the search space
+\textcolor{red}{\textbf{(?)}}, for every resistor in the schematic, I use one
+resistor piece on the protoboard placed in the middle strip of the protoboard
+as shown in Figure \ref{fig:piece_placement}. This choice, i.e. allowing the
+resistor pieces to only reside in the middle strip of the protoboard is critical
+as the resistor pieces generally be placed at numerous places on the protoboard.
+With this restriction, there are $63$ slots available for one resistor. Without
+this restriction, there are a total of $763$ slots available. The restirction is
+good when we consider the reduction in the search space size. On the other hand,
+the restriction is bad when we
+consider the size of circuits the algorithm can layout. Given that the number
+of circuits in the typical 6.01 circuit is very small, this restriction proves
+to be very useful, but we will consider the alternative in Section
+\ref{sec:resistors_as_wires}.
+
+\begin{figure}
+\begin{center}
+\includegraphics{Images/placeholder.jpg}
+\caption{Placement of the pieces on the protoboard.}
+\end{center}
+\label{fig:piece_placement}
+\end{figure}
+
+\subsubsection{Op Amps}
+
+Op Amps are the trickiest components to handle because each Op Amp package put
+on the protoboard contains two Op Amps within it. Thus, we face the task of
+packaging the Op Amps in the schematic in the ``best" possible way, i.e. so as
+to require as little work as possible when wiring the pieces together. Equation
+\ref{eq:opamp} presents an expression for the value $f(n)$, the number of
+different ways
+to package together $n$ Op Amps. To get a sense of how many different packagings
+are possible, Table \ref{tb:opamp} gives the values of $f(n)$ for various $n$.
+
+\begin{equation}
+f(n) = \sum\limits_{k=0}^{\lfloor\frac{n}{2}\rfloor}{\frac{n!}{n!(n - 2k)!}}
+\label{eq:opamp}
+\end{equation}
+
+\begin{table}
+\begin{center}
+\begin{singlespace}
+\begin{tabular}{c | c}
+$n$ & $f(n)$ \\
+\hline
+\hline
+1 & 1 \\
+2 & 1 \\
+3 & 7 \\
+4 & 25 \\
+5 & 81 \\
+6 & 331 \\
+7 & 1303 \\
+8 & 5937 \\
+9 & 26785 \\
+10 & 133651
+\end{tabular}
+\end{singlespace}
+\end{center}
+\label{tb:opamp}
+\caption{Number of ways of packaging together $n$ Op Amps for various values of
+$n$.}
+\end{table}
+
+\subsubsection{Pots}
+
+\subsubsection{Head, Motor, and Robot Connectors}
+
+\subsection{Choosing a Placement}
+
+\subsubsection{Random Placement}
+
+\subsubsection{Minimal Heuristic Cost}
+
+\subsubsection{Small Heuristic Cost}
+
+\section{Part 2: Wiring}
+
+\subsection{What do we need to wire together?}
+
+\subsection{Search Infrastructure}
+
+\subsection{Wire all pairs at once}
+
+\subsection{Wire one pair at a time}
+
+\section{Why breakdown problem into two parts?}
+
+\subsection{Treating Resistors as Wires}
+\label{sec:resistors_as_wires}
