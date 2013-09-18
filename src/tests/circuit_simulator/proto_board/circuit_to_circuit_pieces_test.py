@@ -9,6 +9,7 @@ from circuit_simulator.proto_board.circuit_to_circuit_pieces import (
 from circuit_simulator.proto_board.circuit_to_circuit_pieces import (
     all_groupings)
 from circuit_simulator.proto_board.circuit_to_circuit_pieces import grouping
+from math import factorial
 from unittest import main
 from unittest import TestCase
 
@@ -33,6 +34,15 @@ class Circuit_To_Circuit_Pieces_Test(TestCase):
     assert set([(3, 1), (2,)]) in groupings
     assert set([(2, 3), (1,)]) in groupings
     assert set([(3, 2), (1,)]) in groupings
+  def _num_all_op_amp_groupings(self, n):
+    return sum(factorial(n) / (factorial(k) * factorial(n - 2 * k)) for k in
+        xrange(n / 2 + 1))
+  def test_num_all_op_amp_groupings(self):
+    for n in xrange(8):
+      items = range(n)
+      num_all_groupings = sum(len(all_groupings(items, partition)) for partition
+          in all_1_2_partitions(n))
+      assert num_all_groupings == self._num_all_op_amp_groupings(n)
 
 if __name__ == '__main__':
   main()
