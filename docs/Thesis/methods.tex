@@ -35,14 +35,15 @@ For the sake of simplicity, and to significantly reduce the search space
 \textcolor{red}{\textbf{(?)}}, for every resistor in the schematic, I use one
 resistor piece on the protoboard placed in the middle strip of the protoboard
 as shown in Figure \ref{fig:piece_placement}. This choice, i.e. allowing the
-resistor pieces to only reside in the middle strip of the protoboard is critical
-as the resistor pieces generally be placed at numerous places on the protoboard.
+resistor pieces to only reside in the middle strip of the protoboard, is critical
+as the resistor pieces can generally be placed at numerous places on the protoboard.
 With this restriction, there are $63$ slots available for one resistor. Without
 this restriction, there are a total of $763$ slots available. The restirction is
 good when we consider the reduction in the search space size. On the other hand,
 the restriction is bad when we
 consider the size of circuits the algorithm can layout. Given that the number
-of circuits in the typical 6.01 circuit is very small, this restriction proves
+of resistors in a typical 6.01 \textcolor{red}{\textbf{(?)}} circuit is very
+small, this restriction proves
 to be very useful, but we will consider the alternative in Section
 \ref{sec:resistors_as_wires}.
 
@@ -95,17 +96,134 @@ $n$ & $f(n)$ \\
 $n$.}
 \end{table}
 
+Each Op Amp package is placed in the middle strip of the protoboard, as shown in
+Figure \ref{fig:piece_placement}.
+
 \subsubsection{Pots}
+
+Each pot piece can be placed in one of two vertical locations on the protoboard.
+Figure \ref{fig:piece_placement} provides an example of both options.
 
 \subsubsection{Head, Motor, and Robot Connectors}
 
+We use a 6-pin connector to connect to a motor, and an 8-pin connector to
+connect to either a head or a robot. Each connector can be placed in one of two
+vertical locations on the protoboard, as shown in Figure
+\ref{fig:piece_placement}.
+
 \subsection{Choosing a Placement}
+
+When choosing a placement of circuit pieces on the protoboard, we have at hand a
+plethora of options: each piece can be placed in one of very many places on the
+protoboard; each piece has two possible orientations; there are numerous ways of
+packaging together Op Amps; etc.
+
+\subsubsection{Simplifications}
+
+I reduce this large number of options by only allowing placements in which no
+two pieces share a column. Once again, this is not necessary in general, but the
+number of pieces necessary for a typical 6.01 circuit would certainly fit in
+this framework.
+
+Next, I specify that there be exactly two columns on the protoboard separating
+each consecuitive pair of pieces, unless the pieces are both resistors, in which
+case there must be exactly one column separating them. These numbers of columns
+were chosen to leave enough space for wiring. Given a set of pieces to be put on
+the protoboard, this specification reduces the
+problem of choosing a placement for the pieces to finding an \emph{order} of the
+pieces together with choosing their respective vertical locations and
+orientations.
+
+Given these simplifications, we have various options as to how to pick a
+placement.
 
 \subsubsection{Random Placement}
 
+One simple alternative may be to choose a placement randomly. That is, we choose
+an Op Amp packaging randomly; we choose an order of the pieces randomly; and we
+choose the vertical locations and orientations of the pieces randomly as well.
+The advantage of this
+approach is that it gives us a placement very quickly without requiring much
+computation. On the other hand, we may end up placing two pieces that need to be
+connected to each other very far apart, and we will have a difficult time doing
+the wiring. Hence, we ought to consider alternatives in which we take into
+account the task of wiring. We should try to place the pieces so as to require
+as little work during wiring as possible.
+
 \subsubsection{Minimal Heuristic Cost}
 
+The key idea is that if two pieces are meant to be connected together by wires,
+then they ought to be placed close to each other on the protoboard. We can
+capture this idea by assigning heuristic costs to the placements and choosing
+a placement that produces the minimal heuristic cost.
+
+Let us first devise the cost function to achieve this goal. Given a circuit
+schematic and a corresponding placement of the circuit pieces on the protoboard,
+what do we need to connect with wires? Well, every pair of components in the
+schematic that are connected by a wire gives us a corresponding pair of
+locations on the protoboard that ought to be connected by wires. However, we can
+express this requirement a little bit more concisely. We ought to consider all
+of the nodes in the schematic, and find the circuit components in the schematic
+that are connected to the respective nodes. Now for each node in the circuit, we
+get a set of locations on the protoboard that ought to be interconnected. The
+first step in devising the cost function we are looking for is to have a way to
+estimate the cost of connecting two locations on the protoboard. A simple such
+cost function that comes to mind is the Manhattan distance between the two
+locations. Recall that we want to produce aesthetically pleasing protoboard
+layouts, and one of the requirements in achieving this goal is only using
+horizontal and vertical wires (i.e. no diagonal wires) so the Manhattan distance
+cost is appropriate. Given this heuristic cost for connecting two locations with
+wires, we can define the heuristic cost for interconnecting the locations
+associated with a particular node to be the weight of the minimum spanning tree
+of the locations. Now we can define the cost of a placement to be the sum over
+all nodes in the circuit of the cost for interconnecting the locations for each
+node.
+
+Now that we have a cost function for placements, we can aim to find a
+placement with the minimal cost. However, this involves trying all possible
+orderings of the pieces with which we are working. For example, if we are trying
+to order $10$ pieces, we would need to look at $10! = 3628800$ possible
+orderings. Note that this is in addition to searching over all possible ways
+of packaging the Op Amps together. It is clear to see that the search for a
+minimal cost placement quickly gets out of hand. So we aim to find a placement
+that has a very small, though maybe not minimal, cost.
+
 \subsubsection{Small Heuristic Cost}
+
+Algorithm \ref{alg:small_cost_placement} presents a procedure that orders a
+given list of pieces in a way that results in a small cost. The algorithm relies
+on two ideas. First, once a piece has been placed, all the pieces that are
+connected to it will be placed soon after so that it is more likely that those
+pieces are placed close to it. Second, we place the pieces with the most nodes
+first since those are the one that most likely have connections with many other
+pieces.
+
+\begin{algorithm}
+\KwData{A list $P$ of circuit pieces.}
+\KwResult{A list $R$ of circuit pieces representing a placement.}
+\BlankLine
+Sort $P$ by number of nodes on the respective pieces\;
+$q$ $\leftarrow$ empty Queue\;
+$R$ $\leftarrow$ empty List\;
+\While{$P$ is not empty}{
+Pop the first piece in $P$ and push it onto $Q$\;
+\While{$Q$ is not empty}{
+$p$ $\leftarrow$ $Q$.pop()\;
+Consider all vertical locations and orientations of $p$\;
+Place $p$ at an index in $P$ that minimizes the cost of $P$\;
+\ForEach{piece $q$ in $P$ connected to $p$}{
+Push $q$ onto $Q$\;
+}
+}
+}
+
+\caption{Producing a circuit piece placement with small heuristic cost.}
+\label{alg:small_cost_placement}
+\end{algorithm}
+
+Using one of the above methods, we can find a placement of circuit pieces on a
+protoboard. Our next task is wiring them together to produce a circuit
+equivalent to the circuit schematic of interest.
 
 \section{Part 2: Wiring}
 
