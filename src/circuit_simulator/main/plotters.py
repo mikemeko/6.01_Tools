@@ -10,10 +10,7 @@ from circuit_simulator.simulation.circuit import Signalled_Pot
 from circuit_simulator.simulation.constants import NUM_SAMPLES
 from circuit_simulator.simulation.constants import T
 from constants import T_SAMPLES
-from pylab import figure
-from pylab import stem
-from pylab import xlabel
-from pylab import ylabel
+from lib601.plotWindow import PlotWindow
 
 class Plotter:
   """
@@ -36,15 +33,11 @@ class Motor_Plotter(Plotter):
     self._motor = motor
   def plot(self, data):
     # motor angle
-    figure()
-    xlabel('t')
-    ylabel('Motor %s angle' % self._motor.label)
-    stem(T_SAMPLES, self._motor.angle_samples[:-1])
+    angle_plot = PlotWindow('Motor %s angle' % self._motor.label)
+    angle_plot.stem(T_SAMPLES, self._motor.angle_samples[:-1])
     # motor speed
-    figure()
-    xlabel('t')
-    ylabel('Motor %s speed' % self._motor.label)
-    stem(T_SAMPLES, self._motor.speed_samples[:-1])
+    speed_plot = PlotWindow('Motor %s speed' % self._motor.label)
+    speed_plot.stem(T_SAMPLES, self._motor.speed_samples[:-1])
 
 class Head_Plotter(Plotter):
   """
@@ -61,28 +54,24 @@ class Head_Plotter(Plotter):
       Motor_Plotter(self._head_connector.motor).plot(data)
     # lamp distance signal
     if self._head_connector.lamp_distance_signal:
-      figure()
-      xlabel('t')
-      ylabel('Lamp %s distance' % self._head_connector.photo_label)
-      stem(T_SAMPLES, self._head_connector.lamp_distance_signal.samples(0, T,
-          NUM_SAMPLES))
+      distance_plot = PlotWindow('Lamp %s distance' %
+          self._head_connector.photo_label)
+      distance_plot.stem(T_SAMPLES,
+          self._head_connector.lamp_distance_signal.samples(0, T, NUM_SAMPLES))
     # lamp angle signal
     if self._head_connector.lamp_angle_signal:
-      figure()
-      xlabel('t')
-      ylabel('Lamp %s angle' % self._head_connector.photo_label)
-      stem(T_SAMPLES, self._head_connector.lamp_angle_signal.samples(0, T,
-          NUM_SAMPLES))
+      angle_plot = PlotWindow('Lamp %s angle' %
+          self._head_connector.photo_label)
+      angle_plot.stem(T_SAMPLES, self._head_connector.lamp_angle_signal.samples(
+          0, T, NUM_SAMPLES))
 
 class Signalled_Pot_Plotter(Plotter):
   def __init__(self, pot):
     assert isinstance(pot, Signalled_Pot), 'pot must be a Signalled_Pot'
     self._pot = pot
   def plot(self, data):
-    figure()
-    xlabel('t')
-    ylabel('Pot %s alpha' % self._pot.label)
-    stem(T_SAMPLES, self._pot.signal.samples(0, T, NUM_SAMPLES))
+    alpha_plot = PlotWindow('Pot %s alpha' % self._pot.label)
+    alpha_plot.stem(T_SAMPLES, self._pot.signal.samples(0, T, NUM_SAMPLES))
 
 class Probe_Plotter(Plotter):
   """
@@ -105,7 +94,5 @@ class Probe_Plotter(Plotter):
       t_samples.append(t)
       probe_samples.append(
           solution[self._probe_plus] - solution[self._probe_minus])
-    figure()
-    xlabel('t')
-    ylabel('Probe voltage difference')
-    stem(t_samples, probe_samples)
+    probe_plot = PlotWindow('Probe voltage difference')
+    probe_plot.stem(t_samples, probe_samples)

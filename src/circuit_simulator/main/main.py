@@ -40,7 +40,6 @@ from core.gui.components import Wire_Connector_Drawable
 from core.gui.constants import LEFT
 from core.gui.constants import RIGHT
 from core.gui.constants import ERROR
-from pylab import show
 from sys import argv
 from Tkinter import Toplevel
 
@@ -81,7 +80,6 @@ if __name__ == '__main__':
       # show analysis plots
       for plotter in plotters:
         plotter.plot(circuit.data)
-      show()
     else:
       app_runner.board.display_message('Could not solve circuit', ERROR)
   def proto_board_layout(circuit, plotters):

@@ -7,19 +7,12 @@ __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 from cmath import phase
 from constants import FREQUENCY_RESPONSE_MAGNITUDE_LABEL
 from constants import FREQUENCY_RESPONSE_PHASE_LABEL
-from constants import FREQUENCY_RESPONSE_TITLE
-from constants import FREQUENCY_RESPONSE_X_LABEL
 from constants import NUM_FREQUENCY_RESPONSE_SAMPLES
 from core.util.util import is_number
+from lib601.plotWindow import PlotWindow
 from math import e
 from math import pi
 from numpy import arange
-from pylab import gcf
-from pylab import plot
-from pylab import show
-from pylab import subplot
-from pylab import xlabel
-from pylab import ylabel
 from system import System
 
 def eval_poly(coeffs, z):
@@ -59,12 +52,7 @@ def plot_frequency_response(sys, num_samples=NUM_FREQUENCY_RESPONSE_SAMPLES):
     H_w = map(H, W)
     H_w_magnitude = map(abs, H_w)
     H_w_phase = map(phase, H_w)
-    gcf().canvas.set_window_title(FREQUENCY_RESPONSE_TITLE)
-    subplot(211)
-    plot(W, H_w_magnitude)
-    ylabel(FREQUENCY_RESPONSE_MAGNITUDE_LABEL)
-    subplot(212)
-    plot(W, H_w_phase)
-    xlabel(FREQUENCY_RESPONSE_X_LABEL)
-    ylabel(FREQUENCY_RESPONSE_PHASE_LABEL)
-    show()
+    magnitude_plot = PlotWindow(FREQUENCY_RESPONSE_MAGNITUDE_LABEL)
+    magnitude_plot.plot(W, H_w_magnitude)
+    phase_plot = PlotWindow(FREQUENCY_RESPONSE_PHASE_LABEL)
+    phase_plot.plot(W, H_w_phase)
