@@ -30,6 +30,7 @@ parts, or robot connector parts. For each of these components, we must put down
 a corresponding piece on the circuit.
 
 \subsubsection{Resistors}
+\label{sec:resistor_pieces}
 
 For the sake of simplicity, and to significantly reduce the search space
 \textcolor{red}{\textbf{(?)}}, for every resistor in the schematic, I use one
@@ -42,14 +43,14 @@ this restriction, there are a total of $763$ slots available. The restirction is
 good when we consider the reduction in the search space size. On the other hand,
 the restriction is bad when we
 consider the size of circuits the algorithm can layout. Given that the number
-of resistors in a typical 6.01 \textcolor{red}{\textbf{(?)}} circuit is very
-small, this restriction proves
+of resistors in a typical 6.01 circuit is very
+small \textcolor{red}{\textbf{(?)}}, this restriction proves
 to be very useful, but we will consider the alternative in Section
 \ref{sec:resistors_as_wires}.
 
 \begin{figure}
 \begin{center}
-\includegraphics{Images/placeholder.jpg}
+\includegraphics[width=\linewidth]{Images/piece_placement_options.png}
 \caption{Placement of the pieces on the protoboard.}
 \end{center}
 \label{fig:piece_placement}
@@ -183,7 +184,8 @@ Now that we have a cost function for placements, we can aim to find a
 placement with the minimal cost. However, this involves trying all possible
 orderings of the pieces with which we are working. For example, if we are trying
 to order $10$ pieces, we would need to look at $10! = 3628800$ possible
-orderings. Note that this is in addition to searching over all possible ways
+orderings \textcolor{red}{\textbf{(?)}}. Note that this is in addition to
+searching over all possible ways
 of packaging the Op Amps together. It is clear to see that the search for a
 minimal cost placement quickly gets out of hand. So we aim to find a placement
 that has a very small, though maybe not minimal, cost.
@@ -195,7 +197,7 @@ given list of pieces in a way that results in a small cost. The algorithm relies
 on two ideas. First, once a piece has been placed, all the pieces that are
 connected to it will be placed soon after so that it is more likely that those
 pieces are placed close to it. Second, we place the pieces with the most nodes
-first since those are the one that most likely have connections with many other
+first since those are the ones that most likely have connections with many other
 pieces.
 
 \begin{algorithm}
@@ -203,7 +205,7 @@ pieces.
 \KwResult{A list $R$ of circuit pieces representing a placement.}
 \BlankLine
 Sort $P$ by number of nodes on the respective pieces\;
-$q$ $\leftarrow$ empty Queue\;
+$Q$ $\leftarrow$ empty Queue\;
 $R$ $\leftarrow$ empty List\;
 \While{$P$ is not empty}{
 Pop the first piece in $P$ and push it onto $Q$\;
@@ -227,15 +229,119 @@ equivalent to the circuit schematic of interest.
 
 \section{Part 2: Wiring}
 
-\subsection{What do we need to wire together?}
+In the previous section we discussed what locations we need to wire together:
+for every node in the circuit, we get a set of locations on the protoboard that
+need to be interconnected. The question now is how to achieve this wiring. We
+approach the problem as a search problem and use the $A*$ search algorithm to
+solve it.
 
-\subsection{Search Infrastructure}
+\subsection{Using $A*$}
 
-\subsection{Wire all pairs at once}
+When using the $A*$ algorithm, we need to design four things:
 
-\subsection{Wire one pair at a time}
+\begin{enumerate}
+\item The notion of a vertex\footnote{the prefered name is ``node" but I will
+use vertex since we already use node to refer to nodes in circuits.} in the
+search tree, the cost associated with a vertex, and how we obtain the neighbors
+of a vertex,
+\item The starting vertex,
+\item How we identify whether a particular vertex in the search tree achieves
+the goal of the search, and
+\item A heuristic function that estimates the distance from a given vertex to a
+goal vertex.
+\end{enumerate}
 
-\section{Why breakdown problem into two parts?}
+\subsection{Vertices}
 
-\subsection{Treating Resistors as Wires}
+Each vertex will hold a representation of some protoboard. Each representation
+will contain all of the pieces, and possibly a set of wires interconnecting the
+pieces. The starting vertex will have all of the pieces but no wires.
+
+We obtain the neighbors of a vertex by taking the current protoboard and
+producing new ones in which we place exactly one wire at various locations. We
+choose the starting point of a wire to be any one of the free locations on the
+protoboard that is already connected to one of the pieces, and we extend the
+wires in all possible directions up to some fixed wire length. Note that we need
+to take great care when placing wires in order not to short two nodes. We
+discard any vertices that arise from placing a wire that shorts two nodes.
+
+The way we define the cost of a vertex, i.e. the cost of getting from the
+starting vertex to a vertex of interest, depends on what we consider to be an
+aesthetically pleasing protoboard layout. In general, we want to penalize having
+long wires, many wires, or crossing wires. In my implementation, while I have
+a large penalty for two crossing wires of opposite orientations (i.e. vertical
+and horizontal), I do not allow crossing wires that have the same orientation as
+this configuration is particularly difficult to physically build and debug.
+Finally, we want to favor making a desired interconnection between locations
+on the protoboard. I chose my penalties experimentally
+\textcolor{red}{\textbf{(?)}}.
+
+Each vertex will not only hold a protoboard, but it will also hold a set of
+pairs of locations on the protoboard that need to be connected by wires. Each
+pair $(loc_1, loc_2)$ of locations tells us that we need to have a set of wires
+connecting some location connected to $loc_1$ to some location connected to
+$loc_2$.
+
+An important consideration we need to make is how we want to organize the
+search. Recall that we have a set of nodes in the circuit of interest, and for
+each node we have a set of locations that need to be interconnected. Given this
+information, we may choose one of the following three strategies to carryout the
+search:
+
+\begin{enumerate}
+\item For each node, collect a set of pairs of locations on the protoboard
+corresponding to a minimum spanning tree of the locations for that node, so that
+if all pairs of locations in this spanning tree are connected, then the
+locations for the node will be interconnected. Collect all such pairs of
+locations for all of the nodes in the circuit, and have the starting vertex hold
+this set of pairs of locations.
+\item Treat each node separately. That is, iteratively interconnect the
+locations for each of the nodes until there are no more nodes in the circuit.
+\item Treat each pair of locations that needs to be connected separately. That
+is, iteratively connect pairs of locations that need to be connected until there
+an no more pairs.
+\end{enumerate}
+
+The choice of one of these strategies has a significant effect on the outcome of
+the search. We will discuss the difference in detail in Chapter
+\ref{ch:results}.
+
+\subsection{Goal test}
+
+Given a vertex, we know that it is a goal vertex if all of the pairs of
+locations it holds are already connected in the protoboard it holds.
+
+\subsection{Search heuristic}
+
+In $A*$ search, choosing the right heuristic can often make the search much more
+efficient. In our problem, one option we have is not to use a heuristic, and
+that alternative will be explored in Chapter \ref{ch:results}. However there is
+a natural heuristic that suggests itself that we ought to consider. Given a
+vertex, we can estimate its distance from a goal as follows. For each pair of
+locations $(loc_1, loc_2)$ that need to be connected, we could consider its
+distance from the
+goal to be the smallest Manhattan distance between any location connected to
+$loc_1$ and any other location connected to $loc_2$. To compute the heuristic
+cost of a vertex, we simply add up this value for each of the pairs of locations
+that need to be connected. Chapter \ref{ch:results} presents the performance of
+this heuristic verses using no heuristic.
+
+\section{Treating Resistors as Wires}
+
+The discussion in Section \ref{sec:resistor_pieces} presented that we treat
+resistors just as we do the other components. That is, we give each resistor a
+fixed place on the protoboard in the first step of the algorithm before the
+wiring step. However, resistors can really be thought of as wires of length $3$.
+Hence, it may be possible to handle resistors in the wiring step instead of the
+placement step. Chapter \ref{ch:results} presents a comparison of these two
+approaches.
+
+Note that treating resistors in the wiring step is not a trivial task. First,
+there may be nodes in the circuit that are connected to some resistors, but no
+other pieces. In this case, we must be sure to reserve space on the protoboard
+for that node as the wiring step relies on the presence of each node on the
+protoboard. Second, we must keep careful track of pairs of locations that need
+to be connected by simple wires and pairs of locations that need to be connected
+using resistors.
+
 \label{sec:resistors_as_wires}
