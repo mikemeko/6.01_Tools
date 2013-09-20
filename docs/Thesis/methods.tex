@@ -8,11 +8,11 @@ considered along the way.
 \section{Overview}
 
 I solved this problem by formulating it as a search problem. By this I mean,
-given a schematic of a circuit, I start from an empty protoboard, and I consider
-the space of all possible protoboard layouts to find the protoboard
+given a schematic of a circuit, I start from an empty protoboard, and I search
+through the space of all possible protoboard layouts to find the protoboard
 corresponding to the schematic at hand. The space of all possible protoboards is
-very large \textcolor{red}{\textbf{(?)}}, so I utilize various heuristics to
-facilitate the search.
+very large \textcolor{red}{\textbf{(?)}}, so I utilize various simplifications
+and heuristics to facilitate the search.
 
 I broke down the problem into two parts. The first task is finding a placement
 of all the circuit pieces on the protoboard. The second task is wiring them up
@@ -27,7 +27,7 @@ a given circuit schematic.
 
 Any given circuit may contain resistors, Op Amps, pots, motors, head connector
 parts, or robot connector parts. For each of these components, we must put down
-a corresponding piece on the circuit.
+a corresponding piece on the protoboard.
 
 \subsubsection{Resistors}
 \label{sec:resistor_pieces}
@@ -37,7 +37,8 @@ For the sake of simplicity, and to significantly reduce the search space
 resistor piece on the protoboard placed in the middle strip of the protoboard
 as shown in Figure \ref{fig:piece_placement}. This choice, i.e. allowing the
 resistor pieces to only reside in the middle strip of the protoboard, is critical
-as the resistor pieces can generally be placed at numerous places on the protoboard.
+as the resistor pieces can generally be placed at numerous places on the
+protoboard.
 With this restriction, there are $63$ slots available for one resistor. Without
 this restriction, there are a total of $763$ slots available. The restirction is
 good when we consider the reduction in the search space size. On the other hand,
@@ -51,9 +52,10 @@ to be very useful, but we will consider the alternative in Section
 \begin{figure}
 \begin{center}
 \includegraphics[width=\linewidth]{Images/piece_placement_options.png}
-\caption{Placement of the pieces on the protoboard.}
-\end{center}
+\caption{Various acceptable ways of putting each of the circuit pieces on the
+protoboard.}
 \label{fig:piece_placement}
+\end{center}
 \end{figure}
 
 \subsubsection{Op Amps}
@@ -63,12 +65,14 @@ on the protoboard contains two Op Amps within it. Thus, we face the task of
 packaging the Op Amps in the schematic in the ``best" possible way, i.e. so as
 to require as little work as possible when wiring the pieces together. Equation
 \ref{eq:opamp} presents an expression for the value $f(n)$, the number of
-different ways
-to package together $n$ Op Amps. To get a sense of how many different packagings
-are possible, Table \ref{tb:opamp} gives the values of $f(n)$ for various $n$.
+different ways to package together $n$ Op Amps. For example, if we have $2$ Op
+Amps, we can either use one Op Amp package for each, or put them both in the
+same package, which we can do in one of two different ways. Hence, $f(2) = 3$.
+To get a sense of how many different packagings are possible, Table
+\ref{tb:opamp} gives the values of $f(n)$ for various $n$.
 
 \begin{equation}
-f(n) = \sum\limits_{k=0}^{\lfloor\frac{n}{2}\rfloor}{\frac{n!}{n!(n - 2k)!}}
+f(n) = \sum\limits_{k=0}^{\lfloor\frac{n}{2}\rfloor}{\frac{n!}{k!(n - 2k)!}}
 \label{eq:opamp}
 \end{equation}
 
@@ -80,7 +84,7 @@ $n$ & $f(n)$ \\
 \hline
 \hline
 1 & 1 \\
-2 & 1 \\
+2 & 3 \\
 3 & 7 \\
 4 & 25 \\
 5 & 81 \\
@@ -97,13 +101,14 @@ $n$ & $f(n)$ \\
 $n$.}
 \end{table}
 
-Each Op Amp package is placed in the middle strip of the protoboard, as shown in
-Figure \ref{fig:piece_placement}.
+Each Op Amp package is placed in the middle strip of the protoboard, with two
+acceptable orientations, as shown in Figure \ref{fig:piece_placement}.
 
 \subsubsection{Pots}
 
 Each pot piece can be placed in one of two vertical locations on the protoboard.
-Figure \ref{fig:piece_placement} provides an example of both options.
+Each pot piece also has two possible orientations. Figure
+\ref{fig:piece_placement} provides examples of all acceptable options.
 
 \subsubsection{Head, Motor, and Robot Connectors}
 
@@ -115,9 +120,9 @@ vertical locations on the protoboard, as shown in Figure
 \subsection{Choosing a Placement}
 
 When choosing a placement of circuit pieces on the protoboard, we have at hand a
-plethora of options: each piece can be placed in one of very many places on the
-protoboard; each piece has two possible orientations; there are numerous ways of
-packaging together Op Amps; etc.
+plethora of options. First we must choose among a possibly large number of ways
+to package together the Op Amps in the circuit. For each possible packaging of
+Op Amps, we must consider various ways of placing the pieces on the protoboard.
 
 \subsubsection{Simplifications}
 
@@ -192,8 +197,10 @@ that has a very small, though maybe not minimal, cost.
 
 \subsubsection{Small Heuristic Cost}
 
-Algorithm \ref{alg:small_cost_placement} presents a procedure that orders a
-given list of pieces in a way that results in a small cost. The algorithm relies
+Algorithm \ref{alg:small_cost_placement} presents a polynomial-time procedure
+that orders a
+given list of pieces in a way that results in a small cost. The algorithm places
+one of the pieces at a time, starting from an empty placement. It relies
 on two ideas. First, once a piece has been placed, all the pieces that are
 connected to it will be placed soon after so that it is more likely that those
 pieces are placed close to it. Second, we place the pieces with the most nodes
@@ -204,21 +211,18 @@ pieces.
 \KwData{A list $P$ of circuit pieces.}
 \KwResult{A list $R$ of circuit pieces representing a placement.}
 \BlankLine
-Sort $P$ by number of nodes on the respective pieces\;
-$Q$ $\leftarrow$ empty Queue\;
-$R$ $\leftarrow$ empty List\;
+Sort $P$ by number of nodes on the respective pieces\\
+$Q$ $\leftarrow$ empty Queue\\
+$R$ $\leftarrow$ empty List\\
 \While{$P$ is not empty}{
-Pop the first piece in $P$ and push it onto $Q$\;
+Pop the first piece in $P$ and push it onto $Q$\\
 \While{$Q$ is not empty}{
-$p$ $\leftarrow$ $Q$.pop()\;
-Consider all vertical locations and orientations of $p$\;
-Place $p$ at an index in $P$ that minimizes the cost of $P$\;
+$p$ $\leftarrow$ $Q$.pop()\\
+Consider all vertical locations and orientations of $p$\\
+Place $p$ at an index in $R$ that minimizes the cost of $P$\\
 \ForEach{piece $q$ in $P$ connected to $p$}{
-Push $q$ onto $Q$\;
-}
-}
-}
-
+Pop $q$ out of $P$ and push it onto $Q$\\
+}}}
 \caption{Producing a circuit piece placement with small heuristic cost.}
 \label{alg:small_cost_placement}
 \end{algorithm}
@@ -240,7 +244,7 @@ solve it.
 When using the $A*$ algorithm, we need to design four things:
 
 \begin{enumerate}
-\item The notion of a vertex\footnote{the prefered name is ``node" but I will
+\item The notion of a vertex\footnote{The prefered name is ``node" but I will
 use vertex since we already use node to refer to nodes in circuits.} in the
 search tree, the cost associated with a vertex, and how we obtain the neighbors
 of a vertex,
@@ -261,9 +265,11 @@ We obtain the neighbors of a vertex by taking the current protoboard and
 producing new ones in which we place exactly one wire at various locations. We
 choose the starting point of a wire to be any one of the free locations on the
 protoboard that is already connected to one of the pieces, and we extend the
-wires in all possible directions up to some fixed wire length. Note that we need
-to take great care when placing wires in order not to short two nodes. We
-discard any vertices that arise from placing a wire that shorts two nodes.
+wires in all possible vertical and horizontal directions up to some fixed wire
+length. Note that we need
+to take great care when placing wires in order not to short different nodes. We
+discard any vertices that arise from placing a wire that shorts two different
+nodes.
 
 The way we define the cost of a vertex, i.e. the cost of getting from the
 starting vertex to a vertex of interest, depends on what we consider to be an
@@ -299,7 +305,7 @@ this set of pairs of locations.
 locations for each of the nodes until there are no more nodes in the circuit.
 \item Treat each pair of locations that needs to be connected separately. That
 is, iteratively connect pairs of locations that need to be connected until there
-an no more pairs.
+are no more pairs.
 \end{enumerate}
 
 The choice of one of these strategies has a significant effect on the outcome of
@@ -331,7 +337,8 @@ this heuristic verses using no heuristic.
 The discussion in Section \ref{sec:resistor_pieces} presented that we treat
 resistors just as we do the other components. That is, we give each resistor a
 fixed place on the protoboard in the first step of the algorithm before the
-wiring step. However, resistors can really be thought of as wires of length $3$.
+wiring step. However, resistors have the special property among the circuit
+pieces that they can be thought of as wires of length $3$.
 Hence, it may be possible to handle resistors in the wiring step instead of the
 placement step. Chapter \ref{ch:results} presents a comparison of these two
 approaches.
