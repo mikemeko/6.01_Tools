@@ -22,7 +22,9 @@ if __name__ == '__main__':
       'robot_present', 'num_wires', 'total_wire_length', 'num_wire_crosses',
       'num_nodes')]
   for dir_path, dir_names, file_names in walk(argv[1]):
-    for file_name in file_names:
+    num_files = len(file_names)
+    for n, file_name in enumerate(file_names):
+      print '%d/%d' % (n + 1, num_files)
       if file_name.endswith(FILE_EXTENSION):
         print file_name
         results.append((file_name,) + test_schematic(join(dir_path, file_name)))
