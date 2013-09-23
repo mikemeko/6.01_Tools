@@ -1,51 +1,51 @@
-file	solved	solve_time	num_resistors	num_pots	num_op_amps	num_op_amp_packages	num_motors	head_present	robot_present	num_wires	total_wire_length	num_wire_crosses	num_nodes
-test1.circsim	True	5.35986495018	8	0	4	2	0	False	False	35	89	0	6
-test10.circsim	True	0.908173084259	1	2	1	1	0	False	False	19	72	1	6
-test11.circsim	True	0.851780891418	4	0	2	1	1	False	False	18	69	1	6
-test12.circsim	True	0.426659107208	5	0	0	0	0	False	False	11	41	2	4
-test13.circsim	True	1.64440798759	6	0	1	1	0	False	False	23	74	0	6
-test14.circsim	True	1.23459219933	4	0	1	1	0	False	False	19	59	0	5
-test15.circsim	True	1.89026904106	4	0	1	1	0	False	False	20	66	3	5
-test16.circsim	True	1.38478684425	4	0	0	0	3	False	False	19	65	1	4
-test17.circsim	True	2.74269199371	4	0	2	1	3	False	False	28	99	0	6
-test18.circsim	True	2.540391922	4	0	2	1	3	False	False	27	87	0	6
-test19.circsim	True	1.03346920013	7	0	2	1	1	False	False	19	82	0	8
-test2.circsim	True	6.90959978104	0	2	4	2	0	True	False	39	141	1	10
-test20.circsim	True	3.43268203735	8	0	3	2	0	False	False	34	118	3	9
-test21.circsim	True	9.60050678253	8	0	4	2	0	True	True	38	184	2	11
-test22.circsim	True	1.12545609474	5	1	2	1	0	False	False	19	70	1	8
-test23.circsim	True	63.5158610344	2	0	7	4	0	False	False	44	124	3	9
-test24.circsim	True	5.3583688736	14	0	0	0	0	False	False	29	93	0	9
-test25.circsim	True	4.3791718483	9	1	3	2	0	False	False	38	124	3	10
-test26.circsim	True	1.88233804703	4	0	1	1	0	False	False	20	59	1	5
-test27.circsim	True	3.5751619339	5	0	4	2	0	False	False	30	81	0	6
-test28.circsim	True	1.84641194344	4	0	3	2	0	False	False	27	91	1	8
-test29.circsim	True	2.84508681297	6	0	3	2	0	False	False	32	97	0	6
-test3.circsim	True	1.22794795036	4	0	1	1	0	False	False	19	62	1	5
-test30.circsim	True	0.792553901672	5	0	1	1	0	False	False	17	61	0	5
-test31.circsim	True	0.87669801712	4	0	2	1	0	False	False	17	46	0	4
-test32.circsim	True	1.30313205719	0	1	2	1	0	True	False	20	72	0	6
-test33.circsim	True	2.17475700378	8	0	2	1	0	False	False	27	71	0	8
-test34.circsim	True	19.1267449856	28	0	0	0	0	False	False	57	196	0	2
-test35.circsim	True	2.14504098892	15	0	0	0	0	False	False	29	70	0	7
-test36.circsim	True	7.49896001816	0	4	4	2	2	False	False	41	139	8	10
-test37.circsim	True	4.15026307106	6	3	3	2	0	False	False	34	128	2	11
-test38.circsim	True	19.5913538933	4	8	4	2	0	False	False	47	181	2	18
-test39.circsim	True	8.74520897865	8	0	4	2	2	False	False	36	133	3	10
-test4.circsim	True	0.223556995392	1	0	0	0	0	False	False	4	16	0	2
-test40.circsim	True	21.0649979115	25	0	0	0	0	False	False	58	244	2	12
-test41.circsim	True	4.36872315407	12	0	2	1	0	False	False	29	105	1	10
-test42.circsim	True	8.25866794586	12	0	3	2	0	False	False	44	155	4	11
-test43.circsim	True	24.4483098984	16	0	4	2	0	False	False	47	164	5	14
-test44.circsim	True	12.426874876	10	2	4	2	0	False	False	37	138	1	14
-test45.circsim	True	15.029916048	20	0	0	0	0	False	False	45	189	3	12
-test46.circsim	True	1.90234994888	8	0	2	1	0	False	False	24	74	1	8
-test47.circsim	True	1.83430600166	10	0	2	1	0	False	False	24	73	0	8
-test48.circsim	False	133.640326977	8	0	4	None	0	True	True	None	None	None	12
-test49.circsim	True	41.8012940884	10	0	5	3	0	True	True	57	297	9	14
-test5.circsim	True	0.665560007095	2	0	1	1	0	False	False	14	49	0	3
-test50.circsim	True	41.1538789272	10	0	5	3	0	True	True	60	313	8	14
-test6.circsim	True	0.27908205986	3	0	0	0	0	False	False	6	13	0	3
-test7.circsim	True	21.4762358665	0	1	1	1	0	False	True	18	74	0	3
-test8.circsim	False	67.8662660122	0	2	2	None	1	False	False	None	None	None	6
-test9.circsim	True	0.674129009247	2	1	1	1	0	False	False	16	65	1	5
+file,solved,solve_time,num_resistors,num_pots,num_op_amps,num_op_amp_packages,num_motors,head_present,robot_present,num_wires,total_wire_length,num_wire_crosses,num_nodes
+test1.circsim,True,5.35986495018,8,0,4,2,0,False,False,35,89,0,6
+test10.circsim,True,0.908173084259,1,2,1,1,0,False,False,19,72,1,6
+test11.circsim,True,0.851780891418,4,0,2,1,1,False,False,18,69,1,6
+test12.circsim,True,0.426659107208,5,0,0,0,0,False,False,11,41,2,4
+test13.circsim,True,1.64440798759,6,0,1,1,0,False,False,23,74,0,6
+test14.circsim,True,1.23459219933,4,0,1,1,0,False,False,19,59,0,5
+test15.circsim,True,1.89026904106,4,0,1,1,0,False,False,20,66,3,5
+test16.circsim,True,1.38478684425,4,0,0,0,3,False,False,19,65,1,4
+test17.circsim,True,2.74269199371,4,0,2,1,3,False,False,28,99,0,6
+test18.circsim,True,2.540391922,4,0,2,1,3,False,False,27,87,0,6
+test19.circsim,True,1.03346920013,7,0,2,1,1,False,False,19,82,0,8
+test2.circsim,True,6.90959978104,0,2,4,2,0,True,False,39,141,1,10
+test20.circsim,True,3.43268203735,8,0,3,2,0,False,False,34,118,3,9
+test21.circsim,True,9.60050678253,8,0,4,2,0,True,True,38,184,2,11
+test22.circsim,True,1.12545609474,5,1,2,1,0,False,False,19,70,1,8
+test23.circsim,True,63.5158610344,2,0,7,4,0,False,False,44,124,3,9
+test24.circsim,True,5.3583688736,14,0,0,0,0,False,False,29,93,0,9
+test25.circsim,True,4.3791718483,9,1,3,2,0,False,False,38,124,3,10
+test26.circsim,True,1.88233804703,4,0,1,1,0,False,False,20,59,1,5
+test27.circsim,True,3.5751619339,5,0,4,2,0,False,False,30,81,0,6
+test28.circsim,True,1.84641194344,4,0,3,2,0,False,False,27,91,1,8
+test29.circsim,True,2.84508681297,6,0,3,2,0,False,False,32,97,0,6
+test3.circsim,True,1.22794795036,4,0,1,1,0,False,False,19,62,1,5
+test30.circsim,True,0.792553901672,5,0,1,1,0,False,False,17,61,0,5
+test31.circsim,True,0.87669801712,4,0,2,1,0,False,False,17,46,0,4
+test32.circsim,True,1.30313205719,0,1,2,1,0,True,False,20,72,0,6
+test33.circsim,True,2.17475700378,8,0,2,1,0,False,False,27,71,0,8
+test34.circsim,True,19.1267449856,28,0,0,0,0,False,False,57,196,0,2
+test35.circsim,True,2.14504098892,15,0,0,0,0,False,False,29,70,0,7
+test36.circsim,True,7.49896001816,0,4,4,2,2,False,False,41,139,8,10
+test37.circsim,True,4.15026307106,6,3,3,2,0,False,False,34,128,2,11
+test38.circsim,True,19.5913538933,4,8,4,2,0,False,False,47,181,2,18
+test39.circsim,True,8.74520897865,8,0,4,2,2,False,False,36,133,3,10
+test4.circsim,True,0.223556995392,1,0,0,0,0,False,False,4,16,0,2
+test40.circsim,True,21.0649979115,25,0,0,0,0,False,False,58,244,2,12
+test41.circsim,True,4.36872315407,12,0,2,1,0,False,False,29,105,1,10
+test42.circsim,True,8.25866794586,12,0,3,2,0,False,False,44,155,4,11
+test43.circsim,True,24.4483098984,16,0,4,2,0,False,False,47,164,5,14
+test44.circsim,True,12.426874876,10,2,4,2,0,False,False,37,138,1,14
+test45.circsim,True,15.029916048,20,0,0,0,0,False,False,45,189,3,12
+test46.circsim,True,1.90234994888,8,0,2,1,0,False,False,24,74,1,8
+test47.circsim,True,1.83430600166,10,0,2,1,0,False,False,24,73,0,8
+test48.circsim,False,133.640326977,8,0,4,None,0,True,True,None,None,None,12
+test49.circsim,True,41.8012940884,10,0,5,3,0,True,True,57,297,9,14
+test5.circsim,True,0.665560007095,2,0,1,1,0,False,False,14,49,0,3
+test50.circsim,True,41.1538789272,10,0,5,3,0,True,True,60,313,8,14
+test6.circsim,True,0.27908205986,3,0,0,0,0,False,False,6,13,0,3
+test7.circsim,True,21.4762358665,0,1,1,1,0,False,True,18,74,0,3
+test8.circsim,False,67.8662660122,0,2,2,None,1,False,False,None,None,None,6
+test9.circsim,True,0.674129009247,2,1,1,1,0,False,False,16,65,1,5
