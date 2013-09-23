@@ -11,7 +11,7 @@ I solved this problem by formulating it as a search problem. By this I mean,
 given a schematic of a circuit, I start from an empty protoboard, and I search
 through the space of all possible protoboard layouts to find the protoboard
 corresponding to the schematic at hand. The space of all possible protoboards is
-very large \textcolor{red}{\textbf{(?)}}, so I utilize various simplifications
+very large \q, so I utilize various simplifications
 and heuristics to facilitate the search.
 
 I broke down the problem into two parts. The first task is finding a placement
@@ -33,7 +33,7 @@ a corresponding piece on the protoboard.
 \label{sec:resistor_pieces}
 
 For the sake of simplicity, and to significantly reduce the search space
-\textcolor{red}{\textbf{(?)}}, for every resistor in the schematic, I use one
+\q, for every resistor in the schematic, I use one
 resistor piece on the protoboard placed in the middle strip of the protoboard
 as shown in Figure \ref{fig:piece_placement}. This choice, i.e. allowing the
 resistor pieces to only reside in the middle strip of the protoboard, is critical
@@ -45,7 +45,7 @@ good when we consider the reduction in the search space size. On the other hand,
 the restriction is bad when we
 consider the size of circuits the algorithm can layout. Given that the number
 of resistors in a typical 6.01 circuit is very
-small \textcolor{red}{\textbf{(?)}}, this restriction proves
+small \q, this restriction proves
 to be very useful, but we will consider the alternative in Section
 \ref{sec:resistors_as_wires}.
 
@@ -189,7 +189,7 @@ Now that we have a cost function for placements, we can aim to find a
 placement with the minimal cost. However, this involves trying all possible
 orderings of the pieces with which we are working. For example, if we are trying
 to order $10$ pieces, we would need to look at $10! = 3628800$ possible
-orderings \textcolor{red}{\textbf{(?)}}. Note that this is in addition to
+orderings \q. Note that this is in addition to
 searching over all possible ways
 of packaging the Op Amps together. It is clear to see that the search for a
 minimal cost placement quickly gets out of hand. So we aim to find a placement
@@ -280,7 +280,7 @@ and horizontal), I do not allow crossing wires that have the same orientation as
 this configuration is particularly difficult to physically build and debug.
 Finally, we want to favor making a desired interconnection between locations
 on the protoboard. I chose my penalties experimentally
-\textcolor{red}{\textbf{(?)}}.
+\q.
 
 Each vertex will not only hold a protoboard, but it will also hold a set of
 pairs of locations on the protoboard that need to be connected by wires. Each

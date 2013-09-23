@@ -3,5 +3,46 @@
 \chapter{Results}
 \label{ch:results}
 
-\textit{Quantitatively compare the various methods discussed in the previous
-section.}
+In this chapter, we compare the various alternatives discussed in the previous
+chapter. We test each of the alternatives on the randomly generated dataset
+containing \q test schematics. All methods are evaluated on the same dataset for
+appropriate comparison.
+
+To assess the goodness of an alternative method, we give:
+\begin{enumerate}
+\item A bar graph in which each bar represents one run and indicates (1) whether
+the alternative was successful (colored green) or unsuccessful (colored red)  on
+that test schematic, and (2) the amount of time that run took (height of each
+bar). This graph gives a general overview of how well the method performed on
+the test dataset.
+\item The success rate of the method on the test dataset. The higher this value,
+the better the method.
+\item The average and standard deviation of success times. The lower the average,
+the better the method.
+\item The average and standard deviation of failure times. The lower the average,
+the better the method.
+\item Among the solved schematics, the average and standard deviation of the
+number of wires used. The lower the average, the better the method.
+\item Among the solved schematics, the average and standard deviation of the
+total wire length of the wires on the protoboard. The lower the average, the
+better the method.
+\item Among the solved schematics, the average and standard deviation of the
+number of wire crosses on the protoboard. The lower the average, the better the
+method.
+\end{enumerate}
+
+To assess the effect of various aspects of schematics on the method, we give
+tables in which we consider the values of each of the following items, and
+record how success rate, average success time, and average failure time depend on the values:
+\begin{enumerate}
+\item Number of components.
+\item Number of nodes in the circuit.
+\item Number of resistors.
+\item Number of Op Amps.
+\item Number of pots.
+\item Number of motors.
+\item Number of Head Connectors ($0$ or $1$).
+\item Number of Robot Connectors ($0$ or $1$).
+\end{enumerate}
+
+Discussion and analysis of the results follow in Chapter \ref{ch:discussion}.
