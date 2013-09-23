@@ -263,12 +263,12 @@ def find_wiring(loc_pairs, start_proto_board=Proto_Board()):
     equivalent_loc_pairs = list(product(filter(proto_board.free,
         proto_board.locs_connected_to(loc_1)), filter(proto_board.free,
         proto_board.locs_connected_to(loc_2))))
-    for trial_num in xrange(5):
+    for trial_num in xrange(2):
       trial_loc_pair = min(equivalent_loc_pairs, key=lambda (loc_1, loc_2):
           dist(loc_1, loc_2))
       equivalent_loc_pairs.remove(trial_loc_pair)
       trial_loc_1, trial_loc_2 = trial_loc_pair
-      print '\t\ttrial %d: %s -- %s' % (trial_num, trial_loc_1, trial_loc_2)
+      print '\t\ttrial %d: %s -- %s' % (trial_num + 1, trial_loc_1, trial_loc_2)
       trial_result = a_star(Proto_Board_Search_Node(proto_board, frozenset([
           (trial_loc_1, trial_loc_2, resistor, node)])), goal_test, heuristic,
           max_states_to_expand=MAX_STATES_TO_EXPAND)
