@@ -263,7 +263,7 @@ def find_wiring(loc_pairs, start_proto_board=Proto_Board()):
     equivalent_loc_pairs = list(product(filter(proto_board.free,
         proto_board.locs_connected_to(loc_1)), filter(proto_board.free,
         proto_board.locs_connected_to(loc_2))))
-    for trial_num in xrange(2):
+    for trial_num in xrange(min(2, len(equivalent_loc_pairs))):
       trial_loc_pair = min(equivalent_loc_pairs, key=lambda (loc_1, loc_2):
           dist(loc_1, loc_2))
       equivalent_loc_pairs.remove(trial_loc_pair)
