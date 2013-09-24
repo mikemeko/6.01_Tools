@@ -40,4 +40,3 @@ def find_wire_path(board, start_point, end_point):
     board_coverage = get_board_coverage(board)
     return min(paths, key=lambda path: len(board_coverage & path_coverage(
         path)))
-
