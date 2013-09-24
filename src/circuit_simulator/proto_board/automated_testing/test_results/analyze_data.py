@@ -127,8 +127,8 @@ def analyze(results_file):
       break
   grid = [[0] * size for i in xrange(len(results) / size)]
   for i, result in enumerate(results):
-    grid[i / size][i % size] = result.solved
-  imshow(grid, interpolation='nearest')
+    grid[i / size][i % size] = 1 - result.solved
+  imshow(grid, interpolation='nearest', cmap='Reds')
   show()
 
 if __name__ == '__main__':
