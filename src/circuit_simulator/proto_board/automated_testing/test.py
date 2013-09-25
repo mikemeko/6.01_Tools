@@ -5,18 +5,34 @@ Script that runs automated layout test on a directory of test schematic files.
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
 from circuit_simulator.main.constants import FILE_EXTENSION
+from circuit_simulator.proto_board.constants import MODE_ALL_PAIRS
+from circuit_simulator.proto_board.constants import MODE_PER_NODE
+from circuit_simulator.proto_board.constants import MODE_PER_PAIR
+from circuit_simulator.proto_board.constants import ORDER_DECREASING
+from circuit_simulator.proto_board.constants import ORDER_INCREASING
 from datetime import datetime
 from os import walk
 from os.path import basename
 from os.path import join
 from os.path import normpath
 from sys import argv
-from test_schematic import test_schematic
+from test_schematic import Schematic_Tester
 from time import time
 
 if __name__ == '__main__':
-  assert len(argv) == 2
+  assert len(argv) >= 3
+  assert argv[2] in ('-a', '-n', '-p')
+  if argv[2] == '-a':
+    assert len(argv) == 3
+    solve_mode = MODE_ALL_PAIRS
+    solve_order = None
+  else:
+    assert len(argv) == 4
+    assert argv[3] in ('-d', '-i')
+    solve_mode = MODE_PER_NODE if argv[2] == '-n' else MODE_PER_PAIR
+    solve_order = ORDER_DECREASING if argv[3] == '-d' else ORDER_INCREASING
   start_time = time()
+  tester = Schematic_Tester(solve_mode, solve_order)
   header = ('file', 'solved', 'solve_time', 'num_resistors', 'num_pots',
       'num_op_amps', 'num_op_amp_packages', 'num_motors', 'head_present',
       'robot_present', 'num_wires', 'total_wire_length', 'num_wire_crosses',
@@ -31,7 +47,7 @@ if __name__ == '__main__':
       print '%d/%d' % (n + 1, num_files)
       if file_name.endswith(FILE_EXTENSION):
         print file_name
-        result = (file_name,) + test_schematic(join(dir_path, file_name))
+        result = (file_name,) + tester.test_schematic(join(dir_path, file_name))
         results = [line.strip() for line in open(output_file_name,
             'r').readlines()]
         results.append(','.join(map(str, result)))

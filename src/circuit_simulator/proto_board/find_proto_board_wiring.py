@@ -245,7 +245,8 @@ def find_wiring(loc_pairs, start_proto_board=None, mode=MODE_PER_PAIR,
       MODE_PER_PAIR: order of pairwise distance to consider.
   """
   assert mode in (MODE_ALL_PAIRS, MODE_PER_NODE, MODE_PER_PAIR)
-  assert order in (ORDER_DECREASING, ORDER_INCREASING)
+  if mode is not MODE_ALL_PAIRS:
+    assert order in (ORDER_DECREASING, ORDER_INCREASING)
   if start_proto_board is None:
     start_proto_board = Proto_Board()
   if mode is MODE_ALL_PAIRS:
@@ -262,7 +263,7 @@ def _find_wiring_all(loc_pairs, start_proto_board):
   print 'connecting %d pairs ...' % len(loc_pairs)
   search_result = a_star(Proto_Board_Search_Node(start_proto_board, frozenset(
       loc_pairs)), goal_test, heuristic,
-      max_states_to_expand=len(loc_pairs) * MAX_STATES_TO_EXPAND)
+      max_states_to_expand=MAX_STATES_TO_EXPAND)
   if search_result is not None:
     print '\tdone.'
     return search_result.state[0]
@@ -286,7 +287,7 @@ def _find_wiring_per_node(loc_pairs, start_proto_board, order):
         len(loc_pair_collection))
     search_result = a_star(Proto_Board_Search_Node(proto_board, frozenset(
         loc_pair_collection)), goal_test, heuristic,
-        max_states_to_expand=len(loc_pair_collection) * MAX_STATES_TO_EXPAND)
+        max_states_to_expand=MAX_STATES_TO_EXPAND)
     if search_result is not None:
       proto_board = search_result.state[0]
     else:
