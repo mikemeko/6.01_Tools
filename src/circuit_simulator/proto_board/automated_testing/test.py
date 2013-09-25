@@ -47,7 +47,9 @@ if __name__ == '__main__':
       print '%d/%d' % (n + 1, num_files)
       if file_name.endswith(FILE_EXTENSION):
         print file_name
-        result = (file_name,) + tester.test_schematic(join(dir_path, file_name))
+        # [:-1] - don't include protoboard in result
+        result = (file_name,) + (
+            tester.test_schematic(join(dir_path, file_name))[:-1])
         results = [line.strip() for line in open(output_file_name,
             'r').readlines()]
         results.append(','.join(map(str, result)))

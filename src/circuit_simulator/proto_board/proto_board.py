@@ -206,7 +206,7 @@ class Proto_Board:
     Returns True if the given |loc| is not occupied, False otherwise.
     """
     return not self.occupied(loc)
-  def __str__(self):
+  def to_ascii(self, distinguish_wires=False):
     """
     Quick, convenience str method, not at all comprehensive.
     """
@@ -224,15 +224,19 @@ class Proto_Board:
       for (r, c) in piece.all_locs():
         grid[r + 1][c + 1] = '!'
     # write out a string of identical letters for each wire
-    chars = ascii_lowercase + ascii_uppercase + digits
+    if distinguish_wires:
+      chars = ascii_lowercase + ascii_uppercase + digits
     for i, wire in enumerate(sorted(self._wires,
         key=lambda wire: -wire.length())):
       r_min, r_max = wire.row_support
       c_min, c_max = wire.column_support
       for r in xrange(r_min, r_max + 1):
         for c in xrange(c_min, c_max + 1):
-          grid[r + 1][c + 1] = chars[i % len(chars)]
+          grid[r + 1][c + 1] = (chars[i % len(chars)] if distinguish_wires else
+              '#')
     return '\n'.join([''.join(row) for row in grid])
+  def __str__(self):
+    return self.to_ascii(True)
   def __eq__(self, other):
     return (isinstance(other, Proto_Board) and frozenset(self._wires) ==
         frozenset(other._wires) and frozenset(self._pieces) == frozenset(

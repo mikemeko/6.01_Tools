@@ -75,7 +75,7 @@ class Schematic_Tester:
       num_wire_crosses = None
     return (solved, solve_time, num_resistors, num_pots, num_op_amps,
         num_op_amp_packages, num_motors, head_present, robot_present, num_wires,
-        total_wire_length, num_wire_crosses, num_nodes)
+        total_wire_length, num_wire_crosses, num_nodes, proto_board)
   def test_schematic(self, schematic_file):
     """
     Attempts to produce the protoboard layout for the given |schematic_file|, a
