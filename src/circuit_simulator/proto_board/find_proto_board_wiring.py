@@ -6,9 +6,15 @@ Search to find proto board wiring to connect a given list of pairs of locations
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
 from circuit_pieces import Resistor_Piece
+from collections import defaultdict
 from constants import ALLOW_PIECE_CROSSINGS
 from constants import ALLOW_WIRE_CROSSINGS
 from constants import MAX_STATES_TO_EXPAND
+from constants import MODE_ALL_PAIRS
+from constants import MODE_PER_NODE
+from constants import MODE_PER_PAIR
+from constants import ORDER_DECREASING
+from constants import ORDER_INCREASING
 from constants import RAIL_ROWS
 from constants import ROWS
 from core.search.search import a_star
@@ -223,61 +229,90 @@ def heuristic(state):
   return sum(min(dist(loc_1, loc) for loc in proto_board.locs_connected_to(
       loc_2)) for loc_1, loc_2, resistor, node in loc_pairs)
 
-def loc_pair_to_connect_next(loc_pairs):
-  """
-  Returns the loc pair to connect next out of the given |loc_pairs|.
-  """
-  assert loc_pairs, 'loc_pairs is empty'
-  return max(loc_pairs, key=lambda (loc_1, loc_2, resistor, node): dist(
-      loc_1, loc_2) + 10 * bool(resistor))
-
-def condense_loc_pairs(loc_pairs, proto_board):
-  """
-  Updates the |loc_pairs| so as connecting them up will be easier, but no
-      structural change is made.
-  """
-  condensed_loc_pairs = []
-  for (loc_1, loc_2, resistor, node) in loc_pairs:
-    condensed_loc_pairs.append(min(product(filter(proto_board.free,
-        proto_board.locs_connected_to(loc_1)), filter(proto_board.free,
-        proto_board.locs_connected_to(loc_2))), key=lambda (l1, l2): dist(l1,
-        l2)) + (resistor, node))
-  return condensed_loc_pairs
-
-def find_wiring(loc_pairs, start_proto_board=Proto_Board()):
+def find_wiring(loc_pairs, start_proto_board=None, mode=MODE_PER_PAIR,
+    order=ORDER_DECREASING):
   """
   Returns a Proto_Board in which all the pairs of locations in |loc_pairs| are
       properly connected, or None if no such Proto_Board can be found. Search
       starts from |start_proto_board|.
+  |mode|: MODE_ALL_PAIRS | MODE_PER_NODE | MODE_PER_PAIR
+      MODE_ALL_PAIRS: connect all pairs in one search.
+      MODE_PER_NODE: connect the pairs for each node in a separate search.
+      MODE_PER_PAIR: connect each pair in a separate search.
+  |order|: ORDER_DECREASING | ORDER_INCREASING
+      MODE_ALL_PAIRS: ignored.
+      MODE_PER_NODE: order of number of pairs per node to consider.
+      MODE_PER_PAIR: order of pairwise distance to consider.
+  """
+  assert mode in (MODE_ALL_PAIRS, MODE_PER_NODE, MODE_PER_PAIR)
+  assert order in (ORDER_DECREASING, ORDER_INCREASING)
+  if start_proto_board is None:
+    start_proto_board = Proto_Board()
+  if mode is MODE_ALL_PAIRS:
+    return _find_wiring_all(loc_pairs, start_proto_board)
+  elif mode is MODE_PER_NODE:
+    return _find_wiring_per_node(loc_pairs, start_proto_board, order)
+  else: # mode is MODE_PER_PAIR
+    return _find_wiring_per_pair(loc_pairs, start_proto_board, order)
+
+def _find_wiring_all(loc_pairs, start_proto_board):
+  """
+  Wiring all pairs of locations in one search.
+  """
+  print 'connecting %d pairs ...' % len(loc_pairs)
+  search_result = a_star(Proto_Board_Search_Node(start_proto_board, frozenset(
+      loc_pairs)), goal_test, heuristic,
+      max_states_to_expand=len(loc_pairs) * MAX_STATES_TO_EXPAND)
+  if search_result is not None:
+    print '\tdone.'
+    return search_result.state[0]
+  else:
+    print '\tCouldn\'t do it :('
+    return None
+
+def _find_wiring_per_node(loc_pairs, start_proto_board, order):
+  """
+  Wiring the pairs of locations for each node separately.
+  """
+  loc_pairs_by_node = defaultdict(list)
+  for loc_pair in loc_pairs:
+    loc_pairs_by_node[loc_pair[3]].append(loc_pair)
+  proto_board = start_proto_board
+  print 'interconnecting %d nodes ...' % len(loc_pairs_by_node)
+  f = len if order is ORDER_INCREASING else lambda l: -len(l)
+  for node, loc_pair_collection in sorted(loc_pairs_by_node.items(),
+      key=lambda (k, v): f(v)):
+    print '\tinterconnecting node \'%s\', %d pairs' % (node,
+        len(loc_pair_collection))
+    search_result = a_star(Proto_Board_Search_Node(proto_board, frozenset(
+        loc_pair_collection)), goal_test, heuristic,
+        max_states_to_expand=len(loc_pair_collection) * MAX_STATES_TO_EXPAND)
+    if search_result is not None:
+      proto_board = search_result.state[0]
+    else:
+      print '\tCouldn\'t do it :('
+      return None
+  print '\tdone.'
+  return proto_board
+
+def _find_wiring_per_pair(loc_pairs, start_proto_board, order):
+  """
+  Wiring each pair separately.
   """
   proto_board = start_proto_board
-  # connect one pair of locations at a time
-  n = len(loc_pairs)
-  print 'making %d connections ...' % n
-  while loc_pairs:
-    loc_pairs = condense_loc_pairs(loc_pairs, proto_board)
-    next_pair = loc_pair_to_connect_next(loc_pairs)
-    loc_1, loc_2, resistor, node = next_pair
-    print '\t%d/%d connecting: %s -- %s' % (n - len(loc_pairs) + 1, n, loc_1,
-        loc_2)
-    equivalent_loc_pairs = list(product(filter(proto_board.free,
-        proto_board.locs_connected_to(loc_1)), filter(proto_board.free,
-        proto_board.locs_connected_to(loc_2))))
-    for trial_num in xrange(min(2, len(equivalent_loc_pairs))):
-      trial_loc_pair = min(equivalent_loc_pairs, key=lambda (loc_1, loc_2):
-          dist(loc_1, loc_2))
-      equivalent_loc_pairs.remove(trial_loc_pair)
-      trial_loc_1, trial_loc_2 = trial_loc_pair
-      print '\t\ttrial %d: %s -- %s' % (trial_num + 1, trial_loc_1, trial_loc_2)
-      trial_result = a_star(Proto_Board_Search_Node(proto_board, frozenset([
-          (trial_loc_1, trial_loc_2, resistor, node)])), goal_test, heuristic,
-          max_states_to_expand=MAX_STATES_TO_EXPAND)
-      if trial_result is not None:
-        proto_board = trial_result.state[0]
-        loc_pairs.remove(next_pair)
-        print '\t\tdone.'
-        break
+  print 'connecting %d pairs ...' % len(loc_pairs)
+  sign = 1 if order is ORDER_INCREASING else -1
+  for i, loc_pair in enumerate(sorted(loc_pairs,
+      key=lambda (loc_1, loc_2, resistor, node): sign * dist(loc_1, loc_2))):
+    loc_1, loc_2, resistor, node = loc_pair
+    print '\t%d/%d connecting: %s -- %s' % (i + 1, len(loc_pairs), loc_1, loc_2)
+    search_result = a_star(Proto_Board_Search_Node(proto_board, frozenset([
+        loc_pair])), goal_test, heuristic,
+        max_states_to_expand=MAX_STATES_TO_EXPAND)
+    if search_result is not None:
+      proto_board = search_result.state[0]
     else:
-      print '\t\tCouldn\'t do it :('
+      print '\tCouldn\'t do it :('
       return None
+  print '\tdone.'
   return proto_board

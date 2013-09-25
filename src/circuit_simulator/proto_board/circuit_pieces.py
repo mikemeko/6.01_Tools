@@ -194,21 +194,21 @@ class Op_Amp_Piece(Circuit_Piece):
     self._assert_top_left_loc_set()
     r, c = self.top_left_loc
     locs = []
-    if self.n_1 is None:
+    if not self.n_1:
       locs.append((r + 1, c) if self.dot_bottom_left else (r, c + 3))
-    if self.n_2 is None:
+    if not self.n_2:
       locs.append((r + 1, c + 1) if self.dot_bottom_left else (r, c + 2))
-    if self.n_3 is None:
+    if not self.n_3:
       locs.append((r + 1, c + 2) if self.dot_bottom_left else (r, c + 1))
-    if self.n_4 is None:
+    if not self.n_4:
       locs.append((r + 1, c + 3) if self.dot_bottom_left else (r, c))
-    if self.n_5 is None:
+    if not self.n_5:
       locs.append((r, c + 3) if self.dot_bottom_left else (r + 1, c))
-    if self.n_6 is None:
+    if not self.n_6:
       locs.append((r, c + 2) if self.dot_bottom_left else (r + 1, c + 1))
-    if self.n_7 is None:
+    if not self.n_7:
       locs.append((r, c + 1) if self.dot_bottom_left else (r + 1, c + 2))
-    if self.n_8 is None:
+    if not self.n_8:
       locs.append((r, c) if self.dot_bottom_left else (r + 1, c + 3))
     return locs
   def inverted(self):
@@ -281,7 +281,7 @@ class Place_Holder_Piece(Circuit_Piece):
     return [self.top_left_loc] if node == self.n else []
   def get_sacred_locs(self):
     self._assert_top_left_loc_set()
-    return [self.top_left_loc] if self.n is None else []
+    return [self.top_left_loc] if not self.n else []
   def inverted(self):
     return self
   def draw_on(self, canvas, top_left):
@@ -329,9 +329,9 @@ class Resistor_Piece(Circuit_Piece):
     self._assert_top_left_loc_set()
     r, c = self.top_left_loc
     locs = []
-    if self.n_1 is None:
+    if not self.n_1:
       locs.append((r, c))
-    if self.n_2 is None:
+    if not self.n_2:
       locs.append((r + 1, c) if self.vertical else (r, c + 3))
     return locs
   def inverted(self):
@@ -428,11 +428,11 @@ class Pot_Piece(Circuit_Piece):
     self._assert_top_left_loc_set()
     r, c = self.top_left_loc
     locs = []
-    if self.n_top is None:
+    if not self.n_top:
       locs.append((r + 2, c) if self.directed_up else (r, c + 2))
-    if self.n_middle is None:
+    if not self.n_middle:
       locs.append((r, c + 1) if self.directed_up else (r + 2, c + 1))
-    if self.n_bottom is None:
+    if not self.n_bottom:
       locs.append((r + 2, c + 2) if self.directed_up else (r, c))
     return locs
   def inverted(self):
@@ -565,9 +565,9 @@ class Motor_Connector_Piece(N_Pin_Connector_Piece):
     return locs
   def _disconnected_pins(self):
     pins = []
-    if self.n_pin_5 is None:
+    if not self.n_pin_5:
       pins.append(5)
-    if self.n_pin_6 is None:
+    if not self.n_pin_6:
       pins.append(6)
     return tuple(pins)
   def to_cmax_str(self):
@@ -605,8 +605,8 @@ class Robot_Connector_Piece(N_Pin_Connector_Piece):
     c8, r8 = loc_to_cmax_rep(self.loc_for_pin(8))
     return 'robot: (%d,%d)--(%d,%d)' % (c1, r1, c8, r8)
   def _disconnected_pins(self):
-    return tuple(i + 1 for i, pin_node in enumerate(self.pin_nodes) if pin_node
-        is None)
+    return tuple(i + 1 for i, pin_node in enumerate(self.pin_nodes) if not
+        pin_node)
   def __str__(self):
     return 'Robot_Connector_Piece pin nodes: %s' % str(self.pin_nodes)
   def __eq__(self, other):
@@ -637,8 +637,8 @@ class Head_Connector_Piece(N_Pin_Connector_Piece):
     c8, r8 = loc_to_cmax_rep(self.loc_for_pin(8))
     return 'head: (%d,%d)--(%d,%d)' % (c1, r1, c8, r8)
   def _disconnected_pins(self):
-    return tuple(i + 1 for i, pin_node in enumerate(self.pin_nodes) if pin_node
-        is None)
+    return tuple(i + 1 for i, pin_node in enumerate(self.pin_nodes) if not
+        pin_node)
   def __str__(self):
     return 'Head_Connector_Piece pin_nodes: %s' % str(self.pin_nodes)
   def __eq__(self, other):
