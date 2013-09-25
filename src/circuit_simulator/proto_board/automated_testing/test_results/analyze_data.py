@@ -115,17 +115,7 @@ def analyze(results_file):
   print
   compare(solved, unsolved, 'num_nodes')
   size = int(ceil(len(results) ** 0.5))
-  incr = sign = 1
-  while len(results) % size != 0:
-    size += incr * sign
-    if sign == -1:
-      incr += 1
-    sign *= -1
-  for k in range(size, -1, -1):
-    if len(results) % k == 0:
-      size = k
-      break
-  grid = [[0] * size for i in xrange(len(results) / size)]
+  grid = [[0.5] * size for i in xrange(int(ceil(float(len(results)) / size)))]
   for i, result in enumerate(results):
     grid[i / size][i % size] = 1 - result.solved
   imshow(grid, interpolation='nearest', cmap='Reds')
