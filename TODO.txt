@@ -15,10 +15,9 @@ FORMAT:
 **************************
 
 THESIS:
+- [9/24/13] Keep writing!
 
 PROTOBOARD LAYOUT:
-- [8/31/13] For a particular pair of locations, try multiple pairs of locations
-    by randomly sampling, don't give up if the heuristically best pair fails.
 - [8/31/13] If the layout generation fails at a particular pair of locations,
     output what it has found so far. Better yet, let the user help it out!
 - [8/31/13] post process protoboards to make them prettier.
@@ -51,8 +50,6 @@ UI:
 - [8/31/13] Copy/paste (? probes, grouped things)
 - [8/31/13] Maybe the palette should have buttons instead of things that don't
     look like buttons?
-- [8/31/13] Wrapper for matplotlib plotters (something similar already exists
-    in lib601), matplotlib plotters block everything else.
 
 SYSTEM ANALYSIS:
 - [8/31/13] Do a better job of finding feedback loops without delays.
@@ -83,6 +80,9 @@ PROTOBOARD LAYOUT:
     generation is working.
 - [9/14/13] [8/31/13] Should know where there are too many items to be put on
     the protoboard, and output an error message if that is the case.
+- [9/24/13] [8/31/13] For a particular pair of locations, try multiple pairs of
+    locations by randomly sampling, don't give up if the heuristically best pair
+    fails. (WAS NOT SUCCESSFUL)
 
 SYSTEM ANALYSIS:
 
@@ -96,6 +96,8 @@ UI:
     item some buffer room, and don't let any other item within this room.
 - [9/3/13] [8/31/13] Allow adding an item to the board multiple times (just put
     the items at different places on the board).
+- [9/24/13] [8/31/13] Wrapper for matplotlib plotters (something similar already
+    exists in lib601), matplotlib plotters block everything else.
 
 MISC:
 
