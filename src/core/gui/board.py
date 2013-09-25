@@ -625,7 +625,9 @@ class Board(Frame):
     elif event.keysym == 'Up':
       self._move_selected_items(0, -BOARD_GRID_SEPARATION)
     elif event.keysym in ('BackSpace', 'Delete'):
-      self._delete_selected_items()
+      # delete selected items as long there is not text edit in progress
+      if not self._canvas.focus():
+        self._delete_selected_items()
     else:
       current_key = event.keysym.lower()
       current_flags = (CTRL_DOWN * self._ctrl_pressed) | (SHIFT_DOWN &
