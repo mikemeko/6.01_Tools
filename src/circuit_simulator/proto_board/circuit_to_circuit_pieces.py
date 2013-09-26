@@ -141,14 +141,15 @@ def op_amp_piece_from_op_amp(op_amp_tup):
   return Op_Amp_Piece(n_1, n_2, n_3, n_4, n_5, n_6, n_7, n_8, ','.join(
       op_amp.label for op_amp in op_amp_tup))
 
-def get_piece_placement(circuit):
+def get_piece_placement(circuit, verbose=True):
   """
   Returns a *good* ordering of Circuit_Pieces for the given |circuit|. Finding
       the best one (i.e. the one the requires minimal wiring) is too expensive.
       Also returns a list of the resistors the |circuit|.
   """
   assert isinstance(circuit, Circuit), 'circuit must be a Circuit'
-  print 'finding piece placement ...'
+  if verbose:
+    print 'finding piece placement ...'
   resistors = filter(lambda obj: obj.__class__ == Resistor, circuit.components)
   if RESISTORS_AS_COMPONENTS:
     resistor_pieces = map(resistor_piece_from_resistor, resistors)
@@ -190,6 +191,7 @@ def get_piece_placement(circuit):
       if cost < best_placement_cost:
         best_placement = placement
         best_placement_cost = cost
-  print '\tdone.'
+  if verbose:
+    print '\tdone.'
   return best_placement, ([] if RESISTORS_AS_COMPONENTS else
       resistors)

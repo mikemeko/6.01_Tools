@@ -57,7 +57,8 @@ class Schematic_Tester:
         enumerate(component_nodes) for nodes2 in component_nodes[i + 1:]],
         set()))
     start_time = time()
-    proto_board = solve_layout(circuit, self.solve_mode, self.solve_order)
+    proto_board = solve_layout(circuit, self.solve_mode, self.solve_order,
+        verbose=False)
     stop_time = time()
     solved = proto_board is not None
     solve_time = stop_time - start_time

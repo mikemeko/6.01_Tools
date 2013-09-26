@@ -21,7 +21,8 @@ from sys import stdout
 from traceback import print_exc
 from util import node_disjoint_set_forest
 
-def solve_layout(circuit, mode=MODE_PER_PAIR, order=ORDER_DECREASING):
+def solve_layout(circuit, mode=MODE_PER_PAIR, order=ORDER_DECREASING,
+    verbose=True):
   """
   Returns a Proto_Board instance corresponding to the given |circuit|, or None
       if one could not be found. |mode| and |order| are parameters for how the
@@ -29,7 +30,7 @@ def solve_layout(circuit, mode=MODE_PER_PAIR, order=ORDER_DECREASING):
   """
   try:
     # get a placement for the appropriate circuit pieces
-    placement, resistor_node_pairs = get_piece_placement(circuit)
+    placement, resistor_node_pairs = get_piece_placement(circuit, verbose)
     if placement is None:
       print "Pieces don't fit on the board."
       return None
@@ -55,7 +56,7 @@ def solve_layout(circuit, mode=MODE_PER_PAIR, order=ORDER_DECREASING):
     proto_board = proto_board.with_loc_disjoint_set_forest(
         node_disjoint_set_forest(node_locs_mapping))
     return find_wiring(loc_pairs_to_connect(placement, resistor_node_pairs),
-        proto_board, mode, order)
+        proto_board, mode, order, verbose)
   except:
     print_exc(file=stdout)
     return None
