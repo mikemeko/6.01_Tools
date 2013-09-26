@@ -8,8 +8,14 @@ from collections import defaultdict
 from math import ceil
 from numpy import mean
 from numpy import std
+from pylab import errorbar
+from pylab import figure
 from pylab import imshow
+from pylab import plot
 from pylab import show
+from pylab import subplot
+from pylab import xlabel
+from pylab import ylabel
 from sys import argv
 
 def sequence_generator():
@@ -76,6 +82,7 @@ def compare(solved, unsolved, attr):
         key_total, float(len(solved_dict[key])) / key_total, mean([
         result.solve_time for result in solved_dict[key]]), mean([
         result.solve_time for result in unsolved_dict[key]])))
+  return attr, solved_dict, unsolved_dict
 
 def analyze(results_file):
   """
@@ -99,26 +106,42 @@ def analyze(results_file):
       result.num_wire_crosses for result in solved]), std([
       result.num_wire_crosses for result in solved]))
   print
-  compare(solved, unsolved, 'num_resistors')
+  solved_unsolved_dicts = []
+  solved_unsolved_dicts.append(compare(solved, unsolved, 'num_resistors'))
   print
-  compare(solved, unsolved, 'num_pots')
+  solved_unsolved_dicts.append(compare(solved, unsolved, 'num_pots'))
   print
-  compare(solved, unsolved, 'num_op_amps')
+  solved_unsolved_dicts.append(compare(solved, unsolved, 'num_op_amps'))
   print
-  compare(solved, unsolved, 'num_motors')
+  solved_unsolved_dicts.append(compare(solved, unsolved, 'num_motors'))
   print
-  compare(solved, unsolved, 'head_present')
+  solved_unsolved_dicts.append(compare(solved, unsolved, 'head_present'))
   print
-  compare(solved, unsolved, 'robot_present')
+  solved_unsolved_dicts.append(compare(solved, unsolved, 'robot_present'))
   print
-  compare(solved, unsolved, 'num_components')
+  solved_unsolved_dicts.append(compare(solved, unsolved, 'num_components'))
   print
-  compare(solved, unsolved, 'num_nodes')
+  solved_unsolved_dicts.append(compare(solved, unsolved, 'num_nodes'))
   size = int(ceil(len(results) ** 0.5))
   grid = [[0.5] * size for i in xrange(int(ceil(float(len(results)) / size)))]
   for i, result in enumerate(results):
     grid[i / size][i % size] = 1 - result.solved
+  figure(0)
   imshow(grid, interpolation='nearest', cmap='Reds')
+  for i, (attr, solved_dict, unsolved_dict) in enumerate(solved_unsolved_dicts):
+    sorted_keys = sorted(solved_dict.keys())
+    figure(i + 1)
+    subplot(211)
+    plot(sorted_keys, [float(len(solved_dict[key])) / (len(solved_dict[key]) +
+        len(unsolved_dict[key])) for key in sorted_keys])
+    ylabel('Success rate')
+    subplot(212)
+    errorbar(sorted_keys, [mean([result.solve_time for result in
+        solved_dict[key]]) for key in sorted_keys], yerr=[std([
+        result.solve_time for result in solved_dict[key]]) for key in
+        sorted_keys])
+    xlabel(attr)
+    ylabel('Average solve time (seconds)')
   show()
 
 if __name__ == '__main__':
