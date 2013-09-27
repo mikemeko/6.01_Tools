@@ -11,24 +11,15 @@ same dataset for appropriate comparison.
 
 To assess the goodness of an alternative method, we give:
 \begin{enumerate}
-\item A diagram of a 2D array of points in which each point represents a run.
-Each point is colored white or red corresponding to a successful or unsuccessful
-run, respectively. This array gives a general overview of how well the method
-performed on the test dataset.
-\item The success rate of the method on the test dataset. The higher this value,
-the better the method.
-\item The average and standard deviation of success times. The lower the average,
-the better the method.
-\item The average and standard deviation of failure times. The lower the average,
-the better the method.
+\item The success rate of the method on the test dataset.
+\item The average and standard deviation of success times.
+\item The average and standard deviation of failure times.
 \item Among the solved schematics, the average and standard deviation of the
-number of wires used. The lower the average, the better the method.
+number of wires used.
 \item Among the solved schematics, the average and standard deviation of the
-total wire length of the wires on the protoboard. The lower the average, the
-better the method.
+total wire length of the wires on the protoboard.
 \item Among the solved schematics, the average and standard deviation of the
-number of wire crosses on the protoboard. The lower the average, the better the
-method.
+number of wire crosses on the protoboard.
 \end{enumerate}
 
 To assess the effect of various aspects of schematics on the method, we give
@@ -57,17 +48,8 @@ step. With this setup, we consider $5$ different ways of wiring.
 \subsection{All connections at once}
 
 Here we consider connecting all pairs of location that need to
-be connected at once. Figure \ref{fig:as_comp_all} displays the overall results.
-Table \ref{tb:as_comp_all} presents the statistics we obtain with this setup.
-
-\begin{figure}[H]
-\begin{center}
-\includegraphics{Images/placeholder.jpg}
-\caption{Overall results when we treat resistors as components and connect all
-pairs of protoboard locations at once.}
-\label{fig:as_comp_all}
-\end{center}
-\end{figure}
+be connected at once. Table \ref{tb:as_comp_all} presents the statistics we
+obtain with this setup.
 
 \begin{table}[H]
 \begin{center}
@@ -95,19 +77,8 @@ pairs of protoboard locations at once.}
 connections first}
 
 Next we consider connecting the location pairs for one node at a time, ordered
-in \textit{descending} order of number of location pairs per node. Figure
-\ref{fig:as_comp_node_d} shows the overall results, and Table
+in \textit{descending} order of number of location pairs per node. Table
 \ref{tb:as_comp_node_d} presents the statistics for this setup.
-
-\begin{figure}[H]
-\begin{center}
-\includegraphics{Images/placeholder.jpg}
-\caption{Overall results when we treat resistors as components and connect the
-location pairs for one node at a time, with the node with the most connections
-going first.}
-\label{fig:as_comp_node_d}
-\end{center}
-\end{figure}
 
 \begin{table}[H]
 \begin{center}
@@ -137,18 +108,7 @@ connections first}
 
 Here also, we consider connecting the location pairs for one node at a time,
 but this time ordered in \textit{ascending} order of number of location pairs
-per node. Figure \ref{fig:as_comp_node_a} shows the overall results, and Table
-\ref{tb:as_comp_node_a} presents the statistics for this setup.
-
-\begin{figure}[H]
-\begin{center}
-\includegraphics{Images/placeholder.jpg}
-\caption{Overall results when we treat resistors as components and connect the
-location pairs for one node at a time, with the node with the least connections
-going first.}
-\label{fig:as_comp_node_a}
-\end{center}
-\end{figure}
+per node. Table \ref{tb:as_comp_node_a} presents the statistics for this setup.
 
 \begin{table}[H]
 \begin{center}
@@ -176,18 +136,8 @@ going first.}
 \subsection{One connection at a time, \textit{shortest} connection first}
 
 Now we look at wiring one pair of locations at a time. First, we consider
-starting from the closest pair of locations. Figure \ref{fig:as_comp_pair_s}
-shows the overall results and Table \ref{tb:as_comp_pair_s} presents the
-statistics for this setup.
-
-\begin{figure}[H]
-\begin{center}
-\includegraphics{Images/placeholder.jpg}
-\caption{Overall results when we treat resistors as components and connect one
-pair of locations at a time, starting with the closest pair of locations.}
-\label{fig:as_comp_pair_s}
-\end{center}
-\end{figure}
+starting from the closest pair of locations. Table \ref{tb:as_comp_pair_s}
+presents the statistics for this setup.
 
 \begin{table}[H]
 \begin{center}
@@ -214,18 +164,8 @@ pair of locations at a time, starting with the closest pair of locations.}
 \subsection{One connection at a time, \textit{longest} connection first}
 
 Here we connect one pair of locations a time, but this time we start with the
-farthest pair of locations. Figure \ref{fig:as_comp_pair_l} shows the overall
-results and Table \ref{tb:as_comp_pair_l} presents the statistics for this
-setup.
-
-\begin{figure}[H]
-\begin{center}
-\includegraphics[width=\textwidth]{Images/overview_sample.png}
-\caption{Overall results when we treat resistors as components and connect one
-pair of locations at a time, starting with the farthest pair of locations.}
-\label{fig:as_comp_pair_l}
-\end{center}
-\end{figure}
+farthest pair of locations. Table \ref{tb:as_comp_pair_l} presents the
+statistics for this setup.
 
 \begin{table}[H]
 \begin{center}
@@ -461,17 +401,7 @@ ways of wiring once more.
 
 \subsection{All connections at once}
 
-Figure \ref{fig:as_wire_all} displays the overall results and Table
-\ref{tb:as_wire_all} presents the statistics we obtain with this setup.
-
-\begin{figure}[H]
-\begin{center}
-\includegraphics{Images/placeholder.jpg}
-\caption{Overall results when we treat resistors as wires and connect all
-pairs of protoboard locations at once.}
-\label{fig:as_wire_all}
-\end{center}
-\end{figure}
+Table \ref{tb:as_wire_all} presents the statistics we obtain with this setup.
 
 \begin{table}[H]
 \begin{center}
@@ -498,18 +428,7 @@ pairs of protoboard locations at once.}
 \subsection{Connections for one node at a time, node with \textit{most}
 connections first}
 
-Figure \ref{fig:as_wire_node_d} shows the overall results, and Table
-\ref{tb:as_wire_node_d} presents the statistics for this setup.
-
-\begin{figure}[H]
-\begin{center}
-\includegraphics{Images/placeholder.jpg}
-\caption{Overall results when we treat resistors as wires and connect the
-location pairs for one node at a time, with the node with the most connections
-going first.}
-\label{fig:as_wire_node_d}
-\end{center}
-\end{figure}
+Table \ref{tb:as_wire_node_d} presents the statistics for this setup.
 
 \begin{table}[H]
 \begin{center}
@@ -537,18 +456,7 @@ first.}
 \subsection{Connections for one node at a time, node with \textit{least}
 connections first}
 
-Figure \ref{fig:as_wire_node_a} shows the overall results, and Table
-\ref{tb:as_wire_node_a} presents the statistics for this setup.
-
-\begin{figure}[H]
-\begin{center}
-\includegraphics{Images/placeholder.jpg}
-\caption{Overall results when we treat resistors as wires and connect the
-location pairs for one node at a time, with the node with the least connections
-going first.}
-\label{fig:as_wire_node_a}
-\end{center}
-\end{figure}
+Table \ref{tb:as_wire_node_a} presents the statistics for this setup.
 
 \begin{table}[H]
 \begin{center}
@@ -575,18 +483,7 @@ going first.}
 
 \subsection{One connection at a time, \textit{shortest} connection first}
 
-Figure \ref{fig:as_wire_pair_s}
-shows the overall results and Table \ref{tb:as_wire_pair_s} presents the
-statistics for this setup.
-
-\begin{figure}[H]
-\begin{center}
-\includegraphics{Images/placeholder.jpg}
-\caption{Overall results when we treat resistors as wires and connect one
-pair of locations at a time, starting with the closest pair of locations.}
-\label{fig:as_wire_pair_s}
-\end{center}
-\end{figure}
+Table \ref{tb:as_wire_pair_s} presents the statistics for this setup.
 
 \begin{table}[H]
 \begin{center}
@@ -612,18 +509,7 @@ pair of locations at a time, starting with the closest pair of locations.}
 
 \subsection{One connection at a time, \textit{longest} connection first}
 
-Figure \ref{fig:as_wire_pair_l} shows the overall
-results and Table \ref{tb:as_wire_pair_l} presents the statistics for this
-setup.
-
-\begin{figure}[H]
-\begin{center}
-\includegraphics{Images/placeholder.jpg}
-\caption{Overall results when we treat resistors as wires and connect one
-pair of locations at a time, starting with the farthest pair of locations.}
-\label{fig:as_wire_pair_l}
-\end{center}
-\end{figure}
+Table \ref{tb:as_wire_pair_l} presents the statistics for this setup.
 
 \begin{table}[H]
 \begin{center}
@@ -861,18 +747,8 @@ using Best First Search instead of $A*$.
 First we will employ Best First Search while treating resistors as components.
 Recall
 that we found the best wiring strategy in this setup to be \q, hence we will use
-that strategy here, but with $A*$ replaced by Best First Search. Figure
-\ref{fig:as_comp_best_first} shows the overall results, and Table
+that strategy here, but with $A*$ replaced by Best First Search. Table
 \ref{tb:as_comp_best_first} presents the statistics for this setup.
-
-\begin{figure}[H]
-\begin{center}
-\includegraphics{Images/placeholder.jpg}
-\caption{Overall results when we treat resistors as components and \q using Best
-First Search.}
-\label{fig:as_comp_best_first}
-\end{center}
-\end{figure}
 
 \begin{table}[H]
 \begin{center}
@@ -901,17 +777,7 @@ First Search.}
 Next we will employ Best First Search while treating resistors as wires. Recall
 that we found the best wiring strategy in this setup to be \q, hence we will use
 that strategy here, but, once again, with $A*$ replaced by Best First Search.
-Figure \ref{fig:as_wire_best_first} shows the overall results, and Table
-\ref{tb:as_wire_best_first} presents the statistics for this setup.
-
-\begin{figure}[H]
-\begin{center}
-\includegraphics{Images/placeholder.jpg}
-\caption{Overall results when we treat resistors as wires and \q using Best
-First Search.}
-\label{fig:as_wire_best_first}
-\end{center}
-\end{figure}
+Table \ref{tb:as_wire_best_first} presents the statistics for this setup.
 
 \begin{table}[H]
 \begin{center}
@@ -933,4 +799,38 @@ Total wire crosses mean and standard deviation & \\
 \label{tb:as_wire_best_first}
 \caption{Test statistics when we treat resistors as wires and \q using Best
 First Search.}
+\end{table}
+
+\begin{table}[H]
+\begin{center}
+\begin{singlespace}
+\begin{tabular}{| c | c | c | c | c | c |}
+\hline
+ & & \multicolumn{2}{|c|}{Resistors as Components} & \multicolumn{2}{|c|}{
+ Resistors as Wires} \\
+\hline
+Num Resistors & Num Samples & Best First & $A*$ & Best First & $A*$ \\
+\hline\hline
+0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 0 & 0 & 0 & 0 \\
+2 & 0 & 0 & 0 & 0 & 0 \\
+3 & 0 & 0 & 0 & 0 & 0 \\
+4 & 0 & 0 & 0 & 0 & 0 \\
+5 & 0 & 0 & 0 & 0 & 0 \\
+6 & 0 & 0 & 0 & 0 & 0 \\
+7 & 0 & 0 & 0 & 0 & 0 \\
+8 & 0 & 0 & 0 & 0 & 0 \\
+9 & 0 & 0 & 0 & 0 & 0 \\
+11 & 0 & 0 & 0 & 0 & 0 \\
+12 & 0 & 0 & 0 & 0 & 0 \\
+13 & 0 & 0 & 0 & 0 & 0 \\
+14 & 0 & 0 & 0 & 0 & 0 \\
+15 & 0 & 0 & 0 & 0 & 0 \\
+16 & 0 & 0 & 0 & 0 & 0 \\
+17 & 0 & 0 & 0 & 0 & 0 \\
+18 & 0 & 0 & 0 & 0 & 0 \\
+\hline
+\end{tabular}
+\end{singlespace}
+\end{center}
 \end{table}

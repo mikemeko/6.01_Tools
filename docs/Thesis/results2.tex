@@ -1,0 +1,1193 @@
+% Chapter in which we explore how well various approaches do.
+
+\chapter{Results}
+\label{ch:results}
+
+In this chapter, we compare the various alternatives discussed in Chapter
+\ref{ch:methods}. We test each of the alternatives on the randomly generated
+dataset containing \q test schematics. All of the alternatives are evaluated on
+this same dataset for appropriate comparison.
+
+\section{Outline}
+
+In Section \ref{sec:all_pairs} we consider the wiring method in which we connect
+all pairs of locations in one search. In Section \ref{sec:per_node} we consider
+the wiring method in which we use a separate search for the locations pairs
+corresponding to each node. Finally, in Section \ref{sec:per_pair} we consider
+the wiring method in which we use a separate search for each pair of locations.
+In the latter two sections, we consider alternatives corresponding to different
+orderings of the respective entities. In each section we consider two search
+procedures ($A*$ vs. Best First Search) and two treatments of resistors (as
+components vs. as wires). We will present success rates as well as the effects
+of various attributes of schematics on the methods.
+
+\section{Connect all location pairs in one search}
+\label{sec:all_pairs}
+
+\begin{table}[H]
+\begin{center}
+\begin{singlespace}
+\begin{tabular}{| c || c | c | c | c |}
+\hline
+ & \multicolumn{2}{|c|}{Resistors as Components} & \multicolumn{2}{|c|}{
+ Resistors as Wires} \\
+\hline
+ & Best First & $A*$ & Best First & $A*$ \\
+\hline\hline
+Success rate & 0 & 0 & 0 & 0 \\
+Average success time & 0 & 0 & 0 & 0 \\
+Average failure time & 0 & 0 & 0 & 0 \\
+\hline
+\end{tabular}
+\end{singlespace}
+\end{center}
+\caption{Connecting all location pairs in one search.}
+\end{table}
+
+\begin{table}[H]
+\begin{center}
+\begin{singlespace}
+\begin{tabular}{| c | c || c | c | c | c |}
+\hline
+ & & \multicolumn{2}{|c|}{Resistors as Components} & \multicolumn{2}{|c|}{
+ Resistors as Wires} \\
+\hline
+Nodes & Samples & Best First & $A*$ & Best First & $A*$ \\
+\hline\hline
+0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 0 & 0 & 0 & 0 \\
+2 & 0 & 0 & 0 & 0 & 0 \\
+3 & 0 & 0 & 0 & 0 & 0 \\
+4 & 0 & 0 & 0 & 0 & 0 \\
+5 & 0 & 0 & 0 & 0 & 0 \\
+6 & 0 & 0 & 0 & 0 & 0 \\
+7 & 0 & 0 & 0 & 0 & 0 \\
+8 & 0 & 0 & 0 & 0 & 0 \\
+9 & 0 & 0 & 0 & 0 & 0 \\
+11 & 0 & 0 & 0 & 0 & 0 \\
+12 & 0 & 0 & 0 & 0 & 0 \\
+13 & 0 & 0 & 0 & 0 & 0 \\
+\hline
+\end{tabular}
+\end{singlespace}
+\end{center}
+\caption{Success rate as a function of number of nodes in the circuit.}
+\end{table}
+
+\begin{table}[H]
+\begin{center}
+\begin{singlespace}
+\begin{tabular}{| c | c || c | c | c | c |}
+\hline
+ & & \multicolumn{2}{|c|}{Resistors as Components} & \multicolumn{2}{|c|}{
+ Resistors as Wires} \\
+\hline
+Components & Samples & Best First & $A*$ & Best First & $A*$ \\
+\hline\hline
+0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 0 & 0 & 0 & 0 \\
+2 & 0 & 0 & 0 & 0 & 0 \\
+3 & 0 & 0 & 0 & 0 & 0 \\
+4 & 0 & 0 & 0 & 0 & 0 \\
+5 & 0 & 0 & 0 & 0 & 0 \\
+6 & 0 & 0 & 0 & 0 & 0 \\
+7 & 0 & 0 & 0 & 0 & 0 \\
+8 & 0 & 0 & 0 & 0 & 0 \\
+9 & 0 & 0 & 0 & 0 & 0 \\
+11 & 0 & 0 & 0 & 0 & 0 \\
+12 & 0 & 0 & 0 & 0 & 0 \\
+13 & 0 & 0 & 0 & 0 & 0 \\
+14 & 0 & 0 & 0 & 0 & 0 \\
+15 & 0 & 0 & 0 & 0 & 0 \\
+16 & 0 & 0 & 0 & 0 & 0 \\
+17 & 0 & 0 & 0 & 0 & 0 \\
+18 & 0 & 0 & 0 & 0 & 0 \\
+\hline
+\end{tabular}
+\end{singlespace}
+\end{center}
+\caption{Success rate as a function of number of components in the circuit.}
+\end{table}
+
+\begin{table}[H]
+\begin{center}
+\begin{singlespace}
+\begin{tabular}{| c | c || c | c | c | c |}
+\hline
+ & & \multicolumn{2}{|c|}{Resistors as Components} & \multicolumn{2}{|c|}{
+ Resistors as Wires} \\
+\hline
+Resistors & Samples & Best First & $A*$ & Best First & $A*$ \\
+\hline\hline
+0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 0 & 0 & 0 & 0 \\
+2 & 0 & 0 & 0 & 0 & 0 \\
+3 & 0 & 0 & 0 & 0 & 0 \\
+4 & 0 & 0 & 0 & 0 & 0 \\
+5 & 0 & 0 & 0 & 0 & 0 \\
+6 & 0 & 0 & 0 & 0 & 0 \\
+7 & 0 & 0 & 0 & 0 & 0 \\
+8 & 0 & 0 & 0 & 0 & 0 \\
+9 & 0 & 0 & 0 & 0 & 0 \\
+11 & 0 & 0 & 0 & 0 & 0 \\
+12 & 0 & 0 & 0 & 0 & 0 \\
+13 & 0 & 0 & 0 & 0 & 0 \\
+14 & 0 & 0 & 0 & 0 & 0 \\
+15 & 0 & 0 & 0 & 0 & 0 \\
+16 & 0 & 0 & 0 & 0 & 0 \\
+17 & 0 & 0 & 0 & 0 & 0 \\
+18 & 0 & 0 & 0 & 0 & 0 \\
+\hline
+\end{tabular}
+\end{singlespace}
+\end{center}
+\caption{Success rate as a function of number of resistors in the circuit.}
+\end{table}
+
+\begin{table}[H]
+\begin{center}
+\begin{singlespace}
+\begin{tabular}{| c | c || c | c | c | c |}
+\hline
+ & & \multicolumn{2}{|c|}{Resistors as Components} & \multicolumn{2}{|c|}{
+ Resistors as Wires} \\
+\hline
+Op Amps & Samples & Best First & $A*$ & Best First & $A*$ \\
+\hline\hline
+0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 0 & 0 & 0 & 0 \\
+2 & 0 & 0 & 0 & 0 & 0 \\
+3 & 0 & 0 & 0 & 0 & 0 \\
+4 & 0 & 0 & 0 & 0 & 0 \\
+5 & 0 & 0 & 0 & 0 & 0 \\
+6 & 0 & 0 & 0 & 0 & 0 \\
+\hline
+\end{tabular}
+\end{singlespace}
+\end{center}
+\caption{Success rate as a function of number of Op Amps in the circuit.}
+\end{table}
+
+\begin{table}[H]
+\begin{center}
+\begin{singlespace}
+\begin{tabular}{| c | c || c | c | c | c |}
+\hline
+ & & \multicolumn{2}{|c|}{Resistors as Components} & \multicolumn{2}{|c|}{
+ Resistors as Wires} \\
+\hline
+Pots & Samples & Best First & $A*$ & Best First & $A*$ \\
+\hline\hline
+0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 0 & 0 & 0 & 0 \\
+2 & 0 & 0 & 0 & 0 & 0 \\
+3 & 0 & 0 & 0 & 0 & 0 \\
+4 & 0 & 0 & 0 & 0 & 0 \\
+5 & 0 & 0 & 0 & 0 & 0 \\
+6 & 0 & 0 & 0 & 0 & 0 \\
+\hline
+\end{tabular}
+\end{singlespace}
+\end{center}
+\caption{Success rate as a function of number of Pots in the circuit.}
+\end{table}
+
+\begin{table}[H]
+\begin{center}
+\begin{singlespace}
+\begin{tabular}{| c | c || c | c | c | c |}
+\hline
+ & & \multicolumn{2}{|c|}{Resistors as Components} & \multicolumn{2}{|c|}{
+ Resistors as Wires} \\
+\hline
+Motors & Samples & Best First & $A*$ & Best First & $A*$ \\
+\hline\hline
+0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 0 & 0 & 0 & 0 \\
+2 & 0 & 0 & 0 & 0 & 0 \\
+3 & 0 & 0 & 0 & 0 & 0 \\
+4 & 0 & 0 & 0 & 0 & 0 \\
+5 & 0 & 0 & 0 & 0 & 0 \\
+6 & 0 & 0 & 0 & 0 & 0 \\
+\hline
+\end{tabular}
+\end{singlespace}
+\end{center}
+\caption{Success rate as a function of number of Motors in the circuit.}
+\end{table}
+
+\begin{table}[H]
+\begin{center}
+\begin{singlespace}
+\begin{tabular}{| c | c || c | c | c | c |}
+\hline
+ & & \multicolumn{2}{|c|}{Resistors as Components} & \multicolumn{2}{|c|}{
+ Resistors as Wires} \\
+\hline
+Head Connectors & Samples & Best First & $A*$ & Best First & $A*$ \\
+\hline\hline
+0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 0 & 0 & 0 & 0 \\
+\hline
+\end{tabular}
+\end{singlespace}
+\end{center}
+\caption{Success rate as a function of number of Head Connectors in the circuit.}
+\end{table}
+
+\begin{table}[H]
+\begin{center}
+\begin{singlespace}
+\begin{tabular}{| c | c || c | c | c | c |}
+\hline
+ & & \multicolumn{2}{|c|}{Resistors as Components} & \multicolumn{2}{|c|}{
+ Resistors as Wires} \\
+\hline
+Robot Connectors & Samples & Best First & $A*$ & Best First & $A*$ \\
+\hline\hline
+0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 0 & 0 & 0 & 0 \\
+\hline
+\end{tabular}
+\end{singlespace}
+\end{center}
+\caption{Success rate as a function of number of Robot Connectors in the circuit.}
+\end{table}
+
+\section{Connect the location pairs for each node in one search}
+\label{sec:per_node}
+
+\subsection{Most location pairs first}
+
+\begin{table}[H]
+\begin{center}
+\begin{singlespace}
+\begin{tabular}{| c || c | c | c | c |}
+\hline
+ & \multicolumn{2}{|c|}{Resistors as Components} & \multicolumn{2}{|c|}{
+ Resistors as Wires} \\
+\hline
+ & Best First & $A*$ & Best First & $A*$ \\
+\hline\hline
+Success rate & 0 & 0 & 0 & 0 \\
+Average success time & 0 & 0 & 0 & 0 \\
+Average failure time & 0 & 0 & 0 & 0 \\
+\hline
+\end{tabular}
+\end{singlespace}
+\end{center}
+\caption{Connecting location pairs for each node in one search, starting with
+the node that has the most location pairs.}
+\end{table}
+
+\begin{table}[H]
+\begin{center}
+\begin{singlespace}
+\begin{tabular}{| c | c || c | c | c | c |}
+\hline
+ & & \multicolumn{2}{|c|}{Resistors as Components} & \multicolumn{2}{|c|}{
+ Resistors as Wires} \\
+\hline
+Nodes & Samples & Best First & $A*$ & Best First & $A*$ \\
+\hline\hline
+0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 0 & 0 & 0 & 0 \\
+2 & 0 & 0 & 0 & 0 & 0 \\
+3 & 0 & 0 & 0 & 0 & 0 \\
+4 & 0 & 0 & 0 & 0 & 0 \\
+5 & 0 & 0 & 0 & 0 & 0 \\
+6 & 0 & 0 & 0 & 0 & 0 \\
+7 & 0 & 0 & 0 & 0 & 0 \\
+8 & 0 & 0 & 0 & 0 & 0 \\
+9 & 0 & 0 & 0 & 0 & 0 \\
+11 & 0 & 0 & 0 & 0 & 0 \\
+12 & 0 & 0 & 0 & 0 & 0 \\
+13 & 0 & 0 & 0 & 0 & 0 \\
+\hline
+\end{tabular}
+\end{singlespace}
+\end{center}
+\caption{Success rate as a function of number of nodes in the circuit.}
+\end{table}
+
+\begin{table}[H]
+\begin{center}
+\begin{singlespace}
+\begin{tabular}{| c | c || c | c | c | c |}
+\hline
+ & & \multicolumn{2}{|c|}{Resistors as Components} & \multicolumn{2}{|c|}{
+ Resistors as Wires} \\
+\hline
+Components & Samples & Best First & $A*$ & Best First & $A*$ \\
+\hline\hline
+0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 0 & 0 & 0 & 0 \\
+2 & 0 & 0 & 0 & 0 & 0 \\
+3 & 0 & 0 & 0 & 0 & 0 \\
+4 & 0 & 0 & 0 & 0 & 0 \\
+5 & 0 & 0 & 0 & 0 & 0 \\
+6 & 0 & 0 & 0 & 0 & 0 \\
+7 & 0 & 0 & 0 & 0 & 0 \\
+8 & 0 & 0 & 0 & 0 & 0 \\
+9 & 0 & 0 & 0 & 0 & 0 \\
+11 & 0 & 0 & 0 & 0 & 0 \\
+12 & 0 & 0 & 0 & 0 & 0 \\
+13 & 0 & 0 & 0 & 0 & 0 \\
+14 & 0 & 0 & 0 & 0 & 0 \\
+15 & 0 & 0 & 0 & 0 & 0 \\
+16 & 0 & 0 & 0 & 0 & 0 \\
+17 & 0 & 0 & 0 & 0 & 0 \\
+18 & 0 & 0 & 0 & 0 & 0 \\
+\hline
+\end{tabular}
+\end{singlespace}
+\end{center}
+\caption{Success rate as a function of number of components in the circuit.}
+\end{table}
+
+\begin{table}[H]
+\begin{center}
+\begin{singlespace}
+\begin{tabular}{| c | c || c | c | c | c |}
+\hline
+ & & \multicolumn{2}{|c|}{Resistors as Components} & \multicolumn{2}{|c|}{
+ Resistors as Wires} \\
+\hline
+Resistors & Samples & Best First & $A*$ & Best First & $A*$ \\
+\hline\hline
+0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 0 & 0 & 0 & 0 \\
+2 & 0 & 0 & 0 & 0 & 0 \\
+3 & 0 & 0 & 0 & 0 & 0 \\
+4 & 0 & 0 & 0 & 0 & 0 \\
+5 & 0 & 0 & 0 & 0 & 0 \\
+6 & 0 & 0 & 0 & 0 & 0 \\
+7 & 0 & 0 & 0 & 0 & 0 \\
+8 & 0 & 0 & 0 & 0 & 0 \\
+9 & 0 & 0 & 0 & 0 & 0 \\
+11 & 0 & 0 & 0 & 0 & 0 \\
+12 & 0 & 0 & 0 & 0 & 0 \\
+13 & 0 & 0 & 0 & 0 & 0 \\
+14 & 0 & 0 & 0 & 0 & 0 \\
+15 & 0 & 0 & 0 & 0 & 0 \\
+16 & 0 & 0 & 0 & 0 & 0 \\
+17 & 0 & 0 & 0 & 0 & 0 \\
+18 & 0 & 0 & 0 & 0 & 0 \\
+\hline
+\end{tabular}
+\end{singlespace}
+\end{center}
+\caption{Success rate as a function of number of resistors in the circuit.}
+\end{table}
+
+\begin{table}[H]
+\begin{center}
+\begin{singlespace}
+\begin{tabular}{| c | c || c | c | c | c |}
+\hline
+ & & \multicolumn{2}{|c|}{Resistors as Components} & \multicolumn{2}{|c|}{
+ Resistors as Wires} \\
+\hline
+Op Amps & Samples & Best First & $A*$ & Best First & $A*$ \\
+\hline\hline
+0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 0 & 0 & 0 & 0 \\
+2 & 0 & 0 & 0 & 0 & 0 \\
+3 & 0 & 0 & 0 & 0 & 0 \\
+4 & 0 & 0 & 0 & 0 & 0 \\
+5 & 0 & 0 & 0 & 0 & 0 \\
+6 & 0 & 0 & 0 & 0 & 0 \\
+\hline
+\end{tabular}
+\end{singlespace}
+\end{center}
+\caption{Success rate as a function of number of Op Amps in the circuit.}
+\end{table}
+
+\begin{table}[H]
+\begin{center}
+\begin{singlespace}
+\begin{tabular}{| c | c || c | c | c | c |}
+\hline
+ & & \multicolumn{2}{|c|}{Resistors as Components} & \multicolumn{2}{|c|}{
+ Resistors as Wires} \\
+\hline
+Pots & Samples & Best First & $A*$ & Best First & $A*$ \\
+\hline\hline
+0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 0 & 0 & 0 & 0 \\
+2 & 0 & 0 & 0 & 0 & 0 \\
+3 & 0 & 0 & 0 & 0 & 0 \\
+4 & 0 & 0 & 0 & 0 & 0 \\
+5 & 0 & 0 & 0 & 0 & 0 \\
+6 & 0 & 0 & 0 & 0 & 0 \\
+\hline
+\end{tabular}
+\end{singlespace}
+\end{center}
+\caption{Success rate as a function of number of Pots in the circuit.}
+\end{table}
+
+\begin{table}[H]
+\begin{center}
+\begin{singlespace}
+\begin{tabular}{| c | c || c | c | c | c |}
+\hline
+ & & \multicolumn{2}{|c|}{Resistors as Components} & \multicolumn{2}{|c|}{
+ Resistors as Wires} \\
+\hline
+Motors & Samples & Best First & $A*$ & Best First & $A*$ \\
+\hline\hline
+0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 0 & 0 & 0 & 0 \\
+2 & 0 & 0 & 0 & 0 & 0 \\
+3 & 0 & 0 & 0 & 0 & 0 \\
+4 & 0 & 0 & 0 & 0 & 0 \\
+5 & 0 & 0 & 0 & 0 & 0 \\
+6 & 0 & 0 & 0 & 0 & 0 \\
+\hline
+\end{tabular}
+\end{singlespace}
+\end{center}
+\caption{Success rate as a function of number of Motors in the circuit.}
+\end{table}
+
+\begin{table}[H]
+\begin{center}
+\begin{singlespace}
+\begin{tabular}{| c | c || c | c | c | c |}
+\hline
+ & & \multicolumn{2}{|c|}{Resistors as Components} & \multicolumn{2}{|c|}{
+ Resistors as Wires} \\
+\hline
+Head Connectors & Samples & Best First & $A*$ & Best First & $A*$ \\
+\hline\hline
+0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 0 & 0 & 0 & 0 \\
+\hline
+\end{tabular}
+\end{singlespace}
+\end{center}
+\caption{Success rate as a function of number of Head Connectors in the circuit.}
+\end{table}
+
+\begin{table}[H]
+\begin{center}
+\begin{singlespace}
+\begin{tabular}{| c | c || c | c | c | c |}
+\hline
+ & & \multicolumn{2}{|c|}{Resistors as Components} & \multicolumn{2}{|c|}{
+ Resistors as Wires} \\
+\hline
+Robot Connectors & Samples & Best First & $A*$ & Best First & $A*$ \\
+\hline\hline
+0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 0 & 0 & 0 & 0 \\
+\hline
+\end{tabular}
+\end{singlespace}
+\end{center}
+\caption{Success rate as a function of number of Robot Connectors in the circuit.}
+\end{table}
+
+\subsection{Least location pairs first}
+
+\begin{table}[H]
+\begin{center}
+\begin{singlespace}
+\begin{tabular}{| c || c | c | c | c |}
+\hline
+ & \multicolumn{2}{|c|}{Resistors as Components} & \multicolumn{2}{|c|}{
+ Resistors as Wires} \\
+\hline
+ & Best First & $A*$ & Best First & $A*$ \\
+\hline\hline
+Success rate & 0 & 0 & 0 & 0 \\
+Average success time & 0 & 0 & 0 & 0 \\
+Average failure time & 0 & 0 & 0 & 0 \\
+\hline
+\end{tabular}
+\end{singlespace}
+\end{center}
+\caption{Connecting location pairs for each node in one search, starting with
+the node that has the least location pairs.}
+\end{table}
+
+\begin{table}[H]
+\begin{center}
+\begin{singlespace}
+\begin{tabular}{| c | c || c | c | c | c |}
+\hline
+ & & \multicolumn{2}{|c|}{Resistors as Components} & \multicolumn{2}{|c|}{
+ Resistors as Wires} \\
+\hline
+Nodes & Samples & Best First & $A*$ & Best First & $A*$ \\
+\hline\hline
+0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 0 & 0 & 0 & 0 \\
+2 & 0 & 0 & 0 & 0 & 0 \\
+3 & 0 & 0 & 0 & 0 & 0 \\
+4 & 0 & 0 & 0 & 0 & 0 \\
+5 & 0 & 0 & 0 & 0 & 0 \\
+6 & 0 & 0 & 0 & 0 & 0 \\
+7 & 0 & 0 & 0 & 0 & 0 \\
+8 & 0 & 0 & 0 & 0 & 0 \\
+9 & 0 & 0 & 0 & 0 & 0 \\
+11 & 0 & 0 & 0 & 0 & 0 \\
+12 & 0 & 0 & 0 & 0 & 0 \\
+13 & 0 & 0 & 0 & 0 & 0 \\
+\hline
+\end{tabular}
+\end{singlespace}
+\end{center}
+\caption{Success rate as a function of number of nodes in the circuit.}
+\end{table}
+
+\begin{table}[H]
+\begin{center}
+\begin{singlespace}
+\begin{tabular}{| c | c || c | c | c | c |}
+\hline
+ & & \multicolumn{2}{|c|}{Resistors as Components} & \multicolumn{2}{|c|}{
+ Resistors as Wires} \\
+\hline
+Components & Samples & Best First & $A*$ & Best First & $A*$ \\
+\hline\hline
+0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 0 & 0 & 0 & 0 \\
+2 & 0 & 0 & 0 & 0 & 0 \\
+3 & 0 & 0 & 0 & 0 & 0 \\
+4 & 0 & 0 & 0 & 0 & 0 \\
+5 & 0 & 0 & 0 & 0 & 0 \\
+6 & 0 & 0 & 0 & 0 & 0 \\
+7 & 0 & 0 & 0 & 0 & 0 \\
+8 & 0 & 0 & 0 & 0 & 0 \\
+9 & 0 & 0 & 0 & 0 & 0 \\
+11 & 0 & 0 & 0 & 0 & 0 \\
+12 & 0 & 0 & 0 & 0 & 0 \\
+13 & 0 & 0 & 0 & 0 & 0 \\
+14 & 0 & 0 & 0 & 0 & 0 \\
+15 & 0 & 0 & 0 & 0 & 0 \\
+16 & 0 & 0 & 0 & 0 & 0 \\
+17 & 0 & 0 & 0 & 0 & 0 \\
+18 & 0 & 0 & 0 & 0 & 0 \\
+\hline
+\end{tabular}
+\end{singlespace}
+\end{center}
+\caption{Success rate as a function of number of components in the circuit.}
+\end{table}
+
+\begin{table}[H]
+\begin{center}
+\begin{singlespace}
+\begin{tabular}{| c | c || c | c | c | c |}
+\hline
+ & & \multicolumn{2}{|c|}{Resistors as Components} & \multicolumn{2}{|c|}{
+ Resistors as Wires} \\
+\hline
+Resistors & Samples & Best First & $A*$ & Best First & $A*$ \\
+\hline\hline
+0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 0 & 0 & 0 & 0 \\
+2 & 0 & 0 & 0 & 0 & 0 \\
+3 & 0 & 0 & 0 & 0 & 0 \\
+4 & 0 & 0 & 0 & 0 & 0 \\
+5 & 0 & 0 & 0 & 0 & 0 \\
+6 & 0 & 0 & 0 & 0 & 0 \\
+7 & 0 & 0 & 0 & 0 & 0 \\
+8 & 0 & 0 & 0 & 0 & 0 \\
+9 & 0 & 0 & 0 & 0 & 0 \\
+11 & 0 & 0 & 0 & 0 & 0 \\
+12 & 0 & 0 & 0 & 0 & 0 \\
+13 & 0 & 0 & 0 & 0 & 0 \\
+14 & 0 & 0 & 0 & 0 & 0 \\
+15 & 0 & 0 & 0 & 0 & 0 \\
+16 & 0 & 0 & 0 & 0 & 0 \\
+17 & 0 & 0 & 0 & 0 & 0 \\
+18 & 0 & 0 & 0 & 0 & 0 \\
+\hline
+\end{tabular}
+\end{singlespace}
+\end{center}
+\caption{Success rate as a function of number of resistors in the circuit.}
+\end{table}
+
+\begin{table}[H]
+\begin{center}
+\begin{singlespace}
+\begin{tabular}{| c | c || c | c | c | c |}
+\hline
+ & & \multicolumn{2}{|c|}{Resistors as Components} & \multicolumn{2}{|c|}{
+ Resistors as Wires} \\
+\hline
+Op Amps & Samples & Best First & $A*$ & Best First & $A*$ \\
+\hline\hline
+0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 0 & 0 & 0 & 0 \\
+2 & 0 & 0 & 0 & 0 & 0 \\
+3 & 0 & 0 & 0 & 0 & 0 \\
+4 & 0 & 0 & 0 & 0 & 0 \\
+5 & 0 & 0 & 0 & 0 & 0 \\
+6 & 0 & 0 & 0 & 0 & 0 \\
+\hline
+\end{tabular}
+\end{singlespace}
+\end{center}
+\caption{Success rate as a function of number of Op Amps in the circuit.}
+\end{table}
+
+\begin{table}[H]
+\begin{center}
+\begin{singlespace}
+\begin{tabular}{| c | c || c | c | c | c |}
+\hline
+ & & \multicolumn{2}{|c|}{Resistors as Components} & \multicolumn{2}{|c|}{
+ Resistors as Wires} \\
+\hline
+Pots & Samples & Best First & $A*$ & Best First & $A*$ \\
+\hline\hline
+0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 0 & 0 & 0 & 0 \\
+2 & 0 & 0 & 0 & 0 & 0 \\
+3 & 0 & 0 & 0 & 0 & 0 \\
+4 & 0 & 0 & 0 & 0 & 0 \\
+5 & 0 & 0 & 0 & 0 & 0 \\
+6 & 0 & 0 & 0 & 0 & 0 \\
+\hline
+\end{tabular}
+\end{singlespace}
+\end{center}
+\caption{Success rate as a function of number of Pots in the circuit.}
+\end{table}
+
+\begin{table}[H]
+\begin{center}
+\begin{singlespace}
+\begin{tabular}{| c | c || c | c | c | c |}
+\hline
+ & & \multicolumn{2}{|c|}{Resistors as Components} & \multicolumn{2}{|c|}{
+ Resistors as Wires} \\
+\hline
+Motors & Samples & Best First & $A*$ & Best First & $A*$ \\
+\hline\hline
+0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 0 & 0 & 0 & 0 \\
+2 & 0 & 0 & 0 & 0 & 0 \\
+3 & 0 & 0 & 0 & 0 & 0 \\
+4 & 0 & 0 & 0 & 0 & 0 \\
+5 & 0 & 0 & 0 & 0 & 0 \\
+6 & 0 & 0 & 0 & 0 & 0 \\
+\hline
+\end{tabular}
+\end{singlespace}
+\end{center}
+\caption{Success rate as a function of number of Motors in the circuit.}
+\end{table}
+
+\begin{table}[H]
+\begin{center}
+\begin{singlespace}
+\begin{tabular}{| c | c || c | c | c | c |}
+\hline
+ & & \multicolumn{2}{|c|}{Resistors as Components} & \multicolumn{2}{|c|}{
+ Resistors as Wires} \\
+\hline
+Head Connectors & Samples & Best First & $A*$ & Best First & $A*$ \\
+\hline\hline
+0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 0 & 0 & 0 & 0 \\
+\hline
+\end{tabular}
+\end{singlespace}
+\end{center}
+\caption{Success rate as a function of number of Head Connectors in the circuit.}
+\end{table}
+
+\begin{table}[H]
+\begin{center}
+\begin{singlespace}
+\begin{tabular}{| c | c || c | c | c | c |}
+\hline
+ & & \multicolumn{2}{|c|}{Resistors as Components} & \multicolumn{2}{|c|}{
+ Resistors as Wires} \\
+\hline
+Robot Connectors & Samples & Best First & $A*$ & Best First & $A*$ \\
+\hline\hline
+0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 0 & 0 & 0 & 0 \\
+\hline
+\end{tabular}
+\end{singlespace}
+\end{center}
+\caption{Success rate as a function of number of Robot Connectors in the circuit.}
+\end{table}
+
+\section{Connect each pair in one search}
+\label{sec:per_pair}
+
+\subsection{Closest pair first}
+
+\begin{table}[H]
+\begin{center}
+\begin{singlespace}
+\begin{tabular}{| c || c | c | c | c |}
+\hline
+ & \multicolumn{2}{|c|}{Resistors as Components} & \multicolumn{2}{|c|}{
+ Resistors as Wires} \\
+\hline
+ & Best First & $A*$ & Best First & $A*$ \\
+\hline\hline
+Success rate & 0 & 0 & 0 & 0 \\
+Average success time & 0 & 0 & 0 & 0 \\
+Average failure time & 0 & 0 & 0 & 0 \\
+\hline
+\end{tabular}
+\end{singlespace}
+\end{center}
+\caption{Connecting each location pair in one search, starting with the closest
+pair of locations.}
+\end{table}
+
+\begin{table}[H]
+\begin{center}
+\begin{singlespace}
+\begin{tabular}{| c | c || c | c | c | c |}
+\hline
+ & & \multicolumn{2}{|c|}{Resistors as Components} & \multicolumn{2}{|c|}{
+ Resistors as Wires} \\
+\hline
+Nodes & Samples & Best First & $A*$ & Best First & $A*$ \\
+\hline\hline
+0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 0 & 0 & 0 & 0 \\
+2 & 0 & 0 & 0 & 0 & 0 \\
+3 & 0 & 0 & 0 & 0 & 0 \\
+4 & 0 & 0 & 0 & 0 & 0 \\
+5 & 0 & 0 & 0 & 0 & 0 \\
+6 & 0 & 0 & 0 & 0 & 0 \\
+7 & 0 & 0 & 0 & 0 & 0 \\
+8 & 0 & 0 & 0 & 0 & 0 \\
+9 & 0 & 0 & 0 & 0 & 0 \\
+11 & 0 & 0 & 0 & 0 & 0 \\
+12 & 0 & 0 & 0 & 0 & 0 \\
+13 & 0 & 0 & 0 & 0 & 0 \\
+\hline
+\end{tabular}
+\end{singlespace}
+\end{center}
+\caption{Success rate as a function of number of nodes in the circuit.}
+\end{table}
+
+\begin{table}[H]
+\begin{center}
+\begin{singlespace}
+\begin{tabular}{| c | c || c | c | c | c |}
+\hline
+ & & \multicolumn{2}{|c|}{Resistors as Components} & \multicolumn{2}{|c|}{
+ Resistors as Wires} \\
+\hline
+Components & Samples & Best First & $A*$ & Best First & $A*$ \\
+\hline\hline
+0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 0 & 0 & 0 & 0 \\
+2 & 0 & 0 & 0 & 0 & 0 \\
+3 & 0 & 0 & 0 & 0 & 0 \\
+4 & 0 & 0 & 0 & 0 & 0 \\
+5 & 0 & 0 & 0 & 0 & 0 \\
+6 & 0 & 0 & 0 & 0 & 0 \\
+7 & 0 & 0 & 0 & 0 & 0 \\
+8 & 0 & 0 & 0 & 0 & 0 \\
+9 & 0 & 0 & 0 & 0 & 0 \\
+11 & 0 & 0 & 0 & 0 & 0 \\
+12 & 0 & 0 & 0 & 0 & 0 \\
+13 & 0 & 0 & 0 & 0 & 0 \\
+14 & 0 & 0 & 0 & 0 & 0 \\
+15 & 0 & 0 & 0 & 0 & 0 \\
+16 & 0 & 0 & 0 & 0 & 0 \\
+17 & 0 & 0 & 0 & 0 & 0 \\
+18 & 0 & 0 & 0 & 0 & 0 \\
+\hline
+\end{tabular}
+\end{singlespace}
+\end{center}
+\caption{Success rate as a function of number of components in the circuit.}
+\end{table}
+
+\begin{table}[H]
+\begin{center}
+\begin{singlespace}
+\begin{tabular}{| c | c || c | c | c | c |}
+\hline
+ & & \multicolumn{2}{|c|}{Resistors as Components} & \multicolumn{2}{|c|}{
+ Resistors as Wires} \\
+\hline
+Resistors & Samples & Best First & $A*$ & Best First & $A*$ \\
+\hline\hline
+0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 0 & 0 & 0 & 0 \\
+2 & 0 & 0 & 0 & 0 & 0 \\
+3 & 0 & 0 & 0 & 0 & 0 \\
+4 & 0 & 0 & 0 & 0 & 0 \\
+5 & 0 & 0 & 0 & 0 & 0 \\
+6 & 0 & 0 & 0 & 0 & 0 \\
+7 & 0 & 0 & 0 & 0 & 0 \\
+8 & 0 & 0 & 0 & 0 & 0 \\
+9 & 0 & 0 & 0 & 0 & 0 \\
+11 & 0 & 0 & 0 & 0 & 0 \\
+12 & 0 & 0 & 0 & 0 & 0 \\
+13 & 0 & 0 & 0 & 0 & 0 \\
+14 & 0 & 0 & 0 & 0 & 0 \\
+15 & 0 & 0 & 0 & 0 & 0 \\
+16 & 0 & 0 & 0 & 0 & 0 \\
+17 & 0 & 0 & 0 & 0 & 0 \\
+18 & 0 & 0 & 0 & 0 & 0 \\
+\hline
+\end{tabular}
+\end{singlespace}
+\end{center}
+\caption{Success rate as a function of number of resistors in the circuit.}
+\end{table}
+
+\begin{table}[H]
+\begin{center}
+\begin{singlespace}
+\begin{tabular}{| c | c || c | c | c | c |}
+\hline
+ & & \multicolumn{2}{|c|}{Resistors as Components} & \multicolumn{2}{|c|}{
+ Resistors as Wires} \\
+\hline
+Op Amps & Samples & Best First & $A*$ & Best First & $A*$ \\
+\hline\hline
+0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 0 & 0 & 0 & 0 \\
+2 & 0 & 0 & 0 & 0 & 0 \\
+3 & 0 & 0 & 0 & 0 & 0 \\
+4 & 0 & 0 & 0 & 0 & 0 \\
+5 & 0 & 0 & 0 & 0 & 0 \\
+6 & 0 & 0 & 0 & 0 & 0 \\
+\hline
+\end{tabular}
+\end{singlespace}
+\end{center}
+\caption{Success rate as a function of number of Op Amps in the circuit.}
+\end{table}
+
+\begin{table}[H]
+\begin{center}
+\begin{singlespace}
+\begin{tabular}{| c | c || c | c | c | c |}
+\hline
+ & & \multicolumn{2}{|c|}{Resistors as Components} & \multicolumn{2}{|c|}{
+ Resistors as Wires} \\
+\hline
+Pots & Samples & Best First & $A*$ & Best First & $A*$ \\
+\hline\hline
+0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 0 & 0 & 0 & 0 \\
+2 & 0 & 0 & 0 & 0 & 0 \\
+3 & 0 & 0 & 0 & 0 & 0 \\
+4 & 0 & 0 & 0 & 0 & 0 \\
+5 & 0 & 0 & 0 & 0 & 0 \\
+6 & 0 & 0 & 0 & 0 & 0 \\
+\hline
+\end{tabular}
+\end{singlespace}
+\end{center}
+\caption{Success rate as a function of number of Pots in the circuit.}
+\end{table}
+
+\begin{table}[H]
+\begin{center}
+\begin{singlespace}
+\begin{tabular}{| c | c || c | c | c | c |}
+\hline
+ & & \multicolumn{2}{|c|}{Resistors as Components} & \multicolumn{2}{|c|}{
+ Resistors as Wires} \\
+\hline
+Motors & Samples & Best First & $A*$ & Best First & $A*$ \\
+\hline\hline
+0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 0 & 0 & 0 & 0 \\
+2 & 0 & 0 & 0 & 0 & 0 \\
+3 & 0 & 0 & 0 & 0 & 0 \\
+4 & 0 & 0 & 0 & 0 & 0 \\
+5 & 0 & 0 & 0 & 0 & 0 \\
+6 & 0 & 0 & 0 & 0 & 0 \\
+\hline
+\end{tabular}
+\end{singlespace}
+\end{center}
+\caption{Success rate as a function of number of Motors in the circuit.}
+\end{table}
+
+\begin{table}[H]
+\begin{center}
+\begin{singlespace}
+\begin{tabular}{| c | c || c | c | c | c |}
+\hline
+ & & \multicolumn{2}{|c|}{Resistors as Components} & \multicolumn{2}{|c|}{
+ Resistors as Wires} \\
+\hline
+Head Connectors & Samples & Best First & $A*$ & Best First & $A*$ \\
+\hline\hline
+0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 0 & 0 & 0 & 0 \\
+\hline
+\end{tabular}
+\end{singlespace}
+\end{center}
+\caption{Success rate as a function of number of Head Connectors in the circuit.}
+\end{table}
+
+\begin{table}[H]
+\begin{center}
+\begin{singlespace}
+\begin{tabular}{| c | c || c | c | c | c |}
+\hline
+ & & \multicolumn{2}{|c|}{Resistors as Components} & \multicolumn{2}{|c|}{
+ Resistors as Wires} \\
+\hline
+Robot Connectors & Samples & Best First & $A*$ & Best First & $A*$ \\
+\hline\hline
+0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 0 & 0 & 0 & 0 \\
+\hline
+\end{tabular}
+\end{singlespace}
+\end{center}
+\caption{Success rate as a function of number of Robot Connectors in the circuit.}
+\end{table}
+
+\subsection{Farthest pair first}
+
+\begin{table}[H]
+\begin{center}
+\begin{singlespace}
+\begin{tabular}{| c || c | c | c | c |}
+\hline
+ & \multicolumn{2}{|c|}{Resistors as Components} & \multicolumn{2}{|c|}{
+ Resistors as Wires} \\
+\hline
+ & Best First & $A*$ & Best First & $A*$ \\
+\hline\hline
+Success rate & 0 & 0 & 0 & 0 \\
+Average success time & 0 & 0 & 0 & 0 \\
+Average failure time & 0 & 0 & 0 & 0 \\
+\hline
+\end{tabular}
+\end{singlespace}
+\end{center}
+\caption{Connecting each location pair in one search, starting with the farthest
+pair of locations.}
+\end{table}
+
+\begin{table}[H]
+\begin{center}
+\begin{singlespace}
+\begin{tabular}{| c | c || c | c | c | c |}
+\hline
+ & & \multicolumn{2}{|c|}{Resistors as Components} & \multicolumn{2}{|c|}{
+ Resistors as Wires} \\
+\hline
+Nodes & Samples & Best First & $A*$ & Best First & $A*$ \\
+\hline\hline
+0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 0 & 0 & 0 & 0 \\
+2 & 0 & 0 & 0 & 0 & 0 \\
+3 & 0 & 0 & 0 & 0 & 0 \\
+4 & 0 & 0 & 0 & 0 & 0 \\
+5 & 0 & 0 & 0 & 0 & 0 \\
+6 & 0 & 0 & 0 & 0 & 0 \\
+7 & 0 & 0 & 0 & 0 & 0 \\
+8 & 0 & 0 & 0 & 0 & 0 \\
+9 & 0 & 0 & 0 & 0 & 0 \\
+11 & 0 & 0 & 0 & 0 & 0 \\
+12 & 0 & 0 & 0 & 0 & 0 \\
+13 & 0 & 0 & 0 & 0 & 0 \\
+\hline
+\end{tabular}
+\end{singlespace}
+\end{center}
+\caption{Success rate as a function of number of nodes in the circuit.}
+\end{table}
+
+\begin{table}[H]
+\begin{center}
+\begin{singlespace}
+\begin{tabular}{| c | c || c | c | c | c |}
+\hline
+ & & \multicolumn{2}{|c|}{Resistors as Components} & \multicolumn{2}{|c|}{
+ Resistors as Wires} \\
+\hline
+Components & Samples & Best First & $A*$ & Best First & $A*$ \\
+\hline\hline
+0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 0 & 0 & 0 & 0 \\
+2 & 0 & 0 & 0 & 0 & 0 \\
+3 & 0 & 0 & 0 & 0 & 0 \\
+4 & 0 & 0 & 0 & 0 & 0 \\
+5 & 0 & 0 & 0 & 0 & 0 \\
+6 & 0 & 0 & 0 & 0 & 0 \\
+7 & 0 & 0 & 0 & 0 & 0 \\
+8 & 0 & 0 & 0 & 0 & 0 \\
+9 & 0 & 0 & 0 & 0 & 0 \\
+11 & 0 & 0 & 0 & 0 & 0 \\
+12 & 0 & 0 & 0 & 0 & 0 \\
+13 & 0 & 0 & 0 & 0 & 0 \\
+14 & 0 & 0 & 0 & 0 & 0 \\
+15 & 0 & 0 & 0 & 0 & 0 \\
+16 & 0 & 0 & 0 & 0 & 0 \\
+17 & 0 & 0 & 0 & 0 & 0 \\
+18 & 0 & 0 & 0 & 0 & 0 \\
+\hline
+\end{tabular}
+\end{singlespace}
+\end{center}
+\caption{Success rate as a function of number of components in the circuit.}
+\end{table}
+
+\begin{table}[H]
+\begin{center}
+\begin{singlespace}
+\begin{tabular}{| c | c || c | c | c | c |}
+\hline
+ & & \multicolumn{2}{|c|}{Resistors as Components} & \multicolumn{2}{|c|}{
+ Resistors as Wires} \\
+\hline
+Resistors & Samples & Best First & $A*$ & Best First & $A*$ \\
+\hline\hline
+0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 0 & 0 & 0 & 0 \\
+2 & 0 & 0 & 0 & 0 & 0 \\
+3 & 0 & 0 & 0 & 0 & 0 \\
+4 & 0 & 0 & 0 & 0 & 0 \\
+5 & 0 & 0 & 0 & 0 & 0 \\
+6 & 0 & 0 & 0 & 0 & 0 \\
+7 & 0 & 0 & 0 & 0 & 0 \\
+8 & 0 & 0 & 0 & 0 & 0 \\
+9 & 0 & 0 & 0 & 0 & 0 \\
+11 & 0 & 0 & 0 & 0 & 0 \\
+12 & 0 & 0 & 0 & 0 & 0 \\
+13 & 0 & 0 & 0 & 0 & 0 \\
+14 & 0 & 0 & 0 & 0 & 0 \\
+15 & 0 & 0 & 0 & 0 & 0 \\
+16 & 0 & 0 & 0 & 0 & 0 \\
+17 & 0 & 0 & 0 & 0 & 0 \\
+18 & 0 & 0 & 0 & 0 & 0 \\
+\hline
+\end{tabular}
+\end{singlespace}
+\end{center}
+\caption{Success rate as a function of number of resistors in the circuit.}
+\end{table}
+
+\begin{table}[H]
+\begin{center}
+\begin{singlespace}
+\begin{tabular}{| c | c || c | c | c | c |}
+\hline
+ & & \multicolumn{2}{|c|}{Resistors as Components} & \multicolumn{2}{|c|}{
+ Resistors as Wires} \\
+\hline
+Op Amps & Samples & Best First & $A*$ & Best First & $A*$ \\
+\hline\hline
+0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 0 & 0 & 0 & 0 \\
+2 & 0 & 0 & 0 & 0 & 0 \\
+3 & 0 & 0 & 0 & 0 & 0 \\
+4 & 0 & 0 & 0 & 0 & 0 \\
+5 & 0 & 0 & 0 & 0 & 0 \\
+6 & 0 & 0 & 0 & 0 & 0 \\
+\hline
+\end{tabular}
+\end{singlespace}
+\end{center}
+\caption{Success rate as a function of number of Op Amps in the circuit.}
+\end{table}
+
+\begin{table}[H]
+\begin{center}
+\begin{singlespace}
+\begin{tabular}{| c | c || c | c | c | c |}
+\hline
+ & & \multicolumn{2}{|c|}{Resistors as Components} & \multicolumn{2}{|c|}{
+ Resistors as Wires} \\
+\hline
+Pots & Samples & Best First & $A*$ & Best First & $A*$ \\
+\hline\hline
+0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 0 & 0 & 0 & 0 \\
+2 & 0 & 0 & 0 & 0 & 0 \\
+3 & 0 & 0 & 0 & 0 & 0 \\
+4 & 0 & 0 & 0 & 0 & 0 \\
+5 & 0 & 0 & 0 & 0 & 0 \\
+6 & 0 & 0 & 0 & 0 & 0 \\
+\hline
+\end{tabular}
+\end{singlespace}
+\end{center}
+\caption{Success rate as a function of number of Pots in the circuit.}
+\end{table}
+
+\begin{table}[H]
+\begin{center}
+\begin{singlespace}
+\begin{tabular}{| c | c || c | c | c | c |}
+\hline
+ & & \multicolumn{2}{|c|}{Resistors as Components} & \multicolumn{2}{|c|}{
+ Resistors as Wires} \\
+\hline
+Motors & Samples & Best First & $A*$ & Best First & $A*$ \\
+\hline\hline
+0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 0 & 0 & 0 & 0 \\
+2 & 0 & 0 & 0 & 0 & 0 \\
+3 & 0 & 0 & 0 & 0 & 0 \\
+4 & 0 & 0 & 0 & 0 & 0 \\
+5 & 0 & 0 & 0 & 0 & 0 \\
+6 & 0 & 0 & 0 & 0 & 0 \\
+\hline
+\end{tabular}
+\end{singlespace}
+\end{center}
+\caption{Success rate as a function of number of Motors in the circuit.}
+\end{table}
+
+\begin{table}[H]
+\begin{center}
+\begin{singlespace}
+\begin{tabular}{| c | c || c | c | c | c |}
+\hline
+ & & \multicolumn{2}{|c|}{Resistors as Components} & \multicolumn{2}{|c|}{
+ Resistors as Wires} \\
+\hline
+Head Connectors & Samples & Best First & $A*$ & Best First & $A*$ \\
+\hline\hline
+0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 0 & 0 & 0 & 0 \\
+\hline
+\end{tabular}
+\end{singlespace}
+\end{center}
+\caption{Success rate as a function of number of Head Connectors in the circuit.}
+\end{table}
+
+\begin{table}[H]
+\begin{center}
+\begin{singlespace}
+\begin{tabular}{| c | c || c | c | c | c |}
+\hline
+ & & \multicolumn{2}{|c|}{Resistors as Components} & \multicolumn{2}{|c|}{
+ Resistors as Wires} \\
+\hline
+Robot Connectors & Samples & Best First & $A*$ & Best First & $A*$ \\
+\hline\hline
+0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 0 & 0 & 0 & 0 \\
+\hline
+\end{tabular}
+\end{singlespace}
+\end{center}
+\caption{Success rate as a function of number of Robot Connectors in the circuit.}
+\end{table}
