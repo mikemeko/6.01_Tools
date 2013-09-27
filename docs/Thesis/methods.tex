@@ -353,4 +353,37 @@ protoboard. Second, we must keep careful track of pairs of locations that need
 to be connected by simple wires and pairs of locations that need to be connected
 using resistors.
 
-\label{sec:resistors_as_wires}
+\section{Evaluation Method}
+
+Here we present how we go about evaluating a particular solution to the problem.
+How can we tell if a layout tool is good? In particular, how can we tell if a
+layout tool is good enough for the purposes of 6.01 labs. To answer these
+questions well, we need to test the layout tool on numerous schematics and
+analyze its performance on laying out those schematics. As manually generating
+numerous test schematics is tedious and very time-consuming, we devised a method
+to randomly generate thousands of test schematics.
+
+The random schematic generation goes as follows. We create $6$ basic sub-parts
+of schematics. These $6$ bases are depicted in Figure
+\ref{fig:random_gen_bases}. These bases cover all of the components that may be
+necessary in a 6.01 circuit. Each sub-part also offers at least $3$ points of
+connection with other subparts. The random generation algorithm takes all
+possible combinations of
+$6$ bases, allowing for repetition of bases. The only bases that can appear at most
+once in a schematic are the Head Connector and Robot Connector - there is no need
+for more that one of each of these in 6.01 labs. All other bases may appear up
+to $6$ times. For a given combination of bases, we generate $10$ schematics as
+follows. For each number of connections $k$ from $0$ to $9$, we generate a
+schematic in which we put $k$ randomly chosen wires interconnecting the bases
+in the combination.
+
+This scheme produces a total of $5242$ test schematics out of a possible total
+of $889785038484423775$.
+
+\begin{figure}
+\begin{center}
+\includegraphics{Images/placeholder.jpg}
+\caption{TODO}
+\label{fig:random_gen_bases}
+\end{center}
+\end{figure}
