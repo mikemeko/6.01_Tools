@@ -3,18 +3,18 @@
 \chapter{Results}
 \label{ch:results}
 
-In this chapter, we compare the various alternatives discussed in the previous
-chapter. We test each of the alternatives on the randomly generated dataset
-containing \q test schematics. All methods are evaluated on the same dataset for
-appropriate comparison.
+In this chapter, we compare the various alternatives discussed in Chapter
+\ref{ch:methods}. We test each of the alternatives on the randomly generated
+dataset
+containing \q test schematics. All of the alternatives are evaluated on this
+same dataset for appropriate comparison.
 
 To assess the goodness of an alternative method, we give:
 \begin{enumerate}
-\item A bar graph in which each bar represents one run and indicates (1) whether
-the alternative was successful (colored green) or unsuccessful (colored red)  on
-that test schematic, and (2) the amount of time that run took (height of each
-bar). This graph gives a general overview of how well the method performed on
-the test dataset.
+\item A diagram of a 2D array of points in which each point represents a run.
+Each point is colored white or red corresponding to a successful or unsuccessful
+run, respectively. This array gives a general overview of how well the method
+performed on the test dataset.
 \item The success rate of the method on the test dataset. The higher this value,
 the better the method.
 \item The average and standard deviation of success times. The lower the average,
@@ -33,7 +33,8 @@ method.
 
 To assess the effect of various aspects of schematics on the method, we give
 tables in which we consider the values of each of the following items, and
-record how success rate, average success time, and average failure time depend on the values:
+record how success rate, average success time, and average failure time depend
+on the values:
 \begin{enumerate}
 \item Number of components.
 \item Number of nodes in the circuit.
@@ -45,7 +46,7 @@ record how success rate, average success time, and average failure time depend o
 \item Number of Robot Connectors ($0$ or $1$).
 \end{enumerate}
 
-Discussion and analysis of the results follow in Chapter \ref{ch:discussion}.
+Analysis of the results follows in Chapter \ref{ch:discussion}.
 
 \section{Resistors as Components}
 
@@ -219,7 +220,7 @@ setup.
 
 \begin{figure}[H]
 \begin{center}
-\includegraphics{Images/placeholder.jpg}
+\includegraphics[width=\textwidth]{Images/overview_sample.png}
 \caption{Overall results when we treat resistors as components and connect one
 pair of locations at a time, starting with the farthest pair of locations.}
 \label{fig:as_comp_pair_l}
