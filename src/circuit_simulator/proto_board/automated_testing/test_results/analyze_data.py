@@ -5,12 +5,9 @@ Script to analyze test data.
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
 from collections import defaultdict
-from math import ceil
 from numpy import mean
 from numpy import std
-from pylab import errorbar
 from pylab import figure
-from pylab import imshow
 from pylab import plot
 from pylab import show
 from pylab import subplot
@@ -122,12 +119,6 @@ def analyze(results_file):
   solved_unsolved_dicts.append(compare(solved, unsolved, 'num_components'))
   print
   solved_unsolved_dicts.append(compare(solved, unsolved, 'num_nodes'))
-  size = int(ceil(len(results) ** 0.5))
-  grid = [[0.5] * size for i in xrange(int(ceil(float(len(results)) / size)))]
-  for i, result in enumerate(results):
-    grid[i / size][i % size] = 1 - result.solved
-  figure(0)
-  imshow(grid, interpolation='nearest', cmap='Reds')
   for i, (attr, solved_dict, unsolved_dict) in enumerate(solved_unsolved_dicts):
     sorted_keys = sorted(solved_dict.keys())
     figure(i + 1)
@@ -136,10 +127,8 @@ def analyze(results_file):
         len(unsolved_dict[key])) for key in sorted_keys])
     ylabel('Success rate')
     subplot(212)
-    errorbar(sorted_keys, [mean([result.solve_time for result in
-        solved_dict[key]]) for key in sorted_keys], yerr=[std([
-        result.solve_time for result in solved_dict[key]]) for key in
-        sorted_keys])
+    plot(sorted_keys, [mean([result.solve_time for result in
+        solved_dict[key]]) for key in sorted_keys])
     xlabel(attr)
     ylabel('Average solve time (seconds)')
   show()
