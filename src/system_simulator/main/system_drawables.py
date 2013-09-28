@@ -112,7 +112,7 @@ class Gain_Drawable(Drawable):
       # should never get here
       raise Exception('Unexpected triangle vertices')
   def show_selected_highlight(self, canvas):
-    canvas.itemconfig(self._triangle_id, width=2)
+    canvas.itemconfig(self._triangle_id, width=3)
   def hide_selected_highlight(self, canvas):
     canvas.itemconfig(self._triangle_id, width=1)
   def serialize(self, offset):
@@ -144,7 +144,7 @@ class Delay_Drawable(Drawable):
   def rotated(self):
     return Delay_Drawable(rotate_connector_flags(self.connector_flags))
   def show_selected_highlight(self, canvas):
-    canvas.itemconfig(self._rect_id, width=2)
+    canvas.itemconfig(self._rect_id, width=3)
   def hide_selected_highlight(self, canvas):
     canvas.itemconfig(self._rect_id, width=1)
   def serialize(self, offset):
@@ -179,7 +179,7 @@ class Adder_Drawable(Drawable):
   def rotated(self):
     return Adder_Drawable(rotate_connector_flags(self.connector_flags))
   def show_selected_highlight(self, canvas):
-    canvas.itemconfig(self._oval_id, width=2)
+    canvas.itemconfig(self._oval_id, width=3)
   def hide_selected_highlight(self, canvas):
     canvas.itemconfig(self._oval_id, width=1)
   def serialize(self, offset):
@@ -211,7 +211,7 @@ class IO_Drawable(Drawable):
     self.parts.add(canvas.create_text((ox + IO_SIZE / 2, oy + IO_SIZE / 2),
         text=self.signal, font=FONT))
   def show_selected_highlight(self, canvas):
-    canvas.itemconfig(self._rect_id, width=2)
+    canvas.itemconfig(self._rect_id, width=3)
   def hide_selected_highlight(self, canvas):
     canvas.itemconfig(self._rect_id, width=1)
   def deletable(self):

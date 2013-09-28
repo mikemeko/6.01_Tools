@@ -102,7 +102,7 @@ class Pin_Drawable(Drawable):
         oy + self.height / 2, text=self.text, fill=PIN_TEXT_COLOR,
         width=.8 * self.width, justify=CENTER, font=FONT))
   def show_selected_highlight(self, canvas):
-    canvas.itemconfig(self._rect_id, width=2)
+    canvas.itemconfig(self._rect_id, width=3)
   def hide_selected_highlight(self, canvas):
     canvas.itemconfig(self._rect_id, width=1)
 
@@ -243,7 +243,7 @@ class Resistor_Drawable(Drawable):
         rotate_connector_flags(self.connector_flags), self.get_resistance())
   def show_selected_highlight(self, canvas):
     for item in self._resistor_zig_zags:
-      canvas.itemconfig(item, width=2)
+      canvas.itemconfig(item, width=3)
   def hide_selected_highlight(self, canvas):
     for item in self._resistor_zig_zags:
       canvas.itemconfig(item, width=1)
@@ -344,7 +344,7 @@ class Op_Amp_Drawable(Drawable):
     else: # OP_AMP_UP_VERTICES
       return Op_Amp_Drawable(OP_AMP_RIGHT_VERTICES)
   def show_selected_highlight(self, canvas):
-    canvas.itemconfig(self._triangle_id, width=2)
+    canvas.itemconfig(self._triangle_id, width=3)
   def hide_selected_highlight(self, canvas):
     canvas.itemconfig(self._triangle_id, width=1)
   def serialize(self, offset):
@@ -440,7 +440,7 @@ class Pot_Drawable(Drawable):
         (self.direction + 1) % 4, self.signal_file)
   def show_selected_highlight(self, canvas):
     for item in self._resistor_zig_zags:
-      canvas.itemconfig(item, width=2)
+      canvas.itemconfig(item, width=3)
   def hide_selected_highlight(self, canvas):
     for item in self._resistor_zig_zags:
       canvas.itemconfig(item, width=1)

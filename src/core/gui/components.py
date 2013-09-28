@@ -494,7 +494,7 @@ class Wire_Connector_Drawable(Drawable):
     pass
   def show_selected_highlight(self, canvas):
     connector = iter(self.connectors).next()
-    canvas.itemconfig(connector.canvas_id, width=2)
+    canvas.itemconfig(connector.canvas_id, width=3)
   def hide_selected_highlight(self, canvas):
     connector = iter(self.connectors).next()
     canvas.itemconfig(connector.canvas_id, width=1)
