@@ -289,7 +289,9 @@ class Board(Frame):
         keeps all of the selected drawables within the bounds of the board and
         results in no overlapping drawables, False otherwise.
     """
-    unselected_drawables = set(self._get_drawables()) - self._selected_drawables
+    unselected_drawables = filter(lambda drawable: not isinstance(drawable,
+        Wire_Connector_Drawable), set(self._get_drawables()) -
+        self._selected_drawables)
     for drawable in self._selected_drawables:
       ox, oy = self.get_drawable_offset(drawable)
       new_offset = (ox + dx, oy + dy)
