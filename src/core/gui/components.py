@@ -151,13 +151,16 @@ class Drawable:
       self._draw_connector(canvas, (x2, (y1 + y2) / 2))
     if self.connector_flags & CONNECTOR_TOP:
       self._draw_connector(canvas, ((x1 + x2) / 2, y1))
-  def attach_tags(self, canvas, tags=ROTATE_TAG):
+  def attach_tags(self, canvas, tags=(ROTATE_TAG,)):
     """
     |tags|: a tuple of the tags to attach.
     Attaches the given |tags| to every part of this drawable on the canvas.
     """
     for part in self.parts:
-      canvas.itemconfig(part, tags=tags)
+      current_tags = canvas.itemcget(part, 'tags')
+      if not isinstance(current_tags, tuple):
+        current_tags = tuple([current_tags])
+      canvas.itemconfig(part, tags=current_tags + tags)
   def redraw(self, canvas):
     """
     Redraws this drawable on the given |canvas|. If the drawable was previously

@@ -78,6 +78,7 @@ CTRL_CURSOR = 'pirate'
 SHIFT_CURSOR = 'exchange'
 
 # tags
+EDIT_TAG = 'edit_tag'
 ROTATE_TAG = 'rotate_tag'
 
 # fonts

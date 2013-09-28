@@ -13,6 +13,7 @@ from constants import CONNECTOR_RIGHT
 from constants import CONNECTOR_TOP
 from constants import CONNECTOR_WIDTH
 from constants import DEFAULT_FONT
+from constants import EDIT_TAG
 from constants import WIRE_ARROW_LENGTH
 from constants import WIRE_COLOR
 from constants import WIRE_WIDTH
@@ -40,7 +41,7 @@ def create_editable_text(canvas, x, y, text='?', on_text_changed=lambda:None,
   """
   assert isinstance(canvas, Canvas), 'canvas must be a Canvas'
   # create the text box
-  text_box = canvas.create_text(x, y, text=text, font=font)
+  text_box = canvas.create_text(x, y, text=text, font=font, tags=(EDIT_TAG,))
   def set_focus(event):
     """
     Focus text box. Selects all the text inside the text box.

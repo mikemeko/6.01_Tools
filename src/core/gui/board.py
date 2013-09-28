@@ -20,6 +20,7 @@ from constants import CTRL_CURSOR
 from constants import CTRL_DOWN
 from constants import DEBUG_CONNECTOR_CENTER_TOOLTIP
 from constants import DEBUG_DISPLAY_WIRE_LABELS
+from constants import EDIT_TAG
 from constants import ERROR
 from constants import GUIDE_LINE_COLOR
 from constants import INFO
@@ -689,6 +690,7 @@ class Board(Frame):
   def _handle_motion(self, event):
     """
     If the cursor is on a wire connector, changes cursor to a pencil.
+    If the cursor is on an edittable text, chanves cusor to a pencil.
     If the cursor is on a wire or wire connector, and we are showing wire
         labels, displays a tooltip of the wire label close to the cursor.
         If the cursor is on a drawable, displays a tooltip of the drawable
@@ -696,6 +698,9 @@ class Board(Frame):
     """
     # maybe change cursor to pencil
     if self._connector_at((event.x, event.y)) and not self._ctrl_pressed:
+      self._canvas.configure(cursor='pencil')
+    elif EDIT_TAG in self._canvas.gettags(self._canvas.find_closest(event.x,
+        event.y)[0]):
       self._canvas.configure(cursor='pencil')
     else:
       if self._ctrl_pressed:
