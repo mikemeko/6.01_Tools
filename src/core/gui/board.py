@@ -151,7 +151,7 @@ class Board(Frame):
     # rotate binding
     self._canvas.tag_bind(ROTATE_TAG, '<Shift-Button-1>', self._rotate)
     # tooltip binding
-    self._canvas.bind('<Motion>', self._maybe_show_tooltip)
+    self._canvas.bind('<Motion>', self._handle_motion)
     # on quit
     self.parent.protocol('WM_DELETE_WINDOW', self.quit)
   def _drawable_at(self, point):
@@ -686,13 +686,25 @@ class Board(Frame):
         self._action_history.record_action(Action(
             lambda: switch(drawable_to_rotate, rotated_drawable),
             lambda: switch(rotated_drawable, drawable_to_rotate), 'rotate'))
-  def _maybe_show_tooltip(self, event):
+  def _handle_motion(self, event):
     """
+    If the cursor is on a wire connector, changes cursor to a pencil.
     If the cursor is on a wire or wire connector, and we are showing wire
         labels, displays a tooltip of the wire label close to the cursor.
         If the cursor is on a drawable, displays a tooltip of the drawable
         label.
     """
+    # maybe change cursor to pencil
+    if self._connector_at((event.x, event.y)) and not self._ctrl_pressed:
+      self._canvas.configure(cursor='pencil')
+    else:
+      if self._ctrl_pressed:
+        self._canvas.configure(cursor=CTRL_CURSOR)
+      elif self._shift_pressed:
+        self._canvas.configure(cursor=SHIFT_CURSOR)
+      else:
+        self._canvas.configure(cursor='arrow')
+    # maybe show label tooltip
     if self._label_tooltips_enabled and self._show_label_tooltips:
       # check if the cursor is on a wire connector
       connector = self._connector_at((event.x, event.y))
@@ -702,6 +714,7 @@ class Board(Frame):
           if wires:
             self._tooltip_helper.show_tooltip(event.x, event.y, wires[0].label)
         return
+      # check if cursor is on a drawable
       drawable = self._drawable_at((event.x, event.y))
       if drawable:
         if not isinstance(drawable, Wire_Connector_Drawable):
