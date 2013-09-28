@@ -83,6 +83,12 @@ ROTATE_TAG = 'rotate_tag'
 # fonts
 DEFAULT_FONT = ('Helvetica', 12 if system() == 'Darwin' else 10)
 
+# keycodes for badly mapped keys on apple keyboards
+# see https://github.com/matplotlib/matplotlib/blob/master/lib/matplotlib/backends/backend_tkagg.py
+KEYCODE_LOOKUP = {262145: 'Control_L', 524320: 'Alt_L', 524352: 'Alt_R',
+    1048584: 'Super_L', 1048592: 'Super_R', 131074: 'Shift_L',
+    131076: 'Shift_R'}
+
 # debug options
 DEBUG_DISPLAY_WIRE_LABELS = False
 DEBUG_CONNECTOR_CENTER_TOOLTIP = False

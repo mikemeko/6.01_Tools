@@ -23,6 +23,7 @@ from constants import DEBUG_DISPLAY_WIRE_LABELS
 from constants import ERROR
 from constants import GUIDE_LINE_COLOR
 from constants import INFO
+from constants import KEYCODE_LOOKUP
 from constants import MESSAGE_ERROR_COLOR
 from constants import MESSAGE_ERROR_DURATION
 from constants import MESSAGE_HEIGHT
@@ -44,6 +45,7 @@ from core.undo.undo import Multi_Action
 from core.util.util import is_callable
 from core.util.util import rects_overlap
 from find_wire_path_simple import find_wire_path
+from sys import platform
 from threading import Timer
 from time import time
 from Tkinter import ALL
@@ -606,25 +608,36 @@ class Board(Frame):
       else:
         self.display_message('At least one of the selected items cannot be '
             'deleted', WARNING)
+  def _get_keysym(self, event):
+    """
+    Returns the appropriate keysym for the given |event|, making the appropriate
+        lookup for macs.
+    """
+    if event.keysym_num == 0 and platform == 'darwin' and (event.keycode in
+        KEYCODE_LOOKUP):
+      return KEYCODE_LOOKUP[event.keycode]
+    else:
+      return event.keysym
   def _key_press(self, event):
     """
     Callback for when a key is pressed.
     """
-    if event.keysym in ('Control_L', 'Control_R'):
+    keysym = self._get_keysym(event)
+    if keysym in ('Control_L', 'Control_R'):
       self._ctrl_pressed = True
-      self.configure(cursor=CTRL_CURSOR)
-    elif event.keysym in ('Shift_L', 'Shift_R'):
+      self._canvas.configure(cursor=CTRL_CURSOR)
+    elif keysym in ('Shift_L', 'Shift_R'):
       self._shift_pressed = True
-      self.configure(cursor=SHIFT_CURSOR)
-    elif event.keysym == 'Down':
+      self._canvas.configure(cursor=SHIFT_CURSOR)
+    elif keysym == 'Down':
       self._move_selected_items(0, BOARD_GRID_SEPARATION)
-    elif event.keysym == 'Left':
+    elif keysym == 'Left':
       self._move_selected_items(-BOARD_GRID_SEPARATION, 0)
-    elif event.keysym == 'Right':
+    elif keysym == 'Right':
       self._move_selected_items(BOARD_GRID_SEPARATION, 0)
-    elif event.keysym == 'Up':
+    elif keysym == 'Up':
       self._move_selected_items(0, -BOARD_GRID_SEPARATION)
-    elif event.keysym in ('BackSpace', 'Delete'):
+    elif keysym in ('BackSpace', 'Delete'):
       # delete selected items as long there is not text edit in progress
       if not self._canvas.focus():
         self._delete_selected_items()
@@ -638,12 +651,13 @@ class Board(Frame):
     """
     Callback for when a key is released.
     """
-    if event.keysym in ('Control_L', 'Control_R'):
+    keysym = self._get_keysym(event)
+    if keysym in ('Control_L', 'Control_R'):
       self._ctrl_pressed = False
-      self.configure(cursor='arrow')
-    elif event.keysym in ('Shift_L', 'Shift_R'):
+      self._canvas.configure(cursor='arrow')
+    elif keysym in ('Shift_L', 'Shift_R'):
       self._shift_pressed = False
-      self.configure(cursor='arrow')
+      self._canvas.configure(cursor='arrow')
   def _rotate(self, event):
     """
     Callback for item rotation. Marks the board changed if any item is rotated.
