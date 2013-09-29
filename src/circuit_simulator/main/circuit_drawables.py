@@ -100,7 +100,7 @@ class Pin_Drawable(Drawable):
     self.parts.add(self._rect_id)
     self.parts.add(canvas.create_text(ox + self.width / 2,
         oy + self.height / 2, text=self.text, fill=PIN_TEXT_COLOR,
-        width=.8 * self.width, justify=CENTER, font=FONT))
+        width=.9 * self.width, justify=CENTER, font=FONT))
   def show_selected_highlight(self, canvas):
     canvas.itemconfig(self._rect_id, width=3)
   def hide_selected_highlight(self, canvas):
