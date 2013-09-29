@@ -38,13 +38,3 @@ def draw_resistor_zig_zags(canvas, ox, oy, w, h):
     parts.add(canvas.create_line(ox + w / 2, oy + h, ox + w,
         oy + h - s))
   return parts
-
-def sign(x):
-  """
-  Returns -1 if |x| is negative, 1 if |x| is positive, or 0 if |x| is 0.
-  """
-  if x < 0:
-    return -1
-  elif x > 0:
-    return 1
-  return 0

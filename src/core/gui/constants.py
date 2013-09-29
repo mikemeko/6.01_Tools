@@ -90,6 +90,10 @@ KEYCODE_LOOKUP = {262145: 'Control_L', 524320: 'Alt_L', 524352: 'Alt_R',
     1048584: 'Super_L', 1048592: 'Super_R', 131074: 'Shift_L',
     131076: 'Shift_R'}
 
+# wire path search costs
+CROSS_COST = 10
+BEND_COST = 2
+
 # debug options
 DEBUG_DISPLAY_WIRE_LABELS = False
 DEBUG_CONNECTOR_CENTER_TOOLTIP = False

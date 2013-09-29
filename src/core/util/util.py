@@ -52,3 +52,13 @@ def rects_overlap(rect_1, rect_2):
   r_min_2, c_min_2, r_max_2, c_max_2 = rect_2
   return (overlap((r_min_1, r_max_1), (r_min_2, r_max_2)) and overlap((c_min_1,
       c_max_1), (c_min_2, c_max_2)))
+
+def sign(x):
+  """
+  Returns -1 if |x| is negative, 1 if |x| is positive, or 0 if |x| is 0.
+  """
+  if x < 0:
+    return -1
+  elif x > 0:
+    return 1
+  return 0

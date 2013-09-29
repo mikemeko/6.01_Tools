@@ -45,7 +45,7 @@ from core.undo.undo import Action_History
 from core.undo.undo import Multi_Action
 from core.util.util import is_callable
 from core.util.util import rects_overlap
-from find_wire_path_simple import find_wire_path
+from find_wire_path import find_wire_path
 from sys import platform
 from threading import Timer
 from time import time

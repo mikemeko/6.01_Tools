@@ -73,13 +73,13 @@ from core.save.constants import RE_INT
 from core.save.constants import RE_INT_PAIR
 from core.undo.undo import Action
 from core.util.util import is_callable
+from core.util.util import sign
 from os.path import isfile
 from os.path import relpath
 from re import match
 from tkFileDialog import askopenfilename
 from Tkinter import CENTER
 from util import draw_resistor_zig_zags
-from util import sign
 
 class Pin_Drawable(Drawable):
   """
