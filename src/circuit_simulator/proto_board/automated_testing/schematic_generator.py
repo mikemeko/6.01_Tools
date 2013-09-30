@@ -5,9 +5,12 @@ Script to generate a large number of test schematics.
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
 from math import factorial
+from os import mkdir
+from os import walk
 from os.path import join
 from random import sample
 from random import seed
+from shutil import move
 
 # the idea is that we divide the board into 6 parts (2 rows, 3 cols) and put a
 #     various combinations of sub-circuits in the 6 slots, we consider various
@@ -53,11 +56,24 @@ bases12['motor_12.circsim'] = [(670, 330), (670, 430)]
 bases12['robot_12.circsim'] = [(620, 340), (670, 340), (570, 420), (620, 420),
     (670, 420), (730, 370), (730, 470)]
 
+def to_multiple_dirs(num_files_per_dir):
+  """
+  Puts the test files in several directories containing at most
+      |num_files_per_dir| test files.
+  """
+  output_dir = 'auto_generated_dataset'
+  for dir_path, dir_names, file_names in walk(output_dir):
+    for i, file_name in enumerate(file_names):
+      if i % num_files_per_dir == 0:
+        current_dir = join(output_dir, 'part%d' % (i / num_files_per_dir))
+        mkdir(current_dir)
+      move(join(output_dir, file_name), current_dir)
+
 def generate():
   """
   Generates and saves a large number of test schematics.
   """
-  seed(1000)
+  seed(2000)
   bases_dir = 'auto_generation_bases'
   output_dir = 'auto_generated_dataset'
   def _generate_for(b00, b01, b02, b10, b11, b12, combo):
@@ -160,6 +176,7 @@ def num_possible_schematics():
 
 if __name__ == '__main__':
   generate()
+  to_multiple_dirs(660)
   #print num_possible_schematics()
   #  ***************************
   #  *                         *
