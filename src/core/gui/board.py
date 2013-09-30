@@ -265,7 +265,6 @@ class Board(Frame):
     Selects the given |drawable| by adding it to the set of selected items and
         outlining it to indicate selection.
     """
-    drawable.redraw(self._canvas)
     drawable.show_selected_highlight(self._canvas)
     self._selected_drawables.add(drawable)
   def _deselect(self, drawable):
@@ -319,6 +318,10 @@ class Board(Frame):
       self._empty_current_drawable_selection()
     # select this drawable
     self._select(selected_drawable)
+    # redraw the selected drawables so that they appear on top of the others
+    for drawable in self._selected_drawables:
+      drawable.redraw(self._canvas)
+      drawable.show_selected_highlight(self._canvas)
     # record drag state
     self._drag_start_point = self._drag_last_point = (event.x, event.y)
   def _drag_move(self, event):

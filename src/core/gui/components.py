@@ -161,11 +161,19 @@ class Drawable:
       if not isinstance(current_tags, tuple):
         current_tags = tuple([current_tags])
       canvas.itemconfig(part, tags=current_tags + tags)
+  def _erase_current_parts(self, canvas):
+    """
+    Deletes this drawable's current parts from the |canvas|.
+    """
+    for part in self.parts:
+      canvas.delete(part)
+    self.parts.clear()
   def redraw(self, canvas):
     """
     Redraws this drawable on the given |canvas|. If the drawable was previously
         deleted, this method sets it live.
     """
+    self._erase_current_parts(canvas)
     self.draw_on(canvas, self.offset)
     self.attach_tags(canvas)
     for connector in self.connectors:
@@ -180,9 +188,7 @@ class Drawable:
       """
       Deletes the drawable.
       """
-      for part in self.parts:
-        canvas.delete(part)
-      self.parts.clear()
+      self._erase_current_parts(canvas)
       # mark this drawable deleted
       self._live = False
     # do delete
