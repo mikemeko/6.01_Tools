@@ -9,3 +9,4 @@
 *.swp
 *.synctex.gz*
 *.toc
+src/circuit_simulator/proto_board/automated_testing/auto_generated_dataset/*
