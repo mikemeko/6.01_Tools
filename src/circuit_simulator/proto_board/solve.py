@@ -35,7 +35,7 @@ def solve_layout(circuit, mode=MODE_PER_PAIR, order=ORDER_DECREASING,
     placement, resistor_node_pairs = get_piece_placement(circuit, verbose)
     if placement is None:
       print "Pieces don't fit on the board."
-      return None
+      return (None, 0) if return_num_expanded else None
     # put each of the pieces on the proto board
     proto_board = Proto_Board()
     for piece in placement:
@@ -62,4 +62,4 @@ def solve_layout(circuit, mode=MODE_PER_PAIR, order=ORDER_DECREASING,
     return (proto_board, num_expanded) if return_num_expanded else proto_board
   except:
     print_exc(file=stdout)
-    return None
+    return (None, 0) if return_num_expanded else None

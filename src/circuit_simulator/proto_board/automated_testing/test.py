@@ -33,10 +33,10 @@ if __name__ == '__main__':
     solve_order = ORDER_DECREASING if argv[3] == '-d' else ORDER_INCREASING
   start_time = time()
   tester = Schematic_Tester(solve_mode, solve_order)
-  header = ('file', 'solved', 'solve_time', 'num_resistors', 'num_pots',
-      'num_op_amps', 'num_op_amp_packages', 'num_motors', 'head_present',
-      'robot_present', 'num_wires', 'total_wire_length', 'num_wire_crosses',
-      'num_nodes')
+  header = ('file', 'run', 'solved', 'num_expanded', 'num_schematic_pins',
+      'num_resistors', 'num_pots', 'num_op_amps', 'num_op_amp_packages',
+      'num_motors', 'head_present', 'robot_present', 'num_wires',
+      'total_wire_length', 'num_wire_crosses', 'num_nodes')
   output_file_name = ('circuit_simulator/proto_board/automated_testing/'
       'test_results/%s_%s' % (basename(normpath(argv[1])),
       datetime.now().strftime('%d%b%I:%M%p')))
@@ -47,13 +47,15 @@ if __name__ == '__main__':
       print '%d/%d' % (n + 1, num_files)
       if file_name.endswith(FILE_EXTENSION):
         print file_name
-        # [:-1] - don't include protoboard in result
-        result = (file_name,) + (
-            tester.test_schematic(join(dir_path, file_name))[:-1])
-        results = [line.strip() for line in open(output_file_name,
-            'r').readlines()]
-        results.append(','.join(map(str, result)))
-        open(output_file_name, 'w').write('\n'.join(results))
+        for i in xrange(10):
+          print 'run %d' % (i + 1)
+          # [:-1] - don't include protoboard in result
+          result = (file_name, i) + (
+              tester.test_schematic(join(dir_path, file_name))[:-1])
+          results = [line.strip() for line in open(output_file_name,
+              'r').readlines()]
+          results.append(','.join(map(str, result)))
+          open(output_file_name, 'w').write('\n'.join(results))
         print
   stop_time = time()
   print 'Time elapsed: %.3f seconds' % (stop_time - start_time)
