@@ -66,7 +66,7 @@ class Board(Frame):
   """
   def __init__(self, parent, width=BOARD_WIDTH, height=BOARD_HEIGHT,
       on_changed=None, on_exit=None, directed_wires=True,
-      label_tooltips_enabled=False):
+      label_tooltips_enabled=False, same_label_per_connector=True):
     """
     |width|: the width of this board.
     |height|: the height of this board.
@@ -75,6 +75,8 @@ class Board(Frame):
     |directed_wires|: if True, wires will be directed (i.e. have arrows).
     |label_tooltips_enabled|: if True, tooltips will show wire and drawable
         labels.
+    |same_label_per_connector|: if True, all wires from a connector will have
+        the same label. If False, this will only be true for wire connectors.
     """
     Frame.__init__(self, parent, background=BOARD_BACKGROUND_COLOR)
     self.parent = parent
@@ -84,6 +86,7 @@ class Board(Frame):
     self._on_exit = on_exit
     self._directed_wires = directed_wires
     self._label_tooltips_enabled = label_tooltips_enabled
+    self._same_label_per_connector = same_label_per_connector
     # canvas on which items are drawn
     self._canvas = Canvas(self, width=width, height=height,
         highlightthickness=0, background=BOARD_BACKGROUND_COLOR)
@@ -924,7 +927,12 @@ class Board(Frame):
     Labels the wires and drawables and then returns a generator of the live
         drawables on this board, with the newest drawables put first.
     """
-    label_wires(self._get_drawables())
+    label_wires(self._get_drawables(), self._same_label_per_connector)
+    # display wire labels for debugging
+    if DEBUG_DISPLAY_WIRE_LABELS:
+      for drawable in self._get_drawables():
+        for wire in drawable.wires():
+          wire.redraw(self._canvas)
     self._label_drawables()
     return self._get_drawables()
   def show_label_tooltips(self):

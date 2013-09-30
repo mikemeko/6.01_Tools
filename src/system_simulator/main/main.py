@@ -51,7 +51,7 @@ if __name__ == '__main__':
   app_runner = App_Runner(on_init, APP_NAME, DEV_STAGE, FILE_EXTENSION, (
       Adder_Drawable, Delay_Drawable, Gain_Drawable, IO_X_Drawable,
       IO_Y_Drawable, Wire_Connector_Drawable, Wire), BOARD_WIDTH, BOARD_HEIGHT,
-      PALETTE_HEIGHT, True, False, argv[1] if len(argv) > 1 else None)
+      PALETTE_HEIGHT, True, False, False, argv[1] if len(argv) > 1 else None)
   def pzd(system):
     """
     Plots the pole-zero diagram of the given |system|.

@@ -67,7 +67,7 @@ if __name__ == '__main__':
       Probe_Minus_Drawable, Resistor_Drawable, Op_Amp_Drawable, Pot_Drawable,
       Motor_Drawable, Motor_Pot_Drawable, Photosensors_Drawable,
       Robot_Power_Drawable, Robot_IO_Drawable, Wire_Connector_Drawable, Wire),
-      BOARD_WIDTH, BOARD_HEIGHT, PALETTE_HEIGHT, False, True, argv[1] if
+      BOARD_WIDTH, BOARD_HEIGHT, PALETTE_HEIGHT, False, True, True, argv[1] if
       len(argv) > 1 else None)
   def simulate(circuit, plotters):
     """

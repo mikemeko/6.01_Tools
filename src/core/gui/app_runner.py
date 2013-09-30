@@ -21,7 +21,8 @@ class App_Runner:
   """
   def __init__(self, on_init, app_name, dev_stage, file_extension,
       deserializers, board_width, board_height, palette_height,
-      directed_wires, label_tooltips_enabled, init_file=None):
+      directed_wires, label_tooltips_enabled, same_label_per_connector,
+      init_file=None):
     """
     |on_init|: method called every time a new board of this app's type is
         created.
@@ -34,6 +35,8 @@ class App_Runner:
     |directed_wires|: True if the board is to have directed wires, False
         otherwise.
     |label_tooltips_enabled|: if True, show wire and drawable label tooltips.
+    |same_label_per_connector|: if True, all wires from a connector will have
+        the same label. If False, this will only be true for wire connectors.
     |init_file|: file to open at init time.
     """
     self._on_init = on_init
@@ -46,6 +49,7 @@ class App_Runner:
     self._palette_height = palette_height
     self._directed_wires = directed_wires
     self._label_tooltips_enabled = label_tooltips_enabled
+    self._same_label_per_connector = same_label_per_connector
     self._init_file = init_file
     self._init()
     self._setup_menu()
@@ -60,6 +64,7 @@ class App_Runner:
     self.board = Board(self._root, width=self._board_width,
         height=self._board_height, directed_wires=self._directed_wires,
         label_tooltips_enabled=self._label_tooltips_enabled,
+        same_label_per_connector=self._same_label_per_connector,
         on_changed=self._on_changed, on_exit=self._request_save)
     self._init_board()
     self.palette = Palette(self._root, self.board, width=self._board_width,
