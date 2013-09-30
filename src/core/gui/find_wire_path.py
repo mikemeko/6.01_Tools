@@ -164,9 +164,9 @@ def find_wire_path(board, start_point, end_point):
     board_coverage = frozenset(board_coverage)
   else:
     board_coverage = frozenset()
-  search_result = a_star(Wire_Path_Search_Node(board_coverage, start_point),
-      goal_test_for_end_point(end_point), heuristic_for_end_point(end_point),
-      max_states_to_expand=3000)
+  search_result, num_expanded = a_star(Wire_Path_Search_Node(board_coverage,
+      start_point), goal_test_for_end_point(end_point),
+      heuristic_for_end_point(end_point), max_states_to_expand=1500)
   if search_result:
     return condensed_points([state[1] for state in search_result.get_path()])
   else:

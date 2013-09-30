@@ -22,11 +22,13 @@ from traceback import print_exc
 from util import node_disjoint_set_forest
 
 def solve_layout(circuit, mode=MODE_PER_PAIR, order=ORDER_DECREASING,
-    verbose=True):
+    verbose=True, return_num_expanded=False):
   """
   Returns a Proto_Board instance corresponding to the given |circuit|, or None
       if one could not be found. |mode| and |order| are parameters for how the
-      wiring should be solved, see find_proto_board_wiring.py.
+      wiring should be solved, see find_proto_board_wiring.py. If
+      |return_num_expanded| is True, also returns the total number of nodes
+      expanded in the search for the wiring stage.
   """
   try:
     # get a placement for the appropriate circuit pieces
@@ -55,8 +57,9 @@ def solve_layout(circuit, mode=MODE_PER_PAIR, order=ORDER_DECREASING,
     #     node
     proto_board = proto_board.with_loc_disjoint_set_forest(
         node_disjoint_set_forest(node_locs_mapping))
-    return find_wiring(loc_pairs_to_connect(placement, resistor_node_pairs),
-        proto_board, mode, order, verbose)
+    proto_board, num_expanded = find_wiring(loc_pairs_to_connect(placement,
+        resistor_node_pairs), proto_board, mode, order, verbose)
+    return (proto_board, num_expanded) if return_num_expanded else proto_board
   except:
     print_exc(file=stdout)
     return None

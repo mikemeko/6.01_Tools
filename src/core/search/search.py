@@ -48,8 +48,8 @@ def a_star(start_node, goal_test, heuristic=lambda state: 0,
       |heuristic| is a map from node states to estimates of distance to the
       goal, should be admissible to produce optimal value, and can result in
       considerable speed-up! (See Chapter 7 of MIT 6.01 course notes for more.)
-  Returns the state found that satisfies the |goal_test|, or None if no such
-      state is found.
+  Returns the node whose state satisfies teh |goal_test|, or None if no such
+      node is found. Also returns the total number of nodes expanded.
   For progress checks, everytime a node is popped out of the priority queue,
       this methods calls |progress| with the state and cost of the node that
       was just popped.
@@ -57,7 +57,7 @@ def a_star(start_node, goal_test, heuristic=lambda state: 0,
       |max_states_to_expand| after which the search stops and returns None.
   """
   if goal_test(start_node.state):
-    return start_node
+    return start_node, 0
   agenda = Priority_Queue()
   agenda.push(start_node, start_node.cost + heuristic(start_node.state))
   expanded = set()
@@ -65,12 +65,12 @@ def a_star(start_node, goal_test, heuristic=lambda state: 0,
     parent, cost = agenda.pop()
     progress(parent.state, cost)
     if parent.state not in expanded:
-      expanded.add(parent.state)
       if goal_test(parent.state):
-        return parent
+        return parent, len(expanded)
+      expanded.add(parent.state)
       for child in parent.get_children():
         if child.state not in expanded:
           agenda.push(child, child.cost + heuristic(child.state))
-    if max_states_to_expand and len(agenda) > max_states_to_expand:
-      return None
-  return None
+    if max_states_to_expand and len(expanded) > max_states_to_expand:
+      return None, len(expanded)
+  return None, len(expanded)
