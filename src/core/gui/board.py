@@ -20,9 +20,10 @@ from constants import CTRL_CURSOR
 from constants import CTRL_DOWN
 from constants import DEBUG_CONNECTOR_CENTER_TOOLTIP
 from constants import DEBUG_DISPLAY_WIRE_LABELS
+from constants import DRAG_SAFE_COLOR
+from constants import DRAG_UNSAFE_COLOR
 from constants import EDIT_TAG
 from constants import ERROR
-from constants import GUIDE_LINE_COLOR
 from constants import INFO
 from constants import KEYCODE_LOOKUP
 from constants import MESSAGE_ERROR_COLOR
@@ -99,6 +100,7 @@ class Board(Frame):
     # state for dragging
     self._drag_start_point = None
     self._drag_last_point = None
+    self._drag_safe = False
     # state for selection
     self._selected_drawables = set()
     self._selection_start_point = None
@@ -206,16 +208,12 @@ class Board(Frame):
     # remove previously drawn guide lines
     self._remove_guide_lines()
     # draw new guide lines
+    fill = DRAG_SAFE_COLOR if self._drag_safe else DRAG_UNSAFE_COLOR
+    width = 1 if self._drag_safe else 2
     for x, y in points:
       self._guide_line_parts.extend([self._canvas.create_line(x, 0, x,
-          self.height, fill=GUIDE_LINE_COLOR), self._canvas.create_line(0, y,
-          self.width, y, fill=GUIDE_LINE_COLOR)])
-    # lower lines below drawables on the board
-    for part in self._guide_line_parts:
-      self._canvas.tag_lower(part)
-    # lower the grid lines so that they don't mask the guide lines
-    for part in self._grid_line_parts:
-      self._canvas.tag_lower(part)
+          self.height, fill=fill, width=width), self._canvas.create_line(0, y,
+          self.width, y, fill=fill, width=width)])
   def _remove_guide_lines(self):
     """
     Removes the currently drawn guide lines, if any.
@@ -267,6 +265,7 @@ class Board(Frame):
     Selects the given |drawable| by adding it to the set of selected items and
         outlining it to indicate selection.
     """
+    drawable.redraw(self._canvas)
     drawable.show_selected_highlight(self._canvas)
     self._selected_drawables.add(drawable)
   def _deselect(self, drawable):
@@ -328,21 +327,29 @@ class Board(Frame):
     """
     # there better be drawables to drag on call to this callback
     assert self._selected_drawables and self._drag_last_point is not None
-    # if there's only one drawable being dragged, show guide lines
-    if len(self._selected_drawables) == 1:
-      drawable = iter(self._selected_drawables).next()
-      x1, y1, x2, y2 = drawable.bounding_box(self.get_drawable_offset(drawable))
-      self._draw_guide_lines([(x1, y1), (x2, y2)])
     last_x, last_y = self._drag_last_point
     # drag movement amount
     dx = snap(event.x - last_x)
     dy = snap(event.y - last_y)
-    if self._move_good_for_selected_drawables(dx, dy):
-      # move each of the selected drawables
-      for drawable in self._selected_drawables:
-        self._move_drawable(drawable, dx, dy)
-      # update drag last point
-      self._drag_last_point = (last_x + dx, last_y + dy)
+    # update drag last point
+    self._drag_last_point = (last_x + dx, last_y + dy)
+    self._drag_safe = self._move_good_for_selected_drawables(dx, dy)
+    # move each of the selected drawables
+    for drawable in self._selected_drawables:
+      self._move_drawable(drawable, dx, dy)
+    # show guide lines
+    it = iter(self._selected_drawables)
+    first_drawable = it.next()
+    x1, y1, x2, y2 = first_drawable.bounding_box(self.get_drawable_offset(
+        first_drawable))
+    for drawable in it:
+      _x1, _y1, _x2, _y2 = drawable.bounding_box(self.get_drawable_offset(
+          drawable))
+      x1 = min(x1, _x1)
+      y1 = min(y1, _y1)
+      x2 = max(x2, _x2)
+      y2 = max(y2, _y2)
+    self._draw_guide_lines([(x1, y1), (x2, y2)])
   def _drag_release(self, event):
     """
     Callback for button release for dragging.
@@ -352,17 +359,22 @@ class Board(Frame):
     sx, sy = self._drag_start_point
     ex, ey = self._drag_last_point
     dx, dy = ex - sx, ey - sy
-    if dx or dy:
-      # record movement action for undo / redo
-      self._action_history.record_action(Multi_Action(map(lambda drawable:
-          Action(lambda: self._move_drawable(drawable, dx, dy),
-          lambda: self._move_drawable(drawable, -dx, -dy), 'move'),
-          self._selected_drawables), 'moves'))
+    if self._drag_safe:
+      if dx or dy:
+        # record movement action for undo / redo
+        self._action_history.record_action(Multi_Action(map(lambda drawable:
+            Action(lambda: self._move_drawable(drawable, dx, dy),
+            lambda: self._move_drawable(drawable, -dx, -dy), 'move'),
+            self._selected_drawables), 'moves'))
+    else:
+      for drawable in self._selected_drawables:
+        self._move_drawable(drawable, -dx, -dy)
     # remove guide lines if shown
     self._remove_guide_lines()
     # reset
     self._drag_start_point = None
     self._drag_last_point = None
+    self._drag_safe = False
   def _select_press(self, event):
     """
     Callback for button press for selection.
