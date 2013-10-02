@@ -6,6 +6,7 @@ Credit to Chapter 7 of MIT 6.01 notes
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
+from constants import PRINT_FAIL_REASON
 from core.data_structures.priority_queue import Priority_Queue
 
 class Search_Node:
@@ -72,5 +73,9 @@ def a_star(start_node, goal_test, heuristic=lambda state: 0,
         if child.state not in expanded:
           agenda.push(child, child.cost + heuristic(child.state))
     if max_states_to_expand and len(expanded) > max_states_to_expand:
+      if PRINT_FAIL_REASON:
+        print 'exceeded number of states to expand'
       return None, len(expanded)
+  if PRINT_FAIL_REASON:
+    print 'exhausted search space'
   return None, len(expanded)
