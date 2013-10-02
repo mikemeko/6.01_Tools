@@ -1,33 +1,19 @@
 """
-Script to analyze test data.
+Script to analyze test results.
 """
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
 from collections import defaultdict
-from numpy import mean
-from numpy import std
-from pylab import figure
-from pylab import plot
-from pylab import show
-from pylab import subplot
-from pylab import xlabel
-from pylab import ylabel
 from sys import argv
 
 def sequence_generator():
-  """
-  Generator that produces 0, 1, 2, 3, etc.
-  """
   i = 0
   while True:
     yield i
     i += 1
 
 def get_int(val):
-  """
-  Returns the int value of |val| if it could be computed, or None otherwise.
-  """
   try:
     return int(val)
   except:
@@ -35,14 +21,17 @@ def get_int(val):
 
 class Test_Result:
   """
-  Concise representation for results from on schematic.
+  Concise representation for results from one run.
   """
   def __init__(self, line):
     line = line.split(',')
     g = sequence_generator()
     self.file_name = line[g.next()]
+    self.identifier = self.file_name.split('.')[0]
+    self.run = get_int(line[g.next()])
     self.solved = line[g.next()] == 'True'
-    self.solve_time = float(line[g.next()])
+    self.num_expanded = get_int(line[g.next()])
+    self.num_schematic_pins = get_int(line[g.next()])
     self.num_resistors = get_int(line[g.next()])
     self.num_pots = get_int(line[g.next()])
     self.num_op_amps = get_int(line[g.next()])
@@ -58,80 +47,15 @@ class Test_Result:
     self.num_wire_crosses = get_int(line[g.next()])
     self.num_nodes = get_int(line[g.next()])
 
-def compare(solved, unsolved, attr):
-  """
-  Compares the various values of |attr| in the |solved| versus |unsolved|
-      schematics.
-  """
-  solved_dict = defaultdict(list)
-  for result in solved:
-    solved_dict[getattr(result, attr)].append(result)
-  unsolved_dict = defaultdict(list)
-  for result in unsolved:
-    unsolved_dict[getattr(result, attr)].append(result)
-  print attr
-  print '# #s \% _s _f'
-  keys = sorted(set(solved_dict.keys() + unsolved_dict.keys()))
-  for key in keys:
-    key_total = len(solved_dict[key]) + len(unsolved_dict[key])
-    print ('{0:d} {1:d} {2:.2f} '
-        '{3:.2f} {4:.2f}'.format(key,
-        key_total, float(len(solved_dict[key])) / key_total, mean([
-        result.solve_time for result in solved_dict[key]]), mean([
-        result.solve_time for result in unsolved_dict[key]])))
-  return attr, solved_dict, unsolved_dict
-
 def analyze(results_file):
   """
   Analyzes the results in the given |results_file|.
   """
   lines = [line.strip() for line in open(results_file).readlines()]
   results = [Test_Result(line) for line in lines[1:]]
-  solved = [result for result in results if result.solved]
-  unsolved = [result for result in results if not result.solved]
-  print 'Success rate: {0:.2f}%'.format((100. * len(solved) / len(results)))
-  print 'Solve time: {0:.2f}, {1:.2f}'.format(mean([result.solve_time for result
-      in solved]), std([result.solve_time for result in solved]))
-  print 'Failure time: {0:.2f}, {1:.2f}'.format(mean([result.solve_time for
-      result in unsolved]), std([result.solve_time for result in unsolved]))
-  print 'Num wires: {0:.2f}, {1:.2f}'.format(mean([result.num_wires for result
-      in solved]), std([result.num_wires for result in solved]))
-  print 'Total wire length: {0:.2f}, {1:.2f}'.format(mean([
-      result.total_wire_length for result in solved]), std([
-      result.total_wire_length for result in solved]))
-  print 'Num wire crosses: {0:.2f}, {1:.2f}'.format(mean([
-      result.num_wire_crosses for result in solved]), std([
-      result.num_wire_crosses for result in solved]))
-  print
-  solved_unsolved_dicts = []
-  solved_unsolved_dicts.append(compare(solved, unsolved, 'num_resistors'))
-  print
-  solved_unsolved_dicts.append(compare(solved, unsolved, 'num_pots'))
-  print
-  solved_unsolved_dicts.append(compare(solved, unsolved, 'num_op_amps'))
-  print
-  solved_unsolved_dicts.append(compare(solved, unsolved, 'num_motors'))
-  print
-  solved_unsolved_dicts.append(compare(solved, unsolved, 'head_present'))
-  print
-  solved_unsolved_dicts.append(compare(solved, unsolved, 'robot_present'))
-  print
-  solved_unsolved_dicts.append(compare(solved, unsolved, 'num_components'))
-  print
-  solved_unsolved_dicts.append(compare(solved, unsolved, 'num_nodes'))
-  for i, (attr, solved_dict, unsolved_dict) in enumerate(solved_unsolved_dicts):
-    sorted_keys = sorted(solved_dict.keys())
-    figure(i + 1)
-    subplot(211)
-    plot(sorted_keys, [float(len(solved_dict[key])) / (len(solved_dict[key]) +
-        len(unsolved_dict[key])) for key in sorted_keys])
-    ylabel('Success rate')
-    subplot(212)
-    plot(sorted_keys, [mean([result.solve_time for result in
-        solved_dict[key]]) for key in sorted_keys])
-    xlabel(attr)
-    ylabel('Average solve time (seconds)')
-  show()
+  results_by_identifier = defaultdict(list)
+  for result in results:
+    results_by_identifier[result.identifier].append(result)
 
 if __name__ == '__main__':
   assert len(argv) == 2, 'No input'
