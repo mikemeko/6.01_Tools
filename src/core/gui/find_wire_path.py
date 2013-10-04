@@ -54,11 +54,11 @@ class Wire_Path_Search_Node(Search_Node):
   Search_Node for wire path search.
   """
   def __init__(self, board_coverage, current_point, num_bends=0, direction=None,
-      parent=None, cost=0):
+      steps=0, parent=None, cost=0):
     Search_Node.__init__(self, (board_coverage, current_point, num_bends,
-        direction), parent, cost)
+        direction, steps), parent, cost)
   def get_children(self):
-    board_coverage, current_point, num_bends, direction = self.state
+    board_coverage, current_point, num_bends, direction, steps = self.state
     x, y = current_point
     children = []
     for dx, dy in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
@@ -67,20 +67,20 @@ class Wire_Path_Search_Node(Search_Node):
       new_wire_coverage = wire_coverage((new_x, new_y), current_point)
       bend = direction is not None and direction != (dx, dy)
       cost = (self.cost + 1 + CROSS_COST * (len(board_coverage &
-          new_wire_coverage)) + BEND_COST * bend)
+          new_wire_coverage)) + BEND_COST * bend + abs(dy) * 0.001 * steps)
       children.append(Wire_Path_Search_Node(board_coverage, (new_x, new_y),
-          num_bends + bend, (dx, dy), self, cost))
+          num_bends + bend, (dx, dy), steps + 1, self, cost))
     return children
 
 def goal_test_for_end_point(end_point):
   def goal_test(state):
-    board_coverage, current_point, num_bends, direction = state
+    board_coverage, current_point, num_bends, direction, steps = state
     return current_point == end_point
   return goal_test
 
 def heuristic_for_end_point(end_point):
   def heuristic(state):
-    board_coverage, current_point, num_bends, direction = state
+    board_coverage, current_point, num_bends, direction, steps = state
     x1, y1 = current_point
     x2, y2 = end_point
     return manhattan_dist(current_point, end_point) + BEND_COST * (
