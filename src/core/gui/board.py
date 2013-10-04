@@ -488,7 +488,8 @@ class Board(Frame):
         wire_path = find_wire_path(self, self._wire_start, wire_end)
         # draw wires
         self._valid_wire_path = not (path_coverage(wire_path) &
-            self._board_coverage)
+            self._board_coverage) and not any(self._connector_at(point) for
+            point in wire_path[1:-1])
         color = WIRE_COLOR if self._valid_wire_path else 'red'
         for i in xrange(len(wire_path) - 1):
           self._draw_wire(wire_path[i], wire_path[i + 1], color)
