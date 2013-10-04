@@ -41,12 +41,15 @@ from constants import SHIFT_CURSOR
 from constants import SHIFT_DOWN
 from constants import TOOLTIP_DRAWABLE_LABEL_BACKGROUND
 from constants import WARNING
+from constants import WIRE_COLOR
 from core.undo.undo import Action
 from core.undo.undo import Action_History
 from core.undo.undo import Multi_Action
 from core.util.util import is_callable
 from core.util.util import rects_overlap
 from find_wire_path import find_wire_path
+from find_wire_path import get_board_coverage
+from find_wire_path import path_coverage
 from sys import platform
 from threading import Timer
 from time import time
@@ -110,6 +113,8 @@ class Board(Frame):
     self._wire_start = None
     self._wire_end = None
     self._wire_parts = []
+    self._board_coverage = set()
+    self._valid_wire_path = False
     # state for key-press callbacks
     self._ctrl_pressed = False
     self._shift_pressed = False
@@ -421,7 +426,7 @@ class Board(Frame):
       for part in parts:
         self._canvas.delete(part)
     self._wire_parts = []
-  def _draw_wire(self, start, end):
+  def _draw_wire(self, start, end, color):
     """
     Draws a wire from |start| to |end|. Updates wire data. Does nothing if the
         |start| and |end| are identical.
@@ -430,7 +435,7 @@ class Board(Frame):
       x1, y1 = start
       x2, y2 = end
       self._wire_parts.append([start, end, create_wire(self._canvas, x1, y1, x2,
-          y2, self._directed_wires)])
+          y2, self._directed_wires, color)])
   def _add_wire(self, wire_parts, start_connector, end_connector):
     """
     Creates a Wire object using the given parameters. This method assumes that
@@ -467,6 +472,8 @@ class Board(Frame):
     start_connector = self._connector_at(self._wire_start)
     if not start_connector or not start_connector.enabled:
       self._wire_start = None
+    else:
+      self._board_coverage = get_board_coverage(self)
   def _wire_move(self, event):
     """
     Callback for when a wire is changed while being created.
@@ -480,29 +487,37 @@ class Board(Frame):
         # find new wire path
         wire_path = find_wire_path(self, self._wire_start, wire_end)
         # draw wires
+        self._valid_wire_path = not (path_coverage(wire_path) &
+            self._board_coverage)
+        color = WIRE_COLOR if self._valid_wire_path else 'red'
         for i in xrange(len(wire_path) - 1):
-          self._draw_wire(wire_path[i], wire_path[i + 1])
+          self._draw_wire(wire_path[i], wire_path[i + 1], color)
   def _wire_release(self, event):
     """
     Callback for when wire creation is complete.
     """
-    if self._wire_parts:
-      for start, end, parts in self._wire_parts:
-        for point in (start, end):
-          if not self._connector_at(point):
-            self._add_drawable(Wire_Connector_Drawable(), point)
-        start_connector = self._connector_at(start)
-        end_connector = self._connector_at(end)
-        # create wire
-        self._add_wire(parts, start_connector, end_connector)
-      if len(self._wire_parts) > 1:
-        self._action_history.combine_last_n(len(self._wire_parts))
-      # mark the board changed
-      self.set_changed(True)
+    if self._valid_wire_path:
+      if self._wire_parts:
+        for start, end, parts in self._wire_parts:
+          for point in (start, end):
+            if not self._connector_at(point):
+              self._add_drawable(Wire_Connector_Drawable(), point)
+          start_connector = self._connector_at(start)
+          end_connector = self._connector_at(end)
+          # create wire
+          self._add_wire(parts, start_connector, end_connector)
+        if len(self._wire_parts) > 1:
+          self._action_history.combine_last_n(len(self._wire_parts))
+        # mark the board changed
+        self.set_changed(True)
+    else:
+      self._erase_previous_wire_path()
     # reset
     self._wire_start = None
     self._wire_end = None
     self._wire_parts = []
+    self._board_coverage = set()
+    self._valid_wire_path = False
   def _canvas_button_press(self, event):
     """
     Callback for button press.

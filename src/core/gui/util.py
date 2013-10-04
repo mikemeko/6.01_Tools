@@ -103,7 +103,7 @@ def create_connector(canvas, x, y, fill, outline, active_width):
   return create_circle(canvas, x, y, CONNECTOR_RADIUS, fill=fill,
       outline=outline, width=CONNECTOR_WIDTH, activewidth=active_width)
 
-def create_wire(canvas, x1, y1, x2, y2, directed=True):
+def create_wire(canvas, x1, y1, x2, y2, directed=True, color=WIRE_COLOR):
   """
   Draws a wire on the |canvas| pointing from (|x1|, |y1|) to (|x2|, |y2|). If
       |directed| is True, the drawn wire will have an arrow.
@@ -114,7 +114,7 @@ def create_wire(canvas, x1, y1, x2, y2, directed=True):
   if x1 == x2 and y1 == y2:
     return parts
   # line connecting two points
-  parts.append(canvas.create_line(x1, y1, x2, y2, fill=WIRE_COLOR,
+  parts.append(canvas.create_line(x1, y1, x2, y2, fill=color,
       width=WIRE_WIDTH))
   # arrow
   if directed:
@@ -122,11 +122,11 @@ def create_wire(canvas, x1, y1, x2, y2, directed=True):
     arrow_angle_1 = wire_angle + 3 * pi / 4
     parts.append(canvas.create_line(x2, y2, x2 + WIRE_ARROW_LENGTH *
         cos(arrow_angle_1), y2 + WIRE_ARROW_LENGTH * sin(arrow_angle_1),
-        fill=WIRE_COLOR, width=WIRE_WIDTH))
+        fill=color, width=WIRE_WIDTH))
     arrow_angle_2 = wire_angle + 5 * pi / 4
     parts.append(canvas.create_line(x2, y2, x2 + WIRE_ARROW_LENGTH *
         cos(arrow_angle_2), y2 + WIRE_ARROW_LENGTH * sin(arrow_angle_2),
-        fill=WIRE_COLOR, width=WIRE_WIDTH))
+        fill=color, width=WIRE_WIDTH))
   return parts
 
 def point_inside_bbox(point, bbox):
