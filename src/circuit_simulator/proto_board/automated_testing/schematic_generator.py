@@ -12,6 +12,8 @@ from random import sample
 from random import seed
 from shutil import move
 
+MAX_NUM_CONNECTIONS = 15
+
 # the idea is that we divide the board into 6 parts (2 rows, 3 cols) and put a
 #     various combinations of sub-circuits in the 6 slots, we consider various
 #     ways of interconnecting the sub-circuits
@@ -31,28 +33,20 @@ bases01['motor_01.circsim'] = [(390, 50), (390, 150)]
 bases02 = {}
 bases02['T_resistors_02.circsim'] = [(580, 80), (740, 80), (660, 160)]
 bases02['divider_follower_02.circsim'] = [(600, 70), (730, 160), (600, 230)]
-bases02['pot_follower_02.circsim'] = [(590, 70), (590, 150), (700, 120)]
-bases02['motor_02.circsim'] = [(680, 50), (680, 150)]
 # connection points for slot 10 (row 1, column 0)
 bases10 = {}
 bases10['T_resistors_10.circsim'] = [(50, 360), (210, 360), (130, 440)]
 bases10['divider_follower_10.circsim'] = [(70, 280), (200, 370), (70, 440)]
-bases10['pot_follower_10.circsim'] = [(70, 330), (70, 410), (180, 380)]
-bases10['motor_10.circsim'] = [(110, 330), (110, 430)]
 # connection points for slot 11 (row 1, column 1)
 bases11 = {}
 bases11['T_resistors_11.circsim'] = [(310, 360), (470, 360), (390, 440)]
 bases11['divider_follower_11.circsim'] = [(340, 280), (470, 370), (340, 440)]
-bases11['pot_follower_11.circsim'] = [(360, 330), (360, 410), (470, 380)]
-bases11['motor_11.circsim'] = [(410, 330), (410, 430)]
 bases11['head_11.circsim'] = [(290, 350), (290, 450), (380, 350), (430, 400),
     (380, 450), (480, 350), (530, 400), (480, 450)]
 # connection points for slot 12 (row 1, column 2)
 bases12 = {}
 bases12['T_resistors_12.circsim'] = [(590, 360), (750, 360), (670, 440)]
 bases12['divider_follower_12.circsim'] = [(620, 280), (750, 370), (620, 440)]
-bases12['pot_follower_12.circsim'] = [(600, 330), (600, 410), (710, 380)]
-bases12['motor_12.circsim'] = [(670, 330), (670, 430)]
 bases12['robot_12.circsim'] = [(620, 340), (670, 340), (570, 420), (620, 420),
     (670, 420), (730, 370), (730, 470)]
 
@@ -100,7 +94,8 @@ def generate():
             if other_base is not None:
               for other_base_point in other_base_dict[other_base]:
                 connections.append((base_point, other_base_point))
-    for num_connections in xrange(min(10, len(connections) + 1)):
+    for num_connections in xrange(min(MAX_NUM_CONNECTIONS,
+        len(connections)) + 1):
       wire_lines = ['Wire %s %s' % pair for pair in sample(connections,
           num_connections)]
       open(join(output_dir, '%s%d.circsim' % (combo, num_connections)),
@@ -141,6 +136,7 @@ def num_possible_schematics():
       scheme.
   """
   num_possible = 0
+  num_samples = 0
   combos = set()
   for b00 in bases00:
     for b01 in bases01:
@@ -169,17 +165,15 @@ def num_possible_schematics():
                   num_possible_connections = sum(l * sum(
                       num_connection_points[i + 1:]) for i, l in enumerate(
                       num_connection_points[:-1]))
-                  for num_connections in xrange(10):
+                  max_num_connections = min(MAX_NUM_CONNECTIONS,
+                      num_possible_connections)
+                  num_samples += max_num_connections + 1
+                  for num_connections in xrange(max_num_connections + 1):
                     num_possible += nCr(num_possible_connections,
                         num_connections)
-  return num_possible
+  return num_possible, num_samples
 
 if __name__ == '__main__':
   generate()
-  to_multiple_dirs(660)
+  #to_multiple_dirs(660)
   #print num_possible_schematics()
-  #  ***************************
-  #  *                         *
-  #  * 889,785,038,484,423,775 *
-  #  *                         *
-  #  ***************************
