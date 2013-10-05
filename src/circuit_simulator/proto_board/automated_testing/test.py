@@ -56,7 +56,7 @@ if __name__ == '__main__':
   output_file_name = ('circuit_simulator/proto_board/automated_testing/'
       'test_results/%s_%s' % (basename(normpath(argv[1])),
       datetime.now().strftime('%d%b%I:%M%p')))
-  open(output_file_name, 'w').write(','.join(header))
+  open(output_file_name, 'w').write(';'.join(header))
   for dir_path, dir_names, file_names in walk(argv[1]):
     num_files = len(file_names)
     for n, file_name in enumerate(file_names):
@@ -70,7 +70,7 @@ if __name__ == '__main__':
               tester.test_schematic(join(dir_path, file_name))[:-1])
           results = [line.strip() for line in open(output_file_name,
               'r').readlines()]
-          results.append(','.join(map(str, result)))
+          results.append(';'.join(map(str, result)))
           open(output_file_name, 'w').write('\n'.join(results))
         print
   stop_time = time()
