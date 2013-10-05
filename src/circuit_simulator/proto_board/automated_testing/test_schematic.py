@@ -71,8 +71,8 @@ class Schematic_Tester:
         interconnecting_nodes.add(node)
     num_nodes = len(interconnecting_nodes)
     num_schematic_pins = sum(n in interconnecting_nodes for n in pin_nodes)
-    proto_board, num_expanded = solve_layout(circuit, self.solve_mode,
-        self.solve_order, verbose=False, return_num_expanded=True)
+    proto_board, (placement_time, wiring_time) = solve_layout(circuit,
+        self.solve_mode, self.solve_order, verbose=False)
     solved = proto_board is not None
     # variables that depend on the protoboard (if solved)
     if proto_board:
@@ -86,10 +86,10 @@ class Schematic_Tester:
       num_wires = None
       total_wire_length = None
       num_wire_crosses = None
-    return (solved, num_expanded, num_schematic_pins, num_resistors, num_pots,
-        num_op_amps, num_op_amp_packages, num_motors, head_present,
-        robot_present, num_wires, total_wire_length, num_wire_crosses,
-        num_nodes, proto_board)
+    return (solved, placement_time, wiring_time, num_schematic_pins,
+        num_resistors, num_pots, num_op_amps, num_op_amp_packages, num_motors,
+        head_present, robot_present, num_wires, total_wire_length,
+        num_wire_crosses, num_nodes, proto_board)
   def test_schematic(self, schematic_file):
     """
     Attempts to produce the protoboard layout for the given |schematic_file|, a

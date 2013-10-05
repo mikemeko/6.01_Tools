@@ -18,24 +18,26 @@ from constants import RAIL_LEGAL_COLUMNS
 from find_proto_board_wiring import find_wiring
 from proto_board import Proto_Board
 from sys import stdout
+from time import clock
 from traceback import print_exc
 from util import node_disjoint_set_forest
 
 def solve_layout(circuit, mode=MODE_PER_PAIR, order=ORDER_DECREASING,
-    verbose=True, return_num_expanded=False):
+    verbose=True):
   """
   Returns a Proto_Board instance corresponding to the given |circuit|, or None
       if one could not be found. |mode| and |order| are parameters for how the
-      wiring should be solved, see find_proto_board_wiring.py. If
-      |return_num_expanded| is True, also returns the total number of nodes
-      expanded in the search for the wiring stage.
+      wiring should be solved, see find_proto_board_wiring.py. Also returns CPU
+      times for the placement and wiring steps.
   """
   try:
     # get a placement for the appropriate circuit pieces
+    placement_start = clock()
     placement, resistor_node_pairs = get_piece_placement(circuit, verbose)
+    placement_time = clock() - placement_start
     if placement is None:
       print "Pieces don't fit on the board."
-      return (None, 0) if return_num_expanded else None
+      return None, (placement_time, None)
     # put each of the pieces on the proto board
     proto_board = Proto_Board()
     for piece in placement:
@@ -57,9 +59,11 @@ def solve_layout(circuit, mode=MODE_PER_PAIR, order=ORDER_DECREASING,
     #     node
     proto_board = proto_board.with_loc_disjoint_set_forest(
         node_disjoint_set_forest(node_locs_mapping))
+    wiring_start = clock()
     proto_board, num_expanded = find_wiring(loc_pairs_to_connect(placement,
         resistor_node_pairs), proto_board, mode, order, verbose)
-    return (proto_board, num_expanded) if return_num_expanded else proto_board
+    wiring_time = clock() - wiring_start
+    return proto_board, (placement_time, wiring_time)
   except:
     print_exc(file=stdout)
-    return (None, 0) if return_num_expanded else None
+    return None, (None, None)

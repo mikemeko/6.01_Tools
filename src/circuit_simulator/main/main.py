@@ -87,7 +87,7 @@ if __name__ == '__main__':
     Finds a way to layout the given |circuit| on a proto board and displays the
         discovered proto board.
     """
-    proto_board = solve_layout(circuit)
+    proto_board, (placement_time, wiring_time) = solve_layout(circuit)
     if proto_board:
       # show labels on board for easy schematic-layout matching
       app_runner.board.show_label_tooltips()
