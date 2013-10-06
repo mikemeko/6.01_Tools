@@ -5,7 +5,6 @@ Script to analyze test results.
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
 from collections import defaultdict
-from colorsys import hls_to_rgb
 from numpy import mean
 from numpy import std
 from sys import argv
@@ -54,6 +53,7 @@ class Test_Group:
     self.num_components = group_results[0].num_components
     self.num_nodes = group_results[0].num_nodes
     self.successful_results = filter(lambda r: r.solved, group_results)
+    self.success_rate = float(len(self.successful_results)) / len(group_results)
 
 def analyze(results_file):
   # individial results
@@ -65,10 +65,12 @@ def analyze(results_file):
     results_by_identifier[result.identifier].append(result)
   groups = [Test_Group(value) for value in results_by_identifier.values()]
 
-  def label_heights(ax, rects):
+  def label_heights(ax, rects, max_height):
+    max_height = float(max_height)
     for rect in rects:
       w, h = rect.get_width(), rect.get_height()
-      ax.text(rect.get_x() + w / 2, h + 100, str(h), ha='center', va='bottom')
+      ax.text(rect.get_x() + w / 2, h + 150, '%d\n%.1f%%' % (h,
+          100 * h / max_height), ha='center', va='bottom')
 
   # overall results plot part 1
   fig, ax = pylab.subplots()
@@ -77,8 +79,8 @@ def analyze(results_file):
     num_solved_count_mapping[len(group.successful_results)] += 1
   plot_keys = range(11)
   rects = pylab.bar([k - 0.5 for k in plot_keys],
-      [num_solved_count_mapping[10 - key] for key in plot_keys])
-  label_heights(ax, rects)
+      [num_solved_count_mapping[key] for key in plot_keys])
+  label_heights(ax, rects, sum(rect.get_height() for rect in rects))
   pylab.title('Success')
   pylab.xlabel('Number of times failed out of 10')
   pylab.ylabel('Schematic count')
@@ -86,68 +88,51 @@ def analyze(results_file):
   # overall results plot part 2
   fig, ax = pylab.subplots()
   rects = pylab.bar([k - 0.5 for k in plot_keys],
-      [sum(num_solved_count_mapping[10 - k] for k in range(0, k + 1)) for k in
+      [sum(num_solved_count_mapping[k] for k in range(0, k + 1)) for k in
       plot_keys])
-  label_heights(ax, rects)
+  label_heights(ax, rects, rects[-1].get_height())
   pylab.title('Success')
   pylab.xlabel('Maximum number of times failed out of 10')
   pylab.ylabel('Schematic count')
 
-  # overall results plot part 3
-  pylab.figure()
-  pylab.pie([num_solved_count_mapping[key] for key in plot_keys],
-      labels=map(str, plot_keys), autopct='%1.f%%', pctdistance=0.9,
-      colors=[hls_to_rgb(k/10./3,0.5,1) for k in plot_keys])
-  pylab.title('Number of times solved out of 10')
-
   # success trend plots
   def trend_plot_success(attr):
-    pylab.figure()
+    fig, ax = pylab.subplots()
     success_mapping = defaultdict(list)
-    for result in results:
-      success_mapping[getattr(result, attr)].append(result.solved)
-    pylab.plot(success_mapping.keys(), map(mean, success_mapping.values()),
-        'go')
-    pylab.xlabel(attr.split('_')[-1])
-    pylab.ylabel('Success rate')
+    for group in groups:
+      success_mapping[getattr(group, attr)].append(group.success_rate)
+    ax.bar(success_mapping.keys(), map(len, success_mapping.values()),
+        alpha=0.2, color='g')
+    ax.set_xlabel(attr.split('_')[-1])
+    ax.set_ylabel('Count')
+    ax2 = ax.twinx()
+    ax2.errorbar([k + 0.5 for k in success_mapping.keys()], map(mean,
+        success_mapping.values()), map(std, success_mapping.values()))
+    ax2.set_ylabel('Success rate')
   trend_plot_success('num_nodes')
   trend_plot_success('num_components')
   trend_plot_success('num_schematic_pins')
 
-  # success time vs. failure time
-  fig, ax = pylab.subplots()
-  solved = []
-  failed = []
-  for result in results:
-    (solved if result.solved else failed).append(result.num_expanded)
-  p1 = ax.hist(solved, bins=30, color='g', alpha=0.5)
-  p2 = ax.hist(failed, bins=30, color='r', alpha=0.5)
-  pylab.xlabel('Number of states expanded')
-  pylab.ylabel('Run count')
-  pylab.legend(['Successful runs', 'Failed runs'])
-
   # time trend plots
   def trend_plot_time(attr):
-    fig, ax = pylab.subplots()
     solved_mapping = defaultdict(list)
     failed_mapping = defaultdict(list)
-    #all_x = []
-    #all_y = []
-    #color = []
     for result in results:
-      #all_x.append(getattr(result, attr) + (0 if result.solved else 0.1))
-      #all_y.append(result.num_expanded)
-      #color.append('g' if result.solved else 'r')
       (solved_mapping if result.solved else failed_mapping)[getattr(
           result, attr)].append(result.num_expanded)
-    #ax.scatter(all_x, all_y, marker='x', color=color)
-    for mapping, color in ((solved_mapping, 'g'), (failed_mapping, 'r')):
-      plot_keys = sorted(mapping.keys())
-      ax.errorbar(plot_keys, [mean(mapping[key]) for key in plot_keys],
-          yerr=[std(mapping[key]) for key in plot_keys], color=color)
-    pylab.legend(['Solved', 'Failed'])
-    pylab.xlabel(attr.split('_')[-1])
-    pylab.ylabel('Number of expanded states')
+    keys = sorted(solved_mapping.keys())
+    sample_keys = [keys[i * len(keys) / 4] for i in (1, 2, 3)]
+    pylab.figure()
+    pylab.subplot(311)
+    pylab.title('%s %s' % (attr.split('_')[-1], sample_keys))
+    pylab.hist(solved_mapping[sample_keys[0]], color='g', alpha=0.5, bins=10)
+    pylab.hist(failed_mapping[sample_keys[0]], color='r', alpha=0.5, bins=10)
+    pylab.subplot(312)
+    pylab.hist(solved_mapping[sample_keys[1]], color='g', alpha=0.5, bins=10)
+    pylab.hist(failed_mapping[sample_keys[1]], color='r', alpha=0.5, bins=10)
+    pylab.subplot(313)
+    pylab.hist(solved_mapping[sample_keys[2]], color='g', alpha=0.5, bins=10)
+    pylab.hist(failed_mapping[sample_keys[2]], color='r', alpha=0.5, bins=10)
   trend_plot_time('num_nodes')
   trend_plot_time('num_components')
   trend_plot_time('num_schematic_pins')
@@ -172,6 +157,9 @@ def analyze(results_file):
           yerr=[std(mapping[key]) for key in plot_keys], color=color)
     pylab.legend(['Num wires', 'Num wire crosses', 'Total length'])
     pylab.xlabel(attr.split('_')[-1])
+    ax2 = ax.twinx()
+    ax2.bar(num_wires_mapping.keys(), map(len, num_wires_mapping.values()),
+        alpha=0.2, color='b')
   quality_plot('num_nodes')
   quality_plot('num_components')
   quality_plot('num_schematic_pins')
