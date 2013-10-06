@@ -12,7 +12,7 @@ from random import sample
 from random import seed
 from shutil import move
 
-MAX_NUM_CONNECTIONS = 15
+MAX_NUM_CONNECTIONS = {1:0, 2:6, 3:8, 4:10, 5:14, 6:16}
 
 # the idea is that we divide the board into 6 parts (2 rows, 3 cols) and put a
 #     various combinations of sub-circuits in the 6 slots, we consider various
@@ -94,7 +94,7 @@ def generate():
             if other_base is not None:
               for other_base_point in other_base_dict[other_base]:
                 connections.append((base_point, other_base_point))
-    for num_connections in xrange(min(MAX_NUM_CONNECTIONS,
+    for num_connections in xrange(min(MAX_NUM_CONNECTIONS[len(combo)],
         len(connections)) + 1):
       wire_lines = ['Wire %s %s' % pair for pair in sample(connections,
           num_connections)]
@@ -165,7 +165,7 @@ def num_possible_schematics():
                   num_possible_connections = sum(l * sum(
                       num_connection_points[i + 1:]) for i, l in enumerate(
                       num_connection_points[:-1]))
-                  max_num_connections = min(MAX_NUM_CONNECTIONS,
+                  max_num_connections = min(MAX_NUM_CONNECTIONS[len(combo)],
                       num_possible_connections)
                   num_samples += max_num_connections + 1
                   for num_connections in xrange(max_num_connections + 1):
@@ -174,6 +174,8 @@ def num_possible_schematics():
   return num_possible, num_samples
 
 if __name__ == '__main__':
+  num_possible, num_samples = num_possible_schematics()
   generate()
-  #to_multiple_dirs(660)
-  #print num_possible_schematics()
+  to_multiple_dirs(num_samples / 8 + 1)
+  print 'Generated %d schematics out of a possible %d' % (num_samples,
+      num_possible)
