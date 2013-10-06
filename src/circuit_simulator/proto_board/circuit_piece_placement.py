@@ -6,14 +6,20 @@ Tools to figure out a good placement of circuit pieces on the proto board given
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
 from circuit_pieces import Circuit_Piece
+from circuit_pieces import N_Pin_Connector_Piece
+from circuit_pieces import Op_Amp_Piece
+from circuit_pieces import Place_Holder_Piece
+from circuit_pieces import Pot_Piece
 from circuit_pieces import Resistor_Piece
 from circuit_simulator.main.constants import GROUND
 from circuit_simulator.main.constants import POWER
 from collections import defaultdict
+from constants import BODY_ROWS
 from constants import CIRCUIT_PIECE_SEPARATION
 from constants import GROUND_RAIL
 from constants import POWER_RAIL
 from constants import PROTO_BOARD_WIDTH
+from constants import PROTO_BOARD_HEIGHT
 from constants import RAIL_LEGAL_COLUMNS
 from constants import RAIL_ROWS
 from copy import deepcopy
@@ -21,6 +27,7 @@ from core.data_structures.disjoint_set_forest import Disjoint_Set_Forest
 from core.data_structures.queue import Queue
 from itertools import permutations
 from itertools import product
+from util import body_section_rows
 from util import dist
 
 def closest_rail_loc(loc, rail_r):
@@ -133,6 +140,53 @@ def set_locations(pieces):
     col += piece.width + separations[i]
   return True
 
+def _distance_cost(placement):
+  """
+  Placement cost based on total distance to connect.
+  """
+  return sum(dist(loc_1, loc_2) for loc_1, loc_2, resistor_flag, node in
+      loc_pairs_to_connect(placement, []))
+
+def _blocking_cost(placement):
+  """
+  Placement cost based on how many rows are blocked.
+  Currently not used.
+  """
+  cost = 0
+  loc_pairs = [(loc_1, loc_2) for loc_1, loc_2, resistor_flag, node in
+      loc_pairs_to_connect(placement, [])]
+  for piece in placement:
+    r, c = piece.top_left_loc
+    if isinstance(piece, Resistor_Piece):
+      piece_cost = 2
+      piece_rows = BODY_ROWS
+    elif isinstance(piece, Op_Amp_Piece):
+      piece_cost = 3
+      piece_rows = BODY_ROWS
+    elif isinstance(piece, Place_Holder_Piece):
+      piece_cost = 1
+      piece_rows = body_section_rows(r)
+    elif isinstance(piece, Pot_Piece):
+      piece_cost = 3
+      piece_rows = body_section_rows(r)
+    elif isinstance(piece, N_Pin_Connector_Piece):
+      piece_cost = 1
+      piece_rows = body_section_rows(min((2, PROTO_BOARD_HEIGHT - 3),
+          key=lambda body_r: abs(r - body_r)))
+    else:
+      raise Exception('Unexpected piece %s' % piece)
+    for loc_1, loc_2 in loc_pairs:
+      r1, c1 = loc_1
+      r2, c2 = loc_2
+      pair_rows = set()
+      for pair_r in (r1, r2):
+        if pair_r in BODY_ROWS:
+          pair_rows |= body_section_rows(pair_r)
+      if pair_rows & piece_rows:
+        piece_cost += 1
+    cost += piece_cost
+  return cost
+
 def cost(placement):
   """
   Returns a heuristic cost of the given |placement| - the sum of the distances
@@ -140,8 +194,7 @@ def cost(placement):
       float('inf') if the |placement| does not fit on a board.
   """
   if set_locations(placement):
-    return sum(dist(loc_1, loc_2) for loc_1, loc_2, resistor_flag, node in
-        loc_pairs_to_connect(placement, []))
+    return _distance_cost(placement)
   else:
     return float('inf')
 
