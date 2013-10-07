@@ -9,25 +9,42 @@ from circuit_simulator.proto_board.automated_testing.test_schematic import (
     Schematic_Tester)
 from circuit_simulator.proto_board.constants import MODE_PER_PAIR
 from circuit_simulator.proto_board.constants import ORDER_DECREASING
-from ntpath import basename
+from os.path import basename
+from os.path import normpath
 from sys import argv
-import pylab
 
 def multiple_runs(schematic):
+  output_file_name = ('circuit_simulator/proto_board/automated_testing/'
+      'repetition_test/results/%s_results' %
+      basename(normpath(schematic)).split('.')[0])
+  header = (
+      'run #',
+      'solved',
+      'placement_time',
+      'wiring_time',
+      'num_expanded',
+      'num_schematic_pins',
+      'num_resistors',
+      'num_pots',
+      'num_op_amps',
+      'num_op_amp_packages',
+      'num_motors',
+      'head_present',
+      'robot_present',
+      'num_wires',
+      'total_wire_length',
+      'num_wire_crosses',
+      'num_nodes',
+      'num_loc_pairs')
+  open(output_file_name, 'w').write(';'.join(header))
   tester = Schematic_Tester(MODE_PER_PAIR, ORDER_DECREASING)
-  success_expanded = []
-  failure_expanded = []
-  for i in xrange(100):
-    test_results = tester.test_schematic(schematic)
-    success = test_results[0]
-    num_expanded = test_results[1]
-    print i, success, num_expanded
-    (success_expanded if success else failure_expanded).append(num_expanded)
-  if failure_expanded:
-    pylab.hist(failure_expanded, color='r', alpha=0.5)
-  if success_expanded:
-    pylab.hist(success_expanded, color='g', alpha=0.5)
-  pylab.savefig('variability_%s.png' % basename(schematic).split('.')[0])
+  for i in xrange(500):
+    print 'run %d' % i
+    result = (i,) + tester.test_schematic(schematic)[:-1]
+    results = [line.strip() for line in open(output_file_name,
+        'r').readlines()]
+    results.append(';'.join(map(str, result)))
+    open(output_file_name, 'w').write('\n'.join(results))
 
 if __name__ == '__main__':
   assert len(argv) == 2, 'No input'
