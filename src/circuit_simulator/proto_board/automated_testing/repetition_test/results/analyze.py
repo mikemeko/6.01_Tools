@@ -58,12 +58,13 @@ class Test_Result:
     self.total_wire_length = get_int(line[g.next()])
     self.num_wire_crosses = get_int(line[g.next()])
 
-def analyze(results_file):
+def analyze(results_file, f, title):
+  pylab.figure()
+  print title
   lines = [line.strip() for line in open(results_file).readlines()]
   results = [Test_Result(line) for line in lines[1:]]
-  success_times = [result.wiring_time for result in results if result.solved]
-  failure_times = [result.wiring_time for result in results if not
-      result.solved]
+  success_times = [f(result) for result in results if result.solved]
+  failure_times = [f(result) for result in results if not result.solved]
   print 'Success rate: %.2f' % (float(len(success_times)) / len(results))
   if success_times:
     print 'Success stats: %.2f, %.2f' % (mean(success_times),
@@ -75,8 +76,14 @@ def analyze(results_file):
     pylab.hist(success_times, color='g', bins=20, alpha=0.5)
   if failure_times:
     pylab.hist(failure_times, color='r', bins=20, alpha=0.5)
-  pylab.show()
+  pylab.title(title)
+  print
 
 if __name__ == '__main__':
   assert len(argv) == 2, 'No input'
-  analyze(argv[1])
+  analyze(argv[1], lambda result: max(result.num_expanded), 'max expanded')
+  analyze(argv[1], lambda result: sum(result.num_expanded), 'sum expanded')
+  analyze(argv[1], lambda result: result.placement_time, 'placement time')
+  analyze(argv[1], lambda result: result.wiring_time, 'wiring time')
+  analyze(argv[1], lambda result: result.total_time, 'total time')
+  pylab.show()

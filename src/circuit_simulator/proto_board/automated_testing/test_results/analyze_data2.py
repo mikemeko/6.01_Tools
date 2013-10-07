@@ -46,6 +46,8 @@ class Test_Result:
     self.wiring_time = get_float(line[g.next()])
     self.total_time = self.placement_time + self.wiring_time
     self.num_expanded = get_int_list(line[g.next()])
+    if self.num_expanded is None:
+      self.num_expanded = [0]
     self.num_schematic_pins = get_int(line[g.next()])
     self.num_resistors = get_int(line[g.next()])
     self.num_pots = get_int(line[g.next()])
@@ -132,34 +134,35 @@ def analyze(results_file):
   trend_plot_success('num_loc_pairs')
 
   # time trend plots
-  def trend_plot_time(attr):
+  def trend_plot_time(attr, f=lambda result: max(result.num_expanded)):
     solved_mapping = defaultdict(list)
     failed_mapping = defaultdict(list)
     for result in results:
       (solved_mapping if result.solved else failed_mapping)[getattr(
-          result, attr)].append(result.total_time)
+          result, attr)].append(f(result))
     keys = sorted(solved_mapping.keys())
     sample_keys = [keys[i * len(keys) / 4] for i in (1, 2, 3)]
     pylab.figure()
     pylab.subplot(311)
     pylab.title('%s %s' % (attr.split('_')[-1], sample_keys))
+    log = False
     pylab.hist(solved_mapping[sample_keys[0]], color='g', alpha=0.5, bins=20,
-        log=True)
+        log=log)
     if sample_keys[0] in failed_mapping:
       pylab.hist(failed_mapping[sample_keys[0]], color='r', alpha=0.5, bins=20,
-          log=True)
+          log=log)
     pylab.subplot(312)
     pylab.hist(solved_mapping[sample_keys[1]], color='g', alpha=0.5, bins=20,
-        log=True)
+        log=log)
     if sample_keys[1] in failed_mapping:
       pylab.hist(failed_mapping[sample_keys[1]], color='r', alpha=0.5, bins=20,
-          log=True)
+          log=log)
     pylab.subplot(313)
     pylab.hist(solved_mapping[sample_keys[2]], color='g', alpha=0.5, bins=20,
-        log=True)
+        log=log)
     if sample_keys[2] in failed_mapping:
       pylab.hist(failed_mapping[sample_keys[2]], color='r', alpha=0.5, bins=20,
-          log=True)
+          log=log)
   trend_plot_time('num_nodes')
   trend_plot_time('num_components')
   trend_plot_time('num_schematic_pins')
