@@ -44,6 +44,7 @@ class Test_Result:
     self.solved = line[g.next()] == 'True'
     self.placement_time = get_float(line[g.next()])
     self.wiring_time = get_float(line[g.next()])
+    self.total_time = self.placement_time + self.wiring_time
     self.num_expanded = get_int_list(line[g.next()])
     self.num_schematic_pins = get_int(line[g.next()])
     self.num_resistors = get_int(line[g.next()])
@@ -67,6 +68,7 @@ class Test_Group:
     self.num_schematic_pins = group_results[0].num_schematic_pins
     self.num_components = group_results[0].num_components
     self.num_nodes = group_results[0].num_nodes
+    self.num_loc_pairs = group_results[0].num_loc_pairs
     self.successful_results = filter(lambda r: r.solved, group_results)
     self.success_rate = float(len(self.successful_results)) / len(group_results)
 
@@ -127,6 +129,7 @@ def analyze(results_file):
   trend_plot_success('num_nodes')
   trend_plot_success('num_components')
   trend_plot_success('num_schematic_pins')
+  trend_plot_success('num_loc_pairs')
 
   # time trend plots
   def trend_plot_time(attr):
@@ -134,26 +137,33 @@ def analyze(results_file):
     failed_mapping = defaultdict(list)
     for result in results:
       (solved_mapping if result.solved else failed_mapping)[getattr(
-          result, attr)].append(sum(result.num_expanded))
+          result, attr)].append(result.total_time)
     keys = sorted(solved_mapping.keys())
     sample_keys = [keys[i * len(keys) / 4] for i in (1, 2, 3)]
     pylab.figure()
     pylab.subplot(311)
     pylab.title('%s %s' % (attr.split('_')[-1], sample_keys))
-    pylab.hist(solved_mapping[sample_keys[0]], color='g', alpha=0.5, bins=10)
+    pylab.hist(solved_mapping[sample_keys[0]], color='g', alpha=0.5, bins=20,
+        log=True)
     if sample_keys[0] in failed_mapping:
-      pylab.hist(failed_mapping[sample_keys[0]], color='r', alpha=0.5, bins=10)
+      pylab.hist(failed_mapping[sample_keys[0]], color='r', alpha=0.5, bins=20,
+          log=True)
     pylab.subplot(312)
-    pylab.hist(solved_mapping[sample_keys[1]], color='g', alpha=0.5, bins=10)
+    pylab.hist(solved_mapping[sample_keys[1]], color='g', alpha=0.5, bins=20,
+        log=True)
     if sample_keys[1] in failed_mapping:
-      pylab.hist(failed_mapping[sample_keys[1]], color='r', alpha=0.5, bins=10)
+      pylab.hist(failed_mapping[sample_keys[1]], color='r', alpha=0.5, bins=20,
+          log=True)
     pylab.subplot(313)
-    pylab.hist(solved_mapping[sample_keys[2]], color='g', alpha=0.5, bins=10)
+    pylab.hist(solved_mapping[sample_keys[2]], color='g', alpha=0.5, bins=20,
+        log=True)
     if sample_keys[2] in failed_mapping:
-      pylab.hist(failed_mapping[sample_keys[2]], color='r', alpha=0.5, bins=10)
+      pylab.hist(failed_mapping[sample_keys[2]], color='r', alpha=0.5, bins=20,
+          log=True)
   trend_plot_time('num_nodes')
   trend_plot_time('num_components')
   trend_plot_time('num_schematic_pins')
+  trend_plot_time('num_loc_pairs')
 
   # protoboard quality plots
   def quality_plot(attr):
@@ -181,6 +191,7 @@ def analyze(results_file):
   quality_plot('num_nodes')
   quality_plot('num_components')
   quality_plot('num_schematic_pins')
+  quality_plot('num_loc_pairs')
 
   pylab.show()
 
