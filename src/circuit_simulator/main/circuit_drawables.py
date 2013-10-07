@@ -474,37 +474,37 @@ class Motor_Drawable(Pin_Drawable):
     self.color = color
     self.group_id = group_id
     self.direction = direction
-  def draw_connectors(self, canvas, offset=(0, 0)):
+  def _plus_minus_positions(self, offset):
     ox, oy = offset
     w, h = self.width, self.height
     cx, cy = ox + w / 2, oy + h / 2
     if self.direction == DIRECTION_UP:
-      plus_x = minus_x = cx
-      plus_y = oy
-      minus_y = oy + h
+      return cx, oy, cx, oy + h
     elif self.direction == DIRECTION_RIGHT:
-      plus_x = ox + w
-      minus_x = ox
-      plus_y = minus_y = cy
+      return ox + w, cy, ox, cy
     elif self.direction == DIRECTION_DOWN:
-      plus_x = minus_x = cx
-      plus_y = oy + h
-      minus_y = oy
+      return cx, oy + h, cx, oy
     elif self.direction == DIRECTION_LEFT:
-      plus_x = ox
-      minus_x = ox + w
-      plus_y = minus_y = cy
+      return ox, cy, ox + w, cy
     else:
       # should never get here
       raise Exception('Invalid direction %s' % self.direction)
-    self.plus = self._draw_connector(canvas, (plus_x, plus_y))
-    self.minus = self._draw_connector(canvas, (minus_x, minus_y))
+  def draw_on(self, canvas, offset=(0, 0)):
+    Pin_Drawable.draw_on(self, canvas, offset)
+    ox, oy = offset
+    w, h = self.width, self.height
+    cx, cy = ox + w / 2, oy + h / 2
+    plus_x, plus_y, minus_x, minus_y = self._plus_minus_positions(offset)
     self.parts.add(canvas.create_text(plus_x + LABEL_PADDING * sign(cx -
         plus_x), plus_y + LABEL_PADDING * sign(cy - plus_y), text='+',
         fill='white', justify=CENTER, font=FONT))
     self.parts.add(canvas.create_text(minus_x + LABEL_PADDING * sign(cx -
         minus_x), minus_y + LABEL_PADDING * sign(cy - minus_y), text='-',
         fill='white', justify=CENTER, font=FONT))
+  def draw_connectors(self, canvas, offset=(0, 0)):
+    plus_x, plus_y, minus_x, minus_y = self._plus_minus_positions(offset)
+    self.plus = self._draw_connector(canvas, (plus_x, plus_y))
+    self.minus = self._draw_connector(canvas, (minus_x, minus_y))
   def rotated(self):
     return Motor_Drawable(self.color, self.group_id, (self.direction + 1) % 4)
   def serialize(self, offset):
@@ -532,40 +532,28 @@ class Motor_Pot_Drawable(Pin_Drawable):
     self.color = color
     self.group_id = group_id
     self.direction = direction
-  def draw_connectors(self, canvas, offset=(0, 0)):
+  def _pin_positions(self, offset):
     ox, oy = offset
     w, h = self.width, self.height
     cx, cy = ox + w / 2, oy + h / 2
     if self.direction == DIRECTION_UP:
-      top_x = ox
-      top_y = bottom_y = cy
-      middle_x = cx
-      middle_y = oy
-      bottom_x = ox + w
+      return ox, cy, cx, oy, ox + w, cy
     elif self.direction == DIRECTION_RIGHT:
-      top_x = bottom_x = cx
-      top_y = oy
-      middle_x = ox + w
-      middle_y = cy
-      bottom_y = oy + h
+      return cx, oy, ox + w, cy, cx, oy + h
     elif self.direction == DIRECTION_DOWN:
-      top_x = ox + w
-      top_y = bottom_y = cy
-      middle_x = cx
-      middle_y = oy + h
-      bottom_x = ox
+      return ox + w, cy, cx, oy + h, ox, cy
     elif self.direction == DIRECTION_LEFT:
-      top_x = bottom_x = cx
-      top_y = oy + h
-      middle_x = ox
-      middle_y = cy
-      bottom_y = oy
+      return cx, oy + h, ox, cy, cx, oy
     else:
       # should never get here
       raise Exception('Invalid direction %s' % self.direction)
-    self.top = self._draw_connector(canvas, (top_x, top_y))
-    self.middle = self._draw_connector(canvas, (middle_x, middle_y))
-    self.bottom = self._draw_connector(canvas, (bottom_x, bottom_y))
+  def draw_on(self, canvas, offset=(0, 0)):
+    Pin_Drawable.draw_on(self, canvas, offset)
+    ox, oy = offset
+    w, h = self.width, self.height
+    cx, cy = ox + w / 2, oy + h / 2
+    top_x, top_y, middle_x, middle_y, bottom_x, bottom_y = self._pin_positions(
+        offset)
     self.parts.add(canvas.create_text(top_x + LABEL_PADDING * sign(cx - top_x),
         top_y + LABEL_PADDING * sign(cy - top_y), text='+', fill='white',
         justify=CENTER, font=FONT))
@@ -575,6 +563,12 @@ class Motor_Pot_Drawable(Pin_Drawable):
     self.parts.add(canvas.create_text(bottom_x + LABEL_PADDING * sign(cx -
         bottom_x), bottom_y + LABEL_PADDING * sign(cy - bottom_y), text='-',
         fill='white', justify=CENTER, font=FONT))
+  def draw_connectors(self, canvas, offset=(0, 0)):
+    top_x, top_y, middle_x, middle_y, bottom_x, bottom_y = self._pin_positions(
+        offset)
+    self.top = self._draw_connector(canvas, (top_x, top_y))
+    self.middle = self._draw_connector(canvas, (middle_x, middle_y))
+    self.bottom = self._draw_connector(canvas, (bottom_x, bottom_y))
   def rotated(self):
     return Motor_Pot_Drawable(self.color, self.group_id,
         (self.direction + 1) % 4)
@@ -614,12 +608,39 @@ class Photosensors_Drawable(Pin_Drawable):
     self.on_signal_file_changed = on_signal_file_changed
     self.direction = direction
     self.signal_file = signal_file
-  def draw_on(self, canvas, offset=(0, 0)):
-    Pin_Drawable.draw_on(self, canvas, offset)
-    # draw the button that, when right-clicked, lets the user select a signal
-    #     file for the photosensors
+  def _pin_positions(self, offset):
     ox, oy = offset
     w, h = self.width, self.height
+    cx, cy = ox + w / 2, oy + h / 2
+    if self.direction == DIRECTION_UP:
+      return ox, cy, cx, oy, ox + w, cy
+    elif self.direction == DIRECTION_RIGHT:
+      return cx, oy, cx, oy + h, ox + w, cy
+    elif self.direction == DIRECTION_DOWN:
+      return ox + w, cy, cx, oy + h, ox, cy
+    elif self.direction == DIRECTION_LEFT:
+      return cx, oy + h, ox, cy, cx, oy
+    else:
+      # should never get here
+      raise Exception('Invalid direction %s' % self.direction)
+  def draw_on(self, canvas, offset=(0, 0)):
+    Pin_Drawable.draw_on(self, canvas, offset)
+    ox, oy = offset
+    w, h = self.width, self.height
+    cx, cy = ox + w / 2, oy + h / 2
+    left_x, left_y, common_x, common_y, right_x, right_y = self._pin_positions(
+        offset)
+    self.parts.add(canvas.create_text(left_x + LABEL_PADDING * sign(cx -
+        left_x), left_y + LABEL_PADDING * sign(cy - left_y), text='l',
+        fill='white', justify=CENTER, font=FONT))
+    self.parts.add(canvas.create_text(common_x + LABEL_PADDING * sign(cx -
+        common_x), common_y + LABEL_PADDING * sign(cy - common_y), text='c',
+        fill='white', justify=CENTER, font=FONT))
+    self.parts.add(canvas.create_text(right_x + LABEL_PADDING * sign(cx -
+        right_x), right_y + LABEL_PADDING * sign(cy - right_y), text='r',
+        fill='white', justify=CENTER, font=FONT))
+    # draw the button that, when right-clicked, lets the user select a signal
+    #     file for the photosensors
     if self.direction == DIRECTION_UP:
       lamp_cx = ox + w / 2
       lamp_cy = oy + h - LAMP_BOX_PADDING - LAMP_BOX_SIZE / 2
@@ -656,48 +677,11 @@ class Photosensors_Drawable(Pin_Drawable):
       canvas.tag_bind(lamp_part, '<Button-2>', set_signal_file)
       canvas.tag_bind(lamp_part, '<Button-3>', set_signal_file)
   def draw_connectors(self, canvas, offset=(0, 0)):
-    ox, oy = offset
-    w, h = self.width, self.height
-    cx, cy = ox + w / 2, oy + h / 2
-    if self.direction == DIRECTION_UP:
-      left_x = ox
-      left_y = right_y = cy
-      common_x = cx
-      common_y = oy
-      right_x = ox + w
-    elif self.direction == DIRECTION_RIGHT:
-      left_x = right_x = cx
-      left_y = oy
-      common_x = ox + w
-      common_y = cy
-      right_y = oy + h
-    elif self.direction == DIRECTION_DOWN:
-      left_x = ox + w
-      left_y = right_y = cy
-      common_x = cx
-      common_y = oy + h
-      right_x = ox
-    elif self.direction == DIRECTION_LEFT:
-      left_x = right_x = cx
-      left_y = oy + h
-      common_x = ox
-      common_y = cy
-      right_y = oy
-    else:
-      # should never get here
-      raise Exception('Invalid direction %s' % self.direction)
+    left_x, left_y, common_x, common_y, right_x, right_y = self._pin_positions(
+        offset)
     self.left = self._draw_connector(canvas, (left_x, left_y))
     self.common = self._draw_connector(canvas, (common_x, common_y))
     self.right = self._draw_connector(canvas, (right_x, right_y))
-    self.parts.add(canvas.create_text(left_x + LABEL_PADDING * sign(cx -
-        left_x), left_y + LABEL_PADDING * sign(cy - left_y), text='l',
-        fill='white', justify=CENTER, font=FONT))
-    self.parts.add(canvas.create_text(common_x + LABEL_PADDING * sign(cx -
-        common_x), common_y + LABEL_PADDING * sign(cy - common_y), text='c',
-        fill='white', justify=CENTER, font=FONT))
-    self.parts.add(canvas.create_text(right_x + LABEL_PADDING * sign(cx -
-        right_x), right_y + LABEL_PADDING * sign(cy - right_y), text='r',
-        fill='white', justify=CENTER, font=FONT))
   def rotated(self):
     return Photosensors_Drawable(self.color, self.group_id,
         self.on_signal_file_changed, (self.direction + 1) % 4, self.signal_file)
@@ -740,37 +724,37 @@ class Robot_Power_Drawable(Pin_Drawable):
     self.color = color
     self.group_id = group_id
     self.direction = direction
-  def draw_connectors(self, canvas, offset=(0, 0)):
+  def _pwr_gnd_positions(self, offset):
     ox, oy = offset
     w, h = self.width, self.height
     cx, cy = ox + w / 2, oy + h / 2
     if self.direction == DIRECTION_UP:
-      pwr_x = gnd_x = cx
-      pwr_y = oy
-      gnd_y = oy + h
+      return cx, oy, cx, oy + h
     elif self.direction == DIRECTION_RIGHT:
-      pwr_x = ox + w
-      gnd_x = ox
-      pwr_y = gnd_y = cy
+      return ox + w, cy, ox, cy
     elif self.direction == DIRECTION_DOWN:
-      pwr_x = gnd_x = cx
-      pwr_y = oy + h
-      gnd_y = oy
+      return cx, oy + h, cx, oy
     elif self.direction == DIRECTION_LEFT:
-      pwr_x = ox
-      gnd_x = ox + w
-      pwr_y = gnd_y = cy
+      return ox, cy, ox + w, cy
     else:
       # should never get here
       raise Exception('Invalid direction %s' % self.direction)
-    self.pwr = self._draw_connector(canvas, (pwr_x, pwr_y))
-    self.gnd = self._draw_connector(canvas, (gnd_x, gnd_y))
+  def draw_on(self, canvas, offset=(0, 0)):
+    Pin_Drawable.draw_on(self, canvas, offset)
+    ox, oy = offset
+    w, h = self.width, self.height
+    cx, cy = ox + w / 2, oy + h / 2
+    pwr_x, pwr_y, gnd_x, gnd_y = self._pwr_gnd_positions(offset)
     self.parts.add(canvas.create_text(pwr_x + LABEL_PADDING * sign(cx - pwr_x),
         pwr_y + LABEL_PADDING * sign(cy - pwr_y), text='+', fill='white',
         justify=CENTER, font=FONT))
     self.parts.add(canvas.create_text(gnd_x + LABEL_PADDING * sign(cx - gnd_x),
         gnd_y + LABEL_PADDING * sign(cy - gnd_y), text='-', fill='white',
         justify=CENTER, font=FONT))
+  def draw_connectors(self, canvas, offset=(0, 0)):
+    pwr_x, pwr_y, gnd_x, gnd_y = self._pwr_gnd_positions(offset)
+    self.pwr = self._draw_connector(canvas, (pwr_x, pwr_y))
+    self.gnd = self._draw_connector(canvas, (gnd_x, gnd_y))
   def rotated(self):
     return Robot_Power_Drawable(self.color, self.group_id,
         (self.direction + 1) % 4)
