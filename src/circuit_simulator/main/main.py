@@ -30,6 +30,8 @@ from constants import BOARD_HEIGHT
 from constants import BOARD_WIDTH
 from constants import DEV_STAGE
 from constants import FILE_EXTENSION
+from constants import OP_AMP_NP
+from constants import OP_AMP_PN
 from constants import PALETTE_HEIGHT
 from constants import PROBE_INIT_PADDING
 from constants import PROBE_SIZE
@@ -106,7 +108,10 @@ if __name__ == '__main__':
       board=app_runner.board)
   app_runner.palette.add_drawable_type(Pot_Drawable, LEFT, None,
       on_signal_file_changed=lambda: app_runner.board.set_changed(True))
-  app_runner.palette.add_drawable_type(Op_Amp_Drawable, LEFT, None)
+  app_runner.palette.add_drawable_type(Op_Amp_Drawable, LEFT, None,
+      signs=OP_AMP_PN)
+  app_runner.palette.add_drawable_type(Op_Amp_Drawable, LEFT, None,
+      signs=OP_AMP_NP)
   app_runner.palette.add_drawable_type(Robot_Connector_Drawable, LEFT, None,
       types_to_add=[(Robot_Power_Drawable, {})] + [(Robot_IO_Drawable,
       {'name': 'Vi%d' % i}) for i in (1, 2, 3, 4)] + [(Robot_IO_Drawable,

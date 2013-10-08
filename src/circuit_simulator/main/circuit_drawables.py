@@ -29,7 +29,9 @@ from constants import OP_AMP_CONNECTOR_PADDING
 from constants import OP_AMP_DOWN_VERTICES
 from constants import OP_AMP_FILL
 from constants import OP_AMP_LEFT_VERTICES
+from constants import OP_AMP_NP
 from constants import OP_AMP_OUTLINE
+from constants import OP_AMP_PN
 from constants import OP_AMP_RIGHT_VERTICES
 from constants import OP_AMP_UP_VERTICES
 from constants import OPEN_LAMP_SIGNAL_FILE_TITLE
@@ -268,12 +270,15 @@ class Op_Amp_Drawable(Drawable):
   """
   Drawable for op amps.
   """
-  def __init__(self, vertices=OP_AMP_RIGHT_VERTICES):
+  def __init__(self, vertices=OP_AMP_RIGHT_VERTICES, signs=OP_AMP_PN):
     """
     |vertices|: the vertices of the triangle for this op amp.
+    |signs|: order of signs for this op amp, to allow two configurations.
     """
     assert vertices in (OP_AMP_RIGHT_VERTICES, OP_AMP_DOWN_VERTICES,
         OP_AMP_LEFT_VERTICES, OP_AMP_UP_VERTICES), 'invalid op amp vertices'
+    assert signs in (OP_AMP_PN, OP_AMP_NP), 'invalid op amp signs'
+    self.signs = signs
     self.vertices = vertices
     x1, y1, x2, y2, x3, y3 = vertices
     min_x, max_x = [f(x1, x2, x3) for f in min, max]
@@ -287,26 +292,28 @@ class Op_Amp_Drawable(Drawable):
     self._triangle_id = canvas.create_polygon(x1, y1, x2, y2, x3, y3,
         fill=OP_AMP_FILL, outline=OP_AMP_OUTLINE)
     self.parts.add(self._triangle_id)
+    text_1 = '+' if self.signs == OP_AMP_PN else '-'
+    text_2 = '-' if self.signs == OP_AMP_PN else '+'
     if self.vertices == OP_AMP_RIGHT_VERTICES:
       self.parts.add(canvas.create_text(x1 + LABEL_PADDING,
-          y1 + OP_AMP_CONNECTOR_PADDING, text='+', font=FONT))
+          y1 + OP_AMP_CONNECTOR_PADDING, text=text_1, font=FONT))
       self.parts.add(canvas.create_text(x2 + LABEL_PADDING,
-          y2 - OP_AMP_CONNECTOR_PADDING, text='-', font=FONT))
+          y2 - OP_AMP_CONNECTOR_PADDING, text=text_2, font=FONT))
     elif self.vertices == OP_AMP_DOWN_VERTICES:
       self.parts.add(canvas.create_text(x3 - OP_AMP_CONNECTOR_PADDING,
-          y3 + LABEL_PADDING, text='+', font=FONT))
+          y3 + LABEL_PADDING, text=text_1, font=FONT))
       self.parts.add(canvas.create_text(x1 + OP_AMP_CONNECTOR_PADDING,
-          y1 + LABEL_PADDING, text='-', font=FONT))
+          y1 + LABEL_PADDING, text=text_2, font=FONT))
     elif self.vertices == OP_AMP_LEFT_VERTICES:
       self.parts.add(canvas.create_text(x2 - LABEL_PADDING,
-          y2 - OP_AMP_CONNECTOR_PADDING, text='+', font=FONT))
+          y2 - OP_AMP_CONNECTOR_PADDING, text=text_1, font=FONT))
       self.parts.add(canvas.create_text(x3 - LABEL_PADDING,
-          y3 + OP_AMP_CONNECTOR_PADDING, text='-', font=FONT))
+          y3 + OP_AMP_CONNECTOR_PADDING, text=text_2, font=FONT))
     else: # OP_AMP_UP_VERTICES
       self.parts.add(canvas.create_text(x2 + OP_AMP_CONNECTOR_PADDING,
-          y2 - LABEL_PADDING, text='+', font=FONT))
+          y2 - LABEL_PADDING, text=text_1, font=FONT))
       self.parts.add(canvas.create_text(x3 - OP_AMP_CONNECTOR_PADDING,
-          y3 - LABEL_PADDING, text='-', font=FONT))
+          y3 - LABEL_PADDING, text=text_2, font=FONT))
   def draw_connectors(self, canvas, offset=(0, 0)):
     x1, y1, x2, y2, x3, y3 = self.vertices
     ox, oy = offset
@@ -336,21 +343,23 @@ class Op_Amp_Drawable(Drawable):
       self.minus_port = self._draw_connector(canvas,
           (x3 - OP_AMP_CONNECTOR_PADDING, y3))
       self.out_port = self._draw_connector(canvas, (x1, y1))
+    if self.signs == OP_AMP_NP:
+      self.plus_port, self.minus_port = self.minus_port, self.plus_port
   def rotated(self):
     if self.vertices == OP_AMP_RIGHT_VERTICES:
-      return Op_Amp_Drawable(OP_AMP_DOWN_VERTICES)
+      return Op_Amp_Drawable(OP_AMP_DOWN_VERTICES, self.signs)
     elif self.vertices == OP_AMP_DOWN_VERTICES:
-      return Op_Amp_Drawable(OP_AMP_LEFT_VERTICES)
+      return Op_Amp_Drawable(OP_AMP_LEFT_VERTICES, self.signs)
     elif self.vertices == OP_AMP_LEFT_VERTICES:
-      return Op_Amp_Drawable(OP_AMP_UP_VERTICES)
+      return Op_Amp_Drawable(OP_AMP_UP_VERTICES, self.signs)
     else: # OP_AMP_UP_VERTICES
-      return Op_Amp_Drawable(OP_AMP_RIGHT_VERTICES)
+      return Op_Amp_Drawable(OP_AMP_RIGHT_VERTICES, self.signs)
   def show_selected_highlight(self, canvas):
     canvas.itemconfig(self._triangle_id, width=3)
   def hide_selected_highlight(self, canvas):
     canvas.itemconfig(self._triangle_id, width=1)
   def serialize(self, offset):
-    return 'Op_Amp %s %s' % (str(self.vertices), str(offset))
+    return 'Op_Amp %s %s %d' % (str(self.vertices), str(offset), self.signs)
   @staticmethod
   def deserialize(item_str, board):
     m = match(r'Op_Amp %s %s' % (RE_OP_AMP_VERTICES, RE_INT_PAIR), item_str)
@@ -358,6 +367,14 @@ class Op_Amp_Drawable(Drawable):
       x1, y1, x2, y2, x3, y3, ox, oy = map(int, m.groups())
       board.add_drawable(Op_Amp_Drawable((x1, y1, x2, y2, x3, y3)), (ox, oy))
       return True
+    else:
+      m = match(r'Op_Amp %s %s %s' % (RE_OP_AMP_VERTICES, RE_INT_PAIR, RE_INT),
+          item_str)
+      if m:
+        x1, y1, x2, y2, x3, y3, ox, oy, sings = map(int, m.groups())
+        board.add_drawable(Op_Amp_Drawable((x1, y1, x2, y2, x3, y3), signs),
+            (ox, oy))
+        return True
     return False
 
 class Pot_Drawable(Drawable):
