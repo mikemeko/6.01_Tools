@@ -4,9 +4,6 @@ Script to analyze repetition test results.
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
-from numpy import mean
-from numpy import std
-from sys import argv
 import pylab
 
 def sequence_generator():
@@ -19,13 +16,13 @@ def get_int(val):
   try:
     return int(val)
   except:
-    return None
+    return 0
 
 def get_float(val):
   try:
     return float(val)
   except:
-    return None
+    return 0
 
 def get_int_list(val):
   try:
@@ -58,32 +55,31 @@ class Test_Result:
     self.total_wire_length = get_int(line[g.next()])
     self.num_wire_crosses = get_int(line[g.next()])
 
-def analyze(results_file, f, title):
+def analyze():
+  easy_results = [Test_Result(line) for line in open(
+      'easy_results').readlines()]
+  medium_results = [Test_Result(line) for line in open(
+      'medium_results').readlines()]
+  hard_results = [Test_Result(line) for line in open(
+      'hard_results').readlines()]
+  strange_results = [Test_Result(line) for line in open(
+      'strange_results').readlines()]
+  all_solved = []
+  all_failed = []
+  for i, results in enumerate((easy_results, medium_results, hard_results,
+      strange_results)):
+    solved = []
+    failed = []
+    for result in results:
+      (solved if result.solved else failed).append(result.wiring_time)
+    all_solved.append(solved)
+    all_failed.append(failed)
   pylab.figure()
-  print title
-  lines = [line.strip() for line in open(results_file).readlines()]
-  results = [Test_Result(line) for line in lines[1:]]
-  success_times = [f(result) for result in results if result.solved]
-  failure_times = [f(result) for result in results if not result.solved]
-  print 'Success rate: %.2f' % (float(len(success_times)) / len(results))
-  if success_times:
-    print 'Success stats: %.2f, %.2f' % (mean(success_times),
-        std(success_times))
-  if failure_times:
-    print 'Failure stats: %.2f, %.2f' % (mean(failure_times),
-        std(failure_times))
-  if success_times:
-    pylab.hist(success_times, color='g', bins=20, alpha=0.5)
-  if failure_times:
-    pylab.hist(failure_times, color='r', bins=20, alpha=0.5)
-  pylab.title(title)
-  print
+  for i, sp in enumerate((411, 412, 413, 414)):
+    pylab.subplot(sp)
+    pylab.hist(all_solved[i], color='g', alpha=0.5)
+    pylab.hist(all_failed[i], color='r', alpha=0.5)
+  pylab.show()
 
 if __name__ == '__main__':
-  assert len(argv) == 2, 'No input'
-  analyze(argv[1], lambda result: max(result.num_expanded), 'max expanded')
-  analyze(argv[1], lambda result: sum(result.num_expanded), 'sum expanded')
-  analyze(argv[1], lambda result: result.placement_time, 'placement time')
-  analyze(argv[1], lambda result: result.wiring_time, 'wiring time')
-  analyze(argv[1], lambda result: result.total_time, 'total time')
-  pylab.show()
+  analyze()
