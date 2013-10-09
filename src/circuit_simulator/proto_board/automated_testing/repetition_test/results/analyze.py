@@ -4,6 +4,8 @@ Script to analyze repetition test results.
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
+from numpy import mean
+from numpy import std
 import pylab
 
 def sequence_generator():
@@ -75,10 +77,22 @@ def analyze():
     all_solved.append(solved)
     all_failed.append(failed)
   pylab.figure()
+  labels = ['Easy', 'Medium', 'Hard', 'Strange']
   for i, sp in enumerate((411, 412, 413, 414)):
-    pylab.subplot(sp)
-    pylab.hist(all_solved[i], color='g', alpha=0.5)
-    pylab.hist(all_failed[i], color='r', alpha=0.5)
+    ax = pylab.subplot(sp)
+    ax.hist(all_solved[i], color='g', alpha=0.5)
+    ax.hist(all_failed[i], color='r', alpha=0.5)
+    ax.set_ylabel(labels[i])
+    success_rate = float(len(all_solved[i])) / (len(all_solved[i]) + len(
+        all_failed[i])) * 100
+    failure_rate = 100 - success_rate
+    print labels[i]
+    print 'Solved{%1.f%%} %.3f %.3f' % (success_rate, mean(all_solved[i]),
+        std(all_solved[i]))
+    print 'Failed{%1.f%%} %.3f %.3f' % (failure_rate, mean(all_failed[i]),
+        std(all_failed[i]))
+    print
+  pylab.xlabel('Wiring time (seconds)')
   pylab.show()
 
 if __name__ == '__main__':

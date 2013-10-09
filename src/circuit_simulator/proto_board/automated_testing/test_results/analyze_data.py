@@ -22,15 +22,32 @@ def get_int(val):
   except:
     return None
 
+def get_float(val):
+  try:
+    return float(val)
+  except:
+    return None
+
+def get_int_list(val):
+  try:
+    return map(int, [e.strip() for e in val[1:-1].split(',')])
+  except:
+    return None
+
 class Test_Result:
   def __init__(self, line):
-    line = line.split(',')
+    line = line.split(';')
     g = sequence_generator()
     self.file_name = line[g.next()]
     self.identifier = self.file_name.split('.')[0]
     self.run = get_int(line[g.next()])
     self.solved = line[g.next()] == 'True'
-    self.num_expanded = get_int(line[g.next()])
+    self.placement_time = get_float(line[g.next()])
+    self.wiring_time = get_float(line[g.next()])
+    self.total_time = self.placement_time + self.wiring_time
+    self.num_expanded = get_int_list(line[g.next()])
+    if self.num_expanded is None:
+      self.num_expanded = [0]
     self.num_schematic_pins = get_int(line[g.next()])
     self.num_resistors = get_int(line[g.next()])
     self.num_pots = get_int(line[g.next()])
@@ -46,12 +63,14 @@ class Test_Result:
     self.total_wire_length = get_int(line[g.next()])
     self.num_wire_crosses = get_int(line[g.next()])
     self.num_nodes = get_int(line[g.next()])
+    self.num_loc_pairs = get_int(line[g.next()])
 
 class Test_Group:
   def __init__(self, group_results):
     self.num_schematic_pins = group_results[0].num_schematic_pins
     self.num_components = group_results[0].num_components
     self.num_nodes = group_results[0].num_nodes
+    self.num_loc_pairs = group_results[0].num_loc_pairs
     self.successful_results = filter(lambda r: r.solved, group_results)
     self.success_rate = float(len(self.successful_results)) / len(group_results)
 
@@ -82,7 +101,7 @@ def analyze(results_file):
       [num_solved_count_mapping[key] for key in plot_keys])
   label_heights(ax, rects, sum(rect.get_height() for rect in rects))
   pylab.title('Success')
-  pylab.xlabel('Number of times failed out of 10')
+  pylab.xlabel('Number of times solved out of 10')
   pylab.ylabel('Schematic count')
 
   # overall results plot part 2
@@ -92,7 +111,7 @@ def analyze(results_file):
       plot_keys])
   label_heights(ax, rects, rects[-1].get_height())
   pylab.title('Success')
-  pylab.xlabel('Maximum number of times failed out of 10')
+  pylab.xlabel('Maximum number of times solved out of 10')
   pylab.ylabel('Schematic count')
 
   # success trend plots
@@ -103,39 +122,77 @@ def analyze(results_file):
       success_mapping[getattr(group, attr)].append(group.success_rate)
     ax.bar(success_mapping.keys(), map(len, success_mapping.values()),
         alpha=0.2, color='g')
-    ax.set_xlabel(attr.split('_')[-1])
+    ax.set_xlabel('Number of %s' % attr.split('_')[-1])
     ax.set_ylabel('Count')
     ax2 = ax.twinx()
-    ax2.errorbar([k + 0.5 for k in success_mapping.keys()], map(mean,
+    ax2.errorbar([k for k in success_mapping.keys()], map(mean,
         success_mapping.values()), map(std, success_mapping.values()))
     ax2.set_ylabel('Success rate')
   trend_plot_success('num_nodes')
   trend_plot_success('num_components')
   trend_plot_success('num_schematic_pins')
+  trend_plot_success('num_loc_pairs')
 
   # time trend plots
   def trend_plot_time(attr):
+    fig, ax = pylab.subplots()
+    success_mapping = defaultdict(list)
+    failure_mapping = defaultdict(list)
+    for result in results:
+      (success_mapping if result.solved else failure_mapping)[getattr(result,
+          attr)].append(result.wiring_time)
+    bp = ax.boxplot(success_mapping.values(), positions=success_mapping.keys(),
+        sym='')
+    pylab.setp(bp['boxes'], color='green')
+    pylab.setp(bp['whiskers'], color='green')
+    bp = ax.boxplot(failure_mapping.values(), positions=failure_mapping.keys(),
+        sym='')
+    pylab.setp(bp['boxes'], color='red')
+    pylab.setp(bp['whiskers'], color='red')
+    ax.set_xlabel('Number of %s' % attr.split('_')[-1])
+    ax.set_ylabel('Wiring time')
+  trend_plot_time('num_nodes')
+  trend_plot_time('num_components')
+  trend_plot_time('num_schematic_pins')
+  trend_plot_time('num_loc_pairs')
+
+  # time trend hists
+  def trend_hist_time(attr, f=lambda result: result.wiring_time):
     solved_mapping = defaultdict(list)
     failed_mapping = defaultdict(list)
     for result in results:
       (solved_mapping if result.solved else failed_mapping)[getattr(
-          result, attr)].append(result.num_expanded)
+          result, attr)].append(f(result))
     keys = sorted(solved_mapping.keys())
     sample_keys = [keys[i * len(keys) / 4] for i in (1, 2, 3)]
     pylab.figure()
-    pylab.subplot(311)
-    pylab.title('%s %s' % (attr.split('_')[-1], sample_keys))
-    pylab.hist(solved_mapping[sample_keys[0]], color='g', alpha=0.5, bins=10)
-    pylab.hist(failed_mapping[sample_keys[0]], color='r', alpha=0.5, bins=10)
-    pylab.subplot(312)
-    pylab.hist(solved_mapping[sample_keys[1]], color='g', alpha=0.5, bins=10)
-    pylab.hist(failed_mapping[sample_keys[1]], color='r', alpha=0.5, bins=10)
-    pylab.subplot(313)
-    pylab.hist(solved_mapping[sample_keys[2]], color='g', alpha=0.5, bins=10)
-    pylab.hist(failed_mapping[sample_keys[2]], color='r', alpha=0.5, bins=10)
-  trend_plot_time('num_nodes')
-  trend_plot_time('num_components')
-  trend_plot_time('num_schematic_pins')
+    ax1 = pylab.subplot(311)
+    ax1.set_ylabel('%d %s' % (sample_keys[0], attr.split('_')[-1]))
+    log = False
+    pylab.hist(solved_mapping[sample_keys[0]], color='g', alpha=0.50,
+        log=log)
+    if sample_keys[0] in failed_mapping:
+      pylab.hist(failed_mapping[sample_keys[0]], color='r', alpha=0.5,
+          log=log)
+    ax2 = pylab.subplot(312)
+    ax2.set_ylabel('%d %s' % (sample_keys[1], attr.split('_')[-1]))
+    pylab.hist(solved_mapping[sample_keys[1]], color='g', alpha=0.5,
+        log=log)
+    if sample_keys[1] in failed_mapping:
+      pylab.hist(failed_mapping[sample_keys[1]], color='r', alpha=0.5,
+          log=log)
+    ax3 = pylab.subplot(313)
+    ax3.set_ylabel('%d %s' % (sample_keys[2], attr.split('_')[-1]))
+    ax3.set_xlabel('Wiring time')
+    pylab.hist(solved_mapping[sample_keys[2]], color='g', alpha=0.5,
+        log=log)
+    if sample_keys[2] in failed_mapping:
+      pylab.hist(failed_mapping[sample_keys[2]], color='r', alpha=0.5,
+          log=log)
+  trend_hist_time('num_nodes')
+  trend_hist_time('num_components')
+  trend_hist_time('num_schematic_pins')
+  trend_hist_time('num_loc_pairs')
 
   # protoboard quality plots
   def quality_plot(attr):
@@ -150,19 +207,23 @@ def analyze(results_file):
             result.num_wire_crosses)
         total_wire_length_mapping[getattr(result, attr)].append(
             result.total_wire_length)
+    ax.bar(num_wires_mapping.keys(), map(len, num_wires_mapping.values()),
+        alpha=0.2, color='b')
+    ax.set_xlabel('Number of %s' % attr.split('_')[-1])
+    ax.set_ylabel('Count')
+    ax2 = ax.twinx()
     for mapping, color in ((num_wires_mapping, 'g'), (num_wire_crosses_mapping,
         'r'), (total_wire_length_mapping, 'b')):
       plot_keys = sorted(mapping.keys())
-      ax.errorbar(plot_keys, [mean(mapping[key]) for key in plot_keys],
+      ax2.errorbar(plot_keys, [mean(mapping[key]) for key in plot_keys],
           yerr=[std(mapping[key]) for key in plot_keys], color=color)
-    pylab.legend(['Num wires', 'Num wire crosses', 'Total length'])
-    pylab.xlabel(attr.split('_')[-1])
-    ax2 = ax.twinx()
-    ax2.bar(num_wires_mapping.keys(), map(len, num_wires_mapping.values()),
-        alpha=0.2, color='b')
+    pylab.legend(['Num wires', 'Num wire crosses', 'Total wire length'],
+        bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=3, mode='expand',
+        borderaxespad=0.)
   quality_plot('num_nodes')
   quality_plot('num_components')
   quality_plot('num_schematic_pins')
+  quality_plot('num_loc_pairs')
 
   pylab.show()
 
