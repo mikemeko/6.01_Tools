@@ -14,7 +14,8 @@ from circuit_pieces import Resistor_Piece
 from circuit_simulator.main.constants import GROUND
 from circuit_simulator.main.constants import POWER
 from collections import defaultdict
-from constants import BODY_ROWS
+from constants import BODY_BOTTOM_ROWS
+from constants import BODY_TOP_ROWS
 from constants import CIRCUIT_PIECE_SEPARATION
 from constants import GROUND_RAIL
 from constants import POWER_RAIL
@@ -150,42 +151,32 @@ def _distance_cost(placement):
 def _blocking_cost(placement):
   """
   Placement cost based on how many rows are blocked.
-  Currently not used.
   """
-  cost = 0
-  loc_pairs = [(loc_1, loc_2) for loc_1, loc_2, resistor_flag, node in
-      loc_pairs_to_connect(placement, [])]
+  def row_rep(r):
+    if r in BODY_TOP_ROWS:
+      return 2
+    elif r in BODY_BOTTOM_ROWS:
+      return PROTO_BOARD_HEIGHT - 3
+    else:
+      return r
+  counter = defaultdict(int)
   for piece in placement:
     r, c = piece.top_left_loc
-    if isinstance(piece, Resistor_Piece):
-      piece_cost = 2
-      piece_rows = BODY_ROWS
-    elif isinstance(piece, Op_Amp_Piece):
-      piece_cost = 3
-      piece_rows = BODY_ROWS
-    elif isinstance(piece, Place_Holder_Piece):
-      piece_cost = 1
-      piece_rows = body_section_rows(r)
-    elif isinstance(piece, Pot_Piece):
-      piece_cost = 3
-      piece_rows = body_section_rows(r)
-    elif isinstance(piece, N_Pin_Connector_Piece):
-      piece_cost = 1
-      piece_rows = body_section_rows(min((2, PROTO_BOARD_HEIGHT - 3),
-          key=lambda body_r: abs(r - body_r)))
+    if isinstance(piece, N_Pin_Connector_Piece):
+      _r = min((2, PROTO_BOARD_HEIGHT - 3), key=lambda _r: abs(r - _r))
+      for _c in xrange(c, c + piece.width):
+        counter[(_r, _c)] += 1
     else:
-      raise Exception('Unexpected piece %s' % piece)
-    for loc_1, loc_2 in loc_pairs:
-      r1, c1 = loc_1
-      r2, c2 = loc_2
-      pair_rows = set()
-      for pair_r in (r1, r2):
-        if pair_r in BODY_ROWS:
-          pair_rows |= body_section_rows(pair_r)
-      if pair_rows & piece_rows:
-        piece_cost += 1
-    cost += piece_cost
-  return cost
+      for _r in xrange(r, r + piece.height):
+        for _c in xrange(c, c + piece.width):
+          counter[(row_rep(_r), _c)] += 1
+  for loc_1, loc_2, resistor_flag, node in loc_pairs_to_connect(placement, []):
+    r1, c1 = loc_1
+    r2, c2 = loc_2
+    for _r in set([row_rep(r1), row_rep(r2)]):
+      for _c in xrange(min(c1, c2), max(c1, c2) + 1):
+        counter[(_r, _c)] += 1
+  return sum(v ** 2 for v in counter.values())
 
 def cost(placement):
   """
@@ -194,7 +185,7 @@ def cost(placement):
       float('inf') if the |placement| does not fit on a board.
   """
   if set_locations(placement):
-    return _distance_cost(placement)
+    return _blocking_cost(placement)
   else:
     return float('inf')
 
