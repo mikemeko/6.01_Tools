@@ -185,7 +185,7 @@ def cost(placement):
       float('inf') if the |placement| does not fit on a board.
   """
   if set_locations(placement):
-    return _distance_cost(placement)
+    return _blocking_cost(placement)
   else:
     return float('inf')
 
