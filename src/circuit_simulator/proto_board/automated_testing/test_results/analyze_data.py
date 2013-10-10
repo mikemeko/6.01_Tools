@@ -67,6 +67,7 @@ class Test_Result:
 
 class Test_Group:
   def __init__(self, group_results):
+    self.identifier = group_results[0].identifier
     self.num_schematic_pins = group_results[0].num_schematic_pins
     self.num_components = group_results[0].num_components
     self.num_nodes = group_results[0].num_nodes
@@ -78,11 +79,16 @@ def analyze(results_file):
   # individial results
   lines = [line.strip() for line in open(results_file).readlines()]
   results = [Test_Result(line) for line in lines[1:]]
+  print 'Overall success rate: %.2f' % (float(len([result for result in results
+      if result.solved])) / len(results))
   # grouped results
   results_by_identifier = defaultdict(list)
   for result in results:
     results_by_identifier[result.identifier].append(result)
   groups = [Test_Group(value) for value in results_by_identifier.values()]
+  hard_schematics = sorted(group.identifier for group in groups if
+      group.success_rate == 0)
+  print '\n'.join(hard_schematics)
 
   def label_heights(ax, rects, max_height):
     max_height = float(max_height)

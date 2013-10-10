@@ -327,6 +327,7 @@ def _find_wiring_per_pair(loc_pairs, start_proto_board, order, verbose=True):
     all_num_expanded.append(num_expanded)
     if search_result is not None:
       proto_board = search_result.state[0]
+      print proto_board
     else:
       if verbose:
         print '\tCouldn\'t do it :('
