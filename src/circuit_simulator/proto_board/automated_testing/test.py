@@ -1,5 +1,17 @@
 """
 Script that runs automated layout test on a directory of test schematic files.
+Options:
+  Wiring:
+    Mode:
+      -a: all pairs
+      -n: per node
+      -p: per pair [DEFAULT]
+    Order:
+      -d: decreasing [DEFAULT]
+      -i: increasing
+  Resistors:
+    -c: as components [DEFAULT]
+    -w: as wires
 """
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
@@ -19,20 +31,26 @@ from sys import argv
 from test_schematic import Schematic_Tester
 from time import time
 
+WIRING_MODE_OPTIONS = {'-a': MODE_ALL_PAIRS, '-n': MODE_PER_NODE,
+    '-p': MODE_PER_PAIR}
+WIRING_ORDER_OPTIONS = {'-d': ORDER_DECREASING, '-i': ORDER_INCREASING}
+RESISTOR_OPTIONS = {'-c': True, '-w': False}
+
 if __name__ == '__main__':
-  assert len(argv) >= 3
-  assert argv[2] in ('-a', '-n', '-p')
-  if argv[2] == '-a':
-    assert len(argv) == 3
-    solve_mode = MODE_ALL_PAIRS
-    solve_order = None
-  else:
-    assert len(argv) == 4
-    assert argv[3] in ('-d', '-i')
-    solve_mode = MODE_PER_NODE if argv[2] == '-n' else MODE_PER_PAIR
-    solve_order = ORDER_DECREASING if argv[3] == '-d' else ORDER_INCREASING
+  solve_mode_options = filter(lambda o: o in WIRING_MODE_OPTIONS, argv)
+  assert len(solve_mode_options) <= 1
+  solve_mode = (WIRING_MODE_OPTIONS[solve_mode_options[0]] if solve_mode_options
+      else MODE_PER_PAIR)
+  solve_order_options = filter(lambda o: o in WIRING_ORDER_OPTIONS, argv)
+  assert len(solve_order_options) <= 1
+  solve_order = (WIRING_ORDER_OPTIONS[solve_order_options[0]] if
+      solve_order_options else ORDER_DECREASING)
+  resistor_options = filter(lambda o: o in RESISTOR_OPTIONS, argv)
+  assert len(resistor_options) <= 1
+  resistors_as_components = (RESISTOR_OPTIONS[resistor_options[0]] if
+      resistor_options else True)
   start_time = time()
-  tester = Schematic_Tester(solve_mode, solve_order)
+  tester = Schematic_Tester(resistors_as_components, solve_mode, solve_order)
   header = (
       'file',
       'run #',

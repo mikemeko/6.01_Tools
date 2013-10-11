@@ -20,10 +20,8 @@ from core.save.save import open_board_from_file
 from mock_board import Mock_Board
 
 class Schematic_Tester:
-  def __init__(self, solve_mode, solve_order):
-    """
-    |solve_mode|, |solve_order|: parameters for protoboard solve.
-    """
+  def __init__(self, resistors_as_components, solve_mode, solve_order):
+    self.resistors_as_components = resistors_as_components
     self.solve_mode = solve_mode
     self.solve_order = solve_order
   def _run_test(self, circuit, *args):
@@ -71,8 +69,9 @@ class Schematic_Tester:
         interconnecting_nodes.add(node)
     num_nodes = len(interconnecting_nodes)
     num_schematic_pins = sum(n in interconnecting_nodes for n in pin_nodes)
-    solve_data = solve_layout(circuit, self.solve_mode, self.solve_order,
-        verbose=False)
+    solve_data = solve_layout(circuit,
+        resistors_as_components=self.resistors_as_components,
+        mode=self.solve_mode, order=self.solve_order, verbose=False)
     proto_board = solve_data['proto_board']
     loc_pairs = solve_data['loc_pairs']
     num_loc_pairs = len(loc_pairs) if loc_pairs is not None else None

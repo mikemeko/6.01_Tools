@@ -19,7 +19,7 @@ def multiple_runs(schematic):
       dictionary mapping hashes of the found layouts to the number of times they
       were found.
   """
-  tester = Schematic_Tester(MODE_PER_PAIR, ORDER_DECREASING)
+  tester = Schematic_Tester(True, MODE_PER_PAIR, ORDER_DECREASING)
   counts = defaultdict(int)
   for i in xrange(500):
     print i, schematic

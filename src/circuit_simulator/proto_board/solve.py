@@ -12,8 +12,6 @@ from circuit_simulator.main.constants import POWER
 from circuit_to_circuit_pieces import get_piece_placement
 from collections import defaultdict
 from constants import GROUND_RAIL
-from constants import MODE_PER_PAIR
-from constants import ORDER_DECREASING
 from constants import POWER_RAIL
 from constants import RAIL_LEGAL_COLUMNS
 from find_proto_board_wiring import find_wiring
@@ -23,8 +21,7 @@ from time import clock
 from traceback import print_exc
 from util import node_disjoint_set_forest
 
-def solve_layout(circuit, mode=MODE_PER_PAIR, order=ORDER_DECREASING,
-    verbose=True):
+def solve_layout(circuit, resistors_as_components, mode, order, verbose=True):
   """
   Attempts to produce a layout for the given |circuit| and returns a dictionary
       containing data corresponding to the solution, most importantly the key
@@ -32,11 +29,16 @@ def solve_layout(circuit, mode=MODE_PER_PAIR, order=ORDER_DECREASING,
       layout could be found. |mode| and |order| are parameters for how the
       wiring should be solved, see find_proto_board_wiring.py.
   """
+  if verbose:
+    print 'Resistors as components: %s' % resistors_as_components
+    print 'Solve mode: %s, order: %s' % (mode, order)
+    print
   solve_data = defaultdict(lambda: None)
   try:
     # get a placement for the appropriate circuit pieces
     placement_start = clock()
-    placement, resistor_node_pairs = get_piece_placement(circuit, verbose)
+    placement, resistor_node_pairs = get_piece_placement(circuit,
+        resistors_as_components, verbose)
     solve_data['placement_time'] = clock() - placement_start
     solve_data['placement'] = placement
     solve_data['resistor_node_pairs'] = resistor_node_pairs

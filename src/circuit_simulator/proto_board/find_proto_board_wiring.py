@@ -20,7 +20,6 @@ from constants import ROWS
 from core.search.search import a_star
 from core.search.search import Search_Node
 from itertools import product
-from proto_board import Proto_Board
 from util import body_opp_section_rows
 from util import dist
 from util import is_body_loc
@@ -229,8 +228,7 @@ def heuristic(state):
   return sum(min(dist(loc_1, loc) for loc in proto_board.locs_connected_to(
       loc_2)) for loc_1, loc_2, resistor, node in loc_pairs)
 
-def find_wiring(loc_pairs, start_proto_board=None, mode=MODE_PER_PAIR,
-    order=ORDER_DECREASING, verbose=True):
+def find_wiring(loc_pairs, start_proto_board, mode, order, verbose=True):
   """
   Returns a Proto_Board in which all the pairs of locations in |loc_pairs| are
       properly connected, or None if no such Proto_Board can be found. Search
@@ -248,8 +246,6 @@ def find_wiring(loc_pairs, start_proto_board=None, mode=MODE_PER_PAIR,
   assert mode in (MODE_ALL_PAIRS, MODE_PER_NODE, MODE_PER_PAIR)
   if mode is not MODE_ALL_PAIRS:
     assert order in (ORDER_DECREASING, ORDER_INCREASING)
-  if start_proto_board is None:
-    start_proto_board = Proto_Board()
   if mode is MODE_ALL_PAIRS:
     return _find_wiring_all(loc_pairs, start_proto_board, verbose)
   elif mode is MODE_PER_NODE:
@@ -327,7 +323,6 @@ def _find_wiring_per_pair(loc_pairs, start_proto_board, order, verbose=True):
     all_num_expanded.append(num_expanded)
     if search_result is not None:
       proto_board = search_result.state[0]
-      print proto_board
     else:
       if verbose:
         print '\tCouldn\'t do it :('
