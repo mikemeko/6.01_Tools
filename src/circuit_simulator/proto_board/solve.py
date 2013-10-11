@@ -21,24 +21,27 @@ from time import clock
 from traceback import print_exc
 from util import node_disjoint_set_forest
 
-def solve_layout(circuit, resistors_as_components, mode, order, verbose=True):
+def solve_layout(circuit, resistors_as_components, cost_type, mode, order,
+    verbose=True):
   """
   Attempts to produce a layout for the given |circuit| and returns a dictionary
       containing data corresponding to the solution, most importantly the key
       'proto_board' mapped to the produced layout. The value will be None if no
-      layout could be found. |mode| and |order| are parameters for how the
-      wiring should be solved, see find_proto_board_wiring.py.
+      layout could be found. |cost_type| is a parameter for which placement cost
+      to use, see circuit_piece_placement.py. |mode| and |order| are parameters
+      for how the wiring should be solved, see find_proto_board_wiring.py.
   """
   if verbose:
     print 'Resistors as components: %s' % resistors_as_components
-    print 'Solve mode: %s, order: %s' % (mode, order)
+    print 'Placement cost type: %s' % cost_type
+    print 'Wiring mode: %s, order: %s' % (mode, order)
     print
   solve_data = defaultdict(lambda: None)
   try:
     # get a placement for the appropriate circuit pieces
     placement_start = clock()
     placement, resistor_node_pairs = get_piece_placement(circuit,
-        resistors_as_components, verbose)
+        resistors_as_components, cost_type, verbose)
     solve_data['placement_time'] = clock() - placement_start
     solve_data['placement'] = placement
     solve_data['resistor_node_pairs'] = resistor_node_pairs

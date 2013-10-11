@@ -16,6 +16,8 @@ from circuit_simulator.main.constants import POWER
 from collections import defaultdict
 from constants import BODY_BOTTOM_ROWS
 from constants import BODY_TOP_ROWS
+from constants import COST_TYPE_BLOCKING
+from constants import COST_TYPE_DISTANCE
 from constants import GROUND_RAIL
 from constants import POWER_RAIL
 from constants import PROTO_BOARD_WIDTH
@@ -178,17 +180,22 @@ def _blocking_cost(placement):
         counter[(_r, _c)] += 1
   return sum(v ** 2 for v in counter.values())
 
-def cost(placement, resistors_as_components):
+def cost(placement, resistors_as_components, cost_type):
   """
   Returns a heuristic cost of the given |placement|. Returns float('inf') if the
       |placement| does not fit on a board.
   """
   if set_locations(placement, resistors_as_components):
-    return _blocking_cost(placement)
+    if cost_type == COST_TYPE_BLOCKING:
+      return _blocking_cost(placement)
+    elif cost_type == COST_TYPE_DISTANCE:
+      return _distance_cost(placement)
+    else:
+      raise Exception('Unexpected cost type: %s' % cost_type)
   else:
     return float('inf')
 
-def find_placement(pieces, resistors_as_components):
+def find_placement(pieces, resistors_as_components, cost_type):
   """
   Given a list of |pieces|, returns a placement of the pieces that requires
       comparatively small wiring. Finding the absolute best placement is too
@@ -226,7 +233,8 @@ def find_placement(pieces, resistors_as_components):
             piece.top_left_row = top_left_row
             new_placement = deepcopy(placement)
             new_placement.insert(i, piece)
-            new_placement_cost = cost(new_placement, resistors_as_components)
+            new_placement_cost = cost(new_placement, resistors_as_components,
+                cost_type)
             if new_placement_cost < best_placement_cost:
               best_placement = deepcopy(new_placement)
               best_placement_cost = new_placement_cost
@@ -240,7 +248,7 @@ def find_placement(pieces, resistors_as_components):
         add_to_queue(piece)
   return placement, placement_cost
 
-def _find_placement(pieces, resistors_as_components):
+def _find_placement(pieces, resistors_as_components, cost_type):
   """
   find_placement that looks at every possibility. Takes too long!
   """
@@ -257,7 +265,7 @@ def _find_placement(pieces, resistors_as_components):
   best_cost = float('inf')
   for perm in permutations(piece_options):
     perm_best = min(product(*perm), key=cost)
-    perm_best_cost = cost(perm_best, resistors_as_components)
+    perm_best_cost = cost(perm_best, resistors_as_components, cost_type)
     if perm_best_cost < best_cost:
       best_placement = perm_best
       best_cost = perm_best_cost

@@ -140,7 +140,8 @@ def op_amp_piece_from_op_amp(op_amp_tup):
   return Op_Amp_Piece(n_1, n_2, n_3, n_4, n_5, n_6, n_7, n_8, ','.join(
       op_amp.label for op_amp in op_amp_tup))
 
-def get_piece_placement(circuit, resistors_as_components, verbose=True):
+def get_piece_placement(circuit, resistors_as_components, cost_type,
+    verbose=True):
   """
   Returns a *good* ordering of Circuit_Pieces for the given |circuit|. Finding
       the best one (i.e. the one the requires minimal wiring) is too expensive.
@@ -186,7 +187,8 @@ def get_piece_placement(circuit, resistors_as_components, verbose=True):
         place_holder_pieces = [Place_Holder_Piece(node) for node in
             (resistor_nodes - non_resistor_nodes)]
         pieces = non_resistor_pieces + place_holder_pieces
-      placement, cost = find_placement(pieces, resistors_as_components)
+      placement, cost = find_placement(pieces, resistors_as_components,
+          cost_type)
       if cost < best_placement_cost:
         best_placement = placement
         best_placement_cost = cost

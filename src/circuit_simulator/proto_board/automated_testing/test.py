@@ -9,6 +9,9 @@ Options:
     Order:
       -d: decreasing [DEFAULT]
       -i: increasing
+  Placement:
+    -b: blocking [DEFAULT]
+    -t: distance
   Resistors:
     -c: as components [DEFAULT]
     -w: as wires
@@ -17,6 +20,8 @@ Options:
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
 from circuit_simulator.main.constants import FILE_EXTENSION
+from circuit_simulator.proto_board.constants import COST_TYPE_BLOCKING
+from circuit_simulator.proto_board.constants import COST_TYPE_DISTANCE
 from circuit_simulator.proto_board.constants import MODE_ALL_PAIRS
 from circuit_simulator.proto_board.constants import MODE_PER_NODE
 from circuit_simulator.proto_board.constants import MODE_PER_PAIR
@@ -34,23 +39,29 @@ from time import time
 WIRING_MODE_OPTIONS = {'-a': MODE_ALL_PAIRS, '-n': MODE_PER_NODE,
     '-p': MODE_PER_PAIR}
 WIRING_ORDER_OPTIONS = {'-d': ORDER_DECREASING, '-i': ORDER_INCREASING}
+PLACEMENT_OPTIONS = {'-b': COST_TYPE_BLOCKING, '-t': COST_TYPE_DISTANCE}
 RESISTOR_OPTIONS = {'-c': True, '-w': False}
 
 if __name__ == '__main__':
-  solve_mode_options = filter(lambda o: o in WIRING_MODE_OPTIONS, argv)
+  solve_mode_options = filter(WIRING_MODE_OPTIONS.has_key, argv)
   assert len(solve_mode_options) <= 1
   solve_mode = (WIRING_MODE_OPTIONS[solve_mode_options[0]] if solve_mode_options
       else MODE_PER_PAIR)
-  solve_order_options = filter(lambda o: o in WIRING_ORDER_OPTIONS, argv)
+  solve_order_options = filter(WIRING_ORDER_OPTIONS.has_key, argv)
   assert len(solve_order_options) <= 1
   solve_order = (WIRING_ORDER_OPTIONS[solve_order_options[0]] if
       solve_order_options else ORDER_DECREASING)
-  resistor_options = filter(lambda o: o in RESISTOR_OPTIONS, argv)
+  placement_options = filter(PLACEMENT_OPTIONS.has_key, argv)
+  assert len(placement_options) <= 1
+  cost_type = (PLACEMENT_OPTIONS[placement_options[0]] if placement_options
+      else COST_TYPE_BLOCKING)
+  resistor_options = filter(RESISTOR_OPTIONS.has_key, argv)
   assert len(resistor_options) <= 1
   resistors_as_components = (RESISTOR_OPTIONS[resistor_options[0]] if
       resistor_options else True)
   start_time = time()
-  tester = Schematic_Tester(resistors_as_components, solve_mode, solve_order)
+  tester = Schematic_Tester(resistors_as_components, cost_type, solve_mode,
+      solve_order)
   header = (
       'file',
       'run #',

@@ -7,6 +7,7 @@ __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
 from circuit_simulator.proto_board.automated_testing.test_schematic import (
     Schematic_Tester)
+from circuit_simulator.proto_board.constants import COST_TYPE_BLOCKING
 from circuit_simulator.proto_board.constants import MODE_PER_PAIR
 from circuit_simulator.proto_board.constants import ORDER_DECREASING
 from os.path import basename
@@ -37,7 +38,8 @@ def multiple_runs(schematic):
       'num_nodes',
       'num_loc_pairs')
   open(output_file_name, 'w').write(';'.join(header))
-  tester = Schematic_Tester(True, MODE_PER_PAIR, ORDER_DECREASING)
+  tester = Schematic_Tester(True, COST_TYPE_BLOCKING, MODE_PER_PAIR,
+      ORDER_DECREASING)
   for i in xrange(500):
     print 'run %d' % i
     result = (i,) + tester.test_schematic(schematic)[:-1]

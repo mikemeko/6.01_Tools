@@ -21,6 +21,7 @@ from circuit_drawables import Robot_Connector_Drawable
 from circuit_drawables import Robot_IO_Drawable
 from circuit_drawables import Robot_Power_Drawable
 from circuit_drawables import Simulate_Run_Drawable
+from circuit_simulator.proto_board.constants import COST_TYPE_BLOCKING
 from circuit_simulator.proto_board.constants import MODE_PER_PAIR
 from circuit_simulator.proto_board.constants import ORDER_DECREASING
 from circuit_simulator.proto_board.solve import solve_layout
@@ -92,7 +93,8 @@ if __name__ == '__main__':
         discovered proto board.
     """
     solve_data = solve_layout(circuit, resistors_as_components=True,
-        mode=MODE_PER_PAIR, order=ORDER_DECREASING)
+        cost_type=COST_TYPE_BLOCKING, mode=MODE_PER_PAIR,
+        order=ORDER_DECREASING)
     proto_board = solve_data['proto_board']
     if proto_board:
       # show labels on board for easy schematic-layout matching
