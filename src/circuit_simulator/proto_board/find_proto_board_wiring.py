@@ -228,7 +228,8 @@ def heuristic(state):
   return sum(min(dist(loc_1, loc) for loc in proto_board.locs_connected_to(
       loc_2)) for loc_1, loc_2, resistor, node in loc_pairs)
 
-def find_wiring(loc_pairs, start_proto_board, mode, order, verbose=True):
+def find_wiring(loc_pairs, start_proto_board, mode, order, best_first,
+    verbose=True):
   """
   Returns a Proto_Board in which all the pairs of locations in |loc_pairs| are
       properly connected, or None if no such Proto_Board can be found. Search
@@ -247,13 +248,15 @@ def find_wiring(loc_pairs, start_proto_board, mode, order, verbose=True):
   if mode is not MODE_ALL_PAIRS:
     assert order in (ORDER_DECREASING, ORDER_INCREASING)
   if mode is MODE_ALL_PAIRS:
-    return _find_wiring_all(loc_pairs, start_proto_board, verbose)
+    return _find_wiring_all(loc_pairs, start_proto_board, best_first, verbose)
   elif mode is MODE_PER_NODE:
-    return _find_wiring_per_node(loc_pairs, start_proto_board, order, verbose)
+    return _find_wiring_per_node(loc_pairs, start_proto_board, order,
+        best_first, verbose)
   else: # mode is MODE_PER_PAIR
-    return _find_wiring_per_pair(loc_pairs, start_proto_board, order, verbose)
+    return _find_wiring_per_pair(loc_pairs, start_proto_board, order,
+        best_first, verbose)
 
-def _find_wiring_all(loc_pairs, start_proto_board, verbose=True):
+def _find_wiring_all(loc_pairs, start_proto_board, best_first, verbose):
   """
   Wiring all pairs of locations in one search.
   """
@@ -261,7 +264,7 @@ def _find_wiring_all(loc_pairs, start_proto_board, verbose=True):
     print 'connecting %d pairs ...' % len(loc_pairs)
   search_result, num_expanded = a_star(Proto_Board_Search_Node(
       start_proto_board, frozenset(loc_pairs)), goal_test, heuristic,
-      max_states_to_expand=MAX_STATES_TO_EXPAND)
+      best_first=best_first, max_states_to_expand=MAX_STATES_TO_EXPAND)
   if search_result is not None:
     if verbose:
       print '\tdone.'
@@ -271,7 +274,8 @@ def _find_wiring_all(loc_pairs, start_proto_board, verbose=True):
       print '\tCouldn\'t do it :('
     return None, [num_expanded]
 
-def _find_wiring_per_node(loc_pairs, start_proto_board, order, verbose=True):
+def _find_wiring_per_node(loc_pairs, start_proto_board, order, best_first,
+    verbose):
   """
   Wiring the pairs of locations for each node separately.
   """
@@ -290,10 +294,11 @@ def _find_wiring_per_node(loc_pairs, start_proto_board, order, verbose=True):
           len(loc_pair_collection))
     search_result, num_expanded = a_star(Proto_Board_Search_Node(proto_board,
         frozenset(loc_pair_collection)), goal_test, heuristic,
-        max_states_to_expand=MAX_STATES_TO_EXPAND)
+        best_first=best_first, max_states_to_expand=MAX_STATES_TO_EXPAND)
     all_num_expanded.append(num_expanded)
     if search_result is not None:
       proto_board = search_result.state[0]
+      print proto_board
     else:
       if verbose:
         print '\tCouldn\'t do it :('
@@ -302,7 +307,8 @@ def _find_wiring_per_node(loc_pairs, start_proto_board, order, verbose=True):
     print '\tdone.'
   return proto_board, all_num_expanded
 
-def _find_wiring_per_pair(loc_pairs, start_proto_board, order, verbose=True):
+def _find_wiring_per_pair(loc_pairs, start_proto_board, order, best_first,
+    verbose):
   """
   Wiring each pair separately.
   """
@@ -319,10 +325,11 @@ def _find_wiring_per_pair(loc_pairs, start_proto_board, order, verbose=True):
           loc_2)
     search_result, num_expanded = a_star(Proto_Board_Search_Node(proto_board,
         frozenset([loc_pair])), goal_test, heuristic,
-        max_states_to_expand=MAX_STATES_TO_EXPAND)
+        best_first=best_first, max_states_to_expand=MAX_STATES_TO_EXPAND)
     all_num_expanded.append(num_expanded)
     if search_result is not None:
       proto_board = search_result.state[0]
+      print proto_board
     else:
       if verbose:
         print '\tCouldn\'t do it :('

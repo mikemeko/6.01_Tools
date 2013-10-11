@@ -21,11 +21,12 @@ from mock_board import Mock_Board
 
 class Schematic_Tester:
   def __init__(self, resistors_as_components, cost_type, solve_mode,
-      solve_order):
+      solve_order, best_first):
     self.resistors_as_components = resistors_as_components
     self.cost_type = cost_type
     self.solve_mode = solve_mode
     self.solve_order = solve_order
+    self.best_first = best_first
   def _run_test(self, circuit, *args):
     """
     Attempts to produce the protoboard layout for the given |circut| and returns
@@ -74,7 +75,7 @@ class Schematic_Tester:
     solve_data = solve_layout(circuit,
         resistors_as_components=self.resistors_as_components,
         cost_type=self.cost_type, mode=self.solve_mode, order=self.solve_order,
-        verbose=False)
+        best_first=self.best_first, verbose=False)
     proto_board = solve_data['proto_board']
     loc_pairs = solve_data['loc_pairs']
     num_loc_pairs = len(loc_pairs) if loc_pairs is not None else None

@@ -15,6 +15,9 @@ Options:
   Resistors:
     -c: as components [DEFAULT]
     -w: as wires
+  Search:
+    -r: A* [DEFAULT]
+    -s: Best First
 """
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
@@ -41,6 +44,7 @@ WIRING_MODE_OPTIONS = {'-a': MODE_ALL_PAIRS, '-n': MODE_PER_NODE,
 WIRING_ORDER_OPTIONS = {'-d': ORDER_DECREASING, '-i': ORDER_INCREASING}
 PLACEMENT_OPTIONS = {'-b': COST_TYPE_BLOCKING, '-t': COST_TYPE_DISTANCE}
 RESISTOR_OPTIONS = {'-c': True, '-w': False}
+SEARCH_OPTIONS = {'-r': False, '-s': True}
 
 if __name__ == '__main__':
   solve_mode_options = filter(WIRING_MODE_OPTIONS.has_key, argv)
@@ -59,9 +63,12 @@ if __name__ == '__main__':
   assert len(resistor_options) <= 1
   resistors_as_components = (RESISTOR_OPTIONS[resistor_options[0]] if
       resistor_options else True)
+  search_options = filter(SEARCH_OPTIONS.has_key, argv)
+  assert len(search_options) <= 1
+  best_first = SEARCH_OPTIONS[search_options[0]] if search_options else False
   start_time = time()
   tester = Schematic_Tester(resistors_as_components, cost_type, solve_mode,
-      solve_order)
+      solve_order, best_first)
   header = (
       'file',
       'run #',

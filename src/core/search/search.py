@@ -40,7 +40,7 @@ class Search_Node:
       current = current.parent
     return path
 
-def a_star(start_node, goal_test, heuristic=lambda state: 0,
+def a_star(start_node, goal_test, heuristic=lambda state: 0, best_first=False,
     progress=lambda state, cost: None, max_states_to_expand=None):
   """
   Runs an A* search starting at |start_node| until a node that satisfies the
@@ -60,7 +60,8 @@ def a_star(start_node, goal_test, heuristic=lambda state: 0,
   if goal_test(start_node.state):
     return start_node, 0
   agenda = Priority_Queue()
-  agenda.push(start_node, start_node.cost + heuristic(start_node.state))
+  agenda.push(start_node, (not best_first) * start_node.cost +
+      heuristic(start_node.state))
   expanded = set()
   while agenda:
     parent, cost = agenda.pop()
@@ -71,7 +72,8 @@ def a_star(start_node, goal_test, heuristic=lambda state: 0,
       expanded.add(parent.state)
       for child in parent.get_children():
         if child.state not in expanded:
-          agenda.push(child, child.cost + heuristic(child.state))
+          agenda.push(child, (not best_first) * child.cost +
+              heuristic(child.state))
     if max_states_to_expand and len(expanded) > max_states_to_expand:
       if PRINT_FAIL_REASON:
         print 'exceeded number of states to expand'

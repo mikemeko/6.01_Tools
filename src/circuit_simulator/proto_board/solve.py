@@ -22,7 +22,7 @@ from traceback import print_exc
 from util import node_disjoint_set_forest
 
 def solve_layout(circuit, resistors_as_components, cost_type, mode, order,
-    verbose=True):
+    best_first, verbose=True):
   """
   Attempts to produce a layout for the given |circuit| and returns a dictionary
       containing data corresponding to the solution, most importantly the key
@@ -35,6 +35,7 @@ def solve_layout(circuit, resistors_as_components, cost_type, mode, order,
     print 'Resistors as components: %s' % resistors_as_components
     print 'Placement cost type: %s' % cost_type
     print 'Wiring mode: %s, order: %s' % (mode, order)
+    print 'Search: %s' % ('Best First' if best_first else 'A*')
     print
   solve_data = defaultdict(lambda: None)
   try:
@@ -74,7 +75,7 @@ def solve_layout(circuit, resistors_as_components, cost_type, mode, order,
     solve_data['loc_pairs'] = loc_pairs
     wiring_start = clock()
     proto_board, num_expanded = find_wiring(loc_pairs, proto_board, mode, order,
-        verbose)
+        best_first, verbose)
     solve_data['wiring_time'] = clock() - wiring_start
     solve_data['proto_board'] = proto_board
     solve_data['num_expanded'] = num_expanded
