@@ -586,6 +586,25 @@ class Head_Connector(Component):
       ((k + 7, 0), self.n_motor_minus))))
     return k + 8
 
+class Probe(Component):
+  """
+  Representation for probes.
+  """
+  def __init__(self, sign, node):
+    Component.__init__(self)
+    self.sign = sign
+    self.node = node
+  def nodes(self):
+    return set(filter(bool, [node]))
+  def equations(self):
+    return []
+  def KCL_update(self, KCL):
+    pass
+  def cmaxify(self, parts, k):
+    parts.append(('%sprobe: (%d,%d)' % (self.sign, k, 0),
+        (((k, 0), self.node),)))
+    return k + 1
+
 class Circuit:
   """
   Representation for a circuit.
