@@ -31,6 +31,7 @@ from circuit_simulator.proto_board.solve import solve_layout
 from circuit_simulator.proto_board.visualization.visualization import (
     visualize_proto_board)
 from circuit_simulator.simulation.circuit import Robot_Connector
+from circuit_simulator.simulation.simulate import close_all_windows
 from constants import APP_NAME
 from constants import BOARD_HEIGHT
 from constants import BOARD_WIDTH
@@ -45,6 +46,7 @@ from core.gui.app_runner import App_Runner
 from core.gui.board import Board
 from core.gui.components import Wire
 from core.gui.components import Wire_Connector_Drawable
+from core.gui.constants import CTRL_DOWN
 from core.gui.constants import LEFT
 from core.gui.constants import RIGHT
 from core.gui.constants import ERROR
@@ -133,5 +135,6 @@ if __name__ == '__main__':
       simulate, solve_circuit=True))
   app_runner.board.add_key_binding('p', lambda: run_analysis(app_runner.board,
       proto_board_layout))
+  app_runner.board.add_key_binding('w', close_all_windows, CTRL_DOWN)
   # run
   app_runner.run()

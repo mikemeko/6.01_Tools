@@ -680,7 +680,7 @@ class Board(Frame):
         self._delete_selected_items()
     else:
       current_key = event.keysym.lower()
-      current_flags = (CTRL_DOWN * self._ctrl_pressed) | (SHIFT_DOWN &
+      current_flags = (CTRL_DOWN * self._ctrl_pressed) | (SHIFT_DOWN *
           self._shift_pressed)
       if (current_key, current_flags) in self._key_press_callbacks:
         self._key_press_callbacks[(current_key, current_flags)]()
