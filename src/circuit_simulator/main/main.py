@@ -81,15 +81,8 @@ if __name__ == '__main__':
     """
     Displays the plot that are drawn by the |plotters|.
     """
-    # ensure that circuit was successfully solved
-    if circuit.data:
-      # show label tooltips on board
-      app_runner.board.show_label_tooltips()
-      # show analysis plots
-      for plotter in plotters:
-        plotter.plot(circuit.data)
-    else:
-      app_runner.board.display_message('Could not solve circuit', ERROR)
+    # show label tooltips on board
+    app_runner.board.show_label_tooltips()
   def proto_board_layout(circuit, plotters):
     """
     Finds a way to layout the given |circuit| on a proto board and displays the
@@ -131,13 +124,13 @@ if __name__ == '__main__':
   app_runner.palette.add_drawable_type(Motor_Drawable, LEFT, None)
   # add buttons to analyze circuit
   app_runner.palette.add_drawable_type(Simulate_Run_Drawable, RIGHT,
-      lambda event: run_analysis(app_runner.board, simulate, True, True, True,
-      True))
+      lambda event: run_analysis(app_runner.board, simulate,
+      solve_circuit=True))
   app_runner.palette.add_drawable_type(Proto_Board_Run_Drawable, RIGHT,
       lambda event: run_analysis(app_runner.board, proto_board_layout))
   # shortcuts
   app_runner.board.add_key_binding('s', lambda: run_analysis(app_runner.board,
-      simulate, True, True, True, True))
+      simulate, solve_circuit=True))
   app_runner.board.add_key_binding('p', lambda: run_analysis(app_runner.board,
       proto_board_layout))
   # run

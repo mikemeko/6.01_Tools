@@ -1,9 +1,11 @@
 """
 Circuit solving.
-Credit to ideas from MIT 6.01 Fall 2012 Software Lab 9.
-Equation representation: a list of terms summing to 0, where a term is a tuple
-    of the form (coeff, var), where coeff is a number and var is a variable.
-    Constants can be represented by (const, None).
+Uses CMax simulator.
+Old solver (no longer used):
+  Credit to ideas from MIT 6.01 Fall 2012 Software Lab 9.
+  Equation representation: a list of terms summing to 0, where a term is a tuple
+      of the form (coeff, var), where coeff is a number and var is a variable.
+      Constants can be represented by (const, None).
 """
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
@@ -12,6 +14,9 @@ from circuit_simulator.main.constants import GROUND
 from circuit_simulator.main.constants import POWER
 from collections import defaultdict
 from constants import DEBUG
+from constants import DEFAULT_LAMP_ANGLE_SIGNAL
+from constants import DEFAULT_LAMP_DISTANCE_SIGNAL
+from constants import DEFAULT_POT_SIGNAL
 from constants import MOTOR_B_LOADED
 from constants import MOTOR_B_UNLOADED
 from constants import MOTOR_INIT_ANGLE
@@ -27,6 +32,7 @@ from constants import OP_AMP_K
 from constants import PHOTODETECTOR_K
 from constants import T
 from core.math.CT_signal import CT_Signal
+from core.math.CT_signal import Function_CT_Signal
 from core.math.equation_solver import solve_equations
 from core.util.util import clip
 from core.util.util import in_bounds
@@ -620,10 +626,7 @@ class Circuit:
     if solve:
       try:
         self._cmax_solve()
-        #self.data = self._solve()
-        self.data = None
       except:
-        self.data = None
         if DEBUG:
           print format_exc()
   def _solve(self):
@@ -631,6 +634,7 @@ class Circuit:
     Solves this circuit and returns a dictionary mapping all the sampled times
         to dictionaries mapping all the variables (i.e. voltages and currents)
         to their values.
+    No longer used! Replaced by CMax simulator. Look at self._cmax_solve().
     """
     data = {}
     for n in xrange(NUM_SAMPLES):
@@ -651,6 +655,8 @@ class Circuit:
       for component in self.components:
         component.step(data[n * T])
     return data
+  def _ct_to_dt(self, ct_signal):
+    return Function_CT_Signal(lambda n: ct_signal.sample(n * T))
   def _cmax_solve(self):
     parts = []
     k = 0
@@ -668,5 +674,29 @@ class Circuit:
           x1, y1 = node_locations[node][i]
           x2, y2 = node_locations[node][i + 1]
           lines.append('wire: (%d,%d)--(%d,%d)' % (x1, y1, x2, y2))
-    simulate.solve(lines)
+    pot_alpha_signals = []
+    lamp_angle_signals = []
+    lamp_distance_signals = []
+    pot_labels = []
+    lamp_labels = []
+    head_motor_labels = []
+    motor_labels = []
+    for component in self.components:
+      if isinstance(component, Signalled_Pot):
+        pot_alpha_signals.append(self._ct_to_dt(component.signal if
+            component.signal else DEFAULT_POT_SIGNAL))
+        pot_labels.append(component.label)
+      elif isinstance(component, Head_Connector):
+        lamp_angle_signals.append(self._ct_to_dt(component.lamp_angle_signal if
+            component.lamp_angle_signal else DEFAULT_LAMP_ANGLE_SIGNAL))
+        lamp_distance_signals.append(self._ct_to_dt(
+            component.lamp_distance_signal if component.lamp_distance_signal
+            else DEFAULT_LAMP_DISTANCE_SIGNAL))
+        lamp_labels.append(component.photo_label)
+        head_motor_labels.append(component.motor_label)
+      elif isinstance(component, Motor):
+        motor_labels.append(component.label)
+    simulate.solve(lines, pot_alpha_signals, lamp_angle_signals,
+        lamp_distance_signals, pot_labels, lamp_labels, head_motor_labels,
+        motor_labels, deltaT=T)
     print simulate.sim_output

@@ -4,6 +4,8 @@ Circuit simulator constants.
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
+from core.math.CT_signal import Constant_CT_Signal
+
 # op amp constants
 OP_AMP_K = 1000000000
 
@@ -27,6 +29,11 @@ PHOTODETECTOR_K = 5e-7
 # sampling constants
 NUM_SAMPLES = 120
 T = 0.01 # sampling periond
+
+# default simulation signals
+DEFAULT_LAMP_ANGLE_SIGNAL = Constant_CT_Signal(0)
+DEFAULT_LAMP_DISTANCE_SIGNAL = Constant_CT_Signal(0.5)
+DEFAULT_POT_SIGNAL = Constant_CT_Signal(0.5)
 
 # debugging
 DEBUG = True

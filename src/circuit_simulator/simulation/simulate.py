@@ -565,7 +565,7 @@ class NonexistentPart(Exception):
     def __str__(self):
         return repr(self.value)
 
-def solve(lines,potAlphaSignal=None,lampAngleSignal=None,lampDistanceSignal=None,nSamples=100,deltaT=0.02):
+def solve(lines,potAlphaSignals,lampAngleSignals,lampDistanceSignals,potLabels,lampLabels,headMotorLabels,motorLabels,nSamples=100,deltaT=0.02):
     global nodes,N
     def makeGMatrix():
         gMatrix = [[0.0 for x in range(N)] for y in range(N)]
@@ -587,6 +587,11 @@ def solve(lines,potAlphaSignal=None,lampAngleSignal=None,lampDistanceSignal=None
 
     (nodes,N) = makeNodes(lines)
     (resistors,pots,motorPots,heads,motors,vsources,isources,opAmps,probes) = parseComponents(lines)
+
+    assert len(pots) == len(potAlphaSignals) == len(potLabels)
+    assert len(heads) == len(lampAngleSignals) == len(
+        lampDistanceSignals) == len(lampLabels) == len(headMotorLabels)
+    assert len(motors) == len(motorLabels)
 
     nodePins = []
     for i in range(N):
@@ -631,36 +636,44 @@ def solve(lines,potAlphaSignal=None,lampAngleSignal=None,lampDistanceSignal=None
     if j>0:
         raise SingularMatrix('Floating nodes must be connected')
 
-    if potAlphaSignal:
-        if len(pots)<1:
-            warn('Simulation file specifies input signal for nonexistent pot')
-            raise NonexistentPart('No pot in this circuit!')
-        else:
-            pots[0].alphaSample = potAlphaSignal.sample
-            warning = 'potAlphaSignal:'
-            for n in range(nSamples):
-                warning +='{0:5.2f}'.format(potAlphaSignal.sample(n))
-            warn(warning)
-    if lampAngleSignal:
-        if len(heads)<1:
-            warn('Simulation file specifies lamp angle input signal for nonexistent head')
-            raise NonexistentPart('No head in this circuit!')
-        else:
-            heads[0].lampAngleSample = lampAngleSignal.sample
-            warning = 'lampAngleSignal:'
-            for n in range(nSamples):
-                warning += '{0:5.2f}'.format(lampAngleSignal.sample(n))
-            warn(warning)
-    if lampDistanceSignal:
-        if len(heads)<1:
-            warn('Simulation file specifies lamp angle input signal for nonexistent head')
-            raise NonexistentPart('No head in this circuit!')
-        else:
-            heads[0].lampDistanceSample = lampDistanceSignal.sample
-            warning = 'lampDistanceSignal:'
-            for n in range(nSamples):
-                warning += '{0:5.2f}'.format(lampDistanceSignal.sample(n))
-            warn(warning)
+    for i, pot in enumerate(pots):
+      pot.alphaSample = potAlphaSignals[0].sample
+
+    #if potAlphaSignal:
+    #    if len(pots)<1:
+    #        warn('Simulation file specifies input signal for nonexistent pot')
+    #        raise NonexistentPart('No pot in this circuit!')
+    #    else:
+    #        pots[0].alphaSample = potAlphaSignal.sample
+    #        warning = 'potAlphaSignal:'
+    #        for n in range(nSamples):
+    #            warning +='{0:5.2f}'.format(potAlphaSignal.sample(n))
+    #        warn(warning)
+
+    for i, head in enumerate(heads):
+      head.lampAngleSample = lampAngleSignals[i].sample
+      head.lampDistanceSample = lampDistanceSignals[i].sample
+
+    #if lampAngleSignal:
+    #    if len(heads)<1:
+    #        warn('Simulation file specifies lamp angle input signal for nonexistent head')
+    #        raise NonexistentPart('No head in this circuit!')
+    #    else:
+    #        heads[0].lampAngleSample = lampAngleSignal.sample
+    #        warning = 'lampAngleSignal:'
+    #        for n in range(nSamples):
+    #            warning += '{0:5.2f}'.format(lampAngleSignal.sample(n))
+    #        warn(warning)
+    #if lampDistanceSignal:
+    #    if len(heads)<1:
+    #        warn('Simulation file specifies lamp angle input signal for nonexistent head')
+    #        raise NonexistentPart('No head in this circuit!')
+    #    else:
+    #        heads[0].lampDistanceSample = lampDistanceSignal.sample
+    #        warning = 'lampDistanceSignal:'
+    #        for n in range(nSamples):
+    #            warning += '{0:5.2f}'.format(lampDistanceSignal.sample(n))
+    #        warn(warning)
 
     for h in heads+motors:
         h.thetaOutput = []
@@ -749,21 +762,37 @@ def solve(lines,potAlphaSignal=None,lampAngleSignal=None,lampDistanceSignal=None
     for i in range(min(len(pos),len(neg))):
         myPlot(sig.ListSignal([a-b for (a,b) in zip(pos[i].outputs,neg[i].outputs)]),'probe',0,.01)
         w += 1
-    for h in heads+motors:
-        myPlot(sig.ListSignal(h.thetaOutput),'Motor Angle',0,0)
-        myPlot(sig.ListSignal(h.omegaOutput),'Motor Velocity',0,0)
-        w += 1
-    if lampDistanceSignal:
-        myPlot(lampDistanceSignal,'Lamp Distance Signal',0,1)
-        w += 1
-    if lampAngleSignal:
-        myPlot(lampAngleSignal,'Lamp Angle Signal',-1./8.,1./8.)
-        w += 1
-    if potAlphaSignal:
-        myPlot(potAlphaSignal,'Pot Alpha Signal',0,1)
-        w += 1
-    elif len(pots)>0:
-        myPlot(sig.ListSignal([pots[0].alphaSample(n) for n in range(nSamples)]),'Pot Alpha Signal',0,1)
-        w += 1
+    for i, label in enumerate(headMotorLabels):
+      myPlot(sig.ListSignal(heads[i].thetaOutput),'Motor %s Angle' % label,0,0)
+      myPlot(sig.ListSignal(heads[i].omegaOutput),'Motor %s Velocity' % label,0,0)
+      w += 1
+    for i, label in enumerate(motorLabels):
+      myPlot(sig.ListSignal(motors[i].thetaOutput),'Motor %s Angle' % label,0,0)
+      myPlot(sig.ListSignal(motors[i].omegaOutput),'Motor %s Velocity' % label,0,0)
+      w += 1
+    #for h in heads+motors:
+    #    myPlot(sig.ListSignal(h.thetaOutput),'Motor Angle',0,0)
+    #    myPlot(sig.ListSignal(h.omegaOutput),'Motor Velocity',0,0)
+    #    w += 1
+    for i, label in enumerate(lampLabels):
+      if label:
+        myPlot(lampDistanceSignals[i], 'Lamp %s Distance Signal' % label, 0, 1)
+        myPlot(lampAngleSignals[i], 'Lamp %s Angle Signal' % label, -1./8, 1./8)
+        w += 2
+    #if lampDistanceSignal:
+    #    myPlot(lampDistanceSignal,'Lamp Distance Signal',0,1)
+    #    w += 1
+    #if lampAngleSignal:
+    #    myPlot(lampAngleSignal,'Lamp Angle Signal',-1./8.,1./8.)
+    #    w += 1
+    for i, label in enumerate(potLabels):
+      myPlot(potAlphaSignals[i], 'Pot %s Alpha Signal' % label, 0, 1)
+      w += 1
+    #if potAlphaSignal:
+    #    myPlot(potAlphaSignal,'Pot Alpha Signal',0,1)
+    #    w += 1
+    #elif len(pots)>0:
+    #    myPlot(sig.ListSignal([pots[0].alphaSample(n) for n in range(nSamples)]),'Pot Alpha Signal',0,1)
+    #    w += 1
     if w==0:
         warn('No output signals are specified. Do you want to add a Probe?')
