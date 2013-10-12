@@ -659,6 +659,8 @@ class Board(Frame):
     """
     Callback for when a key is pressed.
     """
+    if self.edit_in_progress():
+      return
     keysym = self._get_keysym(event)
     if keysym in ('Control_L', 'Control_R'):
       self._ctrl_pressed = True
@@ -676,7 +678,7 @@ class Board(Frame):
       self._move_selected_items(0, -BOARD_GRID_SEPARATION)
     elif keysym in ('BackSpace', 'Delete'):
       # delete selected items as long there is not text edit in progress
-      if not self._canvas.focus():
+      if not self.edit_in_progress():
         self._delete_selected_items()
     else:
       current_key = event.keysym.lower()
@@ -1032,3 +1034,8 @@ class Board(Frame):
     self.set_changed(False)
     # return cursor to normal state
     self.reset_cursor_state()
+  def edit_in_progress(self):
+    """
+    Returns True if there is a text currently being editted, False otherwise.
+    """
+    return bool(self._canvas.focus())

@@ -215,18 +215,18 @@ class Resistor_Drawable(Drawable):
     w, h = self.width, self.height
     self._resistor_zig_zags = draw_resistor_zig_zags(canvas, ox, oy, w, h)
     self.parts |= self._resistor_zig_zags
+    def on_resistance_changed(old_r, new_r):
+      self.init_resistance = new_r
+      self.board.set_changed(True, Action(lambda: self.set_resistance(new_r),
+          lambda: self.set_resistance(old_r), 'set resistance'))
     if w > h: # horizontal
       resistor_text = create_editable_text(canvas, ox + w / 2,
           oy - RESISTOR_TEXT_PADDING, text=self.init_resistance,
-          on_text_changed=lambda old_r, new_r: self.board.set_changed(True,
-          Action(lambda: self.set_resistance(new_r), lambda:
-          self.set_resistance(old_r), 'set resistance')), font=FONT)
+          on_text_changed=on_resistance_changed, font=FONT)
     else: # vertical
       resistor_text = create_editable_text(canvas,
           ox + w + RESISTOR_TEXT_PADDING, oy + h / 2,
-          text=self.init_resistance, on_text_changed=lambda old_r, new_r:
-          self.board.set_changed(True, Action(lambda: self.set_resistance(
-          new_r), lambda: self.set_resistance(old_r), 'set resistance')),
+          text=self.init_resistance, on_text_changed=on_resistance_changed,
           font=FONT)
     self.parts.add(resistor_text)
     def get_resistance():
@@ -241,6 +241,7 @@ class Resistor_Drawable(Drawable):
       """
       assert isinstance(r, str), 'r must be a string'
       canvas.itemconfig(resistor_text, text=r)
+      self.init_resistance = r
     self.set_resistance = set_resistance
   def rotated(self):
     return Resistor_Drawable(self.board, self.height, self.width,
