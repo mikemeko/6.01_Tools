@@ -83,6 +83,7 @@ from os.path import relpath
 from re import match
 from tkFileDialog import askopenfilename
 from Tkinter import CENTER
+from Tkinter import Menu
 from util import draw_resistor_zig_zags
 
 class Pin_Drawable(Drawable):
@@ -412,7 +413,7 @@ class Pot_Drawable(Drawable):
     pot_alpha_text = canvas.create_text(ox + w / 2, oy + h / 2 - 1,
         text=POT_ALPHA_TEXT, justify=CENTER, fill='white' if self.signal_file
         else 'black', font=FONT)
-    def set_signal_file(event):
+    def set_signal_file():
       """
       Opens a window to let the user choose a signal file.
       """
@@ -424,6 +425,7 @@ class Pot_Drawable(Drawable):
         canvas.itemconfig(pot_alpha_window, fill=POT_ALPHA_FILL)
         canvas.itemconfig(pot_alpha_text, fill='white')
         self.on_signal_file_changed()
+    self.set_signal_file = set_signal_file
     tooltip_helper = Tooltip_Helper(canvas)
     def _show_tooltip(event):
       tip = basename(self.signal_file) if (self.signal_file and isfile(
@@ -431,8 +433,6 @@ class Pot_Drawable(Drawable):
       tooltip_helper.show_tooltip(event.x, event.y, tip)
     for pot_alpha_part in (pot_alpha_window, pot_alpha_text):
       self.parts.add(pot_alpha_part)
-      canvas.tag_bind(pot_alpha_part, '<Button-2>', set_signal_file)
-      canvas.tag_bind(pot_alpha_part, '<Button-3>', set_signal_file)
       canvas.tag_bind(pot_alpha_part, '<Enter>', _show_tooltip)
       canvas.tag_bind(pot_alpha_part, '<Leave>', lambda event:
           tooltip_helper.hide_tooltip())
@@ -472,6 +472,10 @@ class Pot_Drawable(Drawable):
   def hide_selected_highlight(self, canvas):
     for item in self._resistor_zig_zags:
       canvas.itemconfig(item, width=1)
+  def on_right_click(self, event):
+    menu = Menu(event.widget, tearoff=0)
+    menu.add_command(label='Set Signal File', command=self.set_signal_file)
+    menu.post(event.x_root, event.y_root)
   def serialize(self, offset):
     return 'Pot %s %d %d %d %s' % (self.signal_file, self.width, self.height,
         self.direction, str(offset))
@@ -689,7 +693,7 @@ class Photosensors_Drawable(Pin_Drawable):
         LAMP_BOX_SIZE / 2, fill=LAMP_BOX_COLOR)
     lamp = create_circle(canvas, lamp_cx, lamp_cy, LAMP_RADIUS, fill=LAMP_COLOR
         if self.signal_file else LAMP_EMPTY_COLOR)
-    def set_signal_file(event):
+    def set_signal_file():
       """
       Opens a window to let the user choose a lamp signal file.
       """
@@ -700,6 +704,7 @@ class Photosensors_Drawable(Pin_Drawable):
         self.signal_file = relpath(new_signal_file)
         canvas.itemconfig(lamp, fill=LAMP_COLOR)
         self.on_signal_file_changed()
+    self.set_signal_file = set_signal_file
     tooltip_helper = Tooltip_Helper(canvas)
     def _show_tooltip(event):
       tip = basename(self.signal_file) if (self.signal_file and isfile(
@@ -707,8 +712,6 @@ class Photosensors_Drawable(Pin_Drawable):
       tooltip_helper.show_tooltip(event.x, event.y, tip)
     for lamp_part in (lamp_box, lamp):
       self.parts.add(lamp_part)
-      canvas.tag_bind(lamp_part, '<Button-2>', set_signal_file)
-      canvas.tag_bind(lamp_part, '<Button-3>', set_signal_file)
       canvas.tag_bind(lamp_part, '<Enter>', _show_tooltip)
       canvas.tag_bind(lamp_part, '<Leave>', lambda event:
           tooltip_helper.hide_tooltip())
@@ -721,6 +724,10 @@ class Photosensors_Drawable(Pin_Drawable):
   def rotated(self):
     return Photosensors_Drawable(self.color, self.group_id,
         self.on_signal_file_changed, (self.direction + 1) % 4, self.signal_file)
+  def on_right_click(self, event):
+    menu = Menu(event.widget, tearoff=0)
+    menu.add_command(label='Set Signal File', command=self.set_signal_file)
+    menu.post(event.x_root, event.y_root)
   def serialize(self, offset):
     return 'Photosensors %s %s %d %d %s' % (self.signal_file, self.color,
         self.direction, self.group_id, str(offset))

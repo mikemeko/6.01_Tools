@@ -72,6 +72,11 @@ class Drawable:
     All subclasses should implement this.
     """
     raise NotImplementedError('subclasses should implement this')
+  def on_right_click(self, event):
+    """
+    Callback for right click. Default does nothing.
+    """
+    pass
   def hide_selected_highlight(self, canvas):
     """
     Hides the selected enhancement to show that this drawable is no longer
@@ -161,6 +166,8 @@ class Drawable:
       if not isinstance(current_tags, tuple):
         current_tags = tuple([current_tags])
       canvas.itemconfig(part, tags=current_tags + tags)
+      canvas.tag_bind(part, '<Button-2>', self.on_right_click)
+      canvas.tag_bind(part, '<Button-3>', self.on_right_click)
   def _erase_current_parts(self, canvas):
     """
     Deletes this drawable's current parts from the |canvas|.
