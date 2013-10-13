@@ -637,7 +637,7 @@ def solve(lines,potAlphaSignals,lampAngleSignals,lampDistanceSignals,potLabels,l
         raise SingularMatrix('Floating nodes must be connected')
 
     for i, pot in enumerate(pots):
-      pot.alphaSample = potAlphaSignals[0].sample
+      pot.alphaSample = potAlphaSignals[i].sample
 
     #if potAlphaSignal:
     #    if len(pots)<1:
