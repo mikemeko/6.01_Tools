@@ -539,6 +539,32 @@ class Motor_Drawable(Pin_Drawable):
     self.minus = self._draw_connector(canvas, (minus_x, minus_y))
   def rotated(self):
     return Motor_Drawable(self.color, self.group_id, (self.direction + 1) % 4)
+  def on_right_click(self, event):
+    if not self.group_id:
+      # this is a stand alone motor, not part of a head
+      return
+    motor_pot_needed = True
+    photosensors_needed = True
+    for drawable in self.board.get_drawables():
+      if isinstance(drawable, Motor_Pot_Drawable) and (drawable.group_id ==
+          self.group_id):
+        motor_pot_needed = False
+      elif isinstance(drawable, Photosensors_Drawable) and (drawable.group_id ==
+          self.group_id):
+        photosensors_needed = False
+    if motor_pot_needed or photosensors_needed:
+      menu = Menu(event.widget, tearoff=0)
+      def readd():
+        if motor_pot_needed:
+          self.board.add_drawable(Motor_Pot_Drawable(self.color, self.group_id),
+              self.offset)
+        if photosensors_needed:
+          self.board.add_drawable(Photosensors_Drawable(self.color,
+            self.group_id, lambda: self.board.set_changed(True)), self.offset)
+        if motor_pot_needed and photosensors_needed:
+          self.board._action_history.combine_last_n(2)
+      menu.add_command(label='Re-add Missing Parts', command=readd)
+      menu.post(event.x_root, event.y_root)
   def serialize(self, offset):
     return 'Motor %s %d %d %s' % (self.color, self.direction, self.group_id,
         str(offset))
@@ -604,6 +630,29 @@ class Motor_Pot_Drawable(Pin_Drawable):
   def rotated(self):
     return Motor_Pot_Drawable(self.color, self.group_id,
         (self.direction + 1) % 4)
+  def on_right_click(self, event):
+    motor_needed = True
+    photosensors_needed = True
+    for drawable in self.board.get_drawables():
+      if isinstance(drawable, Motor_Drawable) and (drawable.group_id ==
+          self.group_id):
+        motor_needed = False
+      elif isinstance(drawable, Photosensors_Drawable) and (drawable.group_id ==
+          self.group_id):
+        photosensors_needed = False
+    if motor_needed or photosensors_needed:
+      menu = Menu(event.widget, tearoff=0)
+      def readd():
+        if motor_needed:
+          self.board.add_drawable(Motor_Drawable(self.color, self.group_id),
+              self.offset)
+        if photosensors_needed:
+          self.board.add_drawable(Photosensors_Drawable(self.color,
+            self.group_id, lambda: self.board.set_changed(True)), self.offset)
+        if motor_needed and photosensors_needed:
+          self.board._action_history.combine_last_n(2)
+      menu.add_command(label='Re-add Missing Parts', command=readd)
+      menu.post(event.x_root, event.y_root)
   def serialize(self, offset):
     return 'Motor_Pot %s %d %d %s' % (self.color, self.direction,
         self.group_id, str(offset))
@@ -727,6 +776,26 @@ class Photosensors_Drawable(Pin_Drawable):
   def on_right_click(self, event):
     menu = Menu(event.widget, tearoff=0)
     menu.add_command(label='Set Signal File', command=self.set_signal_file)
+    motor_needed = True
+    motor_pot_needed = True
+    for drawable in self.board.get_drawables():
+      if isinstance(drawable, Motor_Drawable) and (drawable.group_id ==
+          self.group_id):
+        motor_needed = False
+      elif isinstance(drawable, Motor_Pot_Drawable) and (drawable.group_id ==
+          self.group_id):
+        motor_pot_needed = False
+    if motor_needed or motor_pot_needed:
+      def readd():
+        if motor_needed:
+          self.board.add_drawable(Motor_Drawable(self.color, self.group_id),
+              self.offset)
+        if motor_pot_needed:
+          self.board.add_drawable(Motor_Pot_Drawable(self.color, self.group_id),
+              self.offset)
+        if motor_needed and motor_pot_needed:
+          self.board._action_history.combine_last_n(2)
+      menu.add_command(label='Re-add Missing Parts', command=readd)
     menu.post(event.x_root, event.y_root)
   def serialize(self, offset):
     return 'Photosensors %s %s %d %d %s' % (self.signal_file, self.color,
@@ -801,6 +870,25 @@ class Robot_Power_Drawable(Pin_Drawable):
   def rotated(self):
     return Robot_Power_Drawable(self.color, self.group_id,
         (self.direction + 1) % 4)
+  def on_right_click(self, event):
+    present = set()
+    for drawable in self.board.get_drawables():
+      if isinstance(drawable, Robot_IO_Drawable) and (drawable.group_id ==
+          self.group_id):
+        present.add(drawable.name)
+    if len(present) < 5:
+      menu = Menu(event.widget, tearoff=0)
+      def readd():
+        n = 0
+        for name in ['Vi1', 'Vi2', 'Vi3', 'Vi4', 'Vo']:
+          if name not in present:
+            self.board.add_drawable(Robot_IO_Drawable(name, self.color,
+                self.group_id), self.offset)
+            n += 1
+        if n > 1:
+          self.board._action_history.combine_last_n(n)
+      menu.add_command(label='Re-add Missing Parts', command=readd)
+      menu.post(event.x_root, event.y_root)
   def serialize(self, offset):
     return 'Robot_Power %s %s %d %s' % (self.color, self.group_id,
         self.direction, str(offset))
@@ -833,6 +921,33 @@ class Robot_IO_Drawable(Pin_Drawable):
   def rotated(self):
     return Robot_IO_Drawable(self.name, self.color, self.group_id,
         rotate_connector_flags(self.connector_flags))
+  def on_right_click(self, event):
+    present = set()
+    robot_power_needed = True
+    for drawable in self.board.get_drawables():
+      if isinstance(drawable, Robot_IO_Drawable) and (drawable.group_id ==
+          self.group_id):
+        present.add(drawable.name)
+      elif isinstance(drawable, Robot_Power_Drawable) and (drawable.group_id ==
+          self.group_id):
+        robot_power_needed = False
+    if robot_power_needed or len(present) < 5:
+      menu = Menu(event.widget, tearoff=0)
+      def readd():
+        n = 0
+        if robot_power_needed:
+          self.board.add_drawable(Robot_Power_Drawable(self.color,
+              self.group_id), self.offset)
+          n += 1
+        for name in ['Vi1', 'Vi2', 'Vi3', 'Vi4', 'Vo']:
+          if name not in present:
+            self.board.add_drawable(Robot_IO_Drawable(name, self.color,
+                self.group_id), self.offset)
+            n += 1
+        if n > 1:
+          self.board._action_history.combine_last_n(n)
+      menu.add_command(label='Re-add Missing Parts', command=readd)
+      menu.post(event.x_root, event.y_root)
   def serialize(self, offset):
     return 'Robot_IO %s %s %s %d %s' % (self.name, self.color, self.group_id,
         self.connector_flags, str(offset))

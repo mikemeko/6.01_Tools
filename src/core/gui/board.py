@@ -884,6 +884,8 @@ class Board(Frame):
       drawable.attach_tags(self._canvas)
       # mark this board changed
       self.set_changed(True)
+      # I sincerely apoligize for this, but it's super convinient
+      drawable.board = self
   def _offset_good_for_new_drawable(self, new_drawable, offset):
     """
     Returns True if the given |new_drawable| at the given |offset| is completely
