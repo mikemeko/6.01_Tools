@@ -2,7 +2,12 @@
 
 \chapter{Results}
 
-\section{Outline}
+In Chapter \ref{ch:methods} we discussed a general solution to the protoboard
+layout problem, and various alternatives that can be used in implementing the
+solution. Figure \ref{fig:alternatives} presents the alternatives in a structured
+way. Here, we will explore these alternatives and compare them quantitatively.
+This section will provide data that is useful in comparing the alternatives, and
+the data will be discussed in detail in Chapter \ref{ch:discussion}.
 
 \begin{figure}[H]
 \Tree [.{All Alternatives}
@@ -16,6 +21,27 @@
 \caption{All possible alternatives to the algorithm.}
 \end{figure}
 
+The data to compare the alternatives is gathered as described in Chapter
+\ref{ch:methods}. We run the algorithm on $4425$ randomly generated schematics
+of varying complexities. The algorithm is run $10$ times on each schematic.
+
+In comparing alternatives, there are $3$ items we will consider:
+\begin{enumerate}
+\item Which alternative is the most successful?
+\item Which alternative, when successful, takes the least amount of time?
+\item Which alternative, when successful, produces the best layouts?
+\end{enumerate}
+
+In comparing success time, we will look at CPU time spent on the wiring step, as
+the placement step has much less variability. We will look at plots of circuit
+complexity versus wiring times to do the comparisons. Our measure of complexity
+of a circuit will be the number of pins in the circuit as discussed in Chapter
+\ref{ch:methods} (TODO: this is currently not done, be sure to give a histogram
+of numbers of pins in the circuits).
+
+In comparing the goodness of layouts, we will compare numbers of wires, total
+lengths of wires, and numbers of wire crosses.
+
 \section{Comparing placement methods}
 
 \section{Comparing wiring methods}
@@ -25,3 +51,5 @@
 \section{Comparing search methods}
 
 \section{Putting them all together}
+
+\section{Exemplars}
