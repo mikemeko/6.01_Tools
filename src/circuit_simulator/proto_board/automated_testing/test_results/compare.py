@@ -7,10 +7,11 @@ __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 from analyze_data import Test_Group
 from analyze_data import Test_Result
 from collections import defaultdict
+from numpy import mean
 from sys import argv
 import pylab
 
-colors = ['b', 'y', 'r', 'g', 'c']
+colors = ['r', 'g', 'b', 'c', 'm']
 
 def compare(files, methods):
   all_results = []
@@ -54,6 +55,36 @@ def compare(files, methods):
     print s
     t += r' \\'
     print t
+
+  # success trend
+  pylab.figure()
+  all_success_mappings = []
+  for results in all_results:
+    success_mapping = defaultdict(list)
+    for result in results:
+      success_mapping[result.num_schematic_pins].append(result.solved)
+    all_success_mappings.append(success_mapping)
+  for i, success_mapping in enumerate(all_success_mappings):
+    pylab.plot(success_mapping.keys(), map(mean, success_mapping.values()),
+        color=colors[i])
+  pylab.xlabel('Number of pins')
+  pylab.ylabel('Success rate')
+  pylab.legend(methods, loc=2)
+
+  # time trend
+  pylab.figure()
+  all_time_mappings = []
+  for results in all_results:
+    time_mapping = defaultdict(list)
+    for result in results:
+      time_mapping[result.num_schematic_pins].append(result.wiring_time)
+    all_time_mappings.append(time_mapping)
+  for i, time_mapping in enumerate(all_time_mappings):
+    pylab.plot(time_mapping.keys(), map(mean, time_mapping.values()),
+        color=colors[i])
+  pylab.xlabel('Number of pins')
+  pylab.ylabel('Wiring time (seconds)')
+  pylab.legend(methods, loc=2)
 
   pylab.show()
 
