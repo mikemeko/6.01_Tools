@@ -44,10 +44,24 @@ lengths of wires, and numbers of wire crosses.
 
 \section{Comparing placement methods}
 
-\begin{figure}
+We have two placement methods available: choosing a placement that aims to
+minimize the sum of pairwise distances between pairs of points on the protoboard
+that need to be interconnected, and choosing a placement that aims to minimize
+the number of rows blocked off (in some sense) in each column. To compare these
+two placement methods, we keep the other alternatives fixed at some choices.
+In the data given below, the wiring method used is per-pair wiring, in decreasing
+order of distances apart, resistors are treated as components, and we use $A*$ as
+our search algorithm.
+
+First we look at the success rates that result from the two placement methods.
+Figure \ref{fig:placement_success} presents a bar graph that compares the numbers
+of times, out of $10$ runs, each method succeeded over the $4425$ schematics.
+Table \ref{tb:placement_success} presents the same data more precisely.
+
+\begin{figure}[H]
 \begin{center}
 \includegraphics[width=\textwidth]{Images/placement_success_comparison.png}
-\caption{TODO}
+\caption{Placement method comparison: success rates.}
 \label{fig:placement_success}
 \end{center}
 \end{figure}
@@ -57,7 +71,7 @@ lengths of wires, and numbers of wire crosses.
 \begin{singlespace}
 \begin{tabular}{|c||c|c|c|c|c|c|c|c|c|c|c|}
 \hline
- & \multicolumn{11}{|c|}{Number of times solved out of $10$} \\
+ & \multicolumn{11}{|c|}{Number of times succeeded out of $10$} \\
 \hline
  & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 \\
 \hline\hline
@@ -70,32 +84,48 @@ Blocking & $162$ & $38$ & $51$ & $57$ & $72$ & $85$ & $109$ & $106$ & $144$ & $2
 \end{tabular}
 \end{singlespace}
 \end{center}
-\caption{TODO}
+\label{tb:placement_success}
+\caption{Placement method comparison: success rates.}
 \end{table}
 
-\begin{figure}
+Next we look at the trends of success for the two methods as circuits get more
+complex. Figure \ref{fig:placement_success_trend} presents the average success
+rate at each discrete complexity level.
+
+\begin{figure}[H]
 \begin{center}
 \includegraphics[width=\textwidth]{Images/placement_success_trend_comparison.png}
-\caption{TODO}
+\caption{Placement method comparison: success rate trends.}
 \label{fig:placement_success_trend}
 \end{center}
 \end{figure}
 
-\begin{figure}
+Now we look at the trends of wiring time for the two methods as circuits get
+more complex. Figure \ref{fig:placement_time_trend} presents the average wiring
+time (in seconds) at each discrete complexity level.
+
+\begin{figure}[H]
 \begin{center}
 \includegraphics[width=\textwidth]{Images/placement_time_trend_comparison.png}
-\caption{TODO}
+\caption{Placement method comparison: wiring time trends.}
 \label{fig:placement_time_trend}
 \end{center}
 \end{figure}
 
+Finally wee look at the quality of the layouts the two alternative placement
+methods produces. Figure \ref{fig:placement_quality_trend} gives average number of
+wires, average number of wire crosses, and average total lengths of wires at
+each discrete complexity level.
+
 \begin{figure}
 \begin{center}
 \includegraphics[width=\textwidth]{Images/placement_quality_trend_comparison.png}
-\caption{TODO}
+\caption{Placement method comparison: layout quality trends.}
 \label{fig:placement_quality_trend}
 \end{center}
 \end{figure}
+
+Discussion of all of these results follows in Chapter \ref{ch:discussion}.
 
 \section{Comparing wiring methods}
 
