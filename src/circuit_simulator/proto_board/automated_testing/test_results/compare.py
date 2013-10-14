@@ -86,6 +86,35 @@ def compare(files, methods):
   pylab.ylabel('Wiring time (seconds)')
   pylab.legend(methods, loc=2)
 
+  # quality
+  pylab.figure()
+  all_quality_mappings = []
+  for results in all_results:
+    num_wires_mapping = defaultdict(list)
+    num_wire_crosses_mapping = defaultdict(list)
+    total_wire_length_mapping = defaultdict(list)
+    for result in results:
+      if result.solved:
+        num_wires_mapping[result.num_schematic_pins].append(result.num_wires)
+        num_wire_crosses_mapping[result.num_schematic_pins].append(
+            result.num_wire_crosses)
+        total_wire_length_mapping[result.num_schematic_pins].append(
+            result.total_wire_length)
+    all_quality_mappings.append([num_wires_mapping, num_wire_crosses_mapping,
+        total_wire_length_mapping])
+  ax1 = pylab.subplot(311)
+  ax2 = pylab.subplot(312)
+  ax3 = pylab.subplot(313)
+  for i, (m1, m2, m3) in enumerate(all_quality_mappings):
+    ax1.plot(m1.keys(), map(mean, m1.values()), color=colors[i])
+    ax1.set_ylabel('Wires')
+    ax2.plot(m2.keys(), map(mean, m2.values()), color=colors[i])
+    ax2.set_ylabel('Wire crosses')
+    ax3.plot(m3.keys(), map(mean, m3.values()), color=colors[i])
+    ax3.set_ylabel('Total wire length')
+  pylab.xlabel('Number of pins')
+  ax1.legend(methods, loc=2)
+
   pylab.show()
 
 if __name__ == '__main__':
