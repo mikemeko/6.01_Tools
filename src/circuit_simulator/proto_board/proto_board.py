@@ -228,12 +228,9 @@ class Proto_Board:
       chars = ascii_lowercase + ascii_uppercase + digits
     for i, wire in enumerate(sorted(self._wires,
         key=lambda wire: -wire.length())):
-      r_min, r_max = wire.row_support
-      c_min, c_max = wire.column_support
-      for r in xrange(r_min, r_max + 1):
-        for c in xrange(c_min, c_max + 1):
-          grid[r + 1][c + 1] = (chars[i % len(chars)] if distinguish_wires else
-              '#')
+      for (r, c) in wire.locs():
+        grid[r + 1][c + 1] = (chars[i % len(chars)] if distinguish_wires else
+            '#')
     return '\n'.join([''.join(row) for row in grid])
   def __str__(self):
     return self.to_ascii(True)

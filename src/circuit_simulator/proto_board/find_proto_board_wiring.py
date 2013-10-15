@@ -15,6 +15,8 @@ from constants import MODE_PER_NODE
 from constants import MODE_PER_PAIR
 from constants import ORDER_DECREASING
 from constants import ORDER_INCREASING
+from constants import PROTO_BOARD_HEIGHT
+from constants import PROTO_BOARD_WIDTH
 from constants import RAIL_ROWS
 from constants import ROWS
 from core.search.search import a_star
@@ -337,3 +339,46 @@ def _find_wiring_per_pair(loc_pairs, start_proto_board, order, best_first,
   if verbose:
     print '\tdone.'
   return proto_board, all_num_expanded
+
+def _find_terrible_wiring(loc_pairs, start_proto_board):
+  """
+  Finds a terrible wiring without penalizing anything at all.
+  To be used as a fall-back option.
+  """
+  proto_board = start_proto_board
+  connect_loc_pairs = []
+  resistor_r1 = PROTO_BOARD_HEIGHT / 2 - 1
+  resistor_r2 = resistor_r1 + 1
+  def find_free_c():
+    c = PROTO_BOARD_WIDTH / 2
+    for dc in xrange(PROTO_BOARD_WIDTH / 2):
+      for sign in (-1, 1):
+        _c = c + sign * dc
+        locs = ((resistor_r1, _c), (resistor_r2, _c))
+        if all(proto_board.rep_for(loc) is None and proto_board.free(loc) for
+            loc in locs):
+          return _c
+    return None
+  for loc_1, loc_2, resistor, node in loc_pairs:
+    if resistor:
+      c = find_free_c()
+      # TODO(mikemeko): what if c is None?
+      resistor_piece = Resistor_Piece(resistor.n1, resistor.n2, resistor.r,
+          True, resistor.label)
+      resistor_piece.top_left_loc = (resistor_r1, c)
+      proto_board = proto_board.with_piece(resistor_piece)
+      proto_board = proto_board.with_loc_repped(proto_board.rep_for(
+          resistor.n1), (resistor_r1, c))
+      proto_board = proto_board.with_loc_repped(proto_board.rep_for(
+          resistor.n2), (resistor_r2, c))
+      connect_loc_pairs.append((loc_1, (resistor_r1, c), resistor.n1))
+      connect_loc_pairs.append((loc_2, (resistor_r2, c), resistor.n2))
+    else:
+      connect_loc_pairs.append((loc_1, loc_2, node))
+  for loc_1, loc_2, node in connect_loc_pairs:
+    candidates = product(filter(proto_board.free, proto_board.locs_connected_to(
+        loc_1)), filter(proto_board.free, proto_board.locs_connected_to(loc_2)))
+    # TODO(mikemeko): what if candidates is empty?
+    l1, l2 = min(candidates, key=lambda (l1, l2): dist(l1, l2))
+    proto_board = proto_board.with_wire(Wire(l1, l2, node))
+  return proto_board, []
