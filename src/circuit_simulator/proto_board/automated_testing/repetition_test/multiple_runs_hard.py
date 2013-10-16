@@ -39,7 +39,7 @@ def multiple_runs(schematic):
       'num_loc_pairs')
   open(output_file_name, 'w').write(';'.join(header))
   tester = Schematic_Tester(True, COST_TYPE_BLOCKING, MODE_PER_PAIR,
-      ORDER_DECREASING, False)
+      ORDER_DECREASING, False, False)
   for i in xrange(500):
     print 'run %d' % i
     result = (i,) + tester.test_schematic(schematic)[:-1]

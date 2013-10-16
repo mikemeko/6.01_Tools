@@ -392,6 +392,13 @@ def _find_terrible_wiring(loc_pairs, start_proto_board):
     candidates = product(filter(proto_board.free, proto_board.locs_connected_to(
         loc_1)), filter(proto_board.free, proto_board.locs_connected_to(loc_2)))
     # TODO(mikemeko): what if candidates is empty?
-    l1, l2 = min(candidates, key=lambda (l1, l2): dist(l1, l2))
+    def cost((l1, l2)):
+      wire = Wire(l1, l2, node)
+      num_wires_crossed = sum(_wire.crosses(wire) for _wire in
+          proto_board.get_wires())
+      num_pieces_crossed = sum(piece.crossed_by(wire) for piece in
+          proto_board.get_pieces())
+      return 100 * (num_wires_crossed + num_pieces_crossed) + dist(l1, l2)
+    l1, l2 = min(candidates, key=cost)
     proto_board = proto_board.with_wire(Wire(l1, l2, node))
   return proto_board, []

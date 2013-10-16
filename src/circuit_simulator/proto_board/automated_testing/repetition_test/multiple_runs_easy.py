@@ -21,7 +21,7 @@ def multiple_runs(schematic):
       were found.
   """
   tester = Schematic_Tester(True, COST_TYPE_BLOCKING, MODE_PER_PAIR,
-      ORDER_DECREASING, False)
+      ORDER_DECREASING, False, False)
   counts = defaultdict(int)
   for i in xrange(500):
     print i, schematic

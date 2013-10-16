@@ -13,7 +13,7 @@ from cProfile import run
 
 def profile():
   tester = Schematic_Tester(True, COST_TYPE_BLOCKING, MODE_PER_PAIR,
-      ORDER_DECREASING, False)
+      ORDER_DECREASING, False, False)
   tester.test_schematic('circuit_simulator/proto_board/automated_testing/'
       'profiling/schematic.circsim')
 
