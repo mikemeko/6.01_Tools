@@ -9,6 +9,7 @@ from circuit_pieces import Resistor_Piece
 from collections import defaultdict
 from constants import ALLOW_PIECE_CROSSINGS
 from constants import ALLOW_WIRE_CROSSINGS
+from constants import FILTER_WIRE_LENGTHS
 from constants import MAX_STATES_TO_EXPAND
 from constants import MODE_ALL_PAIRS
 from constants import MODE_PER_NODE
@@ -19,6 +20,7 @@ from constants import PROTO_BOARD_HEIGHT
 from constants import PROTO_BOARD_WIDTH
 from constants import RAIL_ROWS
 from constants import ROWS
+from constants import VALID_WIRE_LENGTHS
 from core.search.search import a_star
 from core.search.search import Search_Node
 from itertools import product
@@ -75,7 +77,10 @@ class Proto_Board_Search_Node(Search_Node):
     # can draw horizontal wires to locations to the left and right of |loc|
     # note that we limit the lengh of these horizontal wires (can technically
     #     be very big, but considering all gets us a huge branching factor)
-    for l in range(1, span + 1):
+    wire_lengths = range(1, span + 1)
+    if FILTER_WIRE_LENGTHS:
+      wire_lengths = filter(VALID_WIRE_LENGTHS.__contains__, wire_lengths)
+    for l in wire_lengths:
       wire_ends.append((r, c - l))
       wire_ends.append((r, c + l))
     # can draw vertical wires to the opposite half
