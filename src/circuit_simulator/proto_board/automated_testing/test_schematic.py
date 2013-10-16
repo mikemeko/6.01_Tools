@@ -75,7 +75,7 @@ class Schematic_Tester:
     solve_data = solve_layout(circuit,
         resistors_as_components=self.resistors_as_components,
         cost_type=self.cost_type, mode=self.solve_mode, order=self.solve_order,
-        best_first=self.best_first, verbose=False)
+        best_first=self.best_first, filter_wire_lengths=False, verbose=False)
     proto_board = solve_data['proto_board']
     loc_pairs = solve_data['loc_pairs']
     num_loc_pairs = len(loc_pairs) if loc_pairs is not None else None

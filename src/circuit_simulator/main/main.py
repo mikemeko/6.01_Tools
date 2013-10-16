@@ -92,7 +92,7 @@ if __name__ == '__main__':
     """
     solve_data = solve_layout(circuit, resistors_as_components=True,
         cost_type=COST_TYPE_BLOCKING, mode=MODE_PER_PAIR,
-        order=ORDER_DECREASING, best_first=False)
+        order=ORDER_DECREASING, best_first=False, filter_wire_lengths=True)
     proto_board = solve_data['proto_board']
     if proto_board:
       # show labels on board for easy schematic-layout matching

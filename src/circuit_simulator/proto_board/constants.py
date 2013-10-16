@@ -68,5 +68,4 @@ COST_TYPE_BLOCKING = 'BLOCKING'
 COST_TYPE_DISTANCE = 'DISTANCE'
 
 # limitation on wire lengths
-FILTER_WIRE_LENGTHS = True
 VALID_WIRE_LENGTHS = set(range(1, 14)) | {20, 30, 40, 50}
