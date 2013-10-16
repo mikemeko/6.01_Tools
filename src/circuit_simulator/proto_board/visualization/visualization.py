@@ -238,10 +238,10 @@ class Proto_Board_Visualizer(Frame):
           del self._wire_parts[part]
       new_parts = [self._canvas.create_line(x_1 + CONNECTOR_SIZE / 2,
           y_1 + CONNECTOR_SIZE / 2, x_2 + CONNECTOR_SIZE / 2,
-          y_2 + CONNECTOR_SIZE / 2, fill=WIRE_OUTLINE, width=8,
+          y_2 + CONNECTOR_SIZE / 2, fill=WIRE_OUTLINE, width=7,
           capstyle='round'), self._canvas.create_line(x_1 + CONNECTOR_SIZE / 2,
           y_1 + CONNECTOR_SIZE / 2, x_2 + CONNECTOR_SIZE / 2,
-          y_2 + CONNECTOR_SIZE / 2, fill=fill, width=4, capstyle='round')]
+          y_2 + CONNECTOR_SIZE / 2, fill=fill, width=3, capstyle='round')]
       for part in new_parts:
         self._canvas.tag_bind(part, '<Button-1>', lambda event: draw_wire(
             new_parts))

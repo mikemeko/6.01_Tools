@@ -239,7 +239,8 @@ def heuristic(state):
       loc_2)) for loc_1, loc_2, resistor, node in loc_pairs)
 
 def find_wiring(loc_pairs, start_proto_board, mode, order, best_first,
-    filter_wire_lengths, verbose=True):
+    filter_wire_lengths, max_states_to_expand=MAX_STATES_TO_EXPAND,
+    verbose=True):
   """
   Returns a Proto_Board in which all the pairs of locations in |loc_pairs| are
       properly connected, or None if no such Proto_Board can be found. Search
@@ -259,16 +260,16 @@ def find_wiring(loc_pairs, start_proto_board, mode, order, best_first,
     assert order in (ORDER_DECREASING, ORDER_INCREASING)
   if mode is MODE_ALL_PAIRS:
     return _find_wiring_all(loc_pairs, start_proto_board, best_first,
-        filter_wire_lengths, verbose)
+        filter_wire_lengths, max_states_to_expand, verbose)
   elif mode is MODE_PER_NODE:
     return _find_wiring_per_node(loc_pairs, start_proto_board, order,
-        best_first, filter_wire_lengths, verbose)
+        best_first, filter_wire_lengths, max_states_to_expand, verbose)
   else: # mode is MODE_PER_PAIR
     return _find_wiring_per_pair(loc_pairs, start_proto_board, order,
-        best_first, filter_wire_lengths, verbose)
+        best_first, filter_wire_lengths, max_states_to_expand, verbose)
 
 def _find_wiring_all(loc_pairs, start_proto_board, best_first,
-    filter_wire_lengths, verbose):
+    filter_wire_lengths, max_states_to_expand, verbose):
   """
   Wiring all pairs of locations in one search.
   """
@@ -277,7 +278,7 @@ def _find_wiring_all(loc_pairs, start_proto_board, best_first,
   search_result, num_expanded = a_star(Proto_Board_Search_Node(
       start_proto_board, frozenset(loc_pairs),
       filter_wire_lengths=filter_wire_lengths), goal_test, heuristic,
-      best_first=best_first, max_states_to_expand=MAX_STATES_TO_EXPAND)
+      best_first=best_first, max_states_to_expand=max_states_to_expand)
   if search_result is not None:
     if verbose:
       print '\tdone.'
@@ -288,7 +289,7 @@ def _find_wiring_all(loc_pairs, start_proto_board, best_first,
     return None, [num_expanded]
 
 def _find_wiring_per_node(loc_pairs, start_proto_board, order, best_first,
-    filter_wire_lengths, verbose):
+    filter_wire_lengths, max_states_to_expand, verbose):
   """
   Wiring the pairs of locations for each node separately.
   """
@@ -308,11 +309,12 @@ def _find_wiring_per_node(loc_pairs, start_proto_board, order, best_first,
     search_result, num_expanded = a_star(Proto_Board_Search_Node(proto_board,
         frozenset(loc_pair_collection),
         filter_wire_lengths=filter_wire_lengths), goal_test, heuristic,
-        best_first=best_first, max_states_to_expand=MAX_STATES_TO_EXPAND)
+        best_first=best_first, max_states_to_expand=max_states_to_expand)
     all_num_expanded.append(num_expanded)
     if search_result is not None:
       proto_board = search_result.state[0]
-      print proto_board
+      if verbose:
+        print proto_board
     else:
       if verbose:
         print '\tCouldn\'t do it :('
@@ -322,7 +324,7 @@ def _find_wiring_per_node(loc_pairs, start_proto_board, order, best_first,
   return proto_board, all_num_expanded
 
 def _find_wiring_per_pair(loc_pairs, start_proto_board, order, best_first,
-    filter_wire_lengths, verbose):
+    filter_wire_lengths, max_states_to_expand, verbose):
   """
   Wiring each pair separately.
   """
@@ -340,11 +342,12 @@ def _find_wiring_per_pair(loc_pairs, start_proto_board, order, best_first,
     search_result, num_expanded = a_star(Proto_Board_Search_Node(proto_board,
         frozenset([loc_pair]), filter_wire_lengths=filter_wire_lengths),
         goal_test, heuristic, best_first=best_first,
-        max_states_to_expand=MAX_STATES_TO_EXPAND)
+        max_states_to_expand=max_states_to_expand)
     all_num_expanded.append(num_expanded)
     if search_result is not None:
       proto_board = search_result.state[0]
-      print proto_board
+      if verbose:
+        print proto_board
     else:
       if verbose:
         print '\tCouldn\'t do it :('
@@ -353,7 +356,7 @@ def _find_wiring_per_pair(loc_pairs, start_proto_board, order, best_first,
     print '\tdone.'
   return proto_board, all_num_expanded
 
-def _find_terrible_wiring(loc_pairs, start_proto_board):
+def find_terrible_wiring(loc_pairs, start_proto_board):
   """
   Finds a terrible wiring without penalizing anything at all.
   To be used as a fall-back option.
@@ -375,7 +378,9 @@ def _find_terrible_wiring(loc_pairs, start_proto_board):
   for loc_1, loc_2, resistor, node in loc_pairs:
     if resistor:
       c = find_free_c()
-      # TODO(mikemeko): what if c is None?
+      if c is None:
+        print 'Terrible wiring failed: no space for resistor'
+        return None
       resistor_piece = Resistor_Piece(resistor.n1, resistor.n2, resistor.r,
           True, resistor.label)
       resistor_piece.top_left_loc = (resistor_r1, c)
@@ -389,9 +394,13 @@ def _find_terrible_wiring(loc_pairs, start_proto_board):
     else:
       connect_loc_pairs.append((loc_1, loc_2, node))
   for loc_1, loc_2, node in connect_loc_pairs:
-    candidates = product(filter(proto_board.free, proto_board.locs_connected_to(
-        loc_1)), filter(proto_board.free, proto_board.locs_connected_to(loc_2)))
-    # TODO(mikemeko): what if candidates is empty?
+    candidates = list(product(filter(proto_board.free,
+        proto_board.locs_connected_to(loc_1)), filter(proto_board.free,
+        proto_board.locs_connected_to(loc_2))))
+    if not candidates:
+      print 'Terrible wiring failed: could not connect %s and %s' % (loc_1,
+          loc_2)
+      return None
     def cost((l1, l2)):
       wire = Wire(l1, l2, node)
       num_wires_crossed = sum(_wire.crosses(wire) for _wire in
@@ -401,4 +410,4 @@ def _find_terrible_wiring(loc_pairs, start_proto_board):
       return 100 * (num_wires_crossed + num_pieces_crossed) + dist(l1, l2)
     l1, l2 = min(candidates, key=cost)
     proto_board = proto_board.with_wire(Wire(l1, l2, node))
-  return proto_board, []
+  return proto_board
