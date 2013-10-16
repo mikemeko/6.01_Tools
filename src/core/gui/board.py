@@ -59,7 +59,6 @@ from Tkinter import Frame
 from tooltip_helper import Tooltip_Helper
 from util import create_circle
 from util import create_wire
-from util import point_inside_bbox
 from util import point_inside_circle
 from util import snap
 from wire_labeling import label_wires
@@ -171,8 +170,9 @@ class Board(Frame):
     Returns the drawable located at canvas location |point|, or None if no such
         item exists.
     """
+    part = self._canvas.find_closest(*point)[0]
     for drawable in self._get_drawables():
-      if point_inside_bbox(point, drawable.bounding_box(drawable.offset)):
+      if part in drawable.parts:
         return drawable
     return None
   def _connector_at(self, point):
@@ -526,8 +526,7 @@ class Board(Frame):
     assert self._current_button_action is None
     connector = self._connector_at((event.x, event.y))
     drawable = self._drawable_at((event.x, event.y))
-    if connector or (drawable and isinstance(drawable,
-        Wire_Connector_Drawable)):
+    if connector and (not drawable or drawable == connector.drawable):
       if DEBUG_CONNECTOR_CENTER_TOOLTIP:
         if not connector:
           connector = iter(drawable.connectors).next()
@@ -734,8 +733,11 @@ class Board(Frame):
         If the cursor is on a drawable, displays a tooltip of the drawable
         label.
     """
+    connector = self._connector_at((event.x, event.y))
+    drawable = self._drawable_at((event.x, event.y))
     # maybe change cursor to pencil
-    if self._connector_at((event.x, event.y)) and not self._ctrl_pressed:
+    if not self._ctrl_pressed and connector and (not drawable or
+        drawable == connector.drawable):
       self._canvas.configure(cursor='pencil')
     elif EDIT_TAG in self._canvas.gettags(self._canvas.find_closest(event.x,
         event.y)[0]):
@@ -750,7 +752,6 @@ class Board(Frame):
     # maybe show label tooltip
     if self._label_tooltips_enabled and self._show_label_tooltips:
       # check if the cursor is on a wire connector
-      connector = self._connector_at((event.x, event.y))
       if connector:
         if isinstance(connector.drawable, Wire_Connector_Drawable):
           wires = list(connector.wires())
@@ -758,7 +759,6 @@ class Board(Frame):
             self._tooltip_helper.show_tooltip(event.x, event.y, wires[0].label)
         return
       # check if cursor is on a drawable
-      drawable = self._drawable_at((event.x, event.y))
       if drawable:
         if not isinstance(drawable, Wire_Connector_Drawable):
           self._tooltip_helper.show_tooltip(event.x, event.y, drawable.label,
