@@ -519,11 +519,22 @@ class Run_Drawable(Drawable):
     self.text = text
   def draw_on(self, canvas, offset=(0, 0)):
     ox, oy = offset
-    self.parts.add(canvas.create_rectangle((ox, oy, ox + RUN_RECT_SIZE,
-        oy + RUN_RECT_SIZE), fill=RUN_RECT_FILL, outline=RUN_RECT_OUTLINE))
-    self.parts.add(canvas.create_text(ox + RUN_RECT_SIZE / 2, oy +
+    rect_id = canvas.create_rectangle((ox, oy, ox + RUN_RECT_SIZE,
+        oy + RUN_RECT_SIZE), fill=RUN_RECT_FILL, outline=RUN_RECT_OUTLINE,
+        activewidth=2)
+    text_id = canvas.create_text(ox + RUN_RECT_SIZE / 2, oy +
         RUN_RECT_SIZE / 2, text=self.text, fill=RUN_TEXT_FILL,
-        activefill=RUN_TEXT_ACTIVE_FILL))
+        activefill=RUN_TEXT_ACTIVE_FILL)
+    canvas.tag_bind(rect_id, '<Enter>', lambda event: canvas.itemconfig(text_id,
+        fill=RUN_TEXT_ACTIVE_FILL))
+    canvas.tag_bind(text_id, '<Enter>', lambda event: canvas.itemconfig(rect_id,
+        width=2))
+    canvas.tag_bind(rect_id, '<Leave>', lambda event: canvas.itemconfig(text_id,
+        fill=RUN_TEXT_FILL))
+    canvas.tag_bind(text_id, '<Leave>', lambda event: canvas.itemconfig(rect_id,
+        width=1))
+    self.parts.add(rect_id)
+    self.parts.add(text_id)
   def show_selected_highlight(self, canvas):
     # should never be needed
     pass
