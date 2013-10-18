@@ -761,7 +761,8 @@ class Board(Frame):
     connector = self._connector_at((event.x, event.y))
     drawable = self._drawable_at((event.x, event.y))
     # highlight drawable under cursor
-    self._highlight(drawable.label if drawable else None)
+    self._highlight(drawable.label if drawable and hasattr(drawable, 'label')
+        else None)
     # maybe change cursor to pencil
     if not self._ctrl_pressed and connector and (not drawable or
         drawable == connector.drawable):
