@@ -475,7 +475,7 @@ class Pot_Drawable(Drawable):
   def on_right_click(self, event):
     menu = Menu(event.widget, tearoff=0)
     menu.add_command(label='Set Signal File', command=self.set_signal_file)
-    menu.post(event.x_root, event.y_root)
+    menu.tk_popup(event.x_root, event.y_root)
   def serialize(self, offset):
     return 'Pot %s %d %d %d %s' % (self.signal_file, self.width, self.height,
         self.direction, str(offset))
@@ -796,7 +796,7 @@ class Photosensors_Drawable(Pin_Drawable):
         if motor_needed and motor_pot_needed:
           self.board._action_history.combine_last_n(2)
       menu.add_command(label='Re-add Missing Parts', command=readd)
-    menu.post(event.x_root, event.y_root)
+    menu.tk_popup(event.x_root, event.y_root)
   def serialize(self, offset):
     return 'Photosensors %s %s %d %d %s' % (self.signal_file, self.color,
         self.direction, self.group_id, str(offset))
