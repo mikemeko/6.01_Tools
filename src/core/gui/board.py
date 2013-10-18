@@ -619,6 +619,7 @@ class Board(Frame):
       if drawable_to_delete.deletable():
         self._action_history.record_action(drawable_to_delete.delete_from(
             self._canvas))
+        self._redraw_wires()
         self.set_changed(True)
       else:
         self.display_message('Item cannot be deleted', WARNING)
@@ -629,6 +630,7 @@ class Board(Frame):
     if wire_to_delete:
       self._action_history.record_action(wire_to_delete.delete_from(
           self._canvas))
+      self._redraw_wires()
       self.set_changed(True)
   def add_key_binding(self, key, callback, flags=0):
     """

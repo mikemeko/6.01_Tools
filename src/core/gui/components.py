@@ -384,7 +384,7 @@ class Wire:
       self.parts = []
     # do delete
     delete()
-    return Action(delete, lambda: self.redraw(canvas), 'delete wire parts')
+    return Action(delete, lambda: None, 'delete wire parts')
   def _remove_from_connectors(self, canvas):
     """
     Removes this wire from its connectors.
