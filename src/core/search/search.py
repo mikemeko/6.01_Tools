@@ -41,7 +41,7 @@ class Search_Node:
     return path
 
 def a_star(start_node, goal_test, heuristic=lambda state: 0, best_first=False,
-    progress=lambda state, cost: None, max_states_to_expand=None):
+    progress=lambda state, cost: None, max_states_to_expand=None, verbose=True):
   """
   Runs an A* search starting at |start_node| until a node that satisfies the
       |goal_test| is found. |goal_test| should be a function that takes in a
@@ -76,8 +76,10 @@ def a_star(start_node, goal_test, heuristic=lambda state: 0, best_first=False,
               heuristic(child.state))
     if max_states_to_expand and len(expanded) > max_states_to_expand:
       if PRINT_FAIL_REASON:
-        print 'exceeded number of states to expand'
+        if verbose:
+          print 'exceeded number of states to expand'
       return None, len(expanded)
   if PRINT_FAIL_REASON:
-    print 'exhausted search space'
+    if verbose:
+      print 'exhausted search space'
   return None, len(expanded)

@@ -13,15 +13,6 @@ from core.search.search import Search_Node
 from core.util.util import sign
 from util import snap
 
-def drawable_coverage(drawable):
-  """
-  Returns a set of points on the board covered by the given |drawable|.
-  """
-  ox, oy = drawable.offset
-  w, h = drawable.width, drawable.height
-  return set([(x, y) for x in xrange(ox, ox + w + 1, BOARD_GRID_SEPARATION) for
-      y in xrange(oy, oy + h + 1, BOARD_GRID_SEPARATION)])
-
 def wire_coverage(start, end):
   """
   Returns a set of the points on the board that would be covered by a wire going
@@ -87,22 +78,6 @@ def heuristic_for_end_point(end_point):
         (x1 != x2) and (y1 != y2))
   return heuristic
 
-def get_board_coverage(board):
-  """
-  Returns a set of the points on the |board| that are covered by drawables and
-      wires. Connectors are not included.
-  """
-  coverage = set()
-  for drawable in board.get_drawables():
-    coverage |= drawable_coverage(drawable)
-    for wire in drawable.wires():
-      coverage |= wire_coverage(wire.start_connector.center,
-          wire.end_connector.center)
-  for drawable in board.get_drawables():
-    for connector in drawable.connectors:
-      coverage.remove(connector.center)
-  return coverage
-
 def condensed_points(points):
   """
   Returns a collapsed version of |points| so that there are no three consecutive
@@ -129,11 +104,11 @@ def path_coverage(path):
     coverage |= wire_coverage(path[i], path[i + 1])
   return coverage
 
-def find_wire_path_simple(board, start_point, end_point):
+def find_wire_path_simple(board_coverage, start_point, end_point):
   """
   Returns a list of tuples indicating a path from |start_point| to |end_point|
-      on the |board|, doing an exhaustive search for paths including up to 2
-      bends.
+      on a board, doing an exhaustive search for paths including up to 2
+      bends. Tries to avoid points in |board_coverage|.
   """
   x1, y1 = start_point
   x2, y2 = end_point
@@ -149,25 +124,25 @@ def find_wire_path_simple(board, start_point, end_point):
     for y in xrange(y1 + y_sign * BOARD_GRID_SEPARATION, y2, y_sign *
         BOARD_GRID_SEPARATION):
       paths.append([(x1, y1), (x1, y), (x2, y), (x2, y2)])
-    board_coverage = get_board_coverage(board)
     return min(paths, key=lambda path: len(board_coverage & path_coverage(
         path)))
 
-def find_wire_path(board, start_point, end_point):
+def find_wire_path(board_coverage, start_point, end_point):
   """
   Returns a list of tuples indicating a path from |start_point| to |end_point|
-      on the |board|, doing an overall search. If the overall search takes too
-      long, uses find_wire_path_simple.
+      on a board, doing an overall search. If the overall search takes too
+      long, uses find_wire_path_simple. Tries to avoid points in
+      |board_coverage|.
   """
-  board_coverage = get_board_coverage(board)
   if end_point not in board_coverage:
     board_coverage = frozenset(board_coverage)
   else:
     board_coverage = frozenset()
   search_result, num_expanded = a_star(Wire_Path_Search_Node(board_coverage,
       start_point), goal_test_for_end_point(end_point),
-      heuristic_for_end_point(end_point), max_states_to_expand=1500)
+      heuristic_for_end_point(end_point), max_states_to_expand=1000,
+      verbose=False)
   if search_result:
     return condensed_points([state[1] for state in search_result.get_path()])
   else:
-    return find_wire_path_simple(board, start_point, end_point)
+    return find_wire_path_simple(board_coverage, start_point, end_point)

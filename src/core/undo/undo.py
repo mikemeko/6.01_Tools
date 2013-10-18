@@ -58,7 +58,11 @@ class Action_History:
   """
   Data structure to record a history of actions.
   """
-  def __init__(self):
+  def __init__(self, after=lambda: None):
+    """
+    |after|: function called after each action is done.
+    """
+    self._after = after
     self._undo_stack = []
     self._redo_stack = []
     if DEBUG_UNDO:
@@ -81,6 +85,7 @@ class Action_History:
     if self._undo_stack:
       last_action = self._undo_stack.pop()
       last_action.undo_action()
+      self._after()
       self._redo_stack.append(last_action)
       if DEBUG_UNDO:
         print self
@@ -94,6 +99,7 @@ class Action_History:
     if self._redo_stack:
       next_action = self._redo_stack.pop()
       next_action.do_action()
+      self._after()
       self._undo_stack.append(next_action)
       if DEBUG_UNDO:
         print self

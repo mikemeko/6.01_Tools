@@ -18,17 +18,11 @@ THESIS:
 - [9/24/13] Keep writing!
 
 PROTOBOARD LAYOUT:
-- [8/31/13] If the layout generation fails at a particular pair of locations,
-    output what it has found so far. Better yet, let the user help it out!
 - [8/31/13] post process protoboards to make them prettier.
 
 CIRCUIT ANALYSIS:
-- [8/31/13] It should not be necessary that all nodes are connected to perform
-    analysis, allow disconnected items.
 - [8/31/13] Allow multiple sets of probes.
 - [8/31/13] Should have multiple output options (values as text; graph; both)
-- [8/31/13] Use CMax simulator, or emulate it; one important issue is detecting
-    Op Amp positive feedback.
 
 UI:
 - [8/31/13] When hover over an item on the board, highlight respective item on
@@ -36,13 +30,10 @@ UI:
 - [8/31/13] Separate simulation from schematic, signal files should not have to
     be specified in the schematic, they only need to be specified at simulation
     time.
-- [8/31/13] Somehow show the simulation file selected clearly (either name, or
-    a graph of the signal).
 - [8/31/13] A wire that is drawn and snapped to an existing wire should be
     connected to that wire (break existing wire into two pieces).
 - [8/31/13] Click and drag on a wire should start drawing a new wire that is
     connected to that wire (break existing wire into two pieces).
-- [8/31/13] Crossing wires should be marked by a little curve.
 - [8/31/13] On dragging items, keep wires vertical/horizontal.
 - [8/31/13] Should be able to select and manipulate wires just like items.
 - [8/31/13] Would be nice if we only allow drawing wires from connector to
@@ -74,6 +65,10 @@ THESIS:
 
 CIRCUIT ANALYSIS:
 - [9/7/13] [9/7/13] Must support robot analog input/output.
+- [10/16/13] [8/31/13] Use CMax simulator, or emulate it; one important issue is
+    detecting Op Amp positive feedback.
+- [10/16/13] [8/31/13] It should not be necessary that all nodes are connected
+    to perform analysis, allow disconnected items.
 
 PROTOBOARD LAYOUT:
 - [9/13/13] [9/3/13] Setup testing automated framework for how well protoboard
@@ -83,6 +78,9 @@ PROTOBOARD LAYOUT:
 - [9/24/13] [8/31/13] For a particular pair of locations, try multiple pairs of
     locations by randomly sampling, don't give up if the heuristically best pair
     fails. (WAS NOT SUCCESSFUL)
+- [10/16/13] [8/31/13] If the layout generation fails at a particular pair of
+    locations, output what it has found so far. Better yet, let the user help it
+    out!
 
 SYSTEM ANALYSIS:
 
@@ -98,6 +96,9 @@ UI:
     the items at different places on the board).
 - [9/24/13] [8/31/13] Wrapper for matplotlib plotters (something similar already
     exists in lib601), matplotlib plotters block everything else.
+- [10/16/13] [8/31/13] Somehow show the simulation file selected clearly (either
+    name, or a graph of the signal).
+- [10/16/13] [8/31/13] Crossing wires should be marked by a little curve.
 
 MISC:
 

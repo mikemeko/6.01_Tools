@@ -33,7 +33,8 @@ class Wire:
     Returns True if this wire and the |other| wire intersect, False otherwise.
     """
     assert isinstance(other, Wire), 'other must be a Wire'
-    return intersect((self.loc_1, self.loc_2), (other.loc_1, other.loc_2))
+    return  intersect((self.loc_1, self.loc_2), (other.loc_1,
+        other.loc_2)) != False
   def length(self):
     """
     Returns the length of this wire.

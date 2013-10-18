@@ -16,7 +16,9 @@ from constants import DEFAULT_FONT
 from constants import EDIT_TAG
 from constants import WIRE_ARROW_LENGTH
 from constants import WIRE_COLOR
+from constants import WIRE_INTERSECT_MARKER_SIZE
 from constants import WIRE_WIDTH
+from core.math.line_segment_intersect import intersect
 from math import atan2
 from math import cos
 from math import pi
@@ -103,9 +105,11 @@ def create_connector(canvas, x, y, fill, outline, active_width):
   return create_circle(canvas, x, y, CONNECTOR_RADIUS, fill=fill,
       outline=outline, width=CONNECTOR_WIDTH, activewidth=active_width)
 
-def create_wire(canvas, x1, y1, x2, y2, directed=True, color=WIRE_COLOR):
+def create_wire(canvas, x1, y1, x2, y2, other_wires, directed=True,
+    color=WIRE_COLOR):
   """
   Draws a wire on the |canvas| pointing from (|x1|, |y1|) to (|x2|, |y2|). If
+      the path intersects any of the |other_wires|, marks the intersections. If
       |directed| is True, the drawn wire will have an arrow.
   Returns a list of the canvas ids of the lines the wire is composed of.
   """
@@ -113,10 +117,30 @@ def create_wire(canvas, x1, y1, x2, y2, directed=True, color=WIRE_COLOR):
   parts = []
   if x1 == x2 and y1 == y2:
     return parts
-  # line connecting two points
-  parts.append(canvas.create_line(x1, y1, x2, y2, fill=color,
+  intersection_points = []
+  for wire in other_wires:
+    intersection = intersect(((x1, y1), (x2, y2)), (wire.start_connector.center,
+        wire.end_connector.center))
+    if intersection and intersection not in ((x1, y1), (x2, y2), 'collinear'):
+      intersection_points.append(intersection)
+  intersection_points.sort(key=lambda (x, y): (x - x1) / (x2 - x1) if x1 != x2
+      else (y - y1) / (y2 - y1))
+  last_point = (x1, y1)
+  if intersection_points:
+    h = ((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5
+    dx = WIRE_INTERSECT_MARKER_SIZE * (x2 - x1) / h
+    dy = WIRE_INTERSECT_MARKER_SIZE * (y2 - y1) / h
+    for (x, y) in intersection_points:
+      _x, _y = x - dx, y - dy
+      x_, y_ = x + dx, y + dy
+      xm, ym = _x + dx - sqrt(3) * dy, _y + sqrt(3) * dx + dy
+      parts.append(canvas.create_line(last_point, (_x, _y), fill=color,
+          width=WIRE_WIDTH))
+      parts.append(canvas.create_line(_x, _y, xm, ym, x_, y_, fill=color,
+          width=WIRE_WIDTH, smooth=True))
+      last_point = (x_, y_)
+  parts.append(canvas.create_line(last_point, (x2, y2), fill=color,
       width=WIRE_WIDTH))
-  # arrow
   if directed:
     wire_angle = atan2(y2 - y1, x2 - x1)
     arrow_angle_1 = wire_angle + 3 * pi / 4
