@@ -75,6 +75,13 @@ class Circuit_Piece:
         subclasses should implement this.
     """
     raise NotImplementedError('subclasses should implement this')
+  def outline_label(self, canvas, top_left, label):
+    """
+    Should return the canvas id of a rectangle that outlines the part of this
+        Circuit_Piece that corresponds to the given |label|, if any. All
+        subclasses should implement this.
+    """
+    raise NotImplementedError('subclasses should implement this')
   def to_cmax_str(self):
     """
     Should return a string for the CMax representation (when saved in a file) of
@@ -143,6 +150,14 @@ class Circuit_Piece:
         necessary.
     """
     return []
+  def labels_at(self, (x, y), (tx, ty)):
+    """
+    Should return the appropriate labels corresponding to the point |(x, y)|,
+        which is guaranteed to be insider the bounds of this Circuit_Piece.
+        |(tx, ty)| is the top left coordinate for this Circuit_Piece. By
+        default, this method returns all the labels for this Circuit_Piece.
+    """
+    return self.label.split(',')
 
 class Op_Amp_Piece(Circuit_Piece):
   """
@@ -240,6 +255,23 @@ class Op_Amp_Piece(Circuit_Piece):
         self.dot_bottom_left else (OP_AMP_DOT_OFFSET + CONNECTOR_SIZE / 2))
     create_circle(canvas, x + dot_dx, y + dot_dy, OP_AMP_DOT_RADIUS,
         fill=OP_AMP_DOT_COLOR)
+  def outline_label(self, canvas, top_left, label):
+    if label not in self.label:
+      return
+    x, y = top_left
+    width = 4 * CONNECTOR_SIZE + 3 * CONNECTOR_SPACING
+    height = 2 * CONNECTOR_SIZE + VERTICAL_SEPARATION
+    h_offset = 2
+    v_offset = 2 * CONNECTOR_SIZE / 3
+    if ',' in self.label and label == self.label.split(',')[-1]:
+      x += width / 2
+    return canvas.create_rectangle(x - h_offset - 2, y + v_offset - 2, x +
+        width / 2 + h_offset + 3, y + height - v_offset + 3, dash=(3,), width=2)
+  def labels_at(self, (x, y), (tx, ty)):
+    width = 4 * CONNECTOR_SIZE + 3 * CONNECTOR_SPACING
+    if ',' in self.label:
+      return [self.label.split(',')[x - tx > width / 2]]
+    return [self.label]
   def to_cmax_str(self):
     self._assert_top_left_loc_set()
     c, r = loc_to_cmax_rep(self.top_left_loc)
@@ -373,6 +405,19 @@ class Resistor_Piece(Circuit_Piece):
             color_size, y + CONNECTOR_SIZE + dx, fill=RESISTOR_COLORS[
             color_indices[i]])
         colors_offset += color_size + color_spacing
+  def outline_label(self, canvas, top_left, label):
+    if label != self.label:
+      return
+    x, y = top_left
+    dx = (CONNECTOR_SPACING - CONNECTOR_SIZE) / 2
+    if self.vertical:
+      return canvas.create_rectangle(x - dx - 2, y - 2, x + CONNECTOR_SIZE +
+          dx + 3, y + 4 * CONNECTOR_SIZE + 3 * CONNECTOR_SPACING + 3,
+          dash=(3,), width=2)
+    else: # horizontal
+      return canvas.create_rectangle(x - p, y - dx - p, x + 4 * CONNECTOR_SIZE +
+          3 * CONNECTOR_SPACING + p, y + CONNECTOR_SIZE + dx + p, dash=(3,),
+          width=2)
   def to_cmax_str(self):
     self._assert_top_left_loc_set()
     c, r = loc_to_cmax_rep(self.top_left_loc)
@@ -446,6 +491,14 @@ class Pot_Piece(Circuit_Piece):
       pin_y = y + r * (CONNECTOR_SIZE + CONNECTOR_SPACING)
       canvas.create_rectangle(pin_x, pin_y, pin_x + CONNECTOR_SIZE,
           pin_y + CONNECTOR_SIZE, fill='#777', outline='black')
+  def outline_label(self, canvas, top_left, label):
+    if label != self.label:
+      return
+    x, y = top_left
+    size = 3 * CONNECTOR_SIZE + 2 * CONNECTOR_SPACING
+    offset = 2
+    return canvas.create_rectangle(x - offset - 2, y - offset - 2, x + size +
+        offset + 3, y + size + offset + 3, dash=(3,), width=2)
   def to_cmax_str(self):
     self._assert_top_left_loc_set()
     c, r = loc_to_cmax_rep(self.top_left_loc)
@@ -522,6 +575,19 @@ class N_Pin_Connector_Piece(Circuit_Piece):
     canvas.create_text(x + width / 2, y + (r != 0) * 4 * (CONNECTOR_SIZE +
         CONNECTOR_SPACING), text=self.name, width=width, fill='white',
         justify=CENTER)
+  def outline_label(self, canvas, top_left, label):
+    if label not in self.label:
+      return
+    r, c = self.top_left_loc
+    x, y = top_left
+    width = (self.n + 2) * CONNECTOR_SIZE + (self.n + 1) * CONNECTOR_SPACING
+    offset_top = (r == 0) * (CONNECTOR_SIZE + 2 * CONNECTOR_SPACING)
+    offset_bottom = ((5 * CONNECTOR_SIZE + 4 * CONNECTOR_SPACING) if r == 0
+        else (6 * CONNECTOR_SIZE + 6 * CONNECTOR_SPACING))
+    padding = 4
+    return canvas.create_rectangle(x - padding - 2, y - offset_top - padding -
+        2, x + width + padding + 3, y + offset_bottom + padding + 3,
+        dash=(3,), width=2)
   def _disconnected_pins(self):
     """
     Returns a tuple of the pins for this connector that are enabled, but are

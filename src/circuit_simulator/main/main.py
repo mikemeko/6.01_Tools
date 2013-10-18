@@ -91,7 +91,9 @@ if __name__ == '__main__':
       # visualize proto board
       show_pwr_gnd_pins = not any([isinstance(component, Robot_Connector) for
           component in circuit.components])
-      visualize_proto_board(proto_board, Toplevel(), show_pwr_gnd_pins)
+      visual = visualize_proto_board(proto_board, Toplevel(), show_pwr_gnd_pins)
+      app_runner.board.set_highlight_function(visual.outline_from_label)
+      visual.set_highlight_function(app_runner.board.outline_from_labels)
     else:
       app_runner.board.display_message('Could not find proto board wiring',
           ERROR, False)

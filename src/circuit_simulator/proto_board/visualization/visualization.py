@@ -60,6 +60,9 @@ class Proto_Board_Visualizer(Frame):
         background=BACKGROUND_COLOR)
     self._tooltip_helper = Tooltip_Helper(self._canvas)
     self._wire_parts = {}
+    # state for outline highlighing
+    self._outline_id = None
+    self._highlight = lambda labels: None
     self._setup_bindings()
     self._setup_menu()
     self._draw_proto_board()
@@ -88,7 +91,10 @@ class Proto_Board_Visualizer(Frame):
       if self._point_inside_piece(piece, event.x, event.y):
         self._tooltip_helper.show_tooltip(event.x, event.y, piece.label,
             background=TOOLTIP_DRAWABLE_LABEL_BACKGROUND)
+        self._highlight(piece.labels_at((event.x, event.y), self._rc_to_xy(
+            piece.top_left_loc)))
         return
+    self._highlight([])
     # check if cursor is on a valid proto board location
     loc = self._xy_to_rc(event.x, event.y)
     if loc:
@@ -328,9 +334,27 @@ class Proto_Board_Visualizer(Frame):
     edit_menu.add_command(label='Redraw wires', command=self._redraw_wires)
     menu.add_cascade(label='Edit', menu=edit_menu)
     self._parent.config(menu=menu)
+  def outline_from_label(self, label):
+    """
+    Draws the appropriate outline for the circuit piece with the given |label|.
+    """
+    try:
+      self._canvas.delete(self._outline_id)
+      for piece in self._proto_board.get_pieces():
+        if label in piece.label.split(','):
+          self._outline_id = piece.outline_label(self._canvas, self._rc_to_xy(
+              piece.top_left_loc), label)
+          return
+    except:
+      pass
+  def set_highlight_function(self, f):
+    """
+    Resets the outline highlighting function to |f|.
+    """
+    self._highlight = f
 
 def visualize_proto_board(proto_board, toplevel, show_pwr_gnd_pins=True):
   """
   Displays a nice window portraying the given |proto_board|.
   """
-  Proto_Board_Visualizer(toplevel, proto_board, show_pwr_gnd_pins)
+  return Proto_Board_Visualizer(toplevel, proto_board, show_pwr_gnd_pins)

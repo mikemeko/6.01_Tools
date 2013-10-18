@@ -25,8 +25,6 @@ CIRCUIT ANALYSIS:
 - [8/31/13] Should have multiple output options (values as text; graph; both)
 
 UI:
-- [8/31/13] When hover over an item on the board, highlight respective item on
-    protoboard, and vice versa.
 - [8/31/13] Separate simulation from schematic, signal files should not have to
     be specified in the schematic, they only need to be specified at simulation
     time.
@@ -99,6 +97,8 @@ UI:
 - [10/16/13] [8/31/13] Somehow show the simulation file selected clearly (either
     name, or a graph of the signal).
 - [10/16/13] [8/31/13] Crossing wires should be marked by a little curve.
+- [10/18/13] [8/31/13] When hover over an item on the board, highlight
+    respective item on protoboard, and vice versa.
 
 MISC:
 

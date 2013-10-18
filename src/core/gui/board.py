@@ -123,6 +123,9 @@ class Board(Frame):
     # state for message display
     self._message_parts = []
     self._message_remove_timer = None
+    # state for component highlighting
+    self._highlight = lambda label: None
+    self._outline_ids = []
     # state for guide lines
     self._guide_line_parts = []
     # state for grid lines
@@ -741,6 +744,11 @@ class Board(Frame):
         self._action_history.record_action(Action(
             lambda: switch(drawable_to_rotate, rotated_drawable),
             lambda: switch(rotated_drawable, drawable_to_rotate), 'rotate'))
+  def set_highlight_function(self, f):
+    """
+    Resets the outline highlighting function to |f|.
+    """
+    self._highlight = f
   def _handle_motion(self, event):
     """
     If the cursor is on a wire connector, changes cursor to a pencil.
@@ -752,6 +760,8 @@ class Board(Frame):
     """
     connector = self._connector_at((event.x, event.y))
     drawable = self._drawable_at((event.x, event.y))
+    # highlight drawable under cursor
+    self._highlight(drawable.label if drawable else None)
     # maybe change cursor to pencil
     if not self._ctrl_pressed and connector and (not drawable or
         drawable == connector.drawable):
@@ -788,6 +798,19 @@ class Board(Frame):
         self._tooltip_helper.show_tooltip(event.x, event.y, wire.label)
       else:
         self._tooltip_helper.hide_tooltip()
+  def outline_from_labels(self, labels):
+    """
+    Draws outlines for the drawables whose labels are in |labels|.
+    """
+    for part in self._outline_ids:
+      self._canvas.delete(part)
+    self._outline_ids = []
+    for drawable in self._get_drawables():
+      if hasattr(drawable, 'label') and drawable.label in labels:
+        x1, y1, x2, y2 = drawable.bounding_box(self.get_drawable_offset(
+            drawable))
+        self._outline_ids.append(self._canvas.create_rectangle(x1 - 2, y1 - 2,
+            x2 + 3, y2 + 3, dash=(3,), width=2))
   def quit(self):
     """
     Callback on exit.
