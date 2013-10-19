@@ -32,7 +32,6 @@ from circuit_simulator.simulation.circuit import Op_Amp
 from circuit_simulator.simulation.circuit import Resistor
 from circuit_simulator.simulation.circuit import Signalled_Pot
 from circuit_simulator.simulation.circuit import Robot_Connector
-from constants import RESISTORS_AS_COMPONENTS
 from itertools import permutations
 
 def all_1_2_partitions(n):
@@ -141,7 +140,8 @@ def op_amp_piece_from_op_amp(op_amp_tup):
   return Op_Amp_Piece(n_1, n_2, n_3, n_4, n_5, n_6, n_7, n_8, ','.join(
       op_amp.label for op_amp in op_amp_tup))
 
-def get_piece_placement(circuit, verbose=True):
+def get_piece_placement(circuit, resistors_as_components, cost_type,
+    verbose=True):
   """
   Returns a *good* ordering of Circuit_Pieces for the given |circuit|. Finding
       the best one (i.e. the one the requires minimal wiring) is too expensive.
@@ -151,7 +151,7 @@ def get_piece_placement(circuit, verbose=True):
   if verbose:
     print 'finding piece placement ...'
   resistors = filter(lambda obj: obj.__class__ == Resistor, circuit.components)
-  if RESISTORS_AS_COMPONENTS:
+  if resistors_as_components:
     resistor_pieces = map(resistor_piece_from_resistor, resistors)
   else:
     resistor_nodes = reduce(set.union, [set([resistor.n1, resistor.n2]) for
@@ -178,7 +178,7 @@ def get_piece_placement(circuit, verbose=True):
       op_amp_pieces = map(op_amp_piece_from_op_amp, grouping)
       non_resistor_pieces = (pot_pieces + motor_connector_pieces +
           robot_connector_pieces + head_connector_pieces + op_amp_pieces)
-      if RESISTORS_AS_COMPONENTS:
+      if resistors_as_components:
         pieces = non_resistor_pieces + resistor_pieces
       else:
         non_resistor_nodes = reduce(set.union, (piece.nodes for piece in
@@ -187,11 +187,12 @@ def get_piece_placement(circuit, verbose=True):
         place_holder_pieces = [Place_Holder_Piece(node) for node in
             (resistor_nodes - non_resistor_nodes)]
         pieces = non_resistor_pieces + place_holder_pieces
-      placement, cost = find_placement(pieces)
+      placement, cost = find_placement(pieces, resistors_as_components,
+          cost_type)
       if cost < best_placement_cost:
         best_placement = placement
         best_placement_cost = cost
   if verbose:
     print '\tdone.'
-  return best_placement, ([] if RESISTORS_AS_COMPONENTS else
+  return best_placement, ([] if resistors_as_components else
       resistors)

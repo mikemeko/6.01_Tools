@@ -79,6 +79,11 @@ class Drawable:
     All subclasses should implement this.
     """
     raise NotImplementedError('subclasses should implement this')
+  def on_right_click(self, event):
+    """
+    Callback for right click. Default does nothing.
+    """
+    pass
   def serialize(self, offset):
     """
     Should return a string representation of this drawable at the given
@@ -161,6 +166,8 @@ class Drawable:
       if not isinstance(current_tags, tuple):
         current_tags = tuple([current_tags])
       canvas.itemconfig(part, tags=current_tags + tags)
+      canvas.tag_bind(part, '<Button-2>', self.on_right_click)
+      canvas.tag_bind(part, '<Button-3>', self.on_right_click)
   def _erase_current_parts(self, canvas):
     """
     Deletes this drawable's current parts from the |canvas|.
@@ -284,17 +291,6 @@ class Connector:
         that it is easy to draw more wires.
     """
     canvas.tag_raise(self.canvas_id)
-  def _redraw_wires(self, canvas):
-    """
-    Redraws the wires for this connector.
-    """
-    # ensure that all wires that start at this connector start at its center
-    for wire in self.start_wires:
-      wire.redraw(canvas)
-    # ensure that all wires that end at this connector end at its center
-    for wire in self.end_wires:
-      wire.redraw(canvas)
-    self.lift(canvas)
   def move(self, canvas, dx, dy):
     """
     Moves this connector by |dx| in the x direction and |dy| in the y
@@ -304,7 +300,6 @@ class Connector:
       x, y = self.center
       self.center = (x + dx, y + dy)
       canvas.move(self.canvas_id, dx, dy)
-      self._redraw_wires(canvas)
   def redraw(self, canvas):
     """
     Redraws this connector, most importantly to mark/color it connected or not
@@ -321,7 +316,6 @@ class Connector:
     active_width = 2 if self.enabled else 1
     self.canvas_id = create_connector(canvas, x, y, fill, outline,
         active_width)
-    self._redraw_wires(canvas)
   def wires(self):
     """
     Returns a generator of the wires attached to this connector.
@@ -347,8 +341,8 @@ class Wire:
     |end_connector|: the end Connector for this wire.
     |directed|: True if this wire is directed, False otherwise.
     """
-    assert isinstance(start_connector, Connector), ('start_connector must be a'
-        ' Connector')
+    assert isinstance(start_connector, Connector), ('start_connector must be a '
+        'Connector')
     assert isinstance(end_connector, Connector), ('end_connector must be a '
         'Connector')
     self.parts = parts
@@ -390,7 +384,7 @@ class Wire:
       self.parts = []
     # do delete
     delete()
-    return Action(delete, lambda: self.redraw(canvas), 'delete wire parts')
+    return Action(delete, lambda: None, 'delete wire parts')
   def _remove_from_connectors(self, canvas):
     """
     Removes this wire from its connectors.
@@ -451,7 +445,7 @@ class Wire:
     x2, y2 = self.end_connector.center
     self.parts.append(canvas.create_text((x1 + x2) / 2, (y1 + y2) / 2,
         text=self.label))
-  def redraw(self, canvas):
+  def redraw(self, canvas, possibly_intersecting_wires):
     """
     Redraws this wire.
     """
@@ -461,7 +455,8 @@ class Wire:
     # redraw the wire
     x1, y1 = self.start_connector.center
     x2, y2 = self.end_connector.center
-    self.parts = create_wire(canvas, x1, y1, x2, y2, self.directed)
+    self.parts = create_wire(canvas, x1, y1, x2, y2,
+        possibly_intersecting_wires, self.directed)
     # redraw label
     if DEBUG_DISPLAY_WIRE_LABELS:
       self._draw_label(canvas)
@@ -524,11 +519,22 @@ class Run_Drawable(Drawable):
     self.text = text
   def draw_on(self, canvas, offset=(0, 0)):
     ox, oy = offset
-    self.parts.add(canvas.create_rectangle((ox, oy, ox + RUN_RECT_SIZE,
-        oy + RUN_RECT_SIZE), fill=RUN_RECT_FILL, outline=RUN_RECT_OUTLINE))
-    self.parts.add(canvas.create_text(ox + RUN_RECT_SIZE / 2, oy +
+    rect_id = canvas.create_rectangle((ox, oy, ox + RUN_RECT_SIZE,
+        oy + RUN_RECT_SIZE), fill=RUN_RECT_FILL, outline=RUN_RECT_OUTLINE,
+        activewidth=2)
+    text_id = canvas.create_text(ox + RUN_RECT_SIZE / 2, oy +
         RUN_RECT_SIZE / 2, text=self.text, fill=RUN_TEXT_FILL,
-        activefill=RUN_TEXT_ACTIVE_FILL))
+        activefill=RUN_TEXT_ACTIVE_FILL)
+    canvas.tag_bind(rect_id, '<Enter>', lambda event: canvas.itemconfig(text_id,
+        fill=RUN_TEXT_ACTIVE_FILL))
+    canvas.tag_bind(text_id, '<Enter>', lambda event: canvas.itemconfig(rect_id,
+        width=2))
+    canvas.tag_bind(rect_id, '<Leave>', lambda event: canvas.itemconfig(text_id,
+        fill=RUN_TEXT_FILL))
+    canvas.tag_bind(text_id, '<Leave>', lambda event: canvas.itemconfig(rect_id,
+        width=1))
+    self.parts.add(rect_id)
+    self.parts.add(text_id)
   def show_selected_highlight(self, canvas):
     # should never be needed
     pass

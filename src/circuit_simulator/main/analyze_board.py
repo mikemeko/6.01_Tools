@@ -20,6 +20,7 @@ from circuit_simulator.simulation.circuit import Circuit
 from circuit_simulator.simulation.circuit import Head_Connector
 from circuit_simulator.simulation.circuit import Motor
 from circuit_simulator.simulation.circuit import Op_Amp
+from circuit_simulator.simulation.circuit import Probe
 from circuit_simulator.simulation.circuit import Resistor
 from circuit_simulator.simulation.circuit import Signalled_Pot
 from circuit_simulator.simulation.circuit import Robot_Connector
@@ -143,10 +144,12 @@ def run_analysis(board, analyze, solve_circuit=False,
     if isinstance(drawable, Probe_Plus_Drawable):
       if nodes:
         probe_plus = maybe_rename_node(nodes[0])
+        circuit_components.append(Probe('+', probe_plus))
     # probe minus component
     elif isinstance(drawable, Probe_Minus_Drawable):
       if nodes:
         probe_minus = maybe_rename_node(nodes[0])
+        circuit_components.append(Probe('-', probe_minus))
     # resistor component
     elif isinstance(drawable, Resistor_Drawable):
       connector_it = iter(drawable.connectors)

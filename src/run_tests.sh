@@ -7,6 +7,7 @@ python -m tests.circuit_simulator.proto_board.wire_test
 python -m tests.core.data_structures.priority_queue_test
 python -m tests.core.gui.util_test
 python -m tests.core.math.equation_solver_test
+python -m tests.core.math.line_segment_intersect_test
 python -m tests.core.search.search_test
 python -m tests.core.undo.undo_test
 python -m tests.core.util.util_test

@@ -21,10 +21,11 @@ from circuit_drawables import Robot_Connector_Drawable
 from circuit_drawables import Robot_IO_Drawable
 from circuit_drawables import Robot_Power_Drawable
 from circuit_drawables import Simulate_Run_Drawable
+from circuit_simulator.proto_board.solve import combined_solve_layout
 from circuit_simulator.proto_board.visualization.visualization import (
     visualize_proto_board)
-from circuit_simulator.proto_board.solve import solve_layout
 from circuit_simulator.simulation.circuit import Robot_Connector
+from circuit_simulator.simulation.simulate import close_all_windows
 from constants import APP_NAME
 from constants import BOARD_HEIGHT
 from constants import BOARD_WIDTH
@@ -39,6 +40,7 @@ from core.gui.app_runner import App_Runner
 from core.gui.board import Board
 from core.gui.components import Wire
 from core.gui.components import Wire_Connector_Drawable
+from core.gui.constants import CTRL_DOWN
 from core.gui.constants import LEFT
 from core.gui.constants import RIGHT
 from core.gui.constants import ERROR
@@ -75,29 +77,23 @@ if __name__ == '__main__':
     """
     Displays the plot that are drawn by the |plotters|.
     """
-    # ensure that circuit was successfully solved
-    if circuit.data:
-      # show label tooltips on board
-      app_runner.board.show_label_tooltips()
-      # show analysis plots
-      for plotter in plotters:
-        plotter.plot(circuit.data)
-    else:
-      app_runner.board.display_message('Could not solve circuit', ERROR)
+    # show label tooltips on board
+    app_runner.board.show_label_tooltips()
   def proto_board_layout(circuit, plotters):
     """
     Finds a way to layout the given |circuit| on a proto board and displays the
         discovered proto board.
     """
-    solve_data = solve_layout(circuit)
-    proto_board = solve_data['proto_board']
+    proto_board = combined_solve_layout(circuit)
     if proto_board:
       # show labels on board for easy schematic-layout matching
       app_runner.board.show_label_tooltips()
       # visualize proto board
       show_pwr_gnd_pins = not any([isinstance(component, Robot_Connector) for
           component in circuit.components])
-      visualize_proto_board(proto_board, Toplevel(), show_pwr_gnd_pins)
+      visual = visualize_proto_board(proto_board, Toplevel(), show_pwr_gnd_pins)
+      app_runner.board.set_highlight_function(visual.outline_from_label)
+      visual.set_highlight_function(app_runner.board.outline_from_labels)
     else:
       app_runner.board.display_message('Could not find proto board wiring',
           ERROR, False)
@@ -123,14 +119,15 @@ if __name__ == '__main__':
   app_runner.palette.add_drawable_type(Motor_Drawable, LEFT, None)
   # add buttons to analyze circuit
   app_runner.palette.add_drawable_type(Simulate_Run_Drawable, RIGHT,
-      lambda event: run_analysis(app_runner.board, simulate, True, True, True,
-      True))
+      lambda event: run_analysis(app_runner.board, simulate,
+      solve_circuit=True))
   app_runner.palette.add_drawable_type(Proto_Board_Run_Drawable, RIGHT,
       lambda event: run_analysis(app_runner.board, proto_board_layout))
   # shortcuts
   app_runner.board.add_key_binding('s', lambda: run_analysis(app_runner.board,
-      simulate, True, True, True, True))
+      simulate, solve_circuit=True))
   app_runner.board.add_key_binding('p', lambda: run_analysis(app_runner.board,
       proto_board_layout))
+  app_runner.board.add_key_binding('w', close_all_windows, CTRL_DOWN)
   # run
   app_runner.run()

@@ -5,7 +5,117 @@
 
 \section{Explaining the Results}
 
-\textit{Give plausible explanation for the observed results.}
+Chapter \ref{ch:results} presented quantitative data to compare the various
+alternatives we have in solving the protoboard layout problem. Here, we will
+analyze that data and give reasonings for why we obtained the results
+that we obtained.
+
+\subsection{Comparing placement methods}
+
+The results presented in Section \ref{sec:compare_placement} suggest very
+interesting behaviors of our two placement methods: the blocking method and the
+distance method. In this section, we will discuss several such behaviors and
+draw on the appropriate data for support.
+
+In Figure \ref{fig:placement_success} and Table \ref{tb:placement_success} we
+see that the distance method exceeds the blocking method in number of circuits
+solved $10$ times out of $10$ as well as in the number of circuits solved $0$
+to $2$ times out of $10$. On the other hand, the blocking method exceeds the
+distance method in number of circuits solved from $3$ to $9$ times out
+of $10$. If our primary goal is avoiding failure, then these results suggest
+that the blocking method is a better placement method. If, on the other hand,
+our primary goal is being consistent on success (while not necessarily being
+successful), then these results perhaps suggest that the distance method is
+better. In a sense, these results suggest that while the blocking method
+generally produces placements that are easier for the wiring stage, it has more
+variability in the placements it produces for the same circuit. The distance
+method, on the other hand, produces worse placements (i.e. placements that are
+harder to wire), but has much less variability. This observation from the data
+makes intuitive sense as there are likely to be more placements that are minimal
+in blocking rows than placements that minimize pairwise distances between pairs
+of protoboard locations that need to be connected.
+
+Despite the important differences presented above, it is interesting to note
+that the
+success rates of the two placement methods are not that different form each
+other. Looking at the percentages given in Table \ref{tb:placement_success}, we
+see that the success rates are very comparable.
+
+When we consider success rate as a function of the complexity of circuits, we
+reach some interesting patterns. From Figure \ref{fig:placement_success_trend} we
+can gather that when the number of pins in the circuit is less than roughly $26$,
+the blocking method generally has a higher success rate, but when the number of
+pins is greater than $26$, the success rates of the two methods are very
+comparable. This suggests that the blocking method is a better placement method
+for the less complex circuits, but does not do any better on the more
+complex ones. These results compliment what we found above. These results
+suggest that the blocking method generally produces placements that are easy to
+wire. These placements are easy in that the search in wiring is less likely to
+get stuck while trying to connect a pair of locations. This is precisely a result
+of the fact that the blocking method attempts to free as many rows as possible.
+The blocking method is less effective on the more complex circuits because
+despite freeing rows, it may ask for elaborate connections to be made, i.e.
+connections between distant pairs of locations on the protoboard. The distance
+method, on the other hand, attempts to avoid this problem by trying to minimize
+the distances between the locations that need to be connected. Hence we would
+not expect the blocking method to be better on the more complex circuits.
+Interestingly, it does not seem to be worse on the more complex circuits either.
+
+As we would expect, we certainly observe that as the complexity of the circuits
+increases, success rate generally decreases for both of the placement methods.
+The curves in Figure \ref{fig:placement_success_trend} seem to shoot back up
+at the far end of the figure, but this is a result of the fact that there are
+very few circuits at that end of the figure, on which the algorithm happened to
+be consistently successful.
+
+Let us now consider wiring time as the basis for comparison. Once again, in
+Figure \ref{fig:placement_time_trend} we notice a very interesting separation
+at roughly $26$ pins per circuit. When the number of pins in the circuits is
+less than $26$, the wiring times for the two methods are very comparable.
+When the number of pins in the circuits is greater than $26$, however, the
+blocking methods consistently takes longer. This is very much related to the
+discussion above that the blocking method may often ask for elaborate connections
+to be made. As the complexity of circuits increases, the blocking method will
+require the wiring step to make more elaborate connections than would the distance
+method. Hence, when we are using the blocking method and the algorithm does succeed,
+we would certainly expect the wiring step to take longer than if we had used the
+distance method.
+
+As we would expect, we certainly see that as the complexity of the circuits
+increases, the amount of time spent by the wiring step also increases. As we did
+for the success rate trends as a function of circuit complexity, we observe that
+there are outliers at the far end of the figure due to a very small sample of the
+most complex circuits in the randomly generated schematic dataset.
+
+Finally, let us look at layout complexity as the basis for comparison. Figure
+\ref{fig:placement_quality_trend} presents graphs that compare numbers of wires,
+numbers of wire crosses, and total wire lengths. We first observe that the
+number of wires used by the two methods are almost identical. As the complexity
+of the circuit increases, we see that the blocking method uses more wires than
+does the distance method, but by and large the values are very comparable. This
+makes intuitive sense as we are rarely required to use more wires than
+absolutely necessary (keeping wires horizontal and vertical) to connect a pair
+of locations (?). When we look at the number of wire crosses in the layouts, we
+see that the blocking method consistently results in more wire crosses. Similarly,
+when we look at the total length of wires used in the layouts, the blocking
+method exceeds the distance method consistently, with the difference getting
+higher as complexity increases. This can be explained by the fact that the
+blocking method may require elaborate connections, especially as the circuits
+get more complex.
+
+It is difficult to conclusively pick a better placement method from these results.
+It is clear that both methods have their strengths and weaknesses. In Section
+\ref{sec:method_combination} we will discuss how combining these two methods can
+get us the best of both worlds (?).
+
+\subsection{Comparing wiring methods}
+
+\subsection{Comparing resistor treatments}
+
+\subsection{Comparing search methods}
+
+\subsection{Putting them all together}
+\label{sec:method_combination}
 
 \section{Remarks}
 

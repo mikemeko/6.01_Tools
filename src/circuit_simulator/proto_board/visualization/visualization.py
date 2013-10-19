@@ -29,6 +29,7 @@ from constants import WIRE_COLORS
 from constants import WIRE_OUTLINE
 from core.gui.constants import TOOLTIP_DRAWABLE_LABEL_BACKGROUND
 from core.gui.tooltip_helper import Tooltip_Helper
+from math import ceil
 from tkFileDialog import asksaveasfilename
 from Tkinter import Canvas
 from Tkinter import Frame
@@ -58,18 +59,13 @@ class Proto_Board_Visualizer(Frame):
     self._canvas = Canvas(self, width=WIDTH, height=HEIGHT,
         background=BACKGROUND_COLOR)
     self._tooltip_helper = Tooltip_Helper(self._canvas)
-    self._wire_bbox = {}
+    self._wire_parts = {}
+    # state for outline highlighing
+    self._outline_id = None
+    self._highlight = lambda labels: None
     self._setup_bindings()
     self._setup_menu()
     self._draw_proto_board()
-  def _point_inside_wire(self, wire, x, y):
-    """
-    Returns True if the point (|x|, |y|) is on the given |wire|. |wire| must be
-        one of the wires on the proto board.
-    """
-    assert wire in self._wire_bbox
-    x_1, y_1, x_2, y_2 = self._wire_bbox[wire]
-    return x_1 <= x <= x_2 and y_1 <= y <= y_2
   def _point_inside_piece(self, piece, x, y):
     """
     Returns True if the point (|x|, |y|) is on the gien |piece|.
@@ -84,17 +80,21 @@ class Proto_Board_Visualizer(Frame):
         location on the proto board, or the respective piece label if the cursor
         is on a piece.
     """
+    # check if cursor is on a wire
+    item = self._canvas.find_closest(event.x, event.y)[0]
+    if item in self._wire_parts:
+      self._tooltip_helper.show_tooltip(event.x, event.y,
+          self._wire_parts[item])
+      return
     # check if cursor is on a piece
     for piece in self._proto_board.get_pieces():
       if self._point_inside_piece(piece, event.x, event.y):
         self._tooltip_helper.show_tooltip(event.x, event.y, piece.label,
             background=TOOLTIP_DRAWABLE_LABEL_BACKGROUND)
+        self._highlight(piece.labels_at((event.x, event.y), self._rc_to_xy(
+            piece.top_left_loc)))
         return
-    # check if cursor is on a wire
-    for wire in self._proto_board.get_wires():
-      if self._point_inside_wire(wire, event.x, event.y):
-        self._tooltip_helper.show_tooltip(event.x, event.y, wire.node)
-        return
+    self._highlight([])
     # check if cursor is on a valid proto board location
     loc = self._xy_to_rc(event.x, event.y)
     if loc:
@@ -231,23 +231,27 @@ class Proto_Board_Visualizer(Frame):
     """
     x_1, y_1 = self._rc_to_xy(wire.loc_1)
     x_2, y_2 = self._rc_to_xy(wire.loc_2)
-    if x_1 > x_2 or y_1 > y_2:
-      x_1, y_1, x_2, y_2 = x_2, y_2, x_1, y_1
-    self._wire_bbox[wire] = (x_1, y_1, x_2 + CONNECTOR_SIZE,
-        y_2 + CONNECTOR_SIZE)
-    length = wire.length()
+    length = int(ceil(wire.length()))
     fill = 'white'
     if 1 < length < 10:
       fill = WIRE_COLORS[length]
     elif 10 <= length < 50:
       fill = WIRE_COLORS[(length + 9) / 10]
-    def draw_wire(wire_id=None):
-      if wire_id:
-        self._canvas.delete(wire_id)
-      new_wire_id = self._canvas.create_rectangle(self._wire_bbox[wire],
-          fill=fill, outline=WIRE_OUTLINE)
-      self._canvas.tag_bind(new_wire_id, '<Button-1>', lambda event: draw_wire(
-          new_wire_id))
+    def draw_wire(parts=None):
+      if parts:
+        for part in parts:
+          self._canvas.delete(part)
+          del self._wire_parts[part]
+      new_parts = [self._canvas.create_line(x_1 + CONNECTOR_SIZE / 2,
+          y_1 + CONNECTOR_SIZE / 2, x_2 + CONNECTOR_SIZE / 2,
+          y_2 + CONNECTOR_SIZE / 2, fill=WIRE_OUTLINE, width=7,
+          capstyle='round'), self._canvas.create_line(x_1 + CONNECTOR_SIZE / 2,
+          y_1 + CONNECTOR_SIZE / 2, x_2 + CONNECTOR_SIZE / 2,
+          y_2 + CONNECTOR_SIZE / 2, fill=fill, width=3, capstyle='round')]
+      for part in new_parts:
+        self._canvas.tag_bind(part, '<Button-1>', lambda event: draw_wire(
+            new_parts))
+        self._wire_parts[part] = wire.node
     draw_wire()
   def _draw_wires(self):
     """
@@ -256,6 +260,14 @@ class Proto_Board_Visualizer(Frame):
     for wire in sorted(self._proto_board.get_wires(),
         key=lambda wire: -wire.length()):
       self._draw_wire(wire)
+  def _redraw_wires(self):
+    """
+    Erases then redraws the wires on the protoboard.
+    """
+    for part in self._wire_parts:
+      self._canvas.delete(part)
+    self._wire_parts.clear()
+    self._draw_wires()
   def _draw_proto_board(self):
     """
     Draws the given |proto_board|.
@@ -318,10 +330,31 @@ class Proto_Board_Visualizer(Frame):
     save_menu.add_command(label='Save as CMax file',
         command=self._save_as_cmax_file)
     menu.add_cascade(label='File', menu=save_menu)
+    edit_menu = Menu(menu, tearoff=0)
+    edit_menu.add_command(label='Redraw wires', command=self._redraw_wires)
+    menu.add_cascade(label='Edit', menu=edit_menu)
     self._parent.config(menu=menu)
+  def outline_from_label(self, label):
+    """
+    Draws the appropriate outline for the circuit piece with the given |label|.
+    """
+    try:
+      self._canvas.delete(self._outline_id)
+      for piece in self._proto_board.get_pieces():
+        if label in piece.label.split(','):
+          self._outline_id = piece.outline_label(self._canvas, self._rc_to_xy(
+              piece.top_left_loc), label)
+          return
+    except:
+      pass
+  def set_highlight_function(self, f):
+    """
+    Resets the outline highlighting function to |f|.
+    """
+    self._highlight = f
 
 def visualize_proto_board(proto_board, toplevel, show_pwr_gnd_pins=True):
   """
   Displays a nice window portraying the given |proto_board|.
   """
-  Proto_Board_Visualizer(toplevel, proto_board, show_pwr_gnd_pins)
+  return Proto_Board_Visualizer(toplevel, proto_board, show_pwr_gnd_pins)

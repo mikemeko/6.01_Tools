@@ -50,13 +50,6 @@ ALLOW_PIECE_CROSSINGS = False
 ALLOW_WIRE_CROSSINGS = True # of opposite orientation, no wire crossings of
                             #     same orientation are allowed
 
-# circuit piece placement constants
-CIRCUIT_PIECE_SEPARATION = 2
-
-# whether to treat resistors as components or wires
-# if treat components as wires, set CIRCUIT_PIECE_SEPARATION to 3
-RESISTORS_AS_COMPONENTS = True
-
 # connector piece disabled pins
 DISABLED_PINS_HEAD_CONNECTOR = ()
 DISABLED_PINS_MOTOR_CONNECTOR = (1, 2, 3, 4)
@@ -64,8 +57,15 @@ DISABLED_PINS_ROBOT_CONNECTOR = (8,)
 
 # search constants
 MAX_STATES_TO_EXPAND = 300
-MODE_ALL_PAIRS = 0
-MODE_PER_NODE = 1
-MODE_PER_PAIR = 2
-ORDER_DECREASING = 0
-ORDER_INCREASING = 1
+MODE_ALL_PAIRS = 'ALL_PAIRS'
+MODE_PER_NODE = 'PER_NODE'
+MODE_PER_PAIR = 'PER_PAIR'
+ORDER_DECREASING = 'DECREASING'
+ORDER_INCREASING = 'INCREASING'
+
+# placement constants
+COST_TYPE_BLOCKING = 'BLOCKING'
+COST_TYPE_DISTANCE = 'DISTANCE'
+
+# limitation on wire lengths
+VALID_WIRE_LENGTHS = set(range(1, 14)) | {20, 30, 40, 50}

@@ -1,10 +1,33 @@
 """
 Script that runs automated layout test on a directory of test schematic files.
+Options:
+  Wiring:
+    Mode:
+      -a: all pairs
+      -n: per node
+      -p: per pair [DEFAULT]
+    Order:
+      -d: decreasing [DEFAULT]
+      -i: increasing
+  Placement:
+    -b: blocking [DEFAULT]
+    -t: distance
+  Resistors:
+    -c: as components [DEFAULT]
+    -w: as wires
+  Search:
+    -r: A* [DEFAULT]
+    -s: Best First
+  Filter wire length:
+    -f: True
+    False otherwise [DEFAULT]
 """
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
 from circuit_simulator.main.constants import FILE_EXTENSION
+from circuit_simulator.proto_board.constants import COST_TYPE_BLOCKING
+from circuit_simulator.proto_board.constants import COST_TYPE_DISTANCE
 from circuit_simulator.proto_board.constants import MODE_ALL_PAIRS
 from circuit_simulator.proto_board.constants import MODE_PER_NODE
 from circuit_simulator.proto_board.constants import MODE_PER_PAIR
@@ -19,20 +42,41 @@ from sys import argv
 from test_schematic import Schematic_Tester
 from time import time
 
+WIRING_MODE_OPTIONS = {'-a': MODE_ALL_PAIRS, '-n': MODE_PER_NODE,
+    '-p': MODE_PER_PAIR}
+WIRING_ORDER_OPTIONS = {'-d': ORDER_DECREASING, '-i': ORDER_INCREASING}
+PLACEMENT_OPTIONS = {'-b': COST_TYPE_BLOCKING, '-t': COST_TYPE_DISTANCE}
+RESISTOR_OPTIONS = {'-c': True, '-w': False}
+SEARCH_OPTIONS = {'-r': False, '-s': True}
+WIRE_FILTER_OPTIONS = {'-f': True}
+
 if __name__ == '__main__':
-  assert len(argv) >= 3
-  assert argv[2] in ('-a', '-n', '-p')
-  if argv[2] == '-a':
-    assert len(argv) == 3
-    solve_mode = MODE_ALL_PAIRS
-    solve_order = None
-  else:
-    assert len(argv) == 4
-    assert argv[3] in ('-d', '-i')
-    solve_mode = MODE_PER_NODE if argv[2] == '-n' else MODE_PER_PAIR
-    solve_order = ORDER_DECREASING if argv[3] == '-d' else ORDER_INCREASING
+  solve_mode_options = filter(WIRING_MODE_OPTIONS.has_key, argv)
+  assert len(solve_mode_options) <= 1
+  solve_mode = (WIRING_MODE_OPTIONS[solve_mode_options[0]] if solve_mode_options
+      else MODE_PER_PAIR)
+  solve_order_options = filter(WIRING_ORDER_OPTIONS.has_key, argv)
+  assert len(solve_order_options) <= 1
+  solve_order = (WIRING_ORDER_OPTIONS[solve_order_options[0]] if
+      solve_order_options else ORDER_DECREASING)
+  placement_options = filter(PLACEMENT_OPTIONS.has_key, argv)
+  assert len(placement_options) <= 1
+  cost_type = (PLACEMENT_OPTIONS[placement_options[0]] if placement_options
+      else COST_TYPE_BLOCKING)
+  resistor_options = filter(RESISTOR_OPTIONS.has_key, argv)
+  assert len(resistor_options) <= 1
+  resistors_as_components = (RESISTOR_OPTIONS[resistor_options[0]] if
+      resistor_options else True)
+  search_options = filter(SEARCH_OPTIONS.has_key, argv)
+  assert len(search_options) <= 1
+  best_first = SEARCH_OPTIONS[search_options[0]] if search_options else False
+  wire_filter_options = filter(WIRE_FILTER_OPTIONS.has_key, argv)
+  assert len(wire_filter_options) <= 1
+  filter_wire_lengths = (WIRE_FILTER_OPTIONS[wire_filter_options[0]] if
+      wire_filter_options else False)
   start_time = time()
-  tester = Schematic_Tester(solve_mode, solve_order)
+  tester = Schematic_Tester(resistors_as_components, cost_type, solve_mode,
+      solve_order, best_first, filter_wire_lengths)
   header = (
       'file',
       'run #',

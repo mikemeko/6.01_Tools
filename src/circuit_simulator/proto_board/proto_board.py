@@ -171,7 +171,7 @@ class Proto_Board:
         new_loc_disjoint_set_forest.make_set(loc)
         new_loc_disjoint_set_forest.union(present_loc, loc)
     return Proto_Board(new_wire_mappings, self._wires + [new_wire],
-        self._pieces.copy(), new_loc_disjoint_set_forest)
+        self._pieces, new_loc_disjoint_set_forest)
   def with_piece(self, piece):
     """
     Returns a new Proto_Board containing the given |piece|. If the piece
@@ -193,7 +193,7 @@ class Proto_Board:
       for section_loc in section_locs(loc):
         new_loc_disjoint_set_forest.make_set(section_loc)
         new_loc_disjoint_set_forest.union(loc, section_loc)
-    return Proto_Board(self._wire_mappings.copy(), self._wires[:], new_pieces,
+    return Proto_Board(self._wire_mappings, self._wires, new_pieces,
         new_loc_disjoint_set_forest)
   def occupied(self, loc):
     """
@@ -228,12 +228,9 @@ class Proto_Board:
       chars = ascii_lowercase + ascii_uppercase + digits
     for i, wire in enumerate(sorted(self._wires,
         key=lambda wire: -wire.length())):
-      r_min, r_max = wire.row_support
-      c_min, c_max = wire.column_support
-      for r in xrange(r_min, r_max + 1):
-        for c in xrange(c_min, c_max + 1):
-          grid[r + 1][c + 1] = (chars[i % len(chars)] if distinguish_wires else
-              '#')
+      for (r, c) in wire.locs():
+        grid[r + 1][c + 1] = (chars[i % len(chars)] if distinguish_wires else
+            '#')
     return '\n'.join([''.join(row) for row in grid])
   def __str__(self):
     return self.to_ascii(True)

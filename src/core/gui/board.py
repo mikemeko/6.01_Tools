@@ -48,8 +48,8 @@ from core.undo.undo import Multi_Action
 from core.util.util import is_callable
 from core.util.util import rects_overlap
 from find_wire_path import find_wire_path
-from find_wire_path import get_board_coverage
 from find_wire_path import path_coverage
+from find_wire_path import wire_coverage
 from sys import platform
 from threading import Timer
 from time import time
@@ -59,7 +59,6 @@ from Tkinter import Frame
 from tooltip_helper import Tooltip_Helper
 from util import create_circle
 from util import create_wire
-from util import point_inside_bbox
 from util import point_inside_circle
 from util import snap
 from wire_labeling import label_wires
@@ -97,7 +96,7 @@ class Board(Frame):
     # the drawables on this board, includes deleted drawables
     self._drawables = {}
     # undo / redo
-    self._action_history = Action_History()
+    self._action_history = Action_History(after=self._redraw_wires)
     # state for button click: dragging or selection or wire drawing
     self._current_button_action = None
     # state for dragging
@@ -114,6 +113,8 @@ class Board(Frame):
     self._wire_end = None
     self._wire_parts = []
     self._board_coverage = set()
+    self._drawable_coverage = set()
+    self._wire_coverage = set()
     self._valid_wire_path = False
     # state for key-press callbacks
     self._ctrl_pressed = False
@@ -122,6 +123,9 @@ class Board(Frame):
     # state for message display
     self._message_parts = []
     self._message_remove_timer = None
+    # state for component highlighting
+    self._highlight = lambda label: None
+    self._outline_ids = []
     # state for guide lines
     self._guide_line_parts = []
     # state for grid lines
@@ -171,8 +175,9 @@ class Board(Frame):
     Returns the drawable located at canvas location |point|, or None if no such
         item exists.
     """
+    part = self._canvas.find_closest(*point)[0]
     for drawable in self._get_drawables():
-      if point_inside_bbox(point, drawable.bounding_box(drawable.offset)):
+      if part in drawable.parts:
         return drawable
     return None
   def _connector_at(self, point):
@@ -192,10 +197,9 @@ class Board(Frame):
     """
     Returns the wire with id |canvas_id|, or None if no such wire exists.
     """
-    for drawable in self._get_drawables():
-      for wire in drawable.wires():
-        if canvas_id in wire.parts:
-          return wire
+    for wire in self._get_wires():
+      if canvas_id in wire.parts:
+        return wire
     return None
   def _update_drawable_offset(self, drawable, dx, dy):
     """
@@ -335,6 +339,7 @@ class Board(Frame):
     """
     # there better be drawables to drag on call to this callback
     assert self._selected_drawables and self._drag_last_point is not None
+    self._redraw_wires()
     last_x, last_y = self._drag_last_point
     # drag movement amount
     dx = snap(event.x - last_x)
@@ -377,6 +382,7 @@ class Board(Frame):
     else:
       for drawable in self._selected_drawables:
         self._move_drawable(drawable, -dx, -dy)
+      self._redraw_wires()
     # remove guide lines if shown
     self._remove_guide_lines()
     # reset
@@ -435,7 +441,7 @@ class Board(Frame):
       x1, y1 = start
       x2, y2 = end
       self._wire_parts.append([start, end, create_wire(self._canvas, x1, y1, x2,
-          y2, self._directed_wires, color)])
+          y2, self._get_wires(), self._directed_wires, color)])
   def _add_wire(self, wire_parts, start_connector, end_connector):
     """
     Creates a Wire object using the given parameters. This method assumes that
@@ -473,7 +479,9 @@ class Board(Frame):
     if not start_connector or not start_connector.enabled:
       self._wire_start = None
     else:
-      self._board_coverage = get_board_coverage(self)
+      self._board_coverage = self.get_board_coverage(True, False)
+      self._drawable_coverage = self.get_drawables_coverage(False, True)
+      self._wire_coverage = self.get_wire_coverage(True)
   def _wire_move(self, event):
     """
     Callback for when a wire is changed while being created.
@@ -485,11 +493,19 @@ class Board(Frame):
         # erase previous wire path
         self._erase_previous_wire_path()
         # find new wire path
-        wire_path = find_wire_path(self, self._wire_start, wire_end)
+        wire_path = find_wire_path(self._board_coverage, self._wire_start,
+            wire_end)
         # draw wires
-        self._valid_wire_path = not (path_coverage(wire_path) &
-            self._board_coverage) and not any(self._connector_at(point) for
-            point in wire_path[1:-1])
+        def valid():
+          if self._drawable_coverage & path_coverage(wire_path):
+            return False
+          if set(wire_path[1:-1]) & self._wire_coverage:
+            return False
+          if wire_path[-1] in self._wire_coverage and not self._connector_at(
+              wire_path[-1]):
+            return False
+          return True
+        self._valid_wire_path = valid()
         color = WIRE_COLOR if self._valid_wire_path else 'red'
         for i in xrange(len(wire_path) - 1):
           self._draw_wire(wire_path[i], wire_path[i + 1], color)
@@ -518,6 +534,8 @@ class Board(Frame):
     self._wire_end = None
     self._wire_parts = []
     self._board_coverage = set()
+    self._drawable_coverage = set()
+    self._wire_coverage = set()
     self._valid_wire_path = False
   def _canvas_button_press(self, event):
     """
@@ -526,8 +544,7 @@ class Board(Frame):
     assert self._current_button_action is None
     connector = self._connector_at((event.x, event.y))
     drawable = self._drawable_at((event.x, event.y))
-    if connector or (drawable and isinstance(drawable,
-        Wire_Connector_Drawable)):
+    if connector and (not drawable or drawable == connector.drawable):
       if DEBUG_CONNECTOR_CENTER_TOOLTIP:
         if not connector:
           connector = iter(drawable.connectors).next()
@@ -584,7 +601,8 @@ class Board(Frame):
     assert end_connector and end_connector.enabled, ('There must be an enabled'
         ' connector at (%d, %d)' % (x2, y2))
     self._add_wire(create_wire(self._canvas, x1, y1, x2, y2,
-        self._directed_wires), start_connector, end_connector)
+        self._get_wires(), self._directed_wires), start_connector,
+        end_connector)
   def _delete(self, event):
     """
     Callback for deleting an item on the board. Marks the board changed if
@@ -601,6 +619,7 @@ class Board(Frame):
       if drawable_to_delete.deletable():
         self._action_history.record_action(drawable_to_delete.delete_from(
             self._canvas))
+        self._redraw_wires()
         self.set_changed(True)
       else:
         self.display_message('Item cannot be deleted', WARNING)
@@ -611,6 +630,7 @@ class Board(Frame):
     if wire_to_delete:
       self._action_history.record_action(wire_to_delete.delete_from(
           self._canvas))
+      self._redraw_wires()
       self.set_changed(True)
   def add_key_binding(self, key, callback, flags=0):
     """
@@ -632,6 +652,7 @@ class Board(Frame):
           lambda: self._move_drawable(drawable, -dx, -dy), 'move'),
           self._selected_drawables), 'move selected'))
       self.set_changed(True)
+      self._redraw_wires()
   def _delete_selected_items(self):
     """
     Deletes the currently selected items.
@@ -659,6 +680,8 @@ class Board(Frame):
     """
     Callback for when a key is pressed.
     """
+    if self.edit_in_progress():
+      return
     keysym = self._get_keysym(event)
     if keysym in ('Control_L', 'Control_R'):
       self._ctrl_pressed = True
@@ -676,11 +699,11 @@ class Board(Frame):
       self._move_selected_items(0, -BOARD_GRID_SEPARATION)
     elif keysym in ('BackSpace', 'Delete'):
       # delete selected items as long there is not text edit in progress
-      if not self._canvas.focus():
+      if not self.edit_in_progress():
         self._delete_selected_items()
     else:
       current_key = event.keysym.lower()
-      current_flags = (CTRL_DOWN * self._ctrl_pressed) | (SHIFT_DOWN &
+      current_flags = (CTRL_DOWN * self._ctrl_pressed) | (SHIFT_DOWN *
           self._shift_pressed)
       if (current_key, current_flags) in self._key_press_callbacks:
         self._key_press_callbacks[(current_key, current_flags)]()
@@ -723,6 +746,11 @@ class Board(Frame):
         self._action_history.record_action(Action(
             lambda: switch(drawable_to_rotate, rotated_drawable),
             lambda: switch(rotated_drawable, drawable_to_rotate), 'rotate'))
+  def set_highlight_function(self, f):
+    """
+    Resets the outline highlighting function to |f|.
+    """
+    self._highlight = f
   def _handle_motion(self, event):
     """
     If the cursor is on a wire connector, changes cursor to a pencil.
@@ -732,8 +760,14 @@ class Board(Frame):
         If the cursor is on a drawable, displays a tooltip of the drawable
         label.
     """
+    connector = self._connector_at((event.x, event.y))
+    drawable = self._drawable_at((event.x, event.y))
+    # highlight drawable under cursor
+    self._highlight(drawable.label if drawable and hasattr(drawable, 'label')
+        else None)
     # maybe change cursor to pencil
-    if self._connector_at((event.x, event.y)) and not self._ctrl_pressed:
+    if not self._ctrl_pressed and connector and (not drawable or
+        drawable == connector.drawable):
       self._canvas.configure(cursor='pencil')
     elif EDIT_TAG in self._canvas.gettags(self._canvas.find_closest(event.x,
         event.y)[0]):
@@ -748,7 +782,6 @@ class Board(Frame):
     # maybe show label tooltip
     if self._label_tooltips_enabled and self._show_label_tooltips:
       # check if the cursor is on a wire connector
-      connector = self._connector_at((event.x, event.y))
       if connector:
         if isinstance(connector.drawable, Wire_Connector_Drawable):
           wires = list(connector.wires())
@@ -756,7 +789,6 @@ class Board(Frame):
             self._tooltip_helper.show_tooltip(event.x, event.y, wires[0].label)
         return
       # check if cursor is on a drawable
-      drawable = self._drawable_at((event.x, event.y))
       if drawable:
         if not isinstance(drawable, Wire_Connector_Drawable):
           self._tooltip_helper.show_tooltip(event.x, event.y, drawable.label,
@@ -769,6 +801,19 @@ class Board(Frame):
         self._tooltip_helper.show_tooltip(event.x, event.y, wire.label)
       else:
         self._tooltip_helper.hide_tooltip()
+  def outline_from_labels(self, labels):
+    """
+    Draws outlines for the drawables whose labels are in |labels|.
+    """
+    for part in self._outline_ids:
+      self._canvas.delete(part)
+    self._outline_ids = []
+    for drawable in self._get_drawables():
+      if hasattr(drawable, 'label') and drawable.label in labels:
+        x1, y1, x2, y2 = drawable.bounding_box(self.get_drawable_offset(
+            drawable))
+        self._outline_ids.append(self._canvas.create_rectangle(x1 - 2, y1 - 2,
+            x2 + 3, y2 + 3, dash=(3,), width=2))
   def quit(self):
     """
     Callback on exit.
@@ -882,6 +927,8 @@ class Board(Frame):
       drawable.attach_tags(self._canvas)
       # mark this board changed
       self.set_changed(True)
+      # I sincerely apoligize for this, but it's super convinient
+      drawable.board = self
   def _offset_good_for_new_drawable(self, new_drawable, offset):
     """
     Returns True if the given |new_drawable| at the given |offset| is completely
@@ -961,11 +1008,31 @@ class Board(Frame):
     label_wires(self._get_drawables(), self._same_label_per_connector)
     # display wire labels for debugging
     if DEBUG_DISPLAY_WIRE_LABELS:
-      for drawable in self._get_drawables():
-        for wire in drawable.wires():
-          wire.redraw(self._canvas)
+      self._redraw_wires()
     self._label_drawables()
     return self._get_drawables()
+  def _get_wires(self):
+    """
+    Returns a set of the wires on this board.
+    """
+    wires = set()
+    for drawable in self._get_drawables():
+      for wire in drawable.wires():
+        wires.add(wire)
+    return wires
+  def _redraw_wires(self):
+    """
+    Redraws the wires on this board.
+    """
+    wires = list(self._get_wires())
+    for i, wire in enumerate(wires):
+      wire.redraw(self._canvas, wires[i + 1:])
+    # make sure that selectd drawables are on top
+    for drawable in self._selected_drawables:
+      # on redo, don't redraw deleted drawables
+      if drawable.is_live():
+        drawable.redraw(self._canvas)
+        drawable.show_selected_highlight(self._canvas)
   def show_label_tooltips(self):
     """
     Starts showing label tooltips. Tooltips will be hidden on call to
@@ -1032,3 +1099,51 @@ class Board(Frame):
     self.set_changed(False)
     # return cursor to normal state
     self.reset_cursor_state()
+  def edit_in_progress(self):
+    """
+    Returns True if there is a text currently being editted, False otherwise.
+    """
+    return bool(self._canvas.focus())
+  def _coverage_with_connectors_removed(self, coverage):
+    """
+    Returns the set |coverage| with all coordinate points at which there is a
+        connector removed.
+    """
+    return set(filter(lambda point: not self._connector_at(point), coverage))
+  def _get_drawable_coverage(self, drawable, bbox):
+    """
+    Returns the set of coordinate points on the board occupied by |drawable|.
+    """
+    ox, oy = drawable.offset
+    coverage = [(x, y) for x in xrange(ox, ox + drawable.width + 1,
+        BOARD_GRID_SEPARATION) for y in xrange(oy, oy + drawable.height + 1,
+        BOARD_GRID_SEPARATION)]
+    if not bbox:
+      coverage = filter(lambda (x, y): self._canvas.find_closest(x, y)[0] in
+          drawable.parts, coverage)
+    return set(coverage)
+  def get_drawables_coverage(self, bbox, include_connectors):
+    """
+    Returns the set of coordinate points on the board occupied by drawables.
+    """
+    coverage = set()
+    for drawable in self._get_drawables():
+      coverage |= self._get_drawable_coverage(drawable, bbox)
+    return (coverage if include_connectors else
+        self._coverage_with_connectors_removed(coverage))
+  def get_wire_coverage(self, include_connectors):
+    """
+    Returns the set of coordinate points on the board occupied by wires.
+    """
+    coverage = set()
+    for wire in self._get_wires():
+      coverage |= wire_coverage(wire.start_connector.center,
+          wire.end_connector.center)
+    return (coverage if include_connectors else
+        self._coverage_with_connectors_removed(coverage))
+  def get_board_coverage(self, bbox, include_connectors):
+    """
+    Returns the set of occupied coordinate points on the board.
+    """
+    return (self.get_drawables_coverage(bbox, include_connectors) |
+        self.get_wire_coverage(include_connectors))

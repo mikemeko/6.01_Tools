@@ -1,14 +1,22 @@
 """
 Circuit solving.
-Credit to ideas from MIT 6.01 Fall 2012 Software Lab 9.
-Equation representation: a list of terms summing to 0, where a term is a tuple
-    of the form (coeff, var), where coeff is a number and var is a variable.
-    Constants can be represented by (const, None).
+Uses CMax simulator.
+Old solver (no longer used):
+  Credit to ideas from MIT 6.01 Fall 2012 Software Lab 9.
+  Equation representation: a list of terms summing to 0, where a term is a tuple
+      of the form (coeff, var), where coeff is a number and var is a variable.
+      Constants can be represented by (const, None).
 """
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
+from circuit_simulator.main.constants import GROUND
+from circuit_simulator.main.constants import POWER
+from collections import defaultdict
 from constants import DEBUG
+from constants import DEFAULT_LAMP_ANGLE_SIGNAL
+from constants import DEFAULT_LAMP_DISTANCE_SIGNAL
+from constants import DEFAULT_POT_SIGNAL
 from constants import MOTOR_B_LOADED
 from constants import MOTOR_B_UNLOADED
 from constants import MOTOR_INIT_ANGLE
@@ -24,6 +32,7 @@ from constants import OP_AMP_K
 from constants import PHOTODETECTOR_K
 from constants import T
 from core.math.CT_signal import CT_Signal
+from core.math.CT_signal import Function_CT_Signal
 from core.math.equation_solver import solve_equations
 from core.util.util import clip
 from core.util.util import in_bounds
@@ -31,6 +40,8 @@ from core.util.util import is_number
 from math import cos
 from math import pi
 from traceback import format_exc
+from util import get_resistor_color_indices
+import simulate
 
 class Component:
   """
@@ -73,6 +84,18 @@ class Component:
     |KCL|: a dictionary mapping circuit nodes to a list of the currents
         leaving (+) and entering (-) them. This method should update |KCL|
         based on its state at the current time step.
+    All subclasses should implement this method.
+    """
+    raise NotImplementedError('subclasses should implement this')
+  def cmaxify(self, parts, k):
+    """
+    Should append to |parts| a tuple containing:
+        the cmax line corresponding to this component,
+        a tuple containing pairs (loc, node) where loc is a location
+            corresponding to the output cmax line, and node the node in the
+            circuit for that loc.
+    |k| is the smallest x-coordinate available. Should return the next smallest
+        available x-coordinate.
     All subclasses should implement this method.
     """
     raise NotImplementedError('subclasses should implement this')
@@ -126,6 +149,10 @@ class Voltage_Source(One_Port):
     assert self.v0 is not None, 'v0 has not been set'
     # n1 - n0 = v0
     return [(1, self.n1), (-1, self.n2), (-self.v0, None)]
+  def cmaxify(self, parts, k):
+    parts.append(('+10: (%d,%d)' % (k, 0), (((k, 0), self.n1),)))
+    parts.append(('gnd: (%d,%d)' % (k, 1), (((k, 1), self.n2),)))
+    return k + 1
 
 class Current_Source(One_Port):
   """
@@ -166,6 +193,11 @@ class Resistor(One_Port):
     assert self.r is not None, 'r has not been set'
     # n1 - n2 = i * r
     return [(1, self.n1), (-1, self.n2), (-self.r, self.i)]
+  def cmaxify(self, parts, k):
+    i1, i2, i3 = get_resistor_color_indices(self.r)
+    parts.append(('resistor(%d,%d,%d): (%d,%d)--(%d,%d)' % (i1, i2, i3, k, 0, k,
+        1), (((k, 0), self.n1), ((k, 1), self.n2))))
+    return k + 1
 
 class Voltage_Sensor(One_Port):
   """
@@ -225,6 +257,17 @@ class Op_Amp(Component):
   def KCL_update(self, KCL):
     self.voltage_sensor.KCL_update(KCL)
     self.vcvs.KCL_update(KCL)
+  def cmaxify(self, parts, k):
+    parts.append(('opamp: (%d,%d)--(%d,%d)' % (k, 1, k, 0), (
+        ((k + 0, 0), self.na2),
+        ((k + 1, 0), self.na1),
+        ((k + 2, 0), GROUND),
+        ((k + 3, 0), str(id(self))),
+        ((k + 0, 1), self.nb1),
+        ((k + 1, 1), POWER),
+        ((k + 2, 1), str(id(self))),
+        ((k + 3, 1), GROUND))))
+    return k + 4
 
 class Pot(Component):
   """
@@ -277,6 +320,12 @@ class Pot(Component):
     self._maybe_init()
     self._resistor_1.KCL_update(KCL)
     self._resistor_2.KCL_update(KCL)
+  def cmaxify(self, parts, k):
+    parts.append(('pot: (%d,%d)--(%d,%d)--(%d,%d)' % (k, 1, k + 1, 0, k + 2, 1),
+        (((k + 0, 1), self.n_top),
+         ((k + 1, 0), self.n_middle),
+         ((k + 2, 1), self.n_bottom))))
+    return k + 3
 
 class Signalled_Pot(Pot):
   """
@@ -360,6 +409,11 @@ class Motor(Component):
     return self._resistor.equations()
   def KCL_update(self, KCL):
     self._resistor.KCL_update(KCL)
+  def cmaxify(self, parts, k):
+    parts.append(('motor: (%d,%d)--(%d,%d)' % (k, 0, k + 5, 0), (
+        ((k + 4, 0), self.motor_plus),
+        ((k + 5, 0), self.motor_minus))))
+    return k + 6
 
 class Robot_Connector(Component):
   """
@@ -385,6 +439,9 @@ class Robot_Connector(Component):
   def equations(self):
     return []
   def KCL_update(self, KCL):
+    pass
+  def cmaxify(self, parts, k):
+    # There will already be an instance of Voltage_Source.
     pass
 
 class Head_Connector(Component):
@@ -523,6 +580,36 @@ class Head_Connector(Component):
     self._maybe_init()
     for component in self._present_components():
       component.KCL_update(KCL)
+  def cmaxify(self, parts, k):
+    parts.append(('head: (%d,%d)--(%d,%d)' % (k, 0, k + 7, 0), (
+      ((k + 0, 0), self.n_pot_top),
+      ((k + 1, 0), self.n_pot_middle),
+      ((k + 2, 0), self.n_pot_bottom),
+      ((k + 3, 0), self.n_photo_left),
+      ((k + 4, 0), self.n_photo_common),
+      ((k + 5, 0), self.n_photo_right),
+      ((k + 6, 0), self.n_motor_plus),
+      ((k + 7, 0), self.n_motor_minus))))
+    return k + 8
+
+class Probe(Component):
+  """
+  Representation for probes.
+  """
+  def __init__(self, sign, node):
+    Component.__init__(self)
+    self.sign = sign
+    self.node = node
+  def nodes(self):
+    return set(filter(bool, [node]))
+  def equations(self):
+    return []
+  def KCL_update(self, KCL):
+    pass
+  def cmaxify(self, parts, k):
+    parts.append(('%sprobe: (%d,%d)' % (self.sign, k, 0),
+        (((k, 0), self.node),)))
+    return k + 1
 
 class Circuit:
   """
@@ -538,9 +625,8 @@ class Circuit:
     # try to solve the circuit
     if solve:
       try:
-        self.data = self._solve()
+        self._cmax_solve()
       except:
-        self.data = None
         if DEBUG:
           print format_exc()
   def _solve(self):
@@ -548,6 +634,7 @@ class Circuit:
     Solves this circuit and returns a dictionary mapping all the sampled times
         to dictionaries mapping all the variables (i.e. voltages and currents)
         to their values.
+    No longer used! Replaced by CMax simulator. Look at self._cmax_solve().
     """
     data = {}
     for n in xrange(NUM_SAMPLES):
@@ -568,3 +655,48 @@ class Circuit:
       for component in self.components:
         component.step(data[n * T])
     return data
+  def _ct_to_dt(self, ct_signal):
+    return Function_CT_Signal(lambda n: ct_signal.sample(n * T))
+  def _cmax_solve(self):
+    parts = []
+    k = 0
+    for component in self.components:
+      k = component.cmaxify(parts, k)
+    node_locations = defaultdict(list)
+    lines = []
+    for rep, nodes in parts:
+      lines.append(rep)
+      for loc, node in nodes:
+        node_locations[node].append(loc)
+    for node in node_locations:
+      if node:
+        for i in xrange(len(node_locations[node]) - 1):
+          x1, y1 = node_locations[node][i]
+          x2, y2 = node_locations[node][i + 1]
+          lines.append('wire: (%d,%d)--(%d,%d)' % (x1, y1, x2, y2))
+    pot_alpha_signals = []
+    lamp_angle_signals = []
+    lamp_distance_signals = []
+    pot_labels = []
+    lamp_labels = []
+    head_motor_labels = []
+    motor_labels = []
+    for component in self.components:
+      if isinstance(component, Signalled_Pot):
+        pot_alpha_signals.append(self._ct_to_dt(component.signal if
+            component.signal else DEFAULT_POT_SIGNAL))
+        pot_labels.append(component.label)
+      elif isinstance(component, Head_Connector):
+        lamp_angle_signals.append(self._ct_to_dt(component.lamp_angle_signal if
+            component.lamp_angle_signal else DEFAULT_LAMP_ANGLE_SIGNAL))
+        lamp_distance_signals.append(self._ct_to_dt(
+            component.lamp_distance_signal if component.lamp_distance_signal
+            else DEFAULT_LAMP_DISTANCE_SIGNAL))
+        lamp_labels.append(component.photo_label)
+        head_motor_labels.append(component.motor_label)
+      elif isinstance(component, Motor):
+        motor_labels.append(component.label)
+    simulate.solve(lines, pot_alpha_signals, lamp_angle_signals,
+        lamp_distance_signals, pot_labels, lamp_labels, head_motor_labels,
+        motor_labels, deltaT=T)
+    print simulate.sim_output

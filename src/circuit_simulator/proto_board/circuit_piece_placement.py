@@ -16,7 +16,8 @@ from circuit_simulator.main.constants import POWER
 from collections import defaultdict
 from constants import BODY_BOTTOM_ROWS
 from constants import BODY_TOP_ROWS
-from constants import CIRCUIT_PIECE_SEPARATION
+from constants import COST_TYPE_BLOCKING
+from constants import COST_TYPE_DISTANCE
 from constants import GROUND_RAIL
 from constants import POWER_RAIL
 from constants import PROTO_BOARD_WIDTH
@@ -115,21 +116,22 @@ def loc_pairs_to_connect(pieces, resistors):
     flagged_loc_pairs.append((loc_1, loc_2, resistor, resistor.n1))
   return flagged_loc_pairs
 
-def set_locations(pieces):
+def set_locations(pieces, resistors_as_components):
   """
   Given a (ordered) list of |pieces|, assigns them locations on the proto
       board. Tries to center the pieces in the middle of the proto board. Leaves
-      a separation of |CIRCUIT_PIECE_SEPARATION| columns between each
+      a separation of 2 (or 3 if |resistors_as_components|) columns between each
       consecuitive pair of pieces, unless the pieces are both resistors, in
       which case only 1 column is left. Returns True if the pieces are
       successfully assigned top_left_locs (i.e. if they fit on the board), False
       otherwise.
   """
+  pair_separation = 2 if resistors_as_components else 3
   # find spaces (in number of columns) between each consecutive pair of pieces
   separations = []
   for i in xrange(len(pieces) - 1):
     separations.append(1 if isinstance(pieces[i], Resistor_Piece) and
-        isinstance(pieces[i + 1], Resistor_Piece) else CIRCUIT_PIECE_SEPARATION)
+        isinstance(pieces[i + 1], Resistor_Piece) else pair_separation)
   # set piece locations, trying to center the group
   separations.append(0)
   col = (PROTO_BOARD_WIDTH - sum(piece.width for piece in pieces) - sum(
@@ -178,18 +180,22 @@ def _blocking_cost(placement):
         counter[(_r, _c)] += 1
   return sum(v ** 2 for v in counter.values())
 
-def cost(placement):
+def cost(placement, resistors_as_components, cost_type):
   """
-  Returns a heuristic cost of the given |placement| - the sum of the distances
-      between the loc pairs that would need to be connected. Returns
-      float('inf') if the |placement| does not fit on a board.
+  Returns a heuristic cost of the given |placement|. Returns float('inf') if the
+      |placement| does not fit on a board.
   """
-  if set_locations(placement):
-    return _blocking_cost(placement)
+  if set_locations(placement, resistors_as_components):
+    if cost_type == COST_TYPE_BLOCKING:
+      return _blocking_cost(placement)
+    elif cost_type == COST_TYPE_DISTANCE:
+      return _distance_cost(placement)
+    else:
+      raise Exception('Unexpected cost type: %s' % cost_type)
   else:
     return float('inf')
 
-def find_placement(pieces):
+def find_placement(pieces, resistors_as_components, cost_type):
   """
   Given a list of |pieces|, returns a placement of the pieces that requires
       comparatively small wiring. Finding the absolute best placement is too
@@ -227,7 +233,8 @@ def find_placement(pieces):
             piece.top_left_row = top_left_row
             new_placement = deepcopy(placement)
             new_placement.insert(i, piece)
-            new_placement_cost = cost(new_placement)
+            new_placement_cost = cost(new_placement, resistors_as_components,
+                cost_type)
             if new_placement_cost < best_placement_cost:
               best_placement = deepcopy(new_placement)
               best_placement_cost = new_placement_cost
@@ -241,7 +248,7 @@ def find_placement(pieces):
         add_to_queue(piece)
   return placement, placement_cost
 
-def _find_placement(pieces):
+def _find_placement(pieces, resistors_as_components, cost_type):
   """
   find_placement that looks at every possibility. Takes too long!
   """
@@ -258,7 +265,7 @@ def _find_placement(pieces):
   best_cost = float('inf')
   for perm in permutations(piece_options):
     perm_best = min(product(*perm), key=cost)
-    perm_best_cost = cost(perm_best)
+    perm_best_cost = cost(perm_best, resistors_as_components, cost_type)
     if perm_best_cost < best_cost:
       best_placement = perm_best
       best_cost = perm_best_cost

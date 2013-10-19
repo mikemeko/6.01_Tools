@@ -7,6 +7,7 @@ __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
 from circuit_simulator.proto_board.automated_testing.test_schematic import (
     Schematic_Tester)
+from circuit_simulator.proto_board.constants import COST_TYPE_BLOCKING
 from circuit_simulator.proto_board.constants import MODE_PER_PAIR
 from circuit_simulator.proto_board.constants import ORDER_DECREASING
 from collections import defaultdict
@@ -19,7 +20,8 @@ def multiple_runs(schematic):
       dictionary mapping hashes of the found layouts to the number of times they
       were found.
   """
-  tester = Schematic_Tester(MODE_PER_PAIR, ORDER_DECREASING)
+  tester = Schematic_Tester(True, COST_TYPE_BLOCKING, MODE_PER_PAIR,
+      ORDER_DECREASING, False, False)
   counts = defaultdict(int)
   for i in xrange(500):
     print i, schematic
