@@ -251,20 +251,13 @@ class Resistor_Drawable(Drawable):
       except Exception as e:
         self.board.display_message(e.message, ERROR)
     self.set_resistance = set_resistance
-    canvas.tag_bind(self.resistor_text, '<Double-Button-1>',
-        lambda event: self._ask_set_resistance())
-  def _ask_set_resistance(self):
-    """
-    Pops up a dialog window that asks for a new resistance and sets the
-        resistance of this resistor to the input.
-    """
-    self.set_resistance(askstring('Resistor', 'Enter Resistance Value:'))
   def rotated(self):
     return Resistor_Drawable(self.board, self.height, self.width,
         rotate_connector_flags(self.connector_flags), self.get_resistance())
   def on_right_click(self, event):
     menu = Menu(event.widget, tearoff=0)
-    menu.add_command(label='Set Resistance', command=self._ask_set_resistance)
+    menu.add_command(label='Set Resistance', command=lambda:
+        self.set_resistance(askstring('Resistor', 'Enter Resistance Value:')))
     menu.tk_popup(event.x_root, event.y_root)
   def serialize(self, offset):
     # remove ohm sign
