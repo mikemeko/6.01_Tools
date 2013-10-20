@@ -17,6 +17,7 @@ def _cross(V, W):
 
 def intersect(segment1, segment2):
   """
+  If |segment1| or |segment2| has 0 length, returns False.
   If |segment1| and |segment2| intersect and are colliniar, returns 'collinear'.
   Otherwise, if |segment1| and |segment2| intersect at exactly one point,
       returns that point.
@@ -25,8 +26,12 @@ def intersect(segment1, segment2):
   """
   (x00, y00), (x01, y01) = segment1
   R = (x01 - x00, y01 - y00)
+  if R == (0, 0):
+    return False
   (x10, y10), (x11, y11) = segment2
   S = (x11 - x10, y11 - y10)
+  if S == (0, 0):
+    return False
   QmP = (x10 - x00, y10 - y00)
   RcS = float(_cross(R, S))
   QmPcS = _cross(QmP, S)
