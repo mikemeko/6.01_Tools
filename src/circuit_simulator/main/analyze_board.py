@@ -34,6 +34,7 @@ from plotters import Head_Plotter
 from plotters import Motor_Plotter
 from plotters import Probe_Plotter
 from plotters import Signalled_Pot_Plotter
+from util import resistance_from_string
 
 def current_name(item, n1, n2):
   """
@@ -157,7 +158,8 @@ def run_analysis(board, analyze, solve_circuit=False,
       pin_2_nodes = [wire.label for wire in connector_it.next().wires()]
       # get its resistance
       try:
-        r = float(drawable.get_resistance())
+        c1, c2, e = resistance_from_string(drawable.get_resistance())
+        r = (c1 * 10 + c2) * 10 ** e
       except:
         board.display_message('Could not obtain resistance constant', ERROR)
         return

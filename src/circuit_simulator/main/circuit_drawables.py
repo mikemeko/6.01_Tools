@@ -68,6 +68,7 @@ from core.gui.components import Drawable
 from core.gui.components import Run_Drawable
 from core.gui.constants import CONNECTOR_LEFT
 from core.gui.constants import CONNECTOR_RIGHT
+from core.gui.constants import ERROR
 from core.gui.tooltip_helper import Tooltip_Helper
 from core.gui.util import create_circle
 from core.gui.util import create_editable_text
@@ -82,9 +83,12 @@ from os.path import isfile
 from os.path import relpath
 from re import match
 from tkFileDialog import askopenfilename
+from tkSimpleDialog import askstring
 from Tkinter import CENTER
 from Tkinter import Menu
 from util import draw_resistor_zig_zags
+from util import resistance_from_string
+from util import resistance_to_string
 
 class Pin_Drawable(Drawable):
   """
@@ -197,7 +201,7 @@ class Resistor_Drawable(Drawable):
   """
   def __init__(self, board, width=RESISTOR_HORIZONTAL_WIDTH,
       height=RESISTOR_HORIZONTAL_HEIGHT,
-      connectors=CONNECTOR_LEFT | CONNECTOR_RIGHT, init_resistance=1):
+      connectors=CONNECTOR_LEFT | CONNECTOR_RIGHT, init_resistance='1.0K'):
     """
     |board|: the board on which this Resistor_Drawable is placed.
     |init_resistance|: the initial resistance for this resistor.
@@ -212,40 +216,61 @@ class Resistor_Drawable(Drawable):
     w, h = self.width, self.height
     self._resistor_zig_zags = draw_resistor_zig_zags(canvas, ox, oy, w, h)
     self.parts |= self._resistor_zig_zags
-    def on_resistance_changed(old_r, new_r):
-      self.init_resistance = new_r
-      self.board.set_changed(True, Action(lambda: self.set_resistance(new_r),
-          lambda: self.set_resistance(old_r), 'set resistance'))
+    text = resistance_to_string(resistance_from_string(self.init_resistance))
     if w > h: # horizontal
-      resistor_text = create_editable_text(canvas, ox + w / 2,
-          oy - RESISTOR_TEXT_PADDING, text=self.init_resistance,
-          on_text_changed=on_resistance_changed, font=FONT)
+      self.resistor_text = canvas.create_text(ox + w / 2,
+          oy - RESISTOR_TEXT_PADDING, text=text, font=FONT)
     else: # vertical
-      resistor_text = create_editable_text(canvas,
-          ox + w + RESISTOR_TEXT_PADDING, oy + h / 2,
-          text=self.init_resistance, on_text_changed=on_resistance_changed,
-          font=FONT)
-    self.parts.add(resistor_text)
+      self.resistor_text = canvas.create_text(ox + w + RESISTOR_TEXT_PADDING +
+          6, oy + h / 2, text=text, font=FONT)
+    self.parts.add(self.resistor_text)
     def get_resistance():
       """
-      Returns a string representing this resistor's resistance.
+      Returns the string representing this resistor's resistance.
       """
-      return canvas.itemcget(resistor_text, 'text')
+      return canvas.itemcget(self.resistor_text, 'text')
     self.get_resistance = get_resistance
+    def _set_resistance(r):
+      canvas.itemconfig(self.resistor_text, text=r)
+      self.init_resistance = r
     def set_resistance(r):
       """
-      Sets the resistance of this resistor to be the string |r|.
+      Sets the resistance of this resistor to be the string |r|, after
+          appropriately modifying it.
       """
-      assert isinstance(r, str), 'r must be a string'
-      canvas.itemconfig(resistor_text, text=r)
-      self.init_resistance = r
+      if not r:
+        self.board.display_message('No resistance entered', ERROR)
+        return
+      try:
+        old_r = self.get_resistance()
+        new_r = resistance_to_string(resistance_from_string(r))
+        do = lambda: _set_resistance(new_r)
+        undo = lambda: _set_resistance(old_r)
+        do()
+        self.board.set_changed(True, Action(do, undo, 'set_resistance'))
+      except Exception as e:
+        self.board.display_message(e.message, ERROR)
     self.set_resistance = set_resistance
+    canvas.tag_bind(self.resistor_text, '<Double-Button-1>',
+        lambda event: self._ask_set_resistance())
+  def _ask_set_resistance(self):
+    """
+    Pops up a dialog window that asks for a new resistance and sets the
+        resistance of this resistor to the input.
+    """
+    self.set_resistance(askstring('Resistor', 'Enter Resistance Value:'))
   def rotated(self):
     return Resistor_Drawable(self.board, self.height, self.width,
         rotate_connector_flags(self.connector_flags), self.get_resistance())
+  def on_right_click(self, event):
+    menu = Menu(event.widget, tearoff=0)
+    menu.add_command(label='Set Resistance', command=self._ask_set_resistance)
+    menu.tk_popup(event.x_root, event.y_root)
   def serialize(self, offset):
-    return 'Resistor %s %d %d %d %s' % (self.get_resistance(), self.width,
-        self.height, self.connector_flags, str(offset))
+    # remove ohm sign
+    resistance = self.get_resistance().replace(u'\u03a9', '')
+    return 'Resistor %s %d %d %d %s' % (resistance, self.width, self.height,
+        self.connector_flags, str(offset))
   @staticmethod
   def deserialize(item_str, board):
     m = match(r'Resistor (.+) %s %s %s %s' % (RE_INT, RE_INT, RE_INT,

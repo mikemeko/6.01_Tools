@@ -5,7 +5,7 @@ Representations for objects that can be placed on the proto board: op amps,
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
-from circuit_simulator.simulation.util import get_resistor_color_indices
+from circuit_simulator.main.util import resistance_from_string
 from constants import DISABLED_PINS_HEAD_CONNECTOR
 from constants import DISABLED_PINS_MOTOR_CONNECTOR
 from constants import DISABLED_PINS_ROBOT_CONNECTOR
@@ -374,7 +374,7 @@ class Resistor_Piece(Circuit_Piece):
     x, y = top_left
     dx = (CONNECTOR_SPACING - CONNECTOR_SIZE) / 2
     # state for color bands
-    color_indices = get_resistor_color_indices(self.r)
+    color_indices = resistance_from_string(str(self.r))
     size = 2 * CONNECTOR_SIZE + 3 * CONNECTOR_SPACING
     color_size = 5
     color_spacing = 3
@@ -422,7 +422,7 @@ class Resistor_Piece(Circuit_Piece):
   def to_cmax_str(self):
     self._assert_top_left_loc_set()
     c, r = loc_to_cmax_rep(self.top_left_loc)
-    i1, i2, i3 = get_resistor_color_indices(self.r)
+    i1, i2, i3 = resistance_from_string(str(self.r))
     return 'resistor(%d,%d,%d): (%d,%d)--(%d,%d)' % (i1, i2, i3, c, r, c, r + 3)
   def __str__(self):
     return 'Resistor_Piece %s r=%s vertical=%s' % (str([self.n_1, self.n_2]),

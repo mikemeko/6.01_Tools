@@ -12,6 +12,7 @@ __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
 from circuit_simulator.main.constants import GROUND
 from circuit_simulator.main.constants import POWER
+from circuit_simulator.main.util import resistance_from_string
 from collections import defaultdict
 from constants import DEBUG
 from constants import DEFAULT_LAMP_ANGLE_SIGNAL
@@ -40,7 +41,6 @@ from core.util.util import is_number
 from math import cos
 from math import pi
 from traceback import format_exc
-from util import get_resistor_color_indices
 import simulate
 
 class Component:
@@ -194,7 +194,7 @@ class Resistor(One_Port):
     # n1 - n2 = i * r
     return [(1, self.n1), (-1, self.n2), (-self.r, self.i)]
   def cmaxify(self, parts, k):
-    i1, i2, i3 = get_resistor_color_indices(self.r)
+    i1, i2, i3 = resistance_from_string(str(self.r))
     parts.append(('resistor(%d,%d,%d): (%d,%d)--(%d,%d)' % (i1, i2, i3, k, 0, k,
         1), (((k, 0), self.n1), ((k, 1), self.n2))))
     return k + 1
