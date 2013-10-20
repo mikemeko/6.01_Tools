@@ -53,6 +53,8 @@ class Drawable:
     self.connectors = set()
     # flag for whether this drawable is on the board / deleted
     self._live = True
+    # canvas id for selection outline
+    self._selected_outline = None
   def draw_on(self, canvas, offset):
     """
     Draws the parts of this item on the |canvas| at the given |offset|. Should
@@ -66,19 +68,6 @@ class Drawable:
         result in this rotation. The default implementation is no rotation.
     """
     return self
-  def show_selected_highlight(self, canvas):
-    """
-    Enhances this drawable to show that it has been selected.
-    All subclasses should implement this.
-    """
-    raise NotImplementedError('subclasses should implement this')
-  def hide_selected_highlight(self, canvas):
-    """
-    Hides the selected enhancement to show that this drawable is no longer
-        selected.
-    All subclasses should implement this.
-    """
-    raise NotImplementedError('subclasses should implement this')
   def on_right_click(self, event):
     """
     Callback for right click. Default does nothing.
@@ -100,6 +89,24 @@ class Drawable:
     All subclasses should implement this.
     """
     raise NotImplementedError('subclasses should implement this')
+  def show_selected_highlight(self, canvas):
+    """
+    Enhances this drawable to show that it has been selected.
+    """
+    ox, oy = self.offset
+    canvas.delete(self._selected_outline)
+    self._selected_outline = canvas.create_rectangle(ox - 2, oy - 2,
+        ox + self.width + 3, oy + self.height + 3, outline='green', dash=(3,),
+        width=2)
+    self.parts.add(self._selected_outline)
+  def hide_selected_highlight(self, canvas):
+    """
+    Hides the selected enhancement to show that this drawable is no longer
+        selected.
+    """
+    canvas.delete(self._selected_outline)
+    if self._selected_outline in self.parts:
+      self.parts.remove(self._selected_outline)
   def is_live(self):
     """
     Returns True if this drawable is still on the board, or False if it has

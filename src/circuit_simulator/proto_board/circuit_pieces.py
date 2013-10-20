@@ -266,7 +266,8 @@ class Op_Amp_Piece(Circuit_Piece):
     if ',' in self.label and label == self.label.split(',')[-1]:
       x += width / 2
     return canvas.create_rectangle(x - h_offset - 2, y + v_offset - 2, x +
-        width / 2 + h_offset + 3, y + height - v_offset + 3, dash=(3,), width=2)
+        width / 2 + h_offset + 3, y + height - v_offset + 3, dash=(3,), width=2,
+        outline='blue')
   def labels_at(self, (x, y), (tx, ty)):
     width = 4 * CONNECTOR_SIZE + 3 * CONNECTOR_SPACING
     if ',' in self.label:
@@ -413,11 +414,11 @@ class Resistor_Piece(Circuit_Piece):
     if self.vertical:
       return canvas.create_rectangle(x - dx - 2, y - 2, x + CONNECTOR_SIZE +
           dx + 3, y + 4 * CONNECTOR_SIZE + 3 * CONNECTOR_SPACING + 3,
-          dash=(3,), width=2)
+          dash=(3,), width=2, outline='blue')
     else: # horizontal
       return canvas.create_rectangle(x - p, y - dx - p, x + 4 * CONNECTOR_SIZE +
           3 * CONNECTOR_SPACING + p, y + CONNECTOR_SIZE + dx + p, dash=(3,),
-          width=2)
+          width=2, outline='blue')
   def to_cmax_str(self):
     self._assert_top_left_loc_set()
     c, r = loc_to_cmax_rep(self.top_left_loc)
@@ -498,7 +499,7 @@ class Pot_Piece(Circuit_Piece):
     size = 3 * CONNECTOR_SIZE + 2 * CONNECTOR_SPACING
     offset = 2
     return canvas.create_rectangle(x - offset - 2, y - offset - 2, x + size +
-        offset + 3, y + size + offset + 3, dash=(3,), width=2)
+        offset + 3, y + size + offset + 3, dash=(3,), width=2, outline='blue')
   def to_cmax_str(self):
     self._assert_top_left_loc_set()
     c, r = loc_to_cmax_rep(self.top_left_loc)
@@ -587,7 +588,7 @@ class N_Pin_Connector_Piece(Circuit_Piece):
     padding = 4
     return canvas.create_rectangle(x - padding - 2, y - offset_top - padding -
         2, x + width + padding + 3, y + offset_bottom + padding + 3,
-        dash=(3,), width=2)
+        dash=(3,), width=2, outline='blue')
   def _disconnected_pins(self):
     """
     Returns a tuple of the pins for this connector that are enabled, but are

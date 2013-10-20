@@ -268,7 +268,7 @@ class Board(Frame):
     self._remove_current_selection_outline()
     self._selection_outline_canvas_id = self._canvas.create_rectangle(
         self._selection_start_point, self._selection_end_point, fill='',
-        outline='black', dash=(3,))
+        outline='green', dash=(3,))
   def _select(self, drawable):
     """
     Selects the given |drawable| by adding it to the set of selected items and
@@ -813,7 +813,7 @@ class Board(Frame):
         x1, y1, x2, y2 = drawable.bounding_box(self.get_drawable_offset(
             drawable))
         self._outline_ids.append(self._canvas.create_rectangle(x1 - 2, y1 - 2,
-            x2 + 3, y2 + 3, dash=(3,), width=2))
+            x2 + 3, y2 + 3, dash=(3,), width=2, outline='blue'))
   def quit(self):
     """
     Callback on exit.

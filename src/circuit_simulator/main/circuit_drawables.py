@@ -106,10 +106,6 @@ class Pin_Drawable(Drawable):
     self.parts.add(canvas.create_text(ox + self.width / 2,
         oy + self.height / 2, text=self.text, fill=PIN_TEXT_COLOR,
         width=.9 * self.width, justify=CENTER, font=FONT))
-  def show_selected_highlight(self, canvas):
-    canvas.itemconfig(self._rect_id, width=3)
-  def hide_selected_highlight(self, canvas):
-    canvas.itemconfig(self._rect_id, width=1)
 
 class Power_Drawable(Pin_Drawable):
   """
@@ -247,12 +243,6 @@ class Resistor_Drawable(Drawable):
   def rotated(self):
     return Resistor_Drawable(self.board, self.height, self.width,
         rotate_connector_flags(self.connector_flags), self.get_resistance())
-  def show_selected_highlight(self, canvas):
-    for item in self._resistor_zig_zags:
-      canvas.itemconfig(item, width=3)
-  def hide_selected_highlight(self, canvas):
-    for item in self._resistor_zig_zags:
-      canvas.itemconfig(item, width=1)
   def serialize(self, offset):
     return 'Resistor %s %d %d %d %s' % (self.get_resistance(), self.width,
         self.height, self.connector_flags, str(offset))
@@ -356,10 +346,6 @@ class Op_Amp_Drawable(Drawable):
       return Op_Amp_Drawable(OP_AMP_UP_VERTICES, self.signs)
     else: # OP_AMP_UP_VERTICES
       return Op_Amp_Drawable(OP_AMP_RIGHT_VERTICES, self.signs)
-  def show_selected_highlight(self, canvas):
-    canvas.itemconfig(self._triangle_id, width=3)
-  def hide_selected_highlight(self, canvas):
-    canvas.itemconfig(self._triangle_id, width=1)
   def serialize(self, offset):
     return 'Op_Amp %s %s %d' % (str(self.vertices), str(offset), self.signs)
   @staticmethod
@@ -466,12 +452,6 @@ class Pot_Drawable(Drawable):
   def rotated(self):
     return Pot_Drawable(self.on_signal_file_changed, self.height, self.width,
         (self.direction + 1) % 4, self.signal_file)
-  def show_selected_highlight(self, canvas):
-    for item in self._resistor_zig_zags:
-      canvas.itemconfig(item, width=3)
-  def hide_selected_highlight(self, canvas):
-    for item in self._resistor_zig_zags:
-      canvas.itemconfig(item, width=1)
   def on_right_click(self, event):
     menu = Menu(event.widget, tearoff=0)
     menu.add_command(label='Set Signal File', command=self.set_signal_file)
