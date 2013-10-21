@@ -138,6 +138,8 @@ class Board(Frame):
     self._tooltip_helper = Tooltip_Helper(self._canvas)
     if self._label_tooltips_enabled:
       self._show_label_tooltips = False
+    # state for cursor state on connectors
+    self._cursor_wire = True
     # setup ui
     self._setup_drawing_board()
     self._setup_bindings()
@@ -322,6 +324,8 @@ class Board(Frame):
     Callback for button press for dragging.
     """
     selected_drawable = self._drawable_at((event.x, event.y))
+    if not selected_drawable:
+      selected_drawable = self._connector_at((event.x, event.y)).drawable
     assert selected_drawable
     # if this drawable is not one of the currently selected drawables, clear
     #     current selection
@@ -546,7 +550,8 @@ class Board(Frame):
     assert self._current_button_action is None
     connector = self._connector_at((event.x, event.y))
     drawable = self._drawable_at((event.x, event.y))
-    if connector and (not drawable or drawable == connector.drawable):
+    if self._cursor_wire and connector and (not drawable or
+        drawable == connector.drawable):
       if DEBUG_CONNECTOR_CENTER_TOOLTIP:
         if not connector:
           connector = iter(drawable.connectors).next()
@@ -554,7 +559,7 @@ class Board(Frame):
         self._tooltip_helper.show_tooltip(x, y, str(connector.center))
       self._current_button_action = 'wire'
       self._wire_press(event)
-    elif drawable:
+    elif connector or drawable:
       self._current_button_action = 'drag'
       self._drag_press(event)
     else:
@@ -668,6 +673,12 @@ class Board(Frame):
       else:
         self.display_message('At least one of the selected items cannot be '
             'deleted', WARNING)
+  def toggle_cursor_state(self):
+    """
+    Toggles the state of the cursor on whether to draw wires or move wire
+        connectors.
+    """
+    self._cursor_wire = not self._cursor_wire
   def _get_keysym(self, event):
     """
     Returns the appropriate keysym for the given |event|, making the appropriate
@@ -703,6 +714,8 @@ class Board(Frame):
       # delete selected items as long there is not text edit in progress
       if not self.edit_in_progress():
         self._delete_selected_items()
+    elif keysym == 'w':
+      self.toggle_cursor_state()
     else:
       current_key = event.keysym.lower()
       current_flags = (CTRL_DOWN * self._ctrl_pressed) | (SHIFT_DOWN *
@@ -760,8 +773,9 @@ class Board(Frame):
     self._wire_highlight = f
   def _handle_motion(self, event):
     """
-    If the cursor is on a wire connector, changes cursor to a pencil.
-    If the cursor is on an edittable text, chanves cusor to a pencil.
+    If the cursor is on a wire connector and current cursor state draws wires,
+        changes cursor to a cross.
+    If the cursor is on an edittable text, changes cusor to a pencil.
     If the cursor is on a wire or wire connector, and we are showing wire
         labels, displays a tooltip of the wire label close to the cursor.
         If the cursor is on a drawable, displays a tooltip of the drawable
@@ -774,7 +788,7 @@ class Board(Frame):
     # maybe change cursor to pencil
     if not self._ctrl_pressed and connector and (not drawable or
         drawable == connector.drawable):
-      self._canvas.configure(cursor='pencil')
+      self._canvas.configure(cursor='cross' if self._cursor_wire else 'arrow')
     elif EDIT_TAG in self._canvas.gettags(self._canvas.find_closest(event.x,
         event.y)[0]):
       self._canvas.configure(cursor='pencil')

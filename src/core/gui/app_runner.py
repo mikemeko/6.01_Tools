@@ -91,6 +91,8 @@ class App_Runner:
         accelerator='Ctrl+Z')
     edit_menu.add_command(label='Redo', command=self.board.redo,
         accelerator='Ctrl+Y')
+    edit_menu.add_command(label='Toggle cursor state',
+        command=self.board.toggle_cursor_state, accelerator='W')
     menu.add_cascade(label='Edit', menu=edit_menu)
     self._root.config(menu=menu)
   def _setup_shortcuts(self):
