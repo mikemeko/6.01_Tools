@@ -61,7 +61,8 @@ class App_Runner:
     self._file_name = None
     self._root = Tk()
     self._root.resizable(0, 0)
-    self.board = Board(self._root, width=self._board_width,
+    self._menu = Menu(self._root, tearoff=0)
+    self.board = Board(self._root, self._menu, width=self._board_width,
         height=self._board_height, directed_wires=self._directed_wires,
         label_tooltips_enabled=self._label_tooltips_enabled,
         same_label_per_connector=self._same_label_per_connector,
@@ -73,8 +74,7 @@ class App_Runner:
     """
     Creates the menu.
     """
-    menu = Menu(self._root, tearoff=0)
-    file_menu = Menu(menu, tearoff=0)
+    file_menu = Menu(self._menu, tearoff=0)
     file_menu.add_command(label='New', command=self._new_file,
         accelerator='Ctrl+N')
     file_menu.add_command(label='Open', command=self._open_file,
@@ -85,16 +85,16 @@ class App_Runner:
     file_menu.add_separator()
     file_menu.add_command(label='Quit', command=self.board.quit,
         accelerator='Ctrl+Q')
-    menu.add_cascade(label='File', menu=file_menu)
-    edit_menu = Menu(menu, tearoff=0)
+    self._menu.add_cascade(label='File', menu=file_menu)
+    edit_menu = Menu(self._menu, tearoff=0)
     edit_menu.add_command(label='Undo', command=self.board.undo,
         accelerator='Ctrl+Z')
     edit_menu.add_command(label='Redo', command=self.board.redo,
         accelerator='Ctrl+Y')
     edit_menu.add_command(label='Toggle cursor state',
         command=self.board.toggle_cursor_state, accelerator='W')
-    menu.add_cascade(label='Edit', menu=edit_menu)
-    self._root.config(menu=menu)
+    self._menu.add_cascade(label='Edit', menu=edit_menu)
+    self._root.config(menu=self._menu)
   def _setup_shortcuts(self):
     """
     Adds basic shortcuts.

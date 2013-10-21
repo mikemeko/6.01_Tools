@@ -254,11 +254,16 @@ class Resistor_Drawable(Drawable):
   def rotated(self):
     return Resistor_Drawable(self.board, self.height, self.width,
         rotate_connector_flags(self.connector_flags), self.get_resistance())
-  def on_right_click(self, event):
-    menu = Menu(event.widget, tearoff=0)
+  def _setup_menu(self, parent):
+    menu = Menu(parent, tearoff=0)
     menu.add_command(label='Set Resistance', command=lambda:
         self.set_resistance(askstring('Resistor', 'Enter Resistance Value:')))
-    menu.tk_popup(event.x_root, event.y_root)
+    return menu
+  def on_right_click(self, event):
+    self._setup_menu(event.widget).tk_popup(event.x_root, event.y_root)
+  def add_to_menu(self, menu):
+    menu.add_cascade(label='Resistor', menu=self._setup_menu(menu))
+    return menu.index('Resistor')
   def serialize(self, offset):
     # remove ohm sign
     resistance = self.get_resistance().replace(u'\u03a9', '')
@@ -470,10 +475,15 @@ class Pot_Drawable(Drawable):
   def rotated(self):
     return Pot_Drawable(self.on_signal_file_changed, self.height, self.width,
         (self.direction + 1) % 4, self.signal_file)
-  def on_right_click(self, event):
-    menu = Menu(event.widget, tearoff=0)
+  def _setup_menu(self, parent):
+    menu = Menu(parent, tearoff=0)
     menu.add_command(label='Set Signal File', command=self.set_signal_file)
-    menu.tk_popup(event.x_root, event.y_root)
+    return menu
+  def on_right_click(self, event):
+    self._setup_menu(event.widget).tk_popup(event.x_root, event.y_root)
+  def add_to_menu(self, menu):
+    menu.add_cascade(label='Pot', menu=self._setup_menu(menu))
+    return menu.index('Pot')
   def serialize(self, offset):
     return 'Pot %s %d %d %d %s' % (self.signal_file, self.width, self.height,
         self.direction, str(offset))
@@ -537,10 +547,10 @@ class Motor_Drawable(Pin_Drawable):
     self.minus = self._draw_connector(canvas, (minus_x, minus_y))
   def rotated(self):
     return Motor_Drawable(self.color, self.group_id, (self.direction + 1) % 4)
-  def on_right_click(self, event):
+  def _setup_menu(self, parent):
     if not self.group_id:
       # this is a stand alone motor, not part of a head
-      return
+      return None
     motor_pot_needed = True
     photosensors_needed = True
     for drawable in self.board.get_drawables():
@@ -551,7 +561,7 @@ class Motor_Drawable(Pin_Drawable):
           self.group_id):
         photosensors_needed = False
     if motor_pot_needed or photosensors_needed:
-      menu = Menu(event.widget, tearoff=0)
+      menu = Menu(parent, tearoff=0)
       def readd():
         if motor_pot_needed:
           self.board.add_drawable(Motor_Pot_Drawable(self.color, self.group_id),
@@ -562,7 +572,16 @@ class Motor_Drawable(Pin_Drawable):
         if motor_pot_needed and photosensors_needed:
           self.board._action_history.combine_last_n(2)
       menu.add_command(label='Re-add Missing Parts', command=readd)
-      menu.post(event.x_root, event.y_root)
+      return menu
+  def on_right_click(self, event):
+    m = self._setup_menu(event.widget)
+    if m is not None:
+      m.tk_popup(event.x_root, event.y_root)
+  def add_to_menu(self, menu):
+    m = self._setup_menu(menu)
+    if m is not None:
+      menu.add_cascade(label='Motor', menu=m)
+      return menu.index('Motor')
   def serialize(self, offset):
     return 'Motor %s %d %d %s' % (self.color, self.direction, self.group_id,
         str(offset))
@@ -628,7 +647,7 @@ class Motor_Pot_Drawable(Pin_Drawable):
   def rotated(self):
     return Motor_Pot_Drawable(self.color, self.group_id,
         (self.direction + 1) % 4)
-  def on_right_click(self, event):
+  def _setup_menu(self, parent):
     motor_needed = True
     photosensors_needed = True
     for drawable in self.board.get_drawables():
@@ -639,7 +658,7 @@ class Motor_Pot_Drawable(Pin_Drawable):
           self.group_id):
         photosensors_needed = False
     if motor_needed or photosensors_needed:
-      menu = Menu(event.widget, tearoff=0)
+      menu = Menu(parent, tearoff=0)
       def readd():
         if motor_needed:
           self.board.add_drawable(Motor_Drawable(self.color, self.group_id),
@@ -650,7 +669,16 @@ class Motor_Pot_Drawable(Pin_Drawable):
         if motor_needed and photosensors_needed:
           self.board._action_history.combine_last_n(2)
       menu.add_command(label='Re-add Missing Parts', command=readd)
-      menu.post(event.x_root, event.y_root)
+      return menu
+  def on_right_click(self, event):
+    m = self._setup_menu(event.widget)
+    if m is not None:
+      m.tk_popup(event.x_root, event.y_root)
+  def add_to_menu(self, menu):
+    m = self._setup_menu(menu)
+    if m is not None:
+      menu.add_cascade(label='Motor Pot', menu=m)
+      return menu.index('Motor Pot')
   def serialize(self, offset):
     return 'Motor_Pot %s %d %d %s' % (self.color, self.direction,
         self.group_id, str(offset))
@@ -771,8 +799,8 @@ class Photosensors_Drawable(Pin_Drawable):
   def rotated(self):
     return Photosensors_Drawable(self.color, self.group_id,
         self.on_signal_file_changed, (self.direction + 1) % 4, self.signal_file)
-  def on_right_click(self, event):
-    menu = Menu(event.widget, tearoff=0)
+  def _setup_menu(self, parent):
+    menu = Menu(parent, tearoff=0)
     menu.add_command(label='Set Signal File', command=self.set_signal_file)
     motor_needed = True
     motor_pot_needed = True
@@ -794,7 +822,12 @@ class Photosensors_Drawable(Pin_Drawable):
         if motor_needed and motor_pot_needed:
           self.board._action_history.combine_last_n(2)
       menu.add_command(label='Re-add Missing Parts', command=readd)
-    menu.tk_popup(event.x_root, event.y_root)
+    return menu
+  def on_right_click(self, event):
+    self._setup_menu(event.widget).tk_popup(event.x_root, event.y_root)
+  def add_to_menu(self, menu):
+    menu.add_cascade(label='Photosensors', menu=self._setup_menu(menu))
+    return menu.index('Photosensors')
   def serialize(self, offset):
     return 'Photosensors %s %s %d %d %s' % (self.signal_file, self.color,
         self.direction, self.group_id, str(offset))
@@ -868,14 +901,14 @@ class Robot_Power_Drawable(Pin_Drawable):
   def rotated(self):
     return Robot_Power_Drawable(self.color, self.group_id,
         (self.direction + 1) % 4)
-  def on_right_click(self, event):
+  def _setup_menu(self, parent):
     present = set()
     for drawable in self.board.get_drawables():
       if isinstance(drawable, Robot_IO_Drawable) and (drawable.group_id ==
           self.group_id):
         present.add(drawable.name)
     if len(present) < 5:
-      menu = Menu(event.widget, tearoff=0)
+      menu = Menu(parent, tearoff=0)
       def readd():
         n = 0
         for name in ['Vi1', 'Vi2', 'Vi3', 'Vi4', 'Vo']:
@@ -886,7 +919,16 @@ class Robot_Power_Drawable(Pin_Drawable):
         if n > 1:
           self.board._action_history.combine_last_n(n)
       menu.add_command(label='Re-add Missing Parts', command=readd)
-      menu.post(event.x_root, event.y_root)
+      return menu
+  def on_right_click(self, event):
+    m = self._setup_menu(event.widget)
+    if m is not None:
+      m.tk_popup(event.x_root, event.y_root)
+  def add_to_menu(self, menu):
+    m = self._setup_menu(menu)
+    if m is not None:
+      menu.add_cascade(label='Robot Power', menu=m)
+      return menu.index('Robot Power')
   def serialize(self, offset):
     return 'Robot_Power %s %s %d %s' % (self.color, self.group_id,
         self.direction, str(offset))
@@ -919,7 +961,7 @@ class Robot_IO_Drawable(Pin_Drawable):
   def rotated(self):
     return Robot_IO_Drawable(self.name, self.color, self.group_id,
         rotate_connector_flags(self.connector_flags))
-  def on_right_click(self, event):
+  def _setup_menu(self, parent):
     present = set()
     robot_power_needed = True
     for drawable in self.board.get_drawables():
@@ -930,7 +972,7 @@ class Robot_IO_Drawable(Pin_Drawable):
           self.group_id):
         robot_power_needed = False
     if robot_power_needed or len(present) < 5:
-      menu = Menu(event.widget, tearoff=0)
+      menu = Menu(parent, tearoff=0)
       def readd():
         n = 0
         if robot_power_needed:
@@ -945,7 +987,16 @@ class Robot_IO_Drawable(Pin_Drawable):
         if n > 1:
           self.board._action_history.combine_last_n(n)
       menu.add_command(label='Re-add Missing Parts', command=readd)
-      menu.post(event.x_root, event.y_root)
+      return menu
+  def on_right_click(self, event):
+    m = self._setup_menu(event.widget)
+    if m is not None:
+      m.tk_popup(event.x_root, event.y_root)
+  def add_to_menu(self, menu):
+    m = self._setup_menu(menu)
+    if m is not None:
+      menu.add_cascade(label='Robot I/O', menu=m)
+      return menu.index('Robot I/O')
   def serialize(self, offset):
     return 'Robot_IO %s %s %s %d %s' % (self.name, self.color, self.group_id,
         self.connector_flags, str(offset))

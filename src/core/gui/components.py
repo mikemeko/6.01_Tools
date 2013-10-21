@@ -242,6 +242,13 @@ class Drawable:
     for connector in self.connectors:
       for wire in connector.wires():
         yield wire
+  def add_to_menu(self, menu):
+    """
+    Returns the index of an additonal menu item added to the given |menu| bar.
+        Returns None if no new item is added. Subclasses can override this as
+        desired.
+    """
+    return None
 
 class Connector:
   """

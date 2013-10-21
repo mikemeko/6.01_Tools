@@ -67,10 +67,12 @@ class Board(Frame):
   """
   Tkinter Frame that supports drawing and manipulating various items.
   """
-  def __init__(self, parent, width=BOARD_WIDTH, height=BOARD_HEIGHT,
+  def __init__(self, parent, menu, width=BOARD_WIDTH, height=BOARD_HEIGHT,
       on_changed=None, on_exit=None, directed_wires=True,
       label_tooltips_enabled=False, same_label_per_connector=True):
     """
+    |parent|: Tk root.
+    |menu|: Menu bar for this board.
     |width|: the width of this board.
     |height|: the height of this board.
     |on_changed|: a function to call when changed status is reset.
@@ -83,6 +85,7 @@ class Board(Frame):
     """
     Frame.__init__(self, parent, background=BOARD_BACKGROUND_COLOR)
     self.parent = parent
+    self.menu = menu
     self.width = width
     self.height = height
     self._on_changed = on_changed
@@ -140,6 +143,8 @@ class Board(Frame):
       self._show_label_tooltips = False
     # state for cursor state on connectors
     self._cursor_wire = True
+    # state for additional menu item
+    self._added_menu_index = None
     # setup ui
     self._setup_drawing_board()
     self._setup_bindings()
@@ -256,6 +261,7 @@ class Board(Frame):
       for drawable in self._selected_drawables:
         drawable.hide_selected_highlight(self._canvas)
       self._selected_drawables.clear()
+      self._on_selection_changed()
   def _remove_current_selection_outline(self):
     """
     Removes the currently drawn rectangle that shows drawable selection.
@@ -280,6 +286,7 @@ class Board(Frame):
     """
     drawable.show_selected_highlight(self._canvas)
     self._selected_drawables.add(drawable)
+    self._on_selection_changed()
   def _deselect(self, drawable):
     """
     Deselects the given |drawable|, if it had been selected, by removing it from
@@ -288,6 +295,16 @@ class Board(Frame):
     if drawable in self._selected_drawables:
       self._selected_drawables.remove(drawable)
       drawable.hide_selected_highlight(self._canvas)
+      self._on_selection_changed()
+  def _on_selection_changed(self):
+    """
+    Called everytime selection is changed. Possibly adds a new menu item if
+        there is exactly one selected drawable.
+    """
+    if self._added_menu_index is not None:
+      self.menu.delete(self._added_menu_index)
+    self._added_menu_index = iter(self._selected_drawables).next().add_to_menu(
+        self.menu) if len(self._selected_drawables) == 1 else None
   def _drawable_within_board_bounds(self, drawable, offset):
     """
     Returns True if the |drawable| with the given |offset| is completely within
