@@ -76,13 +76,6 @@ class Proto_Board_Visualizer(Frame):
     x1, y1 = self._rc_to_xy((r1, c1))
     x2, y2 = self._rc_to_xy((r2, c2))
     return x1 <= x <= x2 + CONNECTOR_SIZE and y1 <= y <= y2 + CONNECTOR_SIZE
-  def _highlight_wires(self, label):
-    """
-    Highlights wires on this board (and else where as per self._wire_highlight)
-        that have the given |label|.
-    """
-    self._wire_highlight(label)
-    self.outline_wires_from_label(label)
   def _maybe_show_tooltip(self, event):
     """
     Shows a tooltip of the respective node if the cursor is on a wire or a valid
@@ -94,7 +87,7 @@ class Proto_Board_Visualizer(Frame):
     if item in self._wire_parts:
       self._tooltip_helper.show_tooltip(event.x, event.y,
           self._wire_parts[item])
-      self._highlight_wires(self._wire_parts[item])
+      self._wire_highlight(self._wire_parts[item])
       return
     # check if cursor is on a piece
     for piece in self._proto_board.get_pieces():
@@ -111,9 +104,9 @@ class Proto_Board_Visualizer(Frame):
       node = self._proto_board.node_for(loc)
       if node:
         self._tooltip_helper.show_tooltip(event.x, event.y, node)
-        self._highlight_wires(node)
+        self._wire_highlight(node)
         return
-    self._highlight_wires(None)
+    self._wire_highlight(None)
     # if none of the above, remove previous tooltip, if any
     self._tooltip_helper.hide_tooltip()
   def _setup_bindings(self):
@@ -394,7 +387,10 @@ class Proto_Board_Visualizer(Frame):
     """
     Resets the wire highlighing function to |f|.
     """
-    self._wire_highlight = f
+    def g(label):
+      f(label)
+      self.outline_wires_from_label(label)
+    self._wire_highlight = g
 
 def visualize_proto_board(proto_board, toplevel, show_pwr_gnd_pins=True):
   """
