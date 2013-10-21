@@ -58,6 +58,8 @@ class Mock_Board:
     pass
   def reset(self):
     pass
+  def relabel_wires(self, f):
+    pass
 
 class Mock_Canvas:
   """

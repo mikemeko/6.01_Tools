@@ -61,8 +61,10 @@ class Proto_Board_Visualizer(Frame):
     self._tooltip_helper = Tooltip_Helper(self._canvas)
     self._wire_parts = {}
     # state for outline highlighing
-    self._outline_id = None
-    self._highlight = lambda labels: None
+    self._piece_outline_id = None
+    self._wire_outline_ids = []
+    self._piece_highlight = lambda labels: None
+    self._wire_highlight = lambda label: None
     self._setup_bindings()
     self._setup_menu()
     self._draw_proto_board()
@@ -74,6 +76,13 @@ class Proto_Board_Visualizer(Frame):
     x1, y1 = self._rc_to_xy((r1, c1))
     x2, y2 = self._rc_to_xy((r2, c2))
     return x1 <= x <= x2 + CONNECTOR_SIZE and y1 <= y <= y2 + CONNECTOR_SIZE
+  def _highlight_wires(self, label):
+    """
+    Highlights wires on this board (and else where as per self._wire_highlight)
+        that have the given |label|.
+    """
+    self._wire_highlight(label)
+    self.outline_wires_from_label(label)
   def _maybe_show_tooltip(self, event):
     """
     Shows a tooltip of the respective node if the cursor is on a wire or a valid
@@ -85,23 +94,26 @@ class Proto_Board_Visualizer(Frame):
     if item in self._wire_parts:
       self._tooltip_helper.show_tooltip(event.x, event.y,
           self._wire_parts[item])
+      self._highlight_wires(self._wire_parts[item])
       return
     # check if cursor is on a piece
     for piece in self._proto_board.get_pieces():
       if self._point_inside_piece(piece, event.x, event.y):
         self._tooltip_helper.show_tooltip(event.x, event.y, piece.label,
             background=TOOLTIP_DRAWABLE_LABEL_BACKGROUND)
-        self._highlight(piece.labels_at((event.x, event.y), self._rc_to_xy(
-            piece.top_left_loc)))
+        self._piece_highlight(piece.labels_at((event.x, event.y),
+            self._rc_to_xy(piece.top_left_loc)))
         return
-    self._highlight([])
+    self._piece_highlight([])
     # check if cursor is on a valid proto board location
     loc = self._xy_to_rc(event.x, event.y)
     if loc:
       node = self._proto_board.node_for(loc)
       if node:
         self._tooltip_helper.show_tooltip(event.x, event.y, node)
+        self._highlight_wires(node)
         return
+    self._highlight_wires(None)
     # if none of the above, remove previous tooltip, if any
     self._tooltip_helper.hide_tooltip()
   def _setup_bindings(self):
@@ -334,24 +346,55 @@ class Proto_Board_Visualizer(Frame):
     edit_menu.add_command(label='Redraw wires', command=self._redraw_wires)
     menu.add_cascade(label='Edit', menu=edit_menu)
     self._parent.config(menu=menu)
-  def outline_from_label(self, label):
+  def outline_piece_from_label(self, label):
     """
     Draws the appropriate outline for the circuit piece with the given |label|.
     """
+    # try block in case canvas is gone with someone still calling this method
     try:
-      self._canvas.delete(self._outline_id)
+      self._canvas.delete(self._piece_outline_id)
       for piece in self._proto_board.get_pieces():
         if label in piece.label.split(','):
-          self._outline_id = piece.outline_label(self._canvas, self._rc_to_xy(
-              piece.top_left_loc), label)
+          self._piece_outline_id = piece.outline_label(self._canvas,
+              self._rc_to_xy(piece.top_left_loc), label)
           return
     except:
       pass
-  def set_highlight_function(self, f):
+  def outline_wires_from_label(self, label):
     """
-    Resets the outline highlighting function to |f|.
+    Draws outlines on the wires that have the given |label|.
     """
-    self._highlight = f
+    # try block in case canvas is gone with someone still calling this method
+    try:
+      for part in self._wire_outline_ids:
+        self._canvas.delete(part)
+        del self._wire_parts[part]
+      self._wire_outline_ids = []
+      for wire in self._proto_board.get_wires():
+        if wire.node == label:
+          x_1, y_1 = self._rc_to_xy(wire.loc_1)
+          x_2, y_2 = self._rc_to_xy(wire.loc_2)
+          self._wire_outline_ids.extend([self._canvas.create_line(
+              x_1 + CONNECTOR_SIZE / 2, y_1 + CONNECTOR_SIZE / 2, x_2 +
+              CONNECTOR_SIZE / 2, y_2 + CONNECTOR_SIZE / 2, fill='black',
+              width=7, capstyle='round'), self._canvas.create_line(x_1 +
+              CONNECTOR_SIZE / 2, y_1 + CONNECTOR_SIZE / 2, x_2 +
+              CONNECTOR_SIZE / 2, y_2 + CONNECTOR_SIZE / 2, fill='cyan',
+              width=3, capstyle='round')])
+          for part in self._wire_outline_ids:
+            self._wire_parts[part] = label
+    except:
+      pass
+  def set_piece_highlight(self, f):
+    """
+    Resets the piece highlighting function to |f|.
+    """
+    self._piece_highlight = f
+  def set_wire_highlight(self, f):
+    """
+    Resets the wire highlighing function to |f|.
+    """
+    self._wire_highlight = f
 
 def visualize_proto_board(proto_board, toplevel, show_pwr_gnd_pins=True):
   """

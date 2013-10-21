@@ -313,4 +313,5 @@ def run_analysis(board, analyze, solve_circuit=False,
     plotters.append(Probe_Plotter(probe_plus, probe_minus))
   # create and analyze circuit
   circuit = Circuit(circuit_components, GROUND, solve_circuit)
+  board.relabel_wires(maybe_rename_node)
   return analyze(circuit, plotters)
