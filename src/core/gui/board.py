@@ -847,19 +847,26 @@ class Board(Frame):
         self._tooltip_helper.hide_tooltip()
         self._drawable_highlight(None)
         self._wire_highlight(None)
-  def outline_drawables_from_labels(self, labels):
+  def _clear_drawable_outlines(self):
     """
-    Draws outlines for the drawables whose labels are in |labels|.
+    Removes currently drawn drawable outlines, if any.
     """
     for part in self._drawable_outline_ids:
       self._canvas.delete(part)
     self._drawable_outline_ids = []
-    for drawable in self._get_drawables():
-      if hasattr(drawable, 'label') and drawable.label in labels:
-        x1, y1, x2, y2 = drawable.bounding_box(self.get_drawable_offset(
-            drawable))
-        self._drawable_outline_ids.append(self._canvas.create_rectangle(x1 - 2,
-            y1 - 2, x2 + 3, y2 + 3, dash=(3,), width=2, outline='blue'))
+  def outline_drawables_from_labels(self, labels):
+    """
+    Draws outlines for the drawables whose labels are in |labels|.
+    """
+    self._clear_drawable_outlines()
+    if self._show_label_tooltips:
+      for drawable in self._get_drawables():
+        if hasattr(drawable, 'label') and drawable.label in labels:
+          x1, y1, x2, y2 = drawable.bounding_box(self.get_drawable_offset(
+              drawable))
+          self._drawable_outline_ids.append(self._canvas.create_rectangle(
+              x1 - 2, y1 - 2, x2 + 3, y2 + 3, dash=(3,), width=2,
+              outline='blue'))
   def _clear_wire_outlines(self):
     """
     Removes currently drawn wire outlines, if any.
@@ -872,12 +879,13 @@ class Board(Frame):
     Draws outlines for the wires whose lable/node is |label|.
     """
     self._clear_wire_outlines()
-    for wire in self._get_wires():
-      if hasattr(wire, 'label') and wire.label == label:
-        x1, y1 = wire.start_connector.center
-        x2, y2 = wire.end_connector.center
-        self._wire_outline_ids[self._canvas.create_line(x1, y1, x2, y2,
-            fill='blue', width=4)] = wire
+    if self._show_label_tooltips:
+      for wire in self._get_wires():
+        if hasattr(wire, 'label') and wire.label == label:
+          x1, y1 = wire.start_connector.center
+          x2, y2 = wire.end_connector.center
+          self._wire_outline_ids[self._canvas.create_line(x1, y1, x2, y2,
+              fill='blue', width=4)] = wire
   def quit(self):
     """
     Callback on exit.
@@ -965,8 +973,11 @@ class Board(Frame):
     self.remove_message()
     # once the board is changed, don't show wire label tooltips
     self.hide_label_tooltips()
-    # remove wire outlines, if any
+    # remove highlight outlines, if any
+    self._clear_drawable_outlines()
+    self._drawable_highlight(None)
     self._clear_wire_outlines()
+    self._wire_highlight(None)
   def _add_drawable(self, drawable, offset):
     """
     Adds the given |drawable| at the given |offset|.
