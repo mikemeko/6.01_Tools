@@ -33,9 +33,11 @@ from circuit_simulator.proto_board.constants import MODE_PER_NODE
 from circuit_simulator.proto_board.constants import MODE_PER_PAIR
 from circuit_simulator.proto_board.constants import ORDER_DECREASING
 from circuit_simulator.proto_board.constants import ORDER_INCREASING
+from collections import defaultdict
 from datetime import datetime
 from os import walk
 from os.path import basename
+from os.path import isfile
 from os.path import join
 from os.path import normpath
 from sys import argv
@@ -51,6 +53,15 @@ SEARCH_OPTIONS = {'-r': False, '-s': True}
 WIRE_FILTER_OPTIONS = {'-f': True}
 
 if __name__ == '__main__':
+  # schematics that have already been solved
+  if isfile(argv[2]):
+    counts = defaultdict(int)
+    for line in open(argv[2]).readlines():
+      counts[line.split(';')[0]] += 1
+    solved = set(name for name, count in counts.items() if count == 10)
+  else:
+    solved = set()
+  # options
   solve_mode_options = filter(WIRING_MODE_OPTIONS.has_key, argv)
   assert len(solve_mode_options) <= 1
   solve_mode = (WIRING_MODE_OPTIONS[solve_mode_options[0]] if solve_mode_options
@@ -105,7 +116,7 @@ if __name__ == '__main__':
     num_files = len(file_names)
     for n, file_name in enumerate(file_names):
       print '%d/%d' % (n + 1, num_files)
-      if file_name.endswith(FILE_EXTENSION):
+      if file_name.endswith(FILE_EXTENSION) and file_name not in solved:
         print file_name
         for i in xrange(10):
           print 'run %d' % (i + 1)
