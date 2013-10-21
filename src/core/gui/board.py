@@ -123,9 +123,11 @@ class Board(Frame):
     # state for message display
     self._message_parts = []
     self._message_remove_timer = None
-    # state for component highlighting
-    self._highlight = lambda label: None
-    self._outline_ids = []
+    # state for drawable and wire highlighting
+    self._drawable_highlight = lambda label: None
+    self._drawable_outline_ids = []
+    self._wire_highlight = lambda label: None
+    self._wire_outline_ids = []
     # state for guide lines
     self._guide_line_parts = []
     # state for grid lines
@@ -268,7 +270,7 @@ class Board(Frame):
     self._remove_current_selection_outline()
     self._selection_outline_canvas_id = self._canvas.create_rectangle(
         self._selection_start_point, self._selection_end_point, fill='',
-        outline='black', dash=(3,))
+        outline='green', dash=(3,))
   def _select(self, drawable):
     """
     Selects the given |drawable| by adding it to the set of selected items and
@@ -746,11 +748,16 @@ class Board(Frame):
         self._action_history.record_action(Action(
             lambda: switch(drawable_to_rotate, rotated_drawable),
             lambda: switch(rotated_drawable, drawable_to_rotate), 'rotate'))
-  def set_highlight_function(self, f):
+  def set_drawable_highlight(self, f):
     """
-    Resets the outline highlighting function to |f|.
+    Resets the drawable highlighting function to |f|.
     """
-    self._highlight = f
+    self._drawable_highlight = f
+  def set_wire_highlight(self, f):
+    """
+    Resets the wire highlighting funtion to |f|.
+    """
+    self._wire_highlight = f
   def _handle_motion(self, event):
     """
     If the cursor is on a wire connector, changes cursor to a pencil.
@@ -762,9 +769,8 @@ class Board(Frame):
     """
     connector = self._connector_at((event.x, event.y))
     drawable = self._drawable_at((event.x, event.y))
-    # highlight drawable under cursor
-    self._highlight(drawable.label if drawable and hasattr(drawable, 'label')
-        else None)
+    canvas_id = self._canvas.find_closest(event.x, event.y)[0]
+    wire = self._wire_with_id(canvas_id)
     # maybe change cursor to pencil
     if not self._ctrl_pressed and connector and (not drawable or
         drawable == connector.drawable):
@@ -787,33 +793,50 @@ class Board(Frame):
           wires = list(connector.wires())
           if wires:
             self._tooltip_helper.show_tooltip(event.x, event.y, wires[0].label)
-        return
+            self._drawable_highlight(None)
+            self._wire_highlight(wires[0].label)
       # check if cursor is on a drawable
-      if drawable:
+      elif drawable:
         if not isinstance(drawable, Wire_Connector_Drawable):
           self._tooltip_helper.show_tooltip(event.x, event.y, drawable.label,
               background=TOOLTIP_DRAWABLE_LABEL_BACKGROUND)
-        return
+          self._drawable_highlight(drawable.label)
+          self._wire_highlight(None)
       # check if the cursor is on a wire
-      canvas_id = self._canvas.find_closest(event.x, event.y)[0]
-      wire = self._wire_with_id(canvas_id)
-      if wire:
+      elif wire:
         self._tooltip_helper.show_tooltip(event.x, event.y, wire.label)
+        self._drawable_highlight(None)
+        self._wire_highlight(wire.label)
       else:
         self._tooltip_helper.hide_tooltip()
-  def outline_from_labels(self, labels):
+        self._drawable_highlight(None)
+        self._wire_highlight(None)
+  def outline_drawables_from_labels(self, labels):
     """
     Draws outlines for the drawables whose labels are in |labels|.
     """
-    for part in self._outline_ids:
+    for part in self._drawable_outline_ids:
       self._canvas.delete(part)
-    self._outline_ids = []
+    self._drawable_outline_ids = []
     for drawable in self._get_drawables():
       if hasattr(drawable, 'label') and drawable.label in labels:
         x1, y1, x2, y2 = drawable.bounding_box(self.get_drawable_offset(
             drawable))
-        self._outline_ids.append(self._canvas.create_rectangle(x1 - 2, y1 - 2,
-            x2 + 3, y2 + 3, dash=(3,), width=2))
+        self._drawable_outline_ids.append(self._canvas.create_rectangle(x1 - 2,
+            y1 - 2, x2 + 3, y2 + 3, dash=(3,), width=2, outline='blue'))
+  def outline_wires_from_label(self, label):
+    """
+    Draws outlines for the wires whose lable/node is |label|.
+    """
+    for part in self._wire_outline_ids:
+      self._canvas.delete(part)
+    self._wire_outline_ids = []
+    for wire in self._get_wires():
+      if hasattr(wire, 'label') and wire.label == label:
+        x1, y1 = wire.start_connector.center
+        x2, y2 = wire.end_connector.center
+        self._wire_outline_ids.append(self._canvas.create_line(x1, y1, x2, y2,
+            fill='blue', width=4))
   def quit(self):
     """
     Callback on exit.
@@ -1033,6 +1056,13 @@ class Board(Frame):
       if drawable.is_live():
         drawable.redraw(self._canvas)
         drawable.show_selected_highlight(self._canvas)
+  def relabel_wires(self, f):
+    """
+    Relables each wire label to |f| applied to its current label.
+    """
+    for wire in self._get_wires():
+      assert hasattr(wire, 'label')
+      wire.label = f(wire.label)
   def show_label_tooltips(self):
     """
     Starts showing label tooltips. Tooltips will be hidden on call to

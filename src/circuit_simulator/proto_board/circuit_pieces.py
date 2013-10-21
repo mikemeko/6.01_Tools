@@ -5,7 +5,7 @@ Representations for objects that can be placed on the proto board: op amps,
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
-from circuit_simulator.simulation.util import get_resistor_color_indices
+from circuit_simulator.main.util import resistance_from_string
 from constants import DISABLED_PINS_HEAD_CONNECTOR
 from constants import DISABLED_PINS_MOTOR_CONNECTOR
 from constants import DISABLED_PINS_ROBOT_CONNECTOR
@@ -266,7 +266,8 @@ class Op_Amp_Piece(Circuit_Piece):
     if ',' in self.label and label == self.label.split(',')[-1]:
       x += width / 2
     return canvas.create_rectangle(x - h_offset - 2, y + v_offset - 2, x +
-        width / 2 + h_offset + 3, y + height - v_offset + 3, dash=(3,), width=2)
+        width / 2 + h_offset + 3, y + height - v_offset + 3, dash=(3,), width=2,
+        outline='blue')
   def labels_at(self, (x, y), (tx, ty)):
     width = 4 * CONNECTOR_SIZE + 3 * CONNECTOR_SPACING
     if ',' in self.label:
@@ -373,7 +374,7 @@ class Resistor_Piece(Circuit_Piece):
     x, y = top_left
     dx = (CONNECTOR_SPACING - CONNECTOR_SIZE) / 2
     # state for color bands
-    color_indices = get_resistor_color_indices(self.r)
+    color_indices = resistance_from_string(str(self.r))
     size = 2 * CONNECTOR_SIZE + 3 * CONNECTOR_SPACING
     color_size = 5
     color_spacing = 3
@@ -413,15 +414,15 @@ class Resistor_Piece(Circuit_Piece):
     if self.vertical:
       return canvas.create_rectangle(x - dx - 2, y - 2, x + CONNECTOR_SIZE +
           dx + 3, y + 4 * CONNECTOR_SIZE + 3 * CONNECTOR_SPACING + 3,
-          dash=(3,), width=2)
+          dash=(3,), width=2, outline='blue')
     else: # horizontal
       return canvas.create_rectangle(x - p, y - dx - p, x + 4 * CONNECTOR_SIZE +
           3 * CONNECTOR_SPACING + p, y + CONNECTOR_SIZE + dx + p, dash=(3,),
-          width=2)
+          width=2, outline='blue')
   def to_cmax_str(self):
     self._assert_top_left_loc_set()
     c, r = loc_to_cmax_rep(self.top_left_loc)
-    i1, i2, i3 = get_resistor_color_indices(self.r)
+    i1, i2, i3 = resistance_from_string(str(self.r))
     return 'resistor(%d,%d,%d): (%d,%d)--(%d,%d)' % (i1, i2, i3, c, r, c, r + 3)
   def __str__(self):
     return 'Resistor_Piece %s r=%s vertical=%s' % (str([self.n_1, self.n_2]),
@@ -498,7 +499,7 @@ class Pot_Piece(Circuit_Piece):
     size = 3 * CONNECTOR_SIZE + 2 * CONNECTOR_SPACING
     offset = 2
     return canvas.create_rectangle(x - offset - 2, y - offset - 2, x + size +
-        offset + 3, y + size + offset + 3, dash=(3,), width=2)
+        offset + 3, y + size + offset + 3, dash=(3,), width=2, outline='blue')
   def to_cmax_str(self):
     self._assert_top_left_loc_set()
     c, r = loc_to_cmax_rep(self.top_left_loc)
@@ -587,7 +588,7 @@ class N_Pin_Connector_Piece(Circuit_Piece):
     padding = 4
     return canvas.create_rectangle(x - padding - 2, y - offset_top - padding -
         2, x + width + padding + 3, y + offset_bottom + padding + 3,
-        dash=(3,), width=2)
+        dash=(3,), width=2, outline='blue')
   def _disconnected_pins(self):
     """
     Returns a tuple of the pins for this connector that are enabled, but are

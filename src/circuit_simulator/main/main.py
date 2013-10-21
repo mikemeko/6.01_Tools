@@ -73,6 +73,8 @@ if __name__ == '__main__':
       Robot_Power_Drawable, Robot_IO_Drawable, Wire_Connector_Drawable, Wire),
       BOARD_WIDTH, BOARD_HEIGHT, PALETTE_HEIGHT, False, True, True, argv[1] if
       len(argv) > 1 else None)
+  # trak all proto board visualizations
+  app_runner.visuals = []
   def simulate(circuit, plotters):
     """
     Displays the plot that are drawn by the |plotters|.
@@ -92,8 +94,15 @@ if __name__ == '__main__':
       show_pwr_gnd_pins = not any([isinstance(component, Robot_Connector) for
           component in circuit.components])
       visual = visualize_proto_board(proto_board, Toplevel(), show_pwr_gnd_pins)
-      app_runner.board.set_highlight_function(visual.outline_from_label)
-      visual.set_highlight_function(app_runner.board.outline_from_labels)
+      app_runner.board.set_drawable_highlight(visual.outline_piece_from_label)
+      app_runner.board.set_wire_highlight(visual.outline_wires_from_label)
+      visual.set_piece_highlight(app_runner.board.outline_drawables_from_labels)
+      visual.set_wire_highlight(app_runner.board.outline_wires_from_label)
+      for v in app_runner.visuals:
+        # disable previous proto board visuals from affecting the board
+        v.set_piece_highlight(lambda labels: None)
+        v.set_wire_highlight(lambda label: None)
+      app_runner.visuals.append(visual)
     else:
       app_runner.board.display_message('Could not find proto board wiring',
           ERROR, False)

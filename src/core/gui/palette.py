@@ -138,6 +138,8 @@ class Palette(Frame):
           'will not be used')
     # bind callback
     for part in display.parts:
-      self.canvas.tag_bind(part, '<ButtonPress-1>', callback)
+      self.canvas.tag_bind(part, '<Button-1>', callback)
+      self.canvas.tag_bind(part, '<Double-Button-1>', callback)
     for connector in display.connectors:
-      self.canvas.tag_bind(connector.canvas_id, '<ButtonPress-1>', callback)
+      self.canvas.tag_bind(connector.canvas_id, '<Button-1>', callback)
+      self.canvas.tag_bind(connector.canvas_id, '<Double-Button-1>', callback)

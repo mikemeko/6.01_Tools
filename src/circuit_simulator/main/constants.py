@@ -95,5 +95,9 @@ PALETTE_HEIGHT = 100
 # plotter constants
 T_SAMPLES = [(n * T) for n in xrange(NUM_SAMPLES)]
 
+# resistance to string conversion, see util.resistance_to_string
+RESISTANCE_SUFFIX = [u'\u03a9', u'0\u03a9', u'K\u03a9', u'K\u03a9', u'0K\u03a9',
+    u'M\u03a9', u'M\u03a9', u'0M\u03a9', u'G\u03a9', u'G\u03a9']
+
 # regular expressions
 RE_OP_AMP_VERTICES = r'\((\d+), (\d+), (\d+), (\d+), (\d+), (\d+)\)'
