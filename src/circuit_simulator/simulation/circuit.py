@@ -235,13 +235,14 @@ class Op_Amp(Component):
   Representation for an op amp as a two port: composed of a voltage sensor and
       a voltage-controlled voltage source.
   """
-  def __init__(self, na1, na2, ia, nb1, nb2, ib, K=OP_AMP_K):
+  def __init__(self, na1, na2, ia, nb1, nb2, ib, K=OP_AMP_K, jfet=False):
     """
     |na1|, |na2|: input nodes to the two port.
     |ia1|: current into node |na1|.
     |nb1|, |nb2|: output nodes of the two port.
     |ib1|: current into node |nb1|.
     |K|: VCVS constant of proportionality.
+    |jfet|: True if this is a JFET Op Amp, False otherwise (Power).
     """
     Component.__init__(self)
     self.voltage_sensor = Voltage_Sensor(na1, na2, ia)
@@ -250,6 +251,7 @@ class Op_Amp(Component):
     self.na2 = na2
     self.nb1 = nb1
     self.nb2 = nb2
+    self.jfet = jfet
   def nodes(self):
     return self.voltage_sensor.nodes() | self.vcvs.nodes()
   def equations(self):

@@ -85,11 +85,12 @@ PROTO_BOARD = 'PB'
 SIMULATE = 'SIM'
 
 # fonts, use different font on Mac OS
+BOLD_FONT = ('Helvetica', 12 if system() == 'Darwin' else 10, 'bold')
 FONT = ('Helvetica', 12 if system() == 'Darwin' else 10)
 
 # window constants
-BOARD_WIDTH = 800
-BOARD_HEIGHT = 500
+BOARD_WIDTH = 900
+BOARD_HEIGHT = 600
 PALETTE_HEIGHT = 100
 
 # plotter constants

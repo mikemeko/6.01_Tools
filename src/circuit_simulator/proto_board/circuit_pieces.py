@@ -5,6 +5,7 @@ Representations for objects that can be placed on the proto board: op amps,
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
+from circuit_simulator.main.constants import BOLD_FONT
 from circuit_simulator.main.util import resistance_from_string
 from constants import DISABLED_PINS_HEAD_CONNECTOR
 from constants import DISABLED_PINS_MOTOR_CONNECTOR
@@ -165,7 +166,7 @@ class Op_Amp_Piece(Circuit_Piece):
   See: http://mit.edu/6.01/www/circuits/opAmpCkt.jpg
   """
   def __init__(self, n_1, n_2, n_3, n_4, n_5, n_6, n_7, n_8, label,
-      dot_bottom_left=True):
+      dot_bottom_left=True, jfet=False):
     """
     |n_1|, ..., |n_8|: the nodes for this op amp piece, see image linked above.
     |label|: label for the two op amps contained in this package, separated by
@@ -173,6 +174,7 @@ class Op_Amp_Piece(Circuit_Piece):
         package, |label| should just be the label of that op amp (no commas).
     |dot_bottom_left|: boolean indicating whether the dot is bottom left or
         top right (indicates orientation of piece).
+    |jfet|: True if this is a JFET Op Amp, False otherwise (Power).
     """
     Circuit_Piece.__init__(self, set(filter(bool, [n_1, n_2, n_3, n_4, n_5,
         n_6, n_7, n_8])), 4, 2, label)
@@ -185,6 +187,7 @@ class Op_Amp_Piece(Circuit_Piece):
     self.n_7 = n_7
     self.n_8 = n_8
     self.dot_bottom_left = dot_bottom_left
+    self.jfet = jfet
   def locs_for(self, node):
     self._assert_top_left_loc_set()
     r, c = self.top_left_loc
@@ -231,7 +234,8 @@ class Op_Amp_Piece(Circuit_Piece):
     new_label = (','.join(reversed(self.label.split(','))) if ',' in self.label
         else self.label)
     return Op_Amp_Piece(self.n_1, self.n_2, self.n_3, self.n_4, self.n_5,
-        self.n_6, self.n_7, self.n_8, new_label, not self.dot_bottom_left)
+        self.n_6, self.n_7, self.n_8, new_label, not self.dot_bottom_left,
+        self.jfet)
   def draw_on(self, canvas, top_left):
     x, y = top_left
     # pins
@@ -255,6 +259,10 @@ class Op_Amp_Piece(Circuit_Piece):
         self.dot_bottom_left else (OP_AMP_DOT_OFFSET + CONNECTOR_SIZE / 2))
     create_circle(canvas, x + dot_dx, y + dot_dy, OP_AMP_DOT_RADIUS,
         fill=OP_AMP_DOT_COLOR)
+    if self.jfet:
+      create_circle(canvas, x + width / 2, y + height / 2, 10, fill='white')
+      canvas.create_text(x + width / 2, y + height / 2, text='J',
+          justify=CENTER, fill='red', font=BOLD_FONT)
   def outline_label(self, canvas, top_left, label):
     if label not in self.label:
       return
@@ -263,15 +271,26 @@ class Op_Amp_Piece(Circuit_Piece):
     height = 2 * CONNECTOR_SIZE + VERTICAL_SEPARATION
     h_offset = 2
     v_offset = 2 * CONNECTOR_SIZE / 3
-    if ',' in self.label and label == self.label.split(',')[-1]:
-      x += width / 2
-    return canvas.create_rectangle(x - h_offset - 2, y + v_offset - 2, x +
-        width / 2 + h_offset + 3, y + height - v_offset + 3, dash=(3,), width=2,
-        outline='blue')
+    if self.jfet:
+      if ',' in self.label and label == self.label.split(',')[0]:
+        y += height / 2
+      return canvas.create_rectangle(x - h_offset - 2, y + v_offset - 2, x +
+          width + h_offset + 3, y + height / 2 - v_offset + 3, dash=(3,),
+          width=2, outline='blue')
+    else:
+      if ',' in self.label and label == self.label.split(',')[-1]:
+        x += width / 2
+      return canvas.create_rectangle(x - h_offset - 2, y + v_offset - 2, x +
+          width / 2 + h_offset + 3, y + height - v_offset + 3, dash=(3,),
+          width=2, outline='blue')
   def labels_at(self, (x, y), (tx, ty)):
     width = 4 * CONNECTOR_SIZE + 3 * CONNECTOR_SPACING
+    height = 2 * CONNECTOR_SIZE + VERTICAL_SEPARATION
     if ',' in self.label:
-      return [self.label.split(',')[x - tx > width / 2]]
+      if self.jfet:
+        return [self.label.split(',')[y - ty < height / 2]]
+      else:
+        return [self.label.split(',')[x - tx > width / 2]]
     return [self.label]
   def to_cmax_str(self):
     self._assert_top_left_loc_set()
@@ -281,19 +300,21 @@ class Op_Amp_Piece(Circuit_Piece):
     else:
       return 'opamp: (%d,%d)--(%d,%d)' % (c + 3, r, c + 3, r + 3)
   def __str__(self):
-    return 'Op_Amp_Piece %s %s' % (str([self.n_1, self.n_2, self.n_3, self.n_4,
-        self.n_5, self.n_6, self.n_7, self.n_8]), self.dot_bottom_left)
+    return 'Op_Amp_Piece %s %s %s' % (str([self.n_1, self.n_2, self.n_3,
+        self.n_4, self.n_5, self.n_6, self.n_7, self.n_8]),
+        self.dot_bottom_left, self.jfet)
   def __eq__(self, other):
     return (isinstance(other, Op_Amp_Piece) and self.n_1 == other.n_1 and
         self.n_2 == other.n_2 and self.n_3 == other.n_3 and self.n_4 ==
         other.n_4 and self.n_5 == other.n_5 and self.n_6 == other.n_6 and
         self.n_7 == other.n_7 and self.n_8 == other.n_8 and self.label ==
         other.label and self.top_left_loc == other.top_left_loc and
-        self.dot_bottom_left == other.dot_bottom_left)
+        self.dot_bottom_left == other.dot_bottom_left and self.jfet ==
+        other.jfet)
   def __hash__(self):
     return hash((self.n_1, self.n_2, self.n_3, self.n_4, self.n_5, self.n_6,
         self.n_7, self.n_8, self.label, self.top_left_loc,
-        self.dot_bottom_left))
+        self.dot_bottom_left, self.jfet))
 
 class Place_Holder_Piece(Circuit_Piece):
   """

@@ -129,16 +129,28 @@ def op_amp_piece_from_op_amp(op_amp_tup):
   unused_op_amp_node = str(id(op_amp_tup))
   op_amp_1 = op_amp_tup[0]
   op_amp_2 = op_amp_tup[1] if len(op_amp_tup) == 2 else None
-  n_1 = op_amp_1.nb1
-  n_2 = POWER
-  n_3 = op_amp_2.nb1 if op_amp_2 else unused_op_amp_node
-  n_4 = GROUND
-  n_5 = op_amp_2.na2 if op_amp_2 else unused_op_amp_node
-  n_6 = op_amp_2.na1 if op_amp_2 else GROUND
-  n_7 = op_amp_1.na1
-  n_8 = op_amp_1.na2
+  if op_amp_2:
+    assert op_amp_1.jfet == op_amp_2.jfet
+  if op_amp_1.jfet:
+    n_1 = op_amp_1.nb1
+    n_2 = op_amp_1.na2
+    n_3 = op_amp_1.na1
+    n_4 = GROUND
+    n_5 = op_amp_2.na1 if op_amp_2 else GROUND
+    n_6 = op_amp_2.na2 if op_amp_2 else unused_op_amp_node
+    n_7 = op_amp_2.nb1 if op_amp_2 else unused_op_amp_node
+    n_8 = POWER
+  else:
+    n_1 = op_amp_1.nb1
+    n_2 = POWER
+    n_3 = op_amp_2.nb1 if op_amp_2 else unused_op_amp_node
+    n_4 = GROUND
+    n_5 = op_amp_2.na2 if op_amp_2 else unused_op_amp_node
+    n_6 = op_amp_2.na1 if op_amp_2 else GROUND
+    n_7 = op_amp_1.na1
+    n_8 = op_amp_1.na2
   return Op_Amp_Piece(n_1, n_2, n_3, n_4, n_5, n_6, n_7, n_8, ','.join(
-      op_amp.label for op_amp in op_amp_tup))
+      op_amp.label for op_amp in op_amp_tup), jfet=op_amp_1.jfet)
 
 def get_piece_placement(circuit, resistors_as_components, cost_type,
     verbose=True):
@@ -168,30 +180,35 @@ def get_piece_placement(circuit, resistors_as_components, cost_type,
       circuit.components)
   head_connector_pieces = map(head_connector_piece_from_head_connector,
       head_connectors)
-  op_amps = filter(lambda obj: obj.__class__ == Op_Amp, circuit.components)
-  num_op_amps = len(op_amps)
+  jfet_op_amps = filter(lambda obj: obj.__class__ == Op_Amp and obj.jfet,
+      circuit.components)
+  power_op_amps = filter(lambda obj: obj.__class__ == Op_Amp and not obj.jfet,
+      circuit.components)
   best_placement = None
   best_placement_cost = float('inf')
   # search through all the ways of packaging up the op amps
-  for partition in all_1_2_partitions(num_op_amps):
-    for grouping in all_groupings(op_amps, partition):
-      op_amp_pieces = map(op_amp_piece_from_op_amp, grouping)
-      non_resistor_pieces = (pot_pieces + motor_connector_pieces +
-          robot_connector_pieces + head_connector_pieces + op_amp_pieces)
-      if resistors_as_components:
-        pieces = non_resistor_pieces + resistor_pieces
-      else:
-        non_resistor_nodes = reduce(set.union, (piece.nodes for piece in
-            non_resistor_pieces), set())
-        # create place holders for nodes needed for resistors
-        place_holder_pieces = [Place_Holder_Piece(node) for node in
-            (resistor_nodes - non_resistor_nodes)]
-        pieces = non_resistor_pieces + place_holder_pieces
-      placement, cost = find_placement(pieces, resistors_as_components,
-          cost_type)
-      if cost < best_placement_cost:
-        best_placement = placement
-        best_placement_cost = cost
+  for jfet_partition in all_1_2_partitions(len(jfet_op_amps)):
+    for jfet_grouping in all_groupings(jfet_op_amps, jfet_partition):
+      for power_partition in all_1_2_partitions(len(power_op_amps)):
+        for power_grouping in all_groupings(power_op_amps, power_partition):
+          op_amp_pieces = map(op_amp_piece_from_op_amp, jfet_grouping |
+              power_grouping)
+          non_resistor_pieces = (pot_pieces + motor_connector_pieces +
+              robot_connector_pieces + head_connector_pieces + op_amp_pieces)
+          if resistors_as_components:
+            pieces = non_resistor_pieces + resistor_pieces
+          else:
+            non_resistor_nodes = reduce(set.union, (piece.nodes for piece in
+                non_resistor_pieces), set())
+            # create place holders for nodes needed for resistors
+            place_holder_pieces = [Place_Holder_Piece(node) for node in
+                (resistor_nodes - non_resistor_nodes)]
+            pieces = non_resistor_pieces + place_holder_pieces
+          placement, cost = find_placement(pieces, resistors_as_components,
+              cost_type)
+          if cost < best_placement_cost:
+            best_placement = placement
+            best_placement_cost = cost
   if verbose:
     print '\tdone.'
   return best_placement, ([] if resistors_as_components else

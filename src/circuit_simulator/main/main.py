@@ -114,9 +114,9 @@ if __name__ == '__main__':
   app_runner.palette.add_drawable_type(Pot_Drawable, LEFT, None,
       on_signal_file_changed=lambda: app_runner.board.set_changed(True))
   app_runner.palette.add_drawable_type(Op_Amp_Drawable, LEFT, None,
-      signs=OP_AMP_PN)
+      board=app_runner.board, signs=OP_AMP_PN, jfet=False)
   app_runner.palette.add_drawable_type(Op_Amp_Drawable, LEFT, None,
-      signs=OP_AMP_NP)
+      board=app_runner.board, signs=OP_AMP_NP, jfet=False)
   app_runner.palette.add_drawable_type(Robot_Connector_Drawable, LEFT, None,
       types_to_add=[(Robot_Power_Drawable, {})] + [(Robot_IO_Drawable,
       {'name': 'Vi%d' % i}) for i in (1, 2, 3, 4)] + [(Robot_IO_Drawable,

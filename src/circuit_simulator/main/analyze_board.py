@@ -178,7 +178,7 @@ def run_analysis(board, analyze, solve_circuit=False,
       nb1 = maybe_rename_node(out_nodes[0]) if out_nodes else None
       nb2 = GROUND
       op_amp = Op_Amp(na1, na2, current_name(drawable, na1, na2), nb1, nb2,
-          current_name(drawable, nb1, nb2))
+          current_name(drawable, nb1, nb2), jfet=drawable.jfet)
       op_amp.label = drawable.label
       circuit_components.append(op_amp)
     # pot component

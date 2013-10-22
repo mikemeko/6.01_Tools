@@ -4,6 +4,7 @@ All the Drawables for the circuit simulator.
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
+from constants import BOLD_FONT
 from constants import DIRECTION_DOWN
 from constants import DIRECTION_LEFT
 from constants import DIRECTION_RIGHT
@@ -285,16 +286,21 @@ class Op_Amp_Drawable(Drawable):
   """
   Drawable for op amps.
   """
-  def __init__(self, vertices=OP_AMP_RIGHT_VERTICES, signs=OP_AMP_PN):
+  def __init__(self, board, vertices=OP_AMP_RIGHT_VERTICES, signs=OP_AMP_PN,
+      jfet=False):
     """
+    |board|: the board on which this Op_Amp_Drawable lives.
     |vertices|: the vertices of the triangle for this op amp.
     |signs|: order of signs for this op amp, to allow two configurations.
+    |jfet|: True if this is a JFET Op Amp, False otherwise (Power).
     """
     assert vertices in (OP_AMP_RIGHT_VERTICES, OP_AMP_DOWN_VERTICES,
         OP_AMP_LEFT_VERTICES, OP_AMP_UP_VERTICES), 'invalid op amp vertices'
     assert signs in (OP_AMP_PN, OP_AMP_NP), 'invalid op amp signs'
+    self.board = board
     self.signs = signs
     self.vertices = vertices
+    self.jfet = jfet
     x1, y1, x2, y2, x3, y3 = vertices
     min_x, max_x = [f(x1, x2, x3) for f in min, max]
     min_y, max_y = [f(y1, y2, y3) for f in min, max]
@@ -329,6 +335,37 @@ class Op_Amp_Drawable(Drawable):
           y2 - LABEL_PADDING, text=text_1, font=FONT))
       self.parts.add(canvas.create_text(x3 - OP_AMP_CONNECTOR_PADDING,
           y3 - LABEL_PADDING, text=text_2, font=FONT))
+    if self.jfet:
+      self._jfet_id = canvas.create_text((x1 + x2 + x3) / 3.,
+          (y1 + y2 + y3) / 3., text='J', fill='red', font=BOLD_FONT)
+      self.parts.add(self._jfet_id)
+    def toggle_jfet():
+      if self.jfet:
+        assert self._jfet_id in self.parts
+        self.parts.remove(self._jfet_id)
+        canvas.delete(self._jfet_id)
+        self.jfet = False
+      else:
+        x1, y1, x2, y2, x3, y3 = self.vertices
+        ox, oy = self.offset
+        self._jfet_id = canvas.create_text(ox + (x1 + x2 + x3) / 3., oy + (y1 +
+            y2 + y3) / 3., text='J', fill='red', font=BOLD_FONT)
+        self.parts.add(self._jfet_id)
+        self.jfet = True
+    self.toggle_jfet = toggle_jfet
+  def _setup_menu(self, parent):
+    def command():
+      self.toggle_jfet()
+      self.board.set_changed(True, Action(self.toggle_jfet, self.toggle_jfet,
+          'toggle_jfet'))
+    menu = Menu(parent, tearoff=0)
+    menu.add_command(label='Toggle JFET', command=command)
+    return menu
+  def on_right_click(self, event):
+    self._setup_menu(event.widget).tk_popup(event.x_root, event.y_root)
+  def add_to_menu(self, menu):
+    menu.add_cascade(label='Op Amp', menu=self._setup_menu(menu))
+    return menu.index('Op Amp')
   def draw_connectors(self, canvas, offset=(0, 0)):
     x1, y1, x2, y2, x3, y3 = self.vertices
     ox, oy = offset
@@ -362,28 +399,34 @@ class Op_Amp_Drawable(Drawable):
       self.plus_port, self.minus_port = self.minus_port, self.plus_port
   def rotated(self):
     if self.vertices == OP_AMP_RIGHT_VERTICES:
-      return Op_Amp_Drawable(OP_AMP_DOWN_VERTICES, self.signs)
+      return Op_Amp_Drawable(self.board, OP_AMP_DOWN_VERTICES, self.signs,
+          self.jfet)
     elif self.vertices == OP_AMP_DOWN_VERTICES:
-      return Op_Amp_Drawable(OP_AMP_LEFT_VERTICES, self.signs)
+      return Op_Amp_Drawable(self.board, OP_AMP_LEFT_VERTICES, self.signs,
+          self.jfet)
     elif self.vertices == OP_AMP_LEFT_VERTICES:
-      return Op_Amp_Drawable(OP_AMP_UP_VERTICES, self.signs)
+      return Op_Amp_Drawable(self.board, OP_AMP_UP_VERTICES, self.signs,
+          self.jfet)
     else: # OP_AMP_UP_VERTICES
-      return Op_Amp_Drawable(OP_AMP_RIGHT_VERTICES, self.signs)
+      return Op_Amp_Drawable(self.board, OP_AMP_RIGHT_VERTICES, self.signs,
+          self.jfet)
   def serialize(self, offset):
-    return 'Op_Amp %s %s %d' % (str(self.vertices), str(offset), self.signs)
+    return 'Op_Amp %s %s %d %d' % (str(self.vertices), str(offset), self.signs,
+        int(self.jfet))
   @staticmethod
   def deserialize(item_str, board):
-    m = match(r'Op_Amp %s %s' % (RE_OP_AMP_VERTICES, RE_INT_PAIR), item_str)
+    m = match(r'Op_Amp %s %s %s %s' % (RE_OP_AMP_VERTICES, RE_INT_PAIR, RE_INT,
+        RE_INT), item_str)
     if m:
-      x1, y1, x2, y2, x3, y3, ox, oy = map(int, m.groups())
-      board.add_drawable(Op_Amp_Drawable((x1, y1, x2, y2, x3, y3)), (ox, oy))
+      x1, y1, x2, y2, x3, y3, ox, oy, signs, jfet = map(int, m.groups())
+      board.add_drawable(Op_Amp_Drawable(board, (x1, y1, x2, y2, x3, y3), signs,
+          jfet), (ox, oy))
       return True
     else:
-      m = match(r'Op_Amp %s %s %s' % (RE_OP_AMP_VERTICES, RE_INT_PAIR, RE_INT),
-          item_str)
+      m = match(r'Op_Amp %s %s' % (RE_OP_AMP_VERTICES, RE_INT_PAIR), item_str)
       if m:
-        x1, y1, x2, y2, x3, y3, ox, oy, sings = map(int, m.groups())
-        board.add_drawable(Op_Amp_Drawable((x1, y1, x2, y2, x3, y3), signs),
+        x1, y1, x2, y2, x3, y3, ox, oy = map(int, m.groups())
+        board.add_drawable(Op_Amp_Drawable(board, (x1, y1, x2, y2, x3, y3)),
             (ox, oy))
         return True
     return False
