@@ -4,6 +4,6 @@ Constant pot signal file.
 
 from core.math.CT_signal import Constant_CT_Signal
 
-pot_r = 1
+pot_r = 5000
 pot_signal = Constant_CT_Signal(0.5)
 
