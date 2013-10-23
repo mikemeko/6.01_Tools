@@ -110,7 +110,7 @@ class Board(Frame):
     self._selected_drawables = set()
     self._selection_start_point = None
     self._selection_end_point = None
-    self._selection_outline_canvas_id = None
+    self._selection_outline_canvas_id = []
     # state for drawing wires
     self._wire_start = None
     self._wire_end = None
@@ -276,9 +276,9 @@ class Board(Frame):
     """
     Removes the currently drawn rectangle that shows drawable selection.
     """
-    if self._selection_outline_canvas_id is not None:
-      self._canvas.delete(self._selection_outline_canvas_id)
-      self._selection_outline_canvas_id = None
+    for part in self._selection_outline_canvas_id:
+      self._canvas.delete(part)
+    self._selection_outline_canvas_id = []
   def _redraw_selection_outline(self):
     """
     Redraws the rectangle that shows drawable selection.
@@ -286,9 +286,12 @@ class Board(Frame):
     assert (self._selection_start_point is not None and
         self._selection_end_point is not None)
     self._remove_current_selection_outline()
-    self._selection_outline_canvas_id = self._canvas.create_rectangle(
-        self._selection_start_point, self._selection_end_point, fill='',
-        outline='green', dash=(3,))
+    fill_rect = self._canvas.create_rectangle(self._selection_start_point,
+        self._selection_end_point, fill='#EEE', outline='')
+    self._canvas.tag_lower(fill_rect)
+    outline_rect = self._canvas.create_rectangle(self._selection_start_point,
+        self._selection_end_point, fill='', outline='green', dash=(3,))
+    self._selection_outline_canvas_id = [fill_rect, outline_rect]
   def _select(self, drawable):
     """
     Selects the given |drawable| by adding it to the set of selected items and
