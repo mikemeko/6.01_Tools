@@ -223,7 +223,7 @@ class Resistor_Drawable(Drawable):
           oy - RESISTOR_TEXT_PADDING, text=text, font=FONT)
     else: # vertical
       self.resistor_text = canvas.create_text(ox + w + RESISTOR_TEXT_PADDING +
-          6, oy + h / 2, text=text, font=FONT)
+          8, oy + h / 2, text=text, font=FONT)
     self.parts.add(self.resistor_text)
     def get_resistance():
       """
