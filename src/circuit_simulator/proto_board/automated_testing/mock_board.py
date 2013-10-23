@@ -31,12 +31,15 @@ class Mock_Board:
     drawable.draw_connectors(self._canvas, offset)
     self._drawables.append(drawable)
   # method called by Wire deserializer
-  def add_wire(self, x1, y1, x2, y2):
+  def add_wire(self, wire_path):
+    x1, y1 = wire_path[0]
     start_connector = self._connector_centered_at((x1, y1))
     assert start_connector
+    x2, y2 = wire_path[-1]
     end_connector = self._connector_centered_at((x2, y2))
     assert end_connector
-    wire = Wire([], start_connector, end_connector, False)
+    wire = Wire([], start_connector, end_connector, [(x1, y1), (x1, y2),
+        (x2, y2)], False)
     start_connector.start_wires.add(wire)
     end_connector.end_wires.add(wire)
   # methoed called in circuit_simulator.main.analyze_board.run_analysis
