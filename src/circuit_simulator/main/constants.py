@@ -67,7 +67,7 @@ ROBOT_POWER_DRAWABLE_SIZE = 60
 ROBOT_SIZE = 40
 
 # text
-APP_NAME = 'Circuit Simulator'
+APP_NAME = '6.01 Circuit Simulator'
 DEV_STAGE = 'alpha'
 FILE_EXTENSION = '.circsim'
 GROUND = 'gnd'
