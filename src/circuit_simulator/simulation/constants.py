@@ -27,7 +27,7 @@ MOTOR_RESISTANCE = 5.26
 PHOTODETECTOR_K = 5e-7
 
 # sampling constants
-NUM_SAMPLES = 120
+NUM_SAMPLES = 100
 T = 0.01 # sampling periond
 
 # default simulation signals

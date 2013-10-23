@@ -255,8 +255,9 @@ class Board(Frame):
       # update the drawable's offset
       self._update_drawable_offset(drawable, dx, dy)
       # update wire paths for wires connected to the moved drawable
-      coverage = self.get_drawables_coverage(True, False)
       drawable_wires = set(drawable.wires())
+      coverage = set()
+      coverage = self.get_drawables_coverage(True, False)
       for wire in self._get_wires() - drawable_wires:
         coverage |= path_coverage(wire.path)
       for wire in drawable_wires:
