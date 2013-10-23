@@ -48,8 +48,6 @@ from core.undo.undo import Multi_Action
 from core.util.util import is_callable
 from core.util.util import rects_overlap
 from find_wire_path import find_wire_path
-from find_wire_path import path_coverage
-from find_wire_path import wire_coverage
 from sys import platform
 from threading import Timer
 from time import time
@@ -59,8 +57,10 @@ from Tkinter import Frame
 from tooltip_helper import Tooltip_Helper
 from util import create_circle
 from util import create_wire
+from util import path_coverage
 from util import point_inside_circle
 from util import snap
+from util import wire_coverage
 from wire_labeling import label_wires
 
 class Board(Frame):
@@ -254,6 +254,14 @@ class Board(Frame):
       drawable.move(self._canvas, dx, dy)
       # update the drawable's offset
       self._update_drawable_offset(drawable, dx, dy)
+      # update wire paths for wires connected to the moved drawable
+      coverage = self.get_drawables_coverage(True, False)
+      drawable_wires = set(drawable.wires())
+      for wire in self._get_wires() - drawable_wires:
+        coverage |= path_coverage(wire.path)
+      for wire in drawable_wires:
+        wire.path = find_wire_path(coverage, wire.start_connector.center,
+            wire.end_connector.center)
   def _empty_current_drawable_selection(self):
     """
     Voids the current selection of drawables, if any.
@@ -364,7 +372,6 @@ class Board(Frame):
     """
     # there better be drawables to drag on call to this callback
     assert self._selected_drawables and self._drag_last_point is not None
-    self._redraw_wires()
     last_x, last_y = self._drag_last_point
     # drag movement amount
     dx = snap(event.x - last_x)
@@ -375,18 +382,24 @@ class Board(Frame):
     # move each of the selected drawables
     for drawable in self._selected_drawables:
       self._move_drawable(drawable, dx, dy)
+    self._redraw_wires()
     # show guide lines
-    it = iter(self._selected_drawables)
-    first_drawable = it.next()
-    x1, y1, x2, y2 = first_drawable.bounding_box(self.get_drawable_offset(
-        first_drawable))
-    for drawable in it:
-      _x1, _y1, _x2, _y2 = drawable.bounding_box(self.get_drawable_offset(
-          drawable))
-      x1 = min(x1, _x1)
-      y1 = min(y1, _y1)
-      x2 = max(x2, _x2)
-      y2 = max(y2, _y2)
+    x1 = y1 = float('inf')
+    x2 = y2 = -float('inf')
+    for drawable in self._selected_drawables:
+      if isinstance(drawable, Wire_Connector_Drawable):
+        x, y = iter(drawable.connectors).next().center
+        x1 = min(x1, x)
+        x2 = max(x2, x)
+        y1 = min(y1, y)
+        y2 = max(y2, y)
+      else:
+        _x1, _y1, _x2, _y2 = drawable.bounding_box(self.get_drawable_offset(
+            drawable))
+        x1 = min(x1, _x1)
+        y1 = min(y1, _y1)
+        x2 = max(x2, _x2)
+        y2 = max(y2, _y2)
     self._draw_guide_lines([(x1, y1), (x2, y2)])
   def _drag_release(self, event):
     """
@@ -467,13 +480,13 @@ class Board(Frame):
       x2, y2 = end
       self._wire_parts.append([start, end, create_wire(self._canvas, x1, y1, x2,
           y2, self._get_wires(), self._directed_wires, color)])
-  def _add_wire(self, wire_parts, start_connector, end_connector):
+  def _add_wire(self, wire_parts, start_connector, end_connector, path):
     """
     Creates a Wire object using the given parameters. This method assumes that
         |start_connector| and |end_connector| are connectors on this board and
         that the wire has been drawn on the board with the given |wire_parts|.
     """
-    wire = Wire(wire_parts, start_connector, end_connector,
+    wire = Wire(wire_parts, start_connector, end_connector, path,
         self._directed_wires)
     def add_wire():
       """
@@ -540,16 +553,19 @@ class Board(Frame):
     """
     if self._valid_wire_path:
       if self._wire_parts:
+        start_connector = self._connector_at(self._wire_start)
+        assert start_connector
+        end_connector = self._connector_at(self._wire_end)
+        if not end_connector:
+          self._add_drawable(Wire_Connector_Drawable(), self._wire_end)
+          end_connector = self._connector_at(self._wire_end)
+        wire_canvas_parts = []
+        wire_path = [self._wire_start]
         for start, end, parts in self._wire_parts:
-          for point in (start, end):
-            if not self._connector_at(point):
-              self._add_drawable(Wire_Connector_Drawable(), point)
-          start_connector = self._connector_at(start)
-          end_connector = self._connector_at(end)
-          # create wire
-          self._add_wire(parts, start_connector, end_connector)
-        if len(self._wire_parts) > 1:
-          self._action_history.combine_last_n(len(self._wire_parts))
+          wire_canvas_parts.extend(parts)
+          wire_path.append(end)
+        self._add_wire(wire_canvas_parts, start_connector, end_connector,
+            wire_path)
         # mark the board changed
         self.set_changed(True)
     else:
@@ -614,21 +630,25 @@ class Board(Frame):
       # should never get here
       raise Exception('Unexpected current button action')
     self._current_button_action = None
-  def add_wire(self, x1, y1, x2, y2):
+  def add_wire(self, wire_path):
     """
-    Adds a wire to this board going from (|x1|, |y1|) to (|x2|, |y2|). This
-        method assumes that there are enabled connectors on this board at the
-        given start and end locations of the wire.
+    Adds a wire to this board corresponding to the given |wire_path| of points.
+        This methods assumes that there are enabled connectors at the start
+        and end locations of the path.
     """
-    start_connector = self._connector_at((x1, y1))
+    start_connector = self._connector_at(wire_path[0])
     assert start_connector and start_connector.enabled, ('There must be an '
-        'enabled connector at (%d, %d)' % (x1, y1))
-    end_connector = self._connector_at((x2, y2))
+        'enabled connector at (%d, %d)' % wire_path[0])
+    end_connector = self._connector_at(wire_path[-1])
     assert end_connector and end_connector.enabled, ('There must be an enabled'
-        ' connector at (%d, %d)' % (x2, y2))
-    self._add_wire(create_wire(self._canvas, x1, y1, x2, y2,
-        self._get_wires(), self._directed_wires), start_connector,
-        end_connector)
+        ' connector at (%d, %d)' % wire_path[-1])
+    parts = []
+    for i in xrange(len(wire_path) - 1):
+      _x1, _y1 = wire_path[i]
+      _x2, _y2 = wire_path[i + 1]
+      parts.extend(create_wire(self._canvas, _x1, _y1, _x2, _y2,
+          self._get_wires(), self._directed_wires))
+    self._add_wire(parts, start_connector, end_connector, wire_path)
   def _delete(self, event):
     """
     Callback for deleting an item on the board. Marks the board changed if
@@ -673,12 +693,12 @@ class Board(Frame):
         self._move_good_for_selected_drawables(dx, dy)):
       for drawable in self._selected_drawables:
         self._move_drawable(drawable, dx, dy)
+      self._redraw_wires()
       self._action_history.record_action(Multi_Action(map(lambda drawable:
           Action(lambda: self._move_drawable(drawable, dx, dy),
           lambda: self._move_drawable(drawable, -dx, -dy), 'move'),
           self._selected_drawables), 'move selected'))
       self.set_changed(True)
-      self._redraw_wires()
   def _delete_selected_items(self):
     """
     Deletes the currently selected items.
@@ -882,10 +902,11 @@ class Board(Frame):
     if self._show_label_tooltips:
       for wire in self._get_wires():
         if hasattr(wire, 'label') and wire.label == label:
-          x1, y1 = wire.start_connector.center
-          x2, y2 = wire.end_connector.center
-          self._wire_outline_ids[self._canvas.create_line(x1, y1, x2, y2,
-              fill='blue', width=4)] = wire
+          for i in xrange(len(wire.path) - 1):
+            x1, y1 = wire.path[i]
+            x2, y2 = wire.path[i + 1]
+            self._wire_outline_ids[self._canvas.create_line(x1, y1, x2, y2,
+                fill='blue', width=4)] = wire
   def quit(self):
     """
     Callback on exit.
@@ -1221,8 +1242,7 @@ class Board(Frame):
     """
     coverage = set()
     for wire in self._get_wires():
-      coverage |= wire_coverage(wire.start_connector.center,
-          wire.end_connector.center)
+      coverage |= path_coverage(wire.path)
     return (coverage if include_connectors else
         self._coverage_with_connectors_removed(coverage))
   def get_board_coverage(self, bbox, include_connectors):

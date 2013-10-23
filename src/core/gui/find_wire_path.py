@@ -12,27 +12,10 @@ from core.search.search import a_star
 from core.search.search import Search_Node
 from core.util.util import sign
 from util import snap
+from util import path_coverage
+from util import wire_coverage
 
-def wire_coverage(start, end):
-  """
-  Returns a set of the points on the board that would be covered by a wire going
-      from point |start| to point |end|.
-  """
-  x1, y1 = start
-  x2, y2 = end
-  if x1 == x2:
-    return set([(x1, y) for y in xrange(min(y1, y2), max(y1, y2) + 1,
-        BOARD_GRID_SEPARATION)])
-  elif abs(x1 - x2) > abs(y1 - y2):
-    m = (y2 - y1) / float(x2 - x1)
-    return set([(x, snap(y1 + m * (x - x1))) for x in xrange(min(x1, x2), max(
-        x1, x2) + 1, BOARD_GRID_SEPARATION)])
-  else:
-    m = (x2 - x1) / float(y2 - y1)
-    return set([(snap(x1 + m * (y - y1)), y) for y in xrange(min(y1, y2), max(
-        y1, y2) + 1, BOARD_GRID_SEPARATION)])
-
-def manhattan_dist(start, end):
+def _manhattan_dist(start, end):
   """
   Returns the Manhattan distance on the board from point |start| to point |end|.
   """
@@ -74,7 +57,7 @@ def heuristic_for_end_point(end_point):
     board_coverage, current_point, num_bends, direction, steps = state
     x1, y1 = current_point
     x2, y2 = end_point
-    return manhattan_dist(current_point, end_point) + BEND_COST * (
+    return _manhattan_dist(current_point, end_point) + BEND_COST * (
         (x1 != x2) and (y1 != y2))
   return heuristic
 
@@ -93,16 +76,6 @@ def condensed_points(points):
       condensed.append(points[i])
   condensed.append(points[-1])
   return condensed
-
-def path_coverage(path):
-  """
-  Returns a set of the points on the board covered by the given |path| of
-      points.
-  """
-  coverage = set()
-  for i in xrange(len(path) - 1):
-    coverage |= wire_coverage(path[i], path[i + 1])
-  return coverage
 
 def find_wire_path_simple(board_coverage, start_point, end_point):
   """

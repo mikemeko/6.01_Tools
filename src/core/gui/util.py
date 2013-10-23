@@ -108,21 +108,24 @@ def create_connector(canvas, x, y, fill, outline, active_width):
 def create_wire(canvas, x1, y1, x2, y2, other_wires, directed=True,
     color=WIRE_COLOR):
   """
-  Draws a wire on the |canvas| pointing from (|x1|, |y1|) to (|x2|, |y2|). If
-      the path intersects any of the |other_wires|, marks the intersections. If
-      |directed| is True, the drawn wire will have an arrow.
+  Draws a piece of a wire on the |canvas| pointing from (|x1|, |y1|) to
+      (|x2|, |y2|). The two end points must define a horizontal or vertical
+      line. If the piece intersects any of the |other_wires|, marks the
+      intersections. If |directed| is True, the drawn piece will have an arrow.
   Returns a list of the canvas ids of the lines the wire is composed of.
   """
   assert isinstance(canvas, Canvas), 'canvas must be a Canvas'
+  assert x1 == x2 or y1 == y2, 'wire piece must be horizontal or vertical'
   parts = []
   if x1 == x2 and y1 == y2:
     return parts
   intersection_points = []
   for wire in other_wires:
-    intersection = intersect(((x1, y1), (x2, y2)), (wire.start_connector.center,
-        wire.end_connector.center))
-    if intersection and intersection not in ((x1, y1), (x2, y2), 'collinear'):
-      intersection_points.append(intersection)
+    for i in xrange(len(wire.path) - 1):
+      intersection = intersect(((x1, y1), (x2, y2)), (wire.path[i],
+          wire.path[i + 1]))
+      if intersection and intersection not in ((x1, y1), (x2, y2), 'collinear'):
+        intersection_points.append(intersection)
   intersection_points.sort(key=lambda (x, y): (x - x1) / (x2 - x1) if x1 != x2
       else (y - y1) / (y2 - y1))
   last_point = (x1, y1)
@@ -206,3 +209,26 @@ def rotate_connector_flags(connector_flags):
   if connector_flags & CONNECTOR_LEFT:
     new_flags |= CONNECTOR_TOP
   return new_flags
+
+def wire_coverage(start, end):
+  """
+  Returns the set of the points on the board that would be covered by a wire
+      going from point |start| to point |end|. |start| and |end| must define a
+      horizontal or vertical line segment.
+  """
+  x1, y1 = start
+  x2, y2 = end
+  assert x1 == x2 or y1 == y2, 'segment must be horizontal or vertical'
+  return set([(x, y) for x in xrange(min(x1, x2), max(x1, x2) + 1) for y in
+      xrange(min(y1, y2), max(y1, y2) + 1)])
+
+def path_coverage(path):
+  """
+  Returns the set of the points on the board covered by the given |path| of
+      points. Each consecuitive pair of points in |path| must define a
+      horizontal or vertical line segment.
+  """
+  coverage = set()
+  for i in xrange(len(path) - 1):
+    coverage |= wire_coverage(path[i], path[i + 1])
+  return coverage

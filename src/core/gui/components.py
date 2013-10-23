@@ -348,20 +348,29 @@ class Wire:
   """
   Representation for a wire connecting Drawables via Connectors.
   """
-  def __init__(self, parts, start_connector, end_connector, directed):
+  def __init__(self, parts, start_connector, end_connector, path, directed):
     """
     |parts|: a list of the canvas ids of the lines the wire is composed of.
     |start_connector|: the start Connector for this wire.
     |end_connector|: the end Connector for this wire.
+    |path|: the path from start to end this wire is composed of, where each
+        consecuitive pair of points defines a horizontal or vertical segment.
     |directed|: True if this wire is directed, False otherwise.
     """
     assert isinstance(start_connector, Connector), ('start_connector must be a '
         'Connector')
     assert isinstance(end_connector, Connector), ('end_connector must be a '
         'Connector')
+    for i in xrange(len(path) - 1):
+      x1, y1 = path[i]
+      x2, y2 = path[i + 1]
+      assert x1 == x2 or y1 == y2
+    assert path[0] == start_connector.center
+    assert path[-1] == end_connector.center
     self.parts = parts
     self.start_connector = start_connector
     self.end_connector = end_connector
+    self.path = path
     self.directed = directed
     # wire starts unlabeld, but may be labeld by board when necessary
     # wire labels are useful for applications
@@ -455,22 +464,24 @@ class Wire:
     """
     Draws the label of this wire at the middle of the wire.
     """
-    x1, y1 = self.start_connector.center
-    x2, y2 = self.end_connector.center
-    self.parts.append(canvas.create_text((x1 + x2) / 2, (y1 + y2) / 2,
-        text=self.label))
+    for i in xrange(len(self.path) - 1):
+      x1, y1 = self.path[i]
+      x2, y2 = self.path[i + 1]
+      self.parts.append(canvas.create_text((x1 + x2) / 2, (y1 + y2) / 2,
+          text=self.label))
   def redraw(self, canvas, possibly_intersecting_wires):
     """
-    Redraws this wire.
+    Redraws this wire based on its currently set path, making markers at places
+        where it intersects with any of the given |possibly_intersecting_wires|.
     """
-    # delete the lines the wire is composed of
     for part in self.parts:
       canvas.delete(part)
-    # redraw the wire
-    x1, y1 = self.start_connector.center
-    x2, y2 = self.end_connector.center
-    self.parts = create_wire(canvas, x1, y1, x2, y2,
-        possibly_intersecting_wires, self.directed)
+    self.parts = []
+    for i in xrange(len(self.path) - 1):
+      x1, y1 = self.path[i]
+      x2, y2 = self.path[i + 1]
+      self.parts.extend(create_wire(canvas, x1, y1, x2, y2,
+          possibly_intersecting_wires, self.directed))
     # redraw label
     if DEBUG_DISPLAY_WIRE_LABELS:
       self._draw_label(canvas)
@@ -481,18 +492,23 @@ class Wire:
     """
     Returns a string representing this wire at it's current location.
     """
-    return 'Wire %s %s' % (str(self.start_connector.center),
-      str(self.end_connector.center))
+    rep = 'Wire '
+    for point in self.path:
+      rep += str(point) + ' '
+    return rep[:-1]
   @staticmethod
   def deserialize(item_str, board):
     """
     If possible, deserializes |item_str| and adds the appropriate wire to the
         given |board|. Returns True on success, and False on failure.
     """
-    m = match(r'Wire %s %s' % (RE_INT_PAIR, RE_INT_PAIR), item_str)
+    m = match(r'Wire %s %s+' % (RE_INT_PAIR, RE_INT_PAIR), item_str)
     if m:
-      x1, y1, x2, y2 = map(int, m.groups())
-      board.add_wire(x1, y1, x2, y2)
+      coords = map(int, item_str.replace('Wire ', '').replace('(', '').replace(
+          ')', '').replace(',', '').split(' '))
+      assert len(coords) % 2 == 0
+      board.add_wire([(coords[i], coords[i + 1]) for i in xrange(0, len(coords),
+          2)])
       return True
     return False
 
