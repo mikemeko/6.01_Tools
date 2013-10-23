@@ -37,6 +37,7 @@ from constants import MESSAGE_WARNING_COLOR
 from constants import MESSAGE_WARNING_DURATION
 from constants import MESSAGE_WIDTH
 from constants import ROTATE_TAG
+from constants import SELECTION_OUTLINE_COLOR
 from constants import SHIFT_CURSOR
 from constants import SHIFT_DOWN
 from constants import TOOLTIP_DRAWABLE_LABEL_BACKGROUND
@@ -291,7 +292,8 @@ class Board(Frame):
         self._selection_end_point, fill='#EEE', outline='')
     self._canvas.tag_lower(fill_rect)
     outline_rect = self._canvas.create_rectangle(self._selection_start_point,
-        self._selection_end_point, fill='', outline='green', dash=(3,))
+        self._selection_end_point, fill='', outline=SELECTION_OUTLINE_COLOR,
+        dash=(3,))
     self._selection_outline_canvas_id = [fill_rect, outline_rect]
   def _select(self, drawable):
     """
