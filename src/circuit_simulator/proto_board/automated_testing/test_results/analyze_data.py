@@ -18,7 +18,7 @@ def sequence_generator():
 
 def get_int(val):
   try:
-    return int(val)
+    return int(float(val))
   except:
     return None
 
@@ -64,6 +64,15 @@ class Test_Result:
     self.num_wire_crosses = get_int(line[g.next()])
     self.num_nodes = get_int(line[g.next()])
     self.num_loc_pairs = get_int(line[g.next()])
+  def __str__(self):
+    return ('%s: identifier=%s, run=%s, solved=%s, placement_time=%s, '
+        'wiring_time=%s, total_time=%s, num_expanded=%s, num_pin=%s, '
+        'num_nodes=%s, num_loc_pairs=%s, num_wires=%s, num_wire_crosses=%s, '
+        'total_wire_length=%s, ' % (self.file_name, self.identifier, self.run,
+        self.solved, self.placement_time, self.wiring_time, self.total_time,
+        self.num_expanded, self.num_schematic_pins, self.num_nodes,
+        self.num_loc_pairs, self.num_wires, self.num_wire_crosses,
+        self.total_wire_length))
 
 class Test_Group:
   def __init__(self, group_results):

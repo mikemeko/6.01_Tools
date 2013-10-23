@@ -8,8 +8,16 @@ from analyze_data import Test_Group
 from analyze_data import Test_Result
 from collections import defaultdict
 from numpy import mean
+from numpy import std
+from scipy.stats import sem
 from sys import argv
 import pylab
+
+def se(l):
+  """
+  Computes 1.96 times the standard error for |l|.
+  """
+  return 1.96 * sem(l)
 
 colors = ['r', 'g', 'b', 'c', 'm']
 
@@ -41,7 +49,8 @@ def compare(files, methods):
         color=colors[i])
   pylab.xlabel('Number of times succeeded out of 10')
   pylab.ylabel('Count')
-  pylab.legend(methods, loc=2)
+  pylab.legend(methods, bbox_to_anchor=(0., 1.02, 1., .102), loc=3,
+        ncol=len(methods), mode='expand', borderaxespad=0.)
 
   # success table
   num_schematics = sum(all_successes[0])
@@ -65,11 +74,12 @@ def compare(files, methods):
       success_mapping[result.num_schematic_pins].append(result.solved)
     all_success_mappings.append(success_mapping)
   for i, success_mapping in enumerate(all_success_mappings):
-    pylab.plot(success_mapping.keys(), map(mean, success_mapping.values()),
-        color=colors[i])
+    pylab.errorbar(success_mapping.keys(), map(mean, success_mapping.values()),
+        yerr=map(se, success_mapping.values()), color=colors[i])
   pylab.xlabel('Number of pins')
   pylab.ylabel('Success rate')
-  pylab.legend(methods, loc=2)
+  pylab.legend(methods, bbox_to_anchor=(0., 1.02, 1., .102), loc=3,
+        ncol=len(methods), mode='expand', borderaxespad=0.)
 
   # time trend
   pylab.figure()
@@ -80,11 +90,12 @@ def compare(files, methods):
       time_mapping[result.num_schematic_pins].append(result.wiring_time)
     all_time_mappings.append(time_mapping)
   for i, time_mapping in enumerate(all_time_mappings):
-    pylab.plot(time_mapping.keys(), map(mean, time_mapping.values()),
-        color=colors[i])
+    pylab.errorbar(time_mapping.keys(), map(mean, time_mapping.values()),
+        yerr=map(se, time_mapping.values()), color=colors[i])
   pylab.xlabel('Number of pins')
   pylab.ylabel('Wiring time (seconds)')
-  pylab.legend(methods, loc=2)
+  pylab.legend(methods, bbox_to_anchor=(0., 1.02, 1., .102), loc=3,
+        ncol=len(methods), mode='expand', borderaxespad=0.)
 
   # quality
   pylab.figure()
@@ -106,14 +117,18 @@ def compare(files, methods):
   ax2 = pylab.subplot(312)
   ax3 = pylab.subplot(313)
   for i, (m1, m2, m3) in enumerate(all_quality_mappings):
-    ax1.plot(m1.keys(), map(mean, m1.values()), color=colors[i])
+    ax1.errorbar(m1.keys(), map(mean, m1.values()), yerr=map(se, m1.values()),
+        color=colors[i])
     ax1.set_ylabel('Wires')
-    ax2.plot(m2.keys(), map(mean, m2.values()), color=colors[i])
+    ax2.errorbar(m2.keys(), map(mean, m2.values()), yerr=map(se, m2.values()),
+        color=colors[i])
     ax2.set_ylabel('Wire crosses')
-    ax3.plot(m3.keys(), map(mean, m3.values()), color=colors[i])
+    ax3.errorbar(m3.keys(), map(mean, m3.values()), yerr=map(se, m3.values()),
+        color=colors[i])
     ax3.set_ylabel('Total wire length')
   pylab.xlabel('Number of pins')
-  ax1.legend(methods, loc=2)
+  ax1.legend(methods, bbox_to_anchor=(0., 1.02, 1., .102), loc=3,
+        ncol=len(methods), mode='expand', borderaxespad=0.)
 
   pylab.show()
 
