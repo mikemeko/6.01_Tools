@@ -23,6 +23,7 @@ from constants import RUN_RECT_OUTLINE
 from constants import RUN_RECT_SIZE
 from constants import RUN_TEXT_ACTIVE_FILL
 from constants import RUN_TEXT_FILL
+from constants import SELECTION_OUTLINE_COLOR
 from core.save.constants import RE_INT_PAIR
 from core.undo.undo import Action
 from core.undo.undo import Multi_Action
@@ -96,8 +97,8 @@ class Drawable:
     ox, oy = self.offset
     canvas.delete(self._selected_outline)
     self._selected_outline = canvas.create_rectangle(ox - 2, oy - 2,
-        ox + self.width + 3, oy + self.height + 3, outline='green', dash=(3,),
-        width=2)
+        ox + self.width + 3, oy + self.height + 3,
+        outline=SELECTION_OUTLINE_COLOR, dash=(3,), width=2)
     self.parts.add(self._selected_outline)
   def hide_selected_highlight(self, canvas):
     """

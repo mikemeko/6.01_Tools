@@ -547,16 +547,18 @@ class N_Pin_Connector_Piece(Circuit_Piece):
       connector, and robot connector).
   """
   possible_top_left_rows = [0, PROTO_BOARD_HEIGHT - 3]
-  def __init__(self, nodes, n, name, disabled_pins, label):
+  def __init__(self, nodes, n, name, disabled_pins, label, cabel_color):
     """
     |n|: the number of pins for this connector.
     |name|: the name for this connector.
     |disabled_pins|: pins that are not meant to be connected to anything.
+    |cabel_color|: color of cabel used to connect to this connector.
     """
     Circuit_Piece.__init__(self, set(filter(bool, nodes)), n + 2, 3, label)
     self.n = n
     self.name = name
     self.disabled_pins = disabled_pins
+    self.cabel_color = cabel_color
   def loc_for_pin(self, i):
     """
     Returns the location for the |i|th pin of this connector, where |i| is an
@@ -597,6 +599,9 @@ class N_Pin_Connector_Piece(Circuit_Piece):
     canvas.create_text(x + width / 2, y + (r != 0) * 4 * (CONNECTOR_SIZE +
         CONNECTOR_SPACING), text=self.name, width=width, fill='white',
         justify=CENTER)
+    # cabel color box
+    by = y - offset_top if r == 0 else y + offset_bottom - 10
+    canvas.create_rectangle(x, by, x + 10, by + 10, fill=self.cabel_color)
   def outline_label(self, canvas, top_left, label):
     if label not in self.label:
       return
@@ -635,7 +640,7 @@ class Motor_Connector_Piece(N_Pin_Connector_Piece):
     |n_pin_6|: node at pin 6, motor-.
     """
     N_Pin_Connector_Piece.__init__(self, [n_pin_5, n_pin_6], 6,
-        'Motor Connector', DISABLED_PINS_MOTOR_CONNECTOR, label)
+        'Motor Connector', DISABLED_PINS_MOTOR_CONNECTOR, label, 'black')
     self.n_pin_5 = n_pin_5
     self.n_pin_6 = n_pin_6
   def locs_for(self, node):
@@ -677,7 +682,7 @@ class Robot_Connector_Piece(N_Pin_Connector_Piece):
     assert isinstance(pin_nodes, list) and len(pin_nodes) == 7, ('pin_nodes '
         'should be a list containing 7 values')
     N_Pin_Connector_Piece.__init__(self, pin_nodes, 8, 'Robot Connector',
-        DISABLED_PINS_ROBOT_CONNECTOR, label)
+        DISABLED_PINS_ROBOT_CONNECTOR, label, 'yellow')
     self.pin_nodes = pin_nodes
   def locs_for(self, node):
     return [self.loc_for_pin(i + 1) for i, pin_node in enumerate(
@@ -709,7 +714,7 @@ class Head_Connector_Piece(N_Pin_Connector_Piece):
     assert isinstance(pin_nodes, list) and len(pin_nodes) == 8, ('pin_nodes '
         'should be a list containing 8 values')
     N_Pin_Connector_Piece.__init__(self, pin_nodes, 8, 'Head Connector',
-        DISABLED_PINS_HEAD_CONNECTOR, label)
+        DISABLED_PINS_HEAD_CONNECTOR, label, 'red')
     self.pin_nodes = pin_nodes
   def locs_for(self, node):
     return [self.loc_for_pin(i + 1) for i, pin_node in enumerate(

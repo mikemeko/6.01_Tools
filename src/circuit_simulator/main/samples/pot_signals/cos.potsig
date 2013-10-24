@@ -5,6 +5,6 @@ Cosine pot signal file.
 from core.math.CT_signal import Function_CT_Signal
 from math import cos
 
-pot_r = 1
+pot_r = 5000
 pot_signal = Function_CT_Signal(lambda t: (cos(10 * t) + 1) / 2)
 

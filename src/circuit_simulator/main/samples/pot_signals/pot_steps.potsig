@@ -1,5 +1,5 @@
 """
-Linear pot signal file.
+Steps pot signal file.
 """
 
 from circuit_simulator.simulation.constants import NUM_SAMPLES as N
@@ -7,5 +7,6 @@ from circuit_simulator.simulation.constants import T
 from core.math.CT_signal import Function_CT_Signal
 
 pot_r = 5000
-pot_signal = Function_CT_Signal(lambda t: t / (N * T))
+pot_signal = Function_CT_Signal(
+    lambda t: 0.4 + 0.1 * (t >= (N * T) / 3) + 0.1 * (t >= 2 * (N * T) / 3))
 

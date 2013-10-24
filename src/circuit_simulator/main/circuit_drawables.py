@@ -70,7 +70,6 @@ from core.gui.components import Run_Drawable
 from core.gui.constants import CONNECTOR_LEFT
 from core.gui.constants import CONNECTOR_RIGHT
 from core.gui.constants import ERROR
-from core.gui.tooltip_helper import Tooltip_Helper
 from core.gui.util import create_circle
 from core.gui.util import create_editable_text
 from core.gui.util import rotate_connector_flags
@@ -79,7 +78,6 @@ from core.save.constants import RE_INT_PAIR
 from core.undo.undo import Action
 from core.util.util import is_callable
 from core.util.util import sign
-from os.path import basename
 from os.path import isfile
 from os.path import relpath
 from re import match
@@ -223,7 +221,7 @@ class Resistor_Drawable(Drawable):
           oy - RESISTOR_TEXT_PADDING, text=text, font=FONT)
     else: # vertical
       self.resistor_text = canvas.create_text(ox + w + RESISTOR_TEXT_PADDING +
-          6, oy + h / 2, text=text, font=FONT)
+          8, oy + h / 2, text=text, font=FONT)
     self.parts.add(self.resistor_text)
     def get_resistance():
       """
@@ -478,16 +476,8 @@ class Pot_Drawable(Drawable):
         canvas.itemconfig(pot_alpha_text, fill='white')
         self.on_signal_file_changed()
     self.set_signal_file = set_signal_file
-    tooltip_helper = Tooltip_Helper(canvas)
-    def _show_tooltip(event):
-      tip = basename(self.signal_file) if (self.signal_file and isfile(
-          self.signal_file)) else 'No signal file'
-      tooltip_helper.show_tooltip(event.x, event.y, tip)
-    for pot_alpha_part in (pot_alpha_window, pot_alpha_text):
-      self.parts.add(pot_alpha_part)
-      canvas.tag_bind(pot_alpha_part, '<Enter>', _show_tooltip)
-      canvas.tag_bind(pot_alpha_part, '<Leave>', lambda event:
-          tooltip_helper.hide_tooltip())
+    self.parts.add(pot_alpha_window)
+    self.parts.add(pot_alpha_text)
   def draw_connectors(self, canvas, offset=(0, 0)):
     ox, oy = offset
     w, h = self.width, self.height
@@ -823,16 +813,8 @@ class Photosensors_Drawable(Pin_Drawable):
         canvas.itemconfig(lamp, fill=LAMP_COLOR)
         self.on_signal_file_changed()
     self.set_signal_file = set_signal_file
-    tooltip_helper = Tooltip_Helper(canvas)
-    def _show_tooltip(event):
-      tip = basename(self.signal_file) if (self.signal_file and isfile(
-          self.signal_file)) else 'No signal file'
-      tooltip_helper.show_tooltip(event.x, event.y, tip)
-    for lamp_part in (lamp_box, lamp):
-      self.parts.add(lamp_part)
-      canvas.tag_bind(lamp_part, '<Enter>', _show_tooltip)
-      canvas.tag_bind(lamp_part, '<Leave>', lambda event:
-          tooltip_helper.hide_tooltip())
+    self.parts.add(lamp_box)
+    self.parts.add(lamp)
   def draw_connectors(self, canvas, offset=(0, 0)):
     left_x, left_y, common_x, common_y, right_x, right_y = self._pin_positions(
         offset)

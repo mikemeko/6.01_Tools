@@ -1,0 +1,16 @@
+"""
+Ping pong lamp signal.
+"""
+
+from circuit_simulator.simulation.constants import NUM_SAMPLES as N
+from circuit_simulator.simulation.constants import T
+from core.math.CT_signal import Constant_CT_Signal
+from core.math.CT_signal import Function_CT_Signal
+
+def angle(t, num_splits=4):
+  n = int(t / T)
+  k = N / num_splits
+  return 1./8 * (1 if (n % (2 * k)) < k else -1)
+lamp_angle_signal = Function_CT_Signal(angle)
+lamp_distance_signal = Constant_CT_Signal(0.667)
+

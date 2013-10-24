@@ -23,8 +23,8 @@ POSITIVE_COLOR = '#EF002A'
 POT_ALPHA_EMPTY_FILL = '#EEE'
 POT_ALPHA_FILL = '#3AAACF'
 POT_ALPHA_OUTLINE = '#888'
-RESISTOR_FILL = 'white'
-RESISTOR_OUTLINE = '#DDD'
+RESISTOR_FILL = ''
+RESISTOR_OUTLINE = ''
 ROBOT_COLOR = '#666'
 
 # circuit drawable component constants
@@ -67,7 +67,7 @@ ROBOT_POWER_DRAWABLE_SIZE = 60
 ROBOT_SIZE = 40
 
 # text
-APP_NAME = 'Circuit Simulator'
+APP_NAME = '6.01 Circuit Simulator'
 DEV_STAGE = 'alpha'
 FILE_EXTENSION = '.circsim'
 GROUND = 'gnd'

@@ -1,11 +1,12 @@
 """
-Linear pot signal file.
+Ramp lamp signal.
 """
 
 from circuit_simulator.simulation.constants import NUM_SAMPLES as N
 from circuit_simulator.simulation.constants import T
+from core.math.CT_signal import Constant_CT_Signal
 from core.math.CT_signal import Function_CT_Signal
 
-pot_r = 5000
-pot_signal = Function_CT_Signal(lambda t: t / (N * T))
+lamp_angle_signal = Function_CT_Signal(lambda t: -1./4 + t/(2.*N*T))
+lamp_distance_signal = Constant_CT_Signal(1)
 
