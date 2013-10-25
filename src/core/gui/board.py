@@ -915,20 +915,17 @@ class Board(Frame):
     canvas_id = self._canvas.find_closest(event.x, event.y)[0]
     wire = self._wire_with_id(canvas_id)
     # maybe change cursor to pencil
-    if not self._ctrl_pressed and connector and (not drawable or
-        drawable == connector.drawable):
-      self._canvas.configure(cursor='cross' if (self._cursor_state == 'draw')
-          else 'arrow')
-    elif EDIT_TAG in self._canvas.gettags(self._canvas.find_closest(event.x,
-        event.y)[0]):
-      self._canvas.configure(cursor='pencil')
-    else:
-      if self._ctrl_pressed:
-        self._canvas.configure(cursor=CTRL_CURSOR)
-      elif self._shift_pressed:
-        self._canvas.configure(cursor=SHIFT_CURSOR)
-      else:
-        self._canvas.configure(cursor='arrow')
+    cursor = 'arrow'
+    if self._ctrl_pressed:
+      cursor = CTRL_CURSOR
+    elif self._shift_pressed:
+      cursor = SHIFT_CURSOR
+    elif self._cursor_state == 'draw' and (wire or (connector and (not drawable
+        or drawable == connector.drawable))):
+      cursor = 'pencil'
+    elif connector or drawable:
+      cursor = 'hand'
+    self._canvas.configure(cursor=cursor)
     # maybe show label tooltip
     if self._label_tooltips_enabled and self._show_label_tooltips:
       # check if the cursor is on a wire connector
