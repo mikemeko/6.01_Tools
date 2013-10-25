@@ -61,7 +61,9 @@ from util import create_wire
 from util import path_coverage
 from util import point_inside_circle
 from util import snap
+from util import split_path
 from util import wire_coverage
+from util import wire_parts_from_path
 from wire_labeling import label_wires
 
 class Board(Frame):
@@ -211,6 +213,15 @@ class Board(Frame):
       return self._wire_outline_ids[canvas_id]
     for wire in self._get_wires():
       if canvas_id in wire.parts:
+        return wire
+    return None
+  def _wire_at(self, point):
+    """
+    Returns the wire at the given |point|, or None if no such wire exists.
+    """
+    for wire in self._get_wires():
+      # TODO: should really precompute wire path
+      if point in path_coverage(wire.path):
         return wire
     return None
   def _update_drawable_offset(self, drawable, dx, dy):
@@ -537,19 +548,16 @@ class Board(Frame):
         # erase previous wire path
         self._erase_previous_wire_path()
         # find new wire path
-        wire_path = find_wire_path(self._board_coverage, self._wire_start,
-            wire_end)
+        if wire_end in self._drawable_coverage:
+          coverage = set()
+        elif wire_end in self._wire_coverage:
+          coverage = self._board_coverage - set([wire_end])
+        else:
+          coverage = self._board_coverage
+        wire_path = find_wire_path(coverage, self._wire_start, wire_end)
         # draw wires
-        def valid():
-          if self._drawable_coverage & path_coverage(wire_path):
-            return False
-          if set(wire_path[1:-1]) & self._wire_coverage:
-            return False
-          if wire_path[-1] in self._wire_coverage and not self._connector_at(
-              wire_path[-1]):
-            return False
-          return True
-        self._valid_wire_path = valid()
+        self._valid_wire_path = not self._drawable_coverage & path_coverage(
+            wire_path)
         color = WIRE_COLOR if self._valid_wire_path else 'red'
         for i in xrange(len(wire_path) - 1):
           self._draw_wire(wire_path[i], wire_path[i + 1], color)
@@ -562,16 +570,42 @@ class Board(Frame):
         start_connector = self._connector_at(self._wire_start)
         assert start_connector
         end_connector = self._connector_at(self._wire_end)
+        snap_wire = None
         if not end_connector:
           self._add_drawable(Wire_Connector_Drawable(), self._wire_end)
           end_connector = self._connector_at(self._wire_end)
+          snap_wire = self._wire_at(self._wire_end)
         wire_canvas_parts = []
         wire_path = [self._wire_start]
         for start, end, parts in self._wire_parts:
           wire_canvas_parts.extend(parts)
           wire_path.append(end)
-        self._add_wire(wire_canvas_parts, start_connector, end_connector,
-            wire_path)
+        if snap_wire:
+          #        o x
+          #        |
+          # w o----o y
+          #        |
+          #        o z
+          w = start_connector
+          x = snap_wire.start_connector
+          y = end_connector
+          z = snap_wire.end_connector
+          x_y_path, y_z_path = split_path(snap_wire.path, y.center)
+          # w -- y
+          self._add_wire(wire_canvas_parts, w, y, wire_path)
+          # x -- y
+          self._add_wire(wire_parts_from_path(self._canvas, x_y_path,
+              self._get_wires(), self._directed_wires), x, y, x_y_path)
+          # y -- z
+          self._add_wire(wire_parts_from_path(self._canvas, y_z_path,
+              self._get_wires(), self._directed_wires), y, z, y_z_path)
+          # x --X-- z
+          delete_action = snap_wire.delete_from(self._canvas)
+          self._action_history.record_action(delete_action)
+          self._action_history.combine_last_n(4)
+        else:
+          self._add_wire(wire_canvas_parts, start_connector, end_connector,
+              wire_path)
         # mark the board changed
         self.set_changed(True)
     else:

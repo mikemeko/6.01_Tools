@@ -107,10 +107,7 @@ def find_wire_path(board_coverage, start_point, end_point):
       long, uses find_wire_path_simple. Tries to avoid points in
       |board_coverage|.
   """
-  if end_point not in board_coverage:
-    board_coverage = frozenset(board_coverage)
-  else:
-    board_coverage = frozenset()
+  board_coverage = frozenset(board_coverage)
   search_result, num_expanded = a_star(Wire_Path_Search_Node(board_coverage,
       start_point), goal_test_for_end_point(end_point),
       heuristic_for_end_point(end_point), max_states_to_expand=1000,

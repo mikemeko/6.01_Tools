@@ -232,3 +232,26 @@ def path_coverage(path):
   for i in xrange(len(path) - 1):
     coverage |= wire_coverage(path[i], path[i + 1])
   return coverage
+
+def split_path(path, point):
+  """
+  Splits the given |path| at the given |point| and returns the two resulting
+      paths, the first of which ends at |point| and the second of which starts
+      at |point|. Returns None if |point| is not on the given |path|.
+  """
+  for i in xrange(len(path) - 1):
+    if point in wire_coverage(path[i], path[i + 1]):
+      return path[:i + 1] + [point], [point] + path[i + 1:]
+
+def wire_parts_from_path(canvas, path, other_wires, directed=False,
+    color=WIRE_COLOR):
+  """
+  Returns the parts that result from drawing the given wire |path|.
+  """
+  parts = []
+  for i in xrange(len(path) - 1):
+    x1, y1 = path[i]
+    x2, y2 = path[i + 1]
+    parts.extend(create_wire(canvas, x1, y1, x2, y2, other_wires, directed,
+        color))
+  return parts
