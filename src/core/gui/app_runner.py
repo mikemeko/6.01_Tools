@@ -4,6 +4,8 @@ Bare bones infrastructure to run an app using a Board and a Palette.
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
+from components import Run_Drawable
+from constants import RIGHT
 from core.gui.board import Board
 from core.gui.constants import CTRL_DOWN
 from core.gui.palette import Palette
@@ -14,6 +16,20 @@ from core.save.save import save_board
 from core.save.util import strip_file_name
 from Tkinter import Menu
 from Tkinter import Tk
+
+class Draw_Run_Drawable(Run_Drawable):
+  """
+  Run_Drawable to change board cursor state to drawing.
+  """
+  def __init__(self):
+    Run_Drawable.__init__(self, 'Draw')
+
+class Drag_Run_Drawable(Run_Drawable):
+  """
+  Run_Drawable to change board cursor state to dragging.
+  """
+  def __init__(self):
+    Run_Drawable.__init__(self, 'Drag')
 
 class App_Runner:
   """
@@ -70,6 +86,10 @@ class App_Runner:
     self._init_board()
     self.palette = Palette(self._root, self.board, width=self._board_width,
         height=self._palette_height)
+    self.palette.add_drawable_type(Draw_Run_Drawable, RIGHT,
+        lambda event: self.board.set_cursor_state('draw'))
+    self.palette.add_drawable_type(Drag_Run_Drawable, RIGHT,
+        lambda event: self.board.set_cursor_state('drag'))
   def _setup_menu(self):
     """
     Creates the menu.
@@ -91,8 +111,6 @@ class App_Runner:
         accelerator='Ctrl+Z')
     edit_menu.add_command(label='Redo', command=self.board.redo,
         accelerator='Ctrl+Y')
-    edit_menu.add_command(label='Toggle cursor state',
-        command=self.board.toggle_cursor_state, accelerator='W')
     self._menu.add_cascade(label='Edit', menu=edit_menu)
     self._root.config(menu=self._menu)
   def _setup_shortcuts(self):

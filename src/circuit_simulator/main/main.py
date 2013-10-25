@@ -137,6 +137,6 @@ if __name__ == '__main__':
       simulate, solve_circuit=True))
   app_runner.board.add_key_binding('p', lambda: run_analysis(app_runner.board,
       proto_board_layout))
-  app_runner.board.add_key_binding('c', close_all_windows, CTRL_DOWN)
+  app_runner.board.add_key_binding('w', close_all_windows, CTRL_DOWN)
   # run
   app_runner.run()
