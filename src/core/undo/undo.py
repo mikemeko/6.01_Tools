@@ -122,6 +122,11 @@ class Action_History:
     assert len(self._undo_stack) >= n
     self._undo_stack = self._undo_stack[:-n] + [Multi_Action(
         self._undo_stack[-n:])]
+  def extract_last_action(self):
+    """
+    Removes and returns the last (most recent) Action in the undo stack.
+    """
+    return self._undo_stack.pop()
   def __str__(self):
     return '%s <|> %s' % (', '.join(map(str, self._undo_stack)),
         ', '.join(map(str, reversed(self._redo_stack))))

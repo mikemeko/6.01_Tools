@@ -117,6 +117,7 @@ class Board(Frame):
     # state for drawing wires
     self._wire_start = None
     self._wire_end = None
+    self._wire_start_connector_created = False
     self._wire_parts = []
     self._board_coverage = set()
     self._drawable_coverage = set()
@@ -532,11 +533,35 @@ class Board(Frame):
     #     disabled, don't allow drawing wire
     start_connector = self._connector_at(self._wire_start)
     if not start_connector or not start_connector.enabled:
-      self._wire_start = None
-    else:
-      self._board_coverage = self.get_board_coverage(True, False)
-      self._drawable_coverage = self.get_drawables_coverage(False, True)
-      self._wire_coverage = self.get_wire_coverage(True)
+      wire = self._wire_at(self._wire_start)
+      if wire:
+        # o x
+        # |
+        # o y
+        # |
+        # o z
+        x = wire.start_connector
+        self._add_drawable(Wire_Connector_Drawable(), self._wire_start)
+        y = self._connector_at(self._wire_start)
+        z = wire.end_connector
+        x_y_path, y_z_path = split_path(wire.path, y.center)
+        # x -- y
+        self._add_wire(wire_parts_from_path(self._canvas, x_y_path,
+            self._get_wires(), self._directed_wires), x, y, x_y_path)
+        # y -- z
+        self._add_wire(wire_parts_from_path(self._canvas, y_z_path,
+            self._get_wires(), self._directed_wires), y, z, y_z_path)
+        # x --X-- z
+        delete_action = wire.delete_from(self._canvas)
+        self._action_history.record_action(delete_action)
+        self._action_history.combine_last_n(3)
+        self._wire_start_connector_created = True
+      else:
+        self._wire_start = None
+        return
+    self._board_coverage = self.get_board_coverage(True, False)
+    self._drawable_coverage = self.get_drawables_coverage(False, True)
+    self._wire_coverage = self.get_wire_coverage(True)
   def _wire_move(self, event):
     """
     Callback for when a wire is changed while being created.
@@ -602,17 +627,24 @@ class Board(Frame):
           # x --X-- z
           delete_action = snap_wire.delete_from(self._canvas)
           self._action_history.record_action(delete_action)
-          self._action_history.combine_last_n(4)
+          self._action_history.combine_last_n(4 +
+              self._wire_start_connector_created)
         else:
           self._add_wire(wire_canvas_parts, start_connector, end_connector,
               wire_path)
+          if self._wire_start_connector_created:
+            self._action_history.combine_last_n(2)
         # mark the board changed
         self.set_changed(True)
     else:
       self._erase_previous_wire_path()
+      if self._wire_start_connector_created:
+        self._action_history.extract_last_action().undo_action()
+        self._redraw_wires()
     # reset
     self._wire_start = None
     self._wire_end = None
+    self._wire_start_connector_created = False
     self._wire_parts = []
     self._board_coverage = set()
     self._drawable_coverage = set()
@@ -623,23 +655,39 @@ class Board(Frame):
     Callback for button press.
     """
     assert self._current_button_action is None
-    connector = self._connector_at((event.x, event.y))
-    drawable = self._drawable_at((event.x, event.y))
-    if self._cursor_state == 'draw' and connector and (not drawable or
-        drawable == connector.drawable):
-      if DEBUG_CONNECTOR_CENTER_TOOLTIP:
-        if not connector:
-          connector = iter(drawable.connectors).next()
-        x, y = connector.center
-        self._tooltip_helper.show_tooltip(x, y, str(connector.center))
-      self._current_button_action = 'wire'
-      self._wire_press(event)
-    elif connector or drawable:
+    def do_drag():
       self._current_button_action = 'drag'
       self._drag_press(event)
-    else:
+    def do_select():
       self._current_button_action = 'select'
       self._select_press(event)
+    def do_wire():
+      self._current_button_action = 'wire'
+      self._wire_press(event)
+    connector = self._connector_at((event.x, event.y))
+    drawable = self._drawable_at((event.x, event.y))
+    wire = self._wire_at((snap(event.x), snap(event.y)))
+    if self._cursor_state == 'draw':
+      if connector:
+        if (not drawable) or drawable == connector.drawable:
+          if DEBUG_CONNECTOR_CENTER_TOOLTIP:
+            x, y = connector.center
+            self._tooltip_helper.show_tooltip(x, y, str(connector.center))
+          do_wire()
+        else:
+          # connector is hiddne under another drawable
+          do_drag()
+      elif drawable:
+        do_drag()
+      elif wire:
+        do_wire()
+      else:
+        do_select()
+    else: # self._cursor_state == 'drag'
+      if connector or drawable:
+        do_drag()
+      else:
+        do_select()
   def _canvas_button_move(self, event):
     """
     Callback for button move.
