@@ -560,7 +560,8 @@ class Motor_Drawable(Pin_Drawable):
     |group_id|: indicator for the head this Motor_Drawable is a part of, if this
         is not an independent motor.
     """
-    Pin_Drawable.__init__(self, 'Motor', color, MOTOR_SIZE, MOTOR_SIZE)
+    Pin_Drawable.__init__(self, 'Head\nMotor' if group_id else 'Motor', color,
+        MOTOR_SIZE, MOTOR_SIZE)
     self.color = color
     self.group_id = group_id
     self.direction = direction
@@ -653,7 +654,8 @@ class Motor_Pot_Drawable(Pin_Drawable):
     """
     |group_id|: indicator for the head this Motor_Pot_Drawable is a part of.
     """
-    Pin_Drawable.__init__(self, 'MP', color, MOTOR_POT_SIZE, MOTOR_POT_SIZE)
+    Pin_Drawable.__init__(self, 'Head\nPot', color, MOTOR_POT_SIZE,
+        MOTOR_POT_SIZE)
     self.color = color
     self.group_id = group_id
     self.direction = direction
@@ -758,7 +760,7 @@ class Photosensors_Drawable(Pin_Drawable):
     """
     assert is_callable(on_signal_file_changed), ('on_signal_file_changed must '
         'be callable')
-    Pin_Drawable.__init__(self, 'PS', color, PHOTOSENSORS_SIZE,
+    Pin_Drawable.__init__(self, 'Head Photo', color, PHOTOSENSORS_SIZE,
         PHOTOSENSORS_SIZE)
     self.color = color
     self.group_id = group_id
@@ -796,23 +798,9 @@ class Photosensors_Drawable(Pin_Drawable):
     self.parts.add(canvas.create_text(right_x + LABEL_PADDING * sign(cx -
         right_x), right_y + LABEL_PADDING * sign(cy - right_y), text='r',
         fill='white', justify=CENTER, font=FONT))
-    # draw the button that, when right-clicked, lets the user select a signal
-    #     file for the photosensors
-    if self.direction == DIRECTION_UP:
-      lamp_cx = ox + w / 2
-      lamp_cy = oy + h - LAMP_BOX_PADDING - LAMP_BOX_SIZE / 2
-    elif self.direction == DIRECTION_RIGHT:
-      lamp_cx = ox + LAMP_BOX_PADDING + LAMP_BOX_SIZE / 2
-      lamp_cy = oy + h / 2
-    elif self.direction == DIRECTION_DOWN:
-      lamp_cx = ox + w / 2
-      lamp_cy = oy + LAMP_BOX_PADDING + LAMP_BOX_SIZE / 2
-    elif self.direction == DIRECTION_LEFT:
-      lamp_cx = ox + w - LAMP_BOX_PADDING - LAMP_BOX_SIZE / 2
-      lamp_cy = oy + h / 2
-    else:
-      # should never get here
-      raise Exception('Invalid direction %s' % self.direction)
+    # draw the button that shows whether a signal file has been selected
+    lamp_cx = ox + LAMP_BOX_PADDING + LAMP_BOX_SIZE / 2
+    lamp_cy = oy + LAMP_BOX_PADDING + LAMP_BOX_SIZE / 2
     lamp_box = canvas.create_rectangle(lamp_cx - LAMP_BOX_SIZE / 2, lamp_cy -
         LAMP_BOX_SIZE / 2, lamp_cx + LAMP_BOX_SIZE / 2, lamp_cy +
         LAMP_BOX_SIZE / 2, fill=LAMP_BOX_COLOR)
@@ -953,7 +941,7 @@ class Robot_Power_Drawable(Pin_Drawable):
       menu = Menu(parent, tearoff=0)
       def readd():
         n = 0
-        for name in ['Vi1', 'Vi2', 'Vi3', 'Vi4', 'Vo']:
+        for name in ['Ai1', 'Ai2', 'Ai3', 'Ai4', 'Ao']:
           if name not in present:
             self.board.add_drawable(Robot_IO_Drawable(name, self.color,
                 self.group_id), self.offset)
@@ -992,7 +980,7 @@ class Robot_IO_Drawable(Pin_Drawable):
   """
   def __init__(self, name, color, group_id, connectors=CONNECTOR_RIGHT):
     """
-    name: name of this IO drawable (e.g. Vi1, Vo)
+    name: name of this IO drawable (e.g. Ai1, Ao)
     |group_id|: indicator for the robot this Robot_IO_Drawable is a part of.
     """
     Pin_Drawable.__init__(self, name, color, ROBOT_IO_DRAWABLE_SIZE,
@@ -1021,7 +1009,7 @@ class Robot_IO_Drawable(Pin_Drawable):
           self.board.add_drawable(Robot_Power_Drawable(self.color,
               self.group_id), self.offset)
           n += 1
-        for name in ['Vi1', 'Vi2', 'Vi3', 'Vi4', 'Vo']:
+        for name in ['Ai1', 'Ai2', 'Ai3', 'Ai4', 'Vo']:
           if name not in present:
             self.board.add_drawable(Robot_IO_Drawable(name, self.color,
                 self.group_id), self.offset)

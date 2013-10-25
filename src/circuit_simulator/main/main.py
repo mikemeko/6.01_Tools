@@ -119,8 +119,8 @@ if __name__ == '__main__':
       board=app_runner.board, signs=OP_AMP_NP, jfet=False)
   app_runner.palette.add_drawable_type(Robot_Connector_Drawable, LEFT, None,
       types_to_add=[(Robot_Power_Drawable, {})] + [(Robot_IO_Drawable,
-      {'name': 'Vi%d' % i}) for i in (1, 2, 3, 4)] + [(Robot_IO_Drawable,
-      {'name': 'Vo'})])
+      {'name': 'Ai%d' % i}) for i in (1, 2, 3, 4)] + [(Robot_IO_Drawable,
+      {'name': 'Ao'})])
   app_runner.palette.add_drawable_type(Head_Connector_Drawable, LEFT, None,
       types_to_add=[(Motor_Drawable, {}), (Motor_Pot_Drawable, {}), (
       Photosensors_Drawable, {'on_signal_file_changed':
