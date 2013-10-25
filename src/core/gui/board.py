@@ -268,14 +268,10 @@ class Board(Frame):
       # update the drawable's offset
       self._update_drawable_offset(drawable, dx, dy)
       # update wire paths for wires connected to the moved drawable
-      drawable_wires = set(drawable.wires())
-      coverage = set()
-      coverage = self.get_drawables_coverage(True, False)
-      for wire in self._get_wires() - drawable_wires:
-        coverage |= path_coverage(wire.path)
-      for wire in drawable_wires:
-        wire.path = find_wire_path(coverage, wire.start_connector.center,
-            wire.end_connector.center)
+      board_coverage = self.get_board_coverage(True, False)
+      for wire in drawable.wires():
+        wire.path = find_wire_path(board_coverage - path_coverage(wire.path),
+            wire.start_connector.center, wire.end_connector.center)
   def _empty_current_drawable_selection(self):
     """
     Voids the current selection of drawables, if any.
