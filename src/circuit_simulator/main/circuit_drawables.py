@@ -760,7 +760,7 @@ class Photosensors_Drawable(Pin_Drawable):
     """
     assert is_callable(on_signal_file_changed), ('on_signal_file_changed must '
         'be callable')
-    Pin_Drawable.__init__(self, 'Head Photo', color, PHOTOSENSORS_SIZE,
+    Pin_Drawable.__init__(self, 'Head\nPhoto', color, PHOTOSENSORS_SIZE,
         PHOTOSENSORS_SIZE)
     self.color = color
     self.group_id = group_id
@@ -1056,11 +1056,11 @@ class Simulate_Run_Drawable(Run_Drawable):
   Drawable to surve as a button to simulate circuit.
   """
   def __init__(self):
-    Run_Drawable.__init__(self, SIMULATE)
+    Run_Drawable.__init__(self, SIMULATE, 80)
 
 class Proto_Board_Run_Drawable(Run_Drawable):
   """
   Drawable to surve as button to display proto board layout.
   """
   def __init__(self):
-    Run_Drawable.__init__(self, PROTO_BOARD)
+    Run_Drawable.__init__(self, PROTO_BOARD, 80)

@@ -28,6 +28,7 @@ from core.save.constants import RE_INT_PAIR
 from core.undo.undo import Action
 from core.undo.undo import Multi_Action
 from re import match
+from Tkinter import CENTER
 from Tkinter import PhotoImage
 from util import create_connector
 from util import create_wire
@@ -546,17 +547,17 @@ class Run_Drawable(Drawable):
   """
   Abstract Drawable to serve as a "Run" button.
   """
-  def __init__(self, text):
-    Drawable.__init__(self, RUN_RECT_SIZE, RUN_RECT_SIZE)
+  def __init__(self, text, width=RUN_RECT_SIZE, height=RUN_RECT_SIZE):
+    Drawable.__init__(self, width, height)
     self.text = text
   def draw_on(self, canvas, offset=(0, 0)):
     ox, oy = offset
-    rect_id = canvas.create_rectangle((ox, oy, ox + RUN_RECT_SIZE,
-        oy + RUN_RECT_SIZE), fill=RUN_RECT_FILL, outline=RUN_RECT_OUTLINE,
+    rect_id = canvas.create_rectangle((ox, oy, ox + self.width,
+        oy + self.height), fill=RUN_RECT_FILL, outline=RUN_RECT_OUTLINE,
         activewidth=2)
-    text_id = canvas.create_text(ox + RUN_RECT_SIZE / 2, oy +
-        RUN_RECT_SIZE / 2, text=self.text, fill=RUN_TEXT_FILL,
-        activefill=RUN_TEXT_ACTIVE_FILL)
+    text_id = canvas.create_text(ox + self.width / 2, oy +
+        self.height / 2, text=self.text, fill=RUN_TEXT_FILL,
+        activefill=RUN_TEXT_ACTIVE_FILL, justify=CENTER)
     canvas.tag_bind(rect_id, '<Enter>', lambda event: canvas.itemconfig(text_id,
         fill=RUN_TEXT_ACTIVE_FILL))
     canvas.tag_bind(text_id, '<Enter>', lambda event: canvas.itemconfig(rect_id,
@@ -585,11 +586,11 @@ class Image_Run_Drawable(Drawable):
   """
   Abstract Drawable to serve as a "Run" button. Displays an image.
   """
-  def __init__(self, image_file):
+  def __init__(self, image_file, width=RUN_RECT_SIZE, height=RUN_RECT_SIZE):
     """
     |image_file|: path to the image.
     """
-    Drawable.__init__(self, RUN_RECT_SIZE, RUN_RECT_SIZE)
+    Drawable.__init__(self, width, height)
     self.image_file = image_file
   def draw_on(self, canvas, offset=(0, 0)):
     ox, oy = offset

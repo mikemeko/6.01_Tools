@@ -81,15 +81,15 @@ POT_SIGNAL_FILE_TYPE = 'Pot Signal File'
 POWER = 'pwr'
 PROBE_MINUS = '-p'
 PROBE_PLUS = '+p'
-PROTO_BOARD = 'PB'
-SIMULATE = 'SIM'
+PROTO_BOARD = 'Generate\nLayout'
+SIMULATE = 'Run\nSimulation'
 
 # fonts, use different font on Mac OS
 BOLD_FONT = ('Helvetica', 12 if system() == 'Darwin' else 10, 'bold')
 FONT = ('Helvetica', 12 if system() == 'Darwin' else 10)
 
 # window constants
-BOARD_WIDTH = 900
+BOARD_WIDTH = 1000
 BOARD_HEIGHT = 600
 PALETTE_HEIGHT = 100
 
