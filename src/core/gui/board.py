@@ -924,7 +924,9 @@ class Board(Frame):
     elif self._cursor_state == 'draw' and (wire or (connector and (not drawable
         or drawable == connector.drawable))):
       cursor = 'pencil'
-    elif connector or drawable:
+    elif connector:
+      cursor = 'cross'
+    elif drawable:
       cursor = 'hand'
     self._canvas.configure(cursor=cursor)
     # maybe show label tooltip
