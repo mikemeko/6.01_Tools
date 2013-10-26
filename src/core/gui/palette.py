@@ -39,7 +39,7 @@ class Palette(Frame):
     self.width = width
     self.height = height
     # x-position of last item added on the LEFT side of this palette
-    self.current_left_x = 0
+    self.current_left_x = PALETTE_PADDING
     # x-position of last item added on the RIGHT side of this palette
     self.current_right_x = self.width
     # line to separate left and right sides of palette
@@ -109,7 +109,7 @@ class Palette(Frame):
     # draw the display on the appropriate side of the palette
     if side == RIGHT:
       offset_x = self.current_right_x - PALETTE_PADDING - display.width
-      self.current_right_x -= PALETTE_PADDING + display.width + PALETTE_PADDING
+      self.current_right_x -= display.width + PALETTE_PADDING
       # update left-right separation line
       if self.left_right_separation_line_id:
         self.canvas.delete(self.left_right_separation_line_id)
@@ -143,3 +143,11 @@ class Palette(Frame):
     for connector in display.connectors:
       self.canvas.tag_bind(connector.canvas_id, '<Button-1>', callback)
       self.canvas.tag_bind(connector.canvas_id, '<Double-Button-1>', callback)
+    return display
+  def draw_separator(self):
+    """
+    Draws a separation line at the current left position.
+    """
+    self.canvas.create_line(self.current_left_x, 0, self.current_left_x,
+        self.height, fill=PALETTE_SEPARATION_LINE_COLOR)
+    self.current_left_x += PALETTE_PADDING

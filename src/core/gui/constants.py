@@ -99,6 +99,10 @@ KEYCODE_LOOKUP = {262145: 'Control_L', 524320: 'Alt_L', 524352: 'Alt_R',
 CROSS_COST = 10
 BEND_COST = 2
 
+# images
+HAND_IMAGE = 'core/gui/images/hand.png'
+PENCIL_IMAGE = 'core/gui/images/pencil.png'
+
 # debug options
 DEBUG_DISPLAY_WIRE_LABELS = False
 DEBUG_CONNECTOR_CENTER_TOOLTIP = False

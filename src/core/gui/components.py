@@ -28,6 +28,7 @@ from core.save.constants import RE_INT_PAIR
 from core.undo.undo import Action
 from core.undo.undo import Multi_Action
 from re import match
+from Tkinter import PhotoImage
 from util import create_connector
 from util import create_wire
 from util import snap
@@ -566,6 +567,49 @@ class Run_Drawable(Drawable):
         width=1))
     self.parts.add(rect_id)
     self.parts.add(text_id)
+  def show_selected_highlight(self, canvas):
+    # should never be needed
+    pass
+  def hide_selected_highlight(self, canvas):
+    # should never be needed
+    pass
+  def serialize(self, offset):
+    # should never be needed
+    return ''
+  @staticmethod
+  def deserialize(item_str, board):
+    # should never be needed
+    return False
+
+class Image_Run_Drawable(Drawable):
+  """
+  Abstract Drawable to serve as a "Run" button. Displays an image.
+  """
+  def __init__(self, image_file):
+    """
+    |image_file|: path to the image.
+    """
+    Drawable.__init__(self, RUN_RECT_SIZE, RUN_RECT_SIZE)
+    self.image_file = image_file
+  def draw_on(self, canvas, offset=(0, 0)):
+    ox, oy = offset
+    rect_id = canvas.create_rectangle((ox, oy, ox + self.width, oy +
+        self.height), fill=RUN_RECT_FILL, outline=RUN_RECT_OUTLINE,
+        activewidth=2)
+    self.highlight = lambda: canvas.itemconfig(rect_id, fill='yellow')
+    self.unhighlight = lambda: canvas.itemconfig(rect_id, fill=RUN_RECT_FILL)
+    image = PhotoImage(file=self.image_file)
+    # we need to keep a reference to the image so that it doesn't get garbage
+    #     collected
+    setattr(canvas, str(id(image)), image)
+    image_id = canvas.create_image(ox + self.width / 2, oy + self.height / 2,
+        image=getattr(canvas, str(id(image))))
+    canvas.tag_bind(image_id, '<Enter>', lambda event: canvas.itemconfig(
+        rect_id, width=2))
+    canvas.tag_bind(image_id, '<Leave>', lambda event: canvas.itemconfig(
+        rect_id, width=1))
+    self.parts.add(rect_id)
+    self.parts.add(image_id)
   def show_selected_highlight(self, canvas):
     # should never be needed
     pass

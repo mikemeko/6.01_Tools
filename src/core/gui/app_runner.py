@@ -4,32 +4,21 @@ Bare bones infrastructure to run an app using a Board and a Palette.
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
-from components import Run_Drawable
-from constants import RIGHT
-from core.gui.board import Board
-from core.gui.constants import CTRL_DOWN
-from core.gui.palette import Palette
+from board import Board
+from components import Image_Run_Drawable
+from constants import CTRL_DOWN
+from constants import HAND_IMAGE
+from constants import PALETTE_PADDING
+from constants import PENCIL_IMAGE
 from core.save.save import get_board_file_name
 from core.save.save import open_board_from_file
 from core.save.save import request_save_board
 from core.save.save import save_board
 from core.save.util import strip_file_name
+from palette import Palette
+from Tkinter import LEFT
 from Tkinter import Menu
 from Tkinter import Tk
-
-class Draw_Run_Drawable(Run_Drawable):
-  """
-  Run_Drawable to change board cursor state to drawing.
-  """
-  def __init__(self):
-    Run_Drawable.__init__(self, 'Draw')
-
-class Drag_Run_Drawable(Run_Drawable):
-  """
-  Run_Drawable to change board cursor state to dragging.
-  """
-  def __init__(self):
-    Run_Drawable.__init__(self, 'Drag')
 
 class App_Runner:
   """
@@ -70,6 +59,28 @@ class App_Runner:
     self._init()
     self._setup_menu()
     self._setup_shortcuts()
+  def _switch_cursor_to_draw(self, *args):
+    """
+    Switches board cursor state to 'draw'.
+    """
+    self._draw_display.highlight()
+    self._drag_display.unhighlight()
+    self.board.set_cursor_state('draw')
+  def _switch_cursor_to_drag(self, *args):
+    """
+    Switches board cursor state to 'drag'.
+    """
+    self._draw_display.unhighlight()
+    self._drag_display.highlight()
+    self.board.set_cursor_state('drag')
+  def _toggle_cursor(self):
+    """
+    Toggles board cursor state.
+    """
+    if self.board.get_cursor_state() == 'draw':
+      self._switch_cursor_to_drag()
+    else:
+      self._switch_cursor_to_draw()
   def _init(self):
     """
     Creates the board and palette.
@@ -86,10 +97,15 @@ class App_Runner:
     self._init_board()
     self.palette = Palette(self._root, self.board, width=self._board_width,
         height=self._palette_height)
-    self.palette.add_drawable_type(Draw_Run_Drawable, RIGHT,
-        lambda event: self.board.set_cursor_state('draw'))
-    self.palette.add_drawable_type(Drag_Run_Drawable, RIGHT,
-        lambda event: self.board.set_cursor_state('drag'))
+    # buttons to change board cursor state
+    self.palette.current_left_x -= PALETTE_PADDING
+    self._draw_display = self.palette.add_drawable_type(Image_Run_Drawable,
+        LEFT, self._switch_cursor_to_draw, image_file=PENCIL_IMAGE)
+    self.palette.current_left_x -= PALETTE_PADDING
+    self._drag_display = self.palette.add_drawable_type(Image_Run_Drawable,
+        LEFT, self._switch_cursor_to_drag, image_file=HAND_IMAGE)
+    self.palette.draw_separator()
+    self._switch_cursor_to_draw()
   def _setup_menu(self):
     """
     Creates the menu.
@@ -111,6 +127,8 @@ class App_Runner:
         accelerator='Ctrl+Z')
     edit_menu.add_command(label='Redo', command=self.board.redo,
         accelerator='Ctrl+Y')
+    edit_menu.add_command(label='Toggle cursor', command=self._toggle_cursor,
+        accelerator='D')
     self._menu.add_cascade(label='Edit', menu=edit_menu)
     self._root.config(menu=self._menu)
   def _setup_shortcuts(self):
@@ -123,6 +141,7 @@ class App_Runner:
     self.board.parent.bind('<Control-s>', lambda event: self._save_file())
     self.board.parent.bind('<Control-y>', lambda event: self.board.redo())
     self.board.parent.bind('<Control-z>', lambda event: self.board.undo())
+    self.board.add_key_binding('d', self._toggle_cursor)
   def _init_board(self):
     """
     (Re)Initializes the board based on this app's specific needs, as per

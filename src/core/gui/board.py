@@ -803,6 +803,11 @@ class Board(Frame):
     """
     assert state in ('draw', 'drag')
     self._cursor_state = state
+  def get_cursor_state(self):
+    """
+    Returns the current cursor state, either 'draw' or 'drag'.
+    """
+    return self._cursor_state
   def _get_keysym(self, event):
     """
     Returns the appropriate keysym for the given |event|, making the appropriate
