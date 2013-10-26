@@ -221,8 +221,7 @@ class Board(Frame):
     Returns the wire at the given |point|, or None if no such wire exists.
     """
     for wire in self._get_wires():
-      # TODO: should really precompute wire path
-      if point in path_coverage(wire.path):
+      if point in wire.path_coverage:
         return wire
     return None
   def _update_drawable_offset(self, drawable, dx, dy):
@@ -270,8 +269,8 @@ class Board(Frame):
       # update wire paths for wires connected to the moved drawable
       board_coverage = self.get_board_coverage(True, False)
       for wire in drawable.wires():
-        wire.path = find_wire_path(board_coverage - path_coverage(wire.path),
-            wire.start_connector.center, wire.end_connector.center)
+        wire.set_path(find_wire_path(board_coverage - wire.path_coverage,
+            wire.start_connector.center, wire.end_connector.center))
   def _empty_current_drawable_selection(self):
     """
     Voids the current selection of drawables, if any.
@@ -1334,7 +1333,7 @@ class Board(Frame):
     """
     coverage = set()
     for wire in self._get_wires():
-      coverage |= path_coverage(wire.path)
+      coverage |= wire.path_coverage
     return (coverage if include_connectors else
         self._coverage_with_connectors_removed(coverage))
   def get_board_coverage(self, bbox, include_connectors):

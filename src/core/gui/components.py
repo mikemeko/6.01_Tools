@@ -32,6 +32,7 @@ from Tkinter import CENTER
 from Tkinter import PhotoImage
 from util import create_connector
 from util import create_wire
+from util import path_coverage
 from util import snap
 
 class Drawable:
@@ -364,21 +365,30 @@ class Wire:
         'Connector')
     assert isinstance(end_connector, Connector), ('end_connector must be a '
         'Connector')
-    for i in xrange(len(path) - 1):
-      x1, y1 = path[i]
-      x2, y2 = path[i + 1]
-      assert x1 == x2 or y1 == y2
-    assert path[0] == start_connector.center
-    assert path[-1] == end_connector.center
     self.parts = parts
     self.start_connector = start_connector
     self.end_connector = end_connector
-    self.path = path
+    self.set_path(path)
     self.directed = directed
     # wire starts unlabeld, but may be labeld by board when necessary
     # wire labels are useful for applications
     # see board._label_wires for details on wire labeling convention
     self.label = None
+  def set_path(self, path):
+    """
+    Sets the path for this wire to |path|. Path must start and end at the start
+        and end connectors of this wire, respectively. Each of the segments in
+        |path| must be horizontal or vertical. This method also stores the
+        corresponding path coverage.
+    """
+    for i in xrange(len(path) - 1):
+      x1, y1 = path[i]
+      x2, y2 = path[i + 1]
+      assert x1 == x2 or y1 == y2
+    assert path[0] == self.start_connector.center
+    assert path[-1] == self.end_connector.center
+    self.path = path
+    self.path_coverage = path_coverage(path)
   def connectors(self):
     """
     Returns a generator for the two connectors of this wire.
