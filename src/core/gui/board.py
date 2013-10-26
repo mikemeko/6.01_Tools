@@ -279,7 +279,8 @@ class Board(Frame):
     if self._selected_drawables:
       # hide all bounding box outlines
       for drawable in self._selected_drawables:
-        drawable.hide_selected_highlight(self._canvas)
+        if drawable.is_live():
+          drawable.hide_selected_highlight(self._canvas)
       self._selected_drawables.clear()
       self._on_selection_changed()
   def _remove_current_selection_outline(self):
@@ -750,6 +751,7 @@ class Board(Frame):
         self._action_history.record_action(drawable_to_delete.delete_from(
             self._canvas))
         self._redraw_wires()
+        self._empty_current_drawable_selection()
         self.set_changed(True)
       else:
         self.display_message('Item cannot be deleted', WARNING)
@@ -792,6 +794,8 @@ class Board(Frame):
         self._action_history.record_action(Multi_Action([drawable.delete_from(
             self._canvas) for drawable in self._selected_drawables if
             drawable.is_live()], 'delete selected'))
+        self._redraw_wires()
+        self._empty_current_drawable_selection()
         self.set_changed(True)
       else:
         self.display_message('At least one of the selected items cannot be '
