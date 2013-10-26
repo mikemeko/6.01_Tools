@@ -1339,3 +1339,8 @@ class Board(Frame):
     """
     return (self.get_drawables_coverage(bbox, include_connectors) |
         self.get_wire_coverage(include_connectors))
+  def set_busy_cursor(self):
+    """
+    Changes cursor to watch to indicate business.
+    """
+    self._canvas.config(cursor='watch')

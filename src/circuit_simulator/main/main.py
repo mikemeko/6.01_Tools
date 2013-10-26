@@ -73,7 +73,7 @@ if __name__ == '__main__':
       Robot_Power_Drawable, Robot_IO_Drawable, Wire_Connector_Drawable, Wire),
       BOARD_WIDTH, BOARD_HEIGHT, PALETTE_HEIGHT, False, True, True, argv[1] if
       len(argv) > 1 else None)
-  # trak all proto board visualizations
+  # track all proto board visualizations
   app_runner.visuals = []
   def simulate(circuit, plotters):
     """
@@ -86,6 +86,7 @@ if __name__ == '__main__':
     Finds a way to layout the given |circuit| on a proto board and displays the
         discovered proto board.
     """
+    app_runner.board.set_busy_cursor()
     proto_board = combined_solve_layout(circuit)
     if proto_board:
       # show labels on board for easy schematic-layout matching
