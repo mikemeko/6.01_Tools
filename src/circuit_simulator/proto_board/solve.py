@@ -112,7 +112,7 @@ def combined_solve_layout(circuit):
     print 'Cost type: %s' % cost_type
     placement, resistor_node_pairs = get_piece_placement(circuit,
         resistors_as_components=True, cost_type=cost_type, verbose=True)
-    if not placement:
+    if placement is None:
       print '\tToo many components.'
       continue
     for order_sign in (-1, 1):
