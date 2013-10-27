@@ -848,7 +848,7 @@ class Board(Frame):
         self._empty_current_drawable_selection()
         self.set_changed(True)
       else:
-        self.display_message('Item cannot be deleted', WARNING)
+        self.display_message('Item cannot be deleted.', WARNING)
       return
     # delete a wire?
     canvas_id = self._canvas.find_closest(event.x, event.y)[0]
@@ -915,7 +915,9 @@ class Board(Frame):
         self.set_changed(True)
       else:
         self.display_message('At least one of the selected items cannot be '
-            'deleted', WARNING)
+            'deleted.', WARNING)
+    else:
+      self.display_message('No selected items.', WARNING)
   def _rotate_selected_item(self):
     """
     Rotates the currently selected item, if there is exactly one.
@@ -923,7 +925,7 @@ class Board(Frame):
     if len(self._selected_drawables) == 1:
       self._rotate_drawable(iter(self._selected_drawables).next())
     else:
-      self.display_message('Can only rotate one item at a time', WARNING)
+      self.display_message('Must have exaclty 1 item selected.', WARNING)
   def set_cursor_state(self, state):
     """
     Sets this board's cursor state to |state|, which must be either 'draw' or
@@ -996,12 +998,12 @@ class Board(Frame):
     """
     # make sure that it is not connected to other drawables
     if any(drawable.wires()):
-      self.display_message('Cannot rotate a connected item', WARNING)
+      self.display_message('Cannot rotate a connected item.', WARNING)
       return
     # remove current drawable and add rotated version
     rotated_drawable = drawable.rotated()
     if rotated_drawable is drawable:
-      self.display_message('Item cannot be rotated', WARNING)
+      self.display_message('Item cannot be rotated.', WARNING)
       return
     else:
       # save offset for undo / redo

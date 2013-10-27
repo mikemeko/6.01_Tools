@@ -127,6 +127,10 @@ class App_Runner:
         accelerator='Ctrl+Z')
     edit_menu.add_command(label='Redo', command=self.board.redo,
         accelerator='Ctrl+Y')
+    edit_menu.add_command(label='Delete selected',
+        command=self.board._delete_selected_items, accelerator='Delete')
+    edit_menu.add_command(label='Rotate selected',
+        command=self.board._rotate_selected_item, accelerator='r')
     edit_menu.add_command(label='Toggle cursor', command=self._toggle_cursor,
         accelerator='D')
     self._menu.add_cascade(label='Edit', menu=edit_menu)
