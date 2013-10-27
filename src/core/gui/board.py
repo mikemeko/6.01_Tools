@@ -961,13 +961,13 @@ class Board(Frame):
     elif keysym in ('Shift_L', 'Shift_R'):
       self._shift_pressed = True
       self._canvas.configure(cursor=SHIFT_CURSOR)
-    elif keysym == 'Down':
+    elif keysym in ('Down', 'j'):
       self._move_selected_items(0, BOARD_GRID_SEPARATION)
-    elif keysym == 'Left':
+    elif keysym in ('Left', 'h'):
       self._move_selected_items(-BOARD_GRID_SEPARATION, 0)
-    elif keysym == 'Right':
+    elif keysym in ('Right', 'l'):
       self._move_selected_items(BOARD_GRID_SEPARATION, 0)
-    elif keysym == 'Up':
+    elif keysym in ('Up', 'k'):
       self._move_selected_items(0, -BOARD_GRID_SEPARATION)
     elif keysym == 'r':
       self._rotate_selected_item()

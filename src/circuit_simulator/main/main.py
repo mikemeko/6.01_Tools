@@ -136,7 +136,7 @@ if __name__ == '__main__':
   # shortcuts
   app_runner.board.add_key_binding('s', lambda: run_analysis(app_runner.board,
       simulate, solve_circuit=True))
-  app_runner.board.add_key_binding('p', lambda: run_analysis(app_runner.board,
+  app_runner.board.add_key_binding('g', lambda: run_analysis(app_runner.board,
       proto_board_layout))
   app_runner.board.add_key_binding('w', close_all_windows, CTRL_DOWN)
   # welcome :)
