@@ -124,7 +124,7 @@ def create_wire(canvas, x1, y1, x2, y2, other_wires, directed=True,
     for i in xrange(len(wire.path) - 1):
       intersection = intersect(((x1, y1), (x2, y2)), (wire.path[i],
           wire.path[i + 1]))
-      if intersection and intersection not in ((x1, y1), (x2, y2), 'collinear'):
+      if intersection not in (False, 'collinear', (x1, y1), (x2, y2)):
         intersection_points.append(intersection)
   intersection_points.sort(key=lambda (x, y): (x - x1) / (x2 - x1) if x1 != x2
       else (y - y1) / (y2 - y1))

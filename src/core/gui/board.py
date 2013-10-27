@@ -336,6 +336,68 @@ class Board(Frame):
       self.menu.delete(self._added_menu_index)
     self._added_menu_index = iter(self._selected_drawables).next().add_to_menu(
         self.menu) if len(self._selected_drawables) == 1 else None
+  def _collapse_selected_overlapping_connectors(self):
+    """
+    If there is any connector for any of the selected drawables that lies
+        exactly on top an unselected connector, this method collapses those
+        two connectors into one. Returns the Action corresponding to the
+        collapse, or None if no collapses happen.
+    """
+    # collect all necessary actions
+    actions = []
+    # track all unselected connectors on the board
+    connectors = {}
+    for drawable in self._get_drawables():
+      if drawable not in self._selected_drawables:
+        for connector in drawable.connectors:
+          connectors[connector.center] = connector
+    # collapse one connector at a time
+    for drawable in self._selected_drawables:
+      for collapse_connector in drawable.connectors:
+        if collapse_connector.center in connectors:
+          # need to collapse
+          current_connector = connectors[collapse_connector.center]
+          # one of the two overlapping connectors ought to be a wire connector
+          if isinstance(current_connector.drawable, Wire_Connector_Drawable):
+            add_connector = collapse_connector
+            remove_connector = current_connector
+          elif isinstance(collapse_connector.drawable, Wire_Connector_Drawable):
+            add_connector = current_connector
+            remove_connector = collapse_connector
+          else:
+            raise Exception('Overlapping Drawables')
+          # track all the wires attached to the connector that will be removed
+          start_wires = remove_connector.start_wires.copy()
+          end_wires = remove_connector.end_wires.copy()
+          def swap(start_wires, end_wires, add_connector, remove_connector):
+            for wire in start_wires:
+              remove_connector.start_wires.remove(wire)
+              wire.start_connector = add_connector
+              add_connector.start_wires.add(wire)
+            for wire in end_wires:
+              remove_connector.end_wires.remove(wire)
+              wire.end_connector = add_connector
+              add_connector.end_wires.add(wire)
+            add_connector.redraw(self._canvas)
+            remove_connector.redraw(self._canvas)
+          # do swap
+          swap(start_wires, end_wires, add_connector, remove_connector)
+          # record swap action
+          action_maker = (lambda start_wires, end_wires, add_connector,
+              remove_connector: Action(lambda: swap(start_wires, end_wires,
+              add_connector, remove_connector), lambda: swap(start_wires,
+              end_wires, remove_connector, add_connector)))
+          actions.append(action_maker(start_wires, end_wires, add_connector,
+              remove_connector))
+          # delete any wire that ended up becoming a 0-length wire
+          for wire in start_wires | end_wires:
+            if wire.start_connector.center == wire.end_connector.center:
+              actions.append(wire.delete_from(self._canvas))
+          # delete the remove connector if it was not already deleted in the
+          #     0-length wire delete process
+          if remove_connector.drawable.is_live():
+            actions.append(remove_connector.drawable.delete_from(self._canvas))
+    return Multi_Action(actions) if actions else None
   def _drawable_within_board_bounds(self, drawable, offset):
     """
     Returns True if the |drawable| with the given |offset| is completely within
@@ -358,8 +420,14 @@ class Board(Frame):
       if not self._drawable_within_board_bounds(drawable, new_offset):
         return False
       # check that this drawable does not overlap any unselected drawables
-      if self._get_drawable_coverage(drawable, new_offset) & (
-          self._unselected_coverage_c):
+      drawable_coverage = self._get_drawable_coverage(drawable, new_offset)
+      if drawable_coverage & self._unselected_drawable_coverage:
+        return False
+      connector_intersection = (drawable_coverage &
+          self._unselected_connector_coverage)
+      drawable_connectors = set((x + dx, y + dy) for x, y in [connector.center
+          for connector in drawable.connectors])
+      if not connector_intersection.issubset(drawable_connectors):
         return False
     return True
   def _drag_press(self, event):
@@ -455,6 +523,10 @@ class Board(Frame):
         path_multi_action = Multi_Action(path_actions)
         self._action_history.record_action(Ordered_Multi_Action([
             move_multi_action, path_multi_action]))
+        collapse_action = self._collapse_selected_overlapping_connectors()
+        if collapse_action is not None:
+          self._action_history.record_action(collapse_action)
+          self._action_history.combine_last_n(2)
     else:
       for drawable in self._selected_drawables:
         self._move_drawable(drawable, -dx, -dy)
@@ -824,6 +896,10 @@ class Board(Frame):
         path_multi_action = Multi_Action(path_actions)
         self._action_history.record_action(Ordered_Multi_Action([
             move_multi_action, path_multi_action]))
+        collapse_action = self._collapse_selected_overlapping_connectors()
+        if collapse_action is not None:
+          self._action_history.record_action(collapse_action)
+          self._action_history.combine_last_n(2)
         self.set_changed(True)
   def _delete_selected_items(self):
     """
