@@ -33,6 +33,7 @@ from constants import OP_AMP_LEFT_VERTICES
 from constants import OP_AMP_NP
 from constants import OP_AMP_OUTLINE
 from constants import OP_AMP_PN
+from constants import OP_AMP_PWR_GND_FILL
 from constants import OP_AMP_RIGHT_VERTICES
 from constants import OP_AMP_UP_VERTICES
 from constants import OPEN_LAMP_SIGNAL_FILE_TITLE
@@ -64,6 +65,7 @@ from constants import ROBOT_COLOR
 from constants import ROBOT_IO_DRAWABLE_SIZE
 from constants import ROBOT_POWER_DRAWABLE_SIZE
 from constants import ROBOT_SIZE
+from constants import SMALL_FONT
 from constants import SIMULATE
 from core.gui.components import Drawable
 from core.gui.components import Run_Drawable
@@ -325,9 +327,26 @@ class Op_Amp_Drawable(Drawable):
     ox, oy = offset
     x1, x2, x3 = x1 + ox, x2 + ox, x3 + ox
     y1, y2, y3 = y1 + oy, y2 + oy, y3 + oy
+    # pwr, gnd line
+    _x, x_ = min(x1, x2, x3), max(x1, x2, x3)
+    _x_ = (_x + x_) / 2
+    _y, y_ = min(y1, y2, y3), max(y1, y2, y3)
+    _y_ = (_y + y_) / 2
+    top = '+10'
+    bottom = 'gnd'
+    if self.signs != OP_AMP_PN:
+      top, bottom = bottom, top
+    if x1 == x2 or x2 == x3:
+      self.parts.add(canvas.create_line(_x_, _y + 10, _x_, y_ - 10,
+          fill=OP_AMP_PWR_GND_FILL))
+    else:
+      self.parts.add(canvas.create_line(_x + 10, _y_, x_ - 10, _y_,
+          fill=OP_AMP_PWR_GND_FILL))
+    # triangle
     self._triangle_id = canvas.create_polygon(x1, y1, x2, y2, x3, y3,
         fill=OP_AMP_FILL, outline=OP_AMP_OUTLINE)
     self.parts.add(self._triangle_id)
+    # labels
     text_1 = '+' if self.signs == OP_AMP_PN else '-'
     text_2 = '-' if self.signs == OP_AMP_PN else '+'
     if self.vertices == OP_AMP_RIGHT_VERTICES:
@@ -335,21 +354,37 @@ class Op_Amp_Drawable(Drawable):
           y1 + OP_AMP_CONNECTOR_PADDING, text=text_1, font=FONT))
       self.parts.add(canvas.create_text(x2 + LABEL_PADDING,
           y2 - OP_AMP_CONNECTOR_PADDING, text=text_2, font=FONT))
+      self.parts.add(canvas.create_text(_x_, _y + 4, text=top,
+          font=SMALL_FONT, fill=OP_AMP_PWR_GND_FILL))
+      self.parts.add(canvas.create_text(_x_, y_ - 4, text=bottom,
+          font=SMALL_FONT, fill=OP_AMP_PWR_GND_FILL))
     elif self.vertices == OP_AMP_DOWN_VERTICES:
       self.parts.add(canvas.create_text(x3 - OP_AMP_CONNECTOR_PADDING,
           y3 + LABEL_PADDING, text=text_1, font=FONT))
       self.parts.add(canvas.create_text(x1 + OP_AMP_CONNECTOR_PADDING,
           y1 + LABEL_PADDING, text=text_2, font=FONT))
+      self.parts.add(canvas.create_text(_x, _y_, text=bottom,
+          font=SMALL_FONT, fill=OP_AMP_PWR_GND_FILL))
+      self.parts.add(canvas.create_text(x_, _y_, text=top,
+          font=SMALL_FONT, fill=OP_AMP_PWR_GND_FILL))
     elif self.vertices == OP_AMP_LEFT_VERTICES:
       self.parts.add(canvas.create_text(x2 - LABEL_PADDING,
           y2 - OP_AMP_CONNECTOR_PADDING, text=text_1, font=FONT))
       self.parts.add(canvas.create_text(x3 - LABEL_PADDING,
           y3 + OP_AMP_CONNECTOR_PADDING, text=text_2, font=FONT))
+      self.parts.add(canvas.create_text(_x_, _y + 4, text=bottom,
+          font=SMALL_FONT, fill=OP_AMP_PWR_GND_FILL))
+      self.parts.add(canvas.create_text(_x_, y_ - 4, text=top,
+          font=SMALL_FONT, fill=OP_AMP_PWR_GND_FILL))
     else: # OP_AMP_UP_VERTICES
       self.parts.add(canvas.create_text(x2 + OP_AMP_CONNECTOR_PADDING,
           y2 - LABEL_PADDING, text=text_1, font=FONT))
       self.parts.add(canvas.create_text(x3 - OP_AMP_CONNECTOR_PADDING,
           y3 - LABEL_PADDING, text=text_2, font=FONT))
+      self.parts.add(canvas.create_text(_x, _y_, text=top,
+          font=SMALL_FONT, fill=OP_AMP_PWR_GND_FILL))
+      self.parts.add(canvas.create_text(x_, _y_, text=bottom,
+          font=SMALL_FONT, fill=OP_AMP_PWR_GND_FILL))
     if self.jfet:
       self._jfet_id = canvas.create_text((x1 + x2 + x3) / 3.,
           (y1 + y2 + y3) / 3., text='J', fill='red', font=BOLD_FONT)

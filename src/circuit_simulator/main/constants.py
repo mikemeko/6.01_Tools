@@ -17,6 +17,7 @@ MOTOR_FILL = '#666'
 NEGATIVE_COLOR = '#1531AE'
 OP_AMP_FILL = '#EEE'
 OP_AMP_OUTLINE = 'black'
+OP_AMP_PWR_GND_FILL = '#444'
 PIN_OUTLINE = 'black'
 PIN_TEXT_COLOR = 'white'
 POSITIVE_COLOR = '#EF002A'
@@ -87,6 +88,7 @@ SIMULATE = 'Run\nSimulation'
 # fonts, use different font on Mac OS
 BOLD_FONT = ('Helvetica', 12 if system() == 'Darwin' else 10, 'bold')
 FONT = ('Helvetica', 12 if system() == 'Darwin' else 10)
+SMALL_FONT = ('Helvetica', 10 if system() == 'Darwin' else 8)
 
 # window constants
 BOARD_WIDTH = 1000
