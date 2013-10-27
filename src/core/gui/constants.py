@@ -96,7 +96,7 @@ KEYCODE_LOOKUP = {262145: 'Control_L', 524320: 'Alt_L', 524352: 'Alt_R',
     131076: 'Shift_R'}
 
 # wire path search costs
-CROSS_COST = 10
+CROSS_COST = 100
 BEND_COST = 2
 
 # images

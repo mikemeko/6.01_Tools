@@ -219,8 +219,9 @@ def wire_coverage(start, end):
   x1, y1 = start
   x2, y2 = end
   assert x1 == x2 or y1 == y2, 'segment must be horizontal or vertical'
-  return set([(x, y) for x in xrange(min(x1, x2), max(x1, x2) + 1) for y in
-      xrange(min(y1, y2), max(y1, y2) + 1)])
+  return set([(x, y) for x in xrange(min(x1, x2), max(x1, x2) + 1,
+      BOARD_GRID_SEPARATION) for y in xrange(min(y1, y2), max(y1, y2) + 1,
+      BOARD_GRID_SEPARATION)])
 
 def path_coverage(path):
   """

@@ -40,8 +40,8 @@ class Wire_Path_Search_Node(Search_Node):
       new_y = y + dy * BOARD_GRID_SEPARATION
       new_wire_coverage = wire_coverage((new_x, new_y), current_point)
       bend = direction is not None and direction != (dx, dy)
-      cost = (self.cost + 1 + CROSS_COST * (len(board_coverage &
-          new_wire_coverage)) + BEND_COST * bend + abs(dy) * 0.001 * steps)
+      cost = self.cost + 1 + CROSS_COST * len(board_coverage &
+          new_wire_coverage) + BEND_COST * bend + abs(dy) * 0.001 * steps
       children.append(Wire_Path_Search_Node(board_coverage, (new_x, new_y),
           num_bends + bend, (dx, dy), steps + 1, self, cost))
     return children

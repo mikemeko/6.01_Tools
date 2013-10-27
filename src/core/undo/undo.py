@@ -38,21 +38,30 @@ class Multi_Action(Action):
     assert all(isinstance(item, Action) for item in actions), (
         'all sub-actions must be Actions')
     self.actions = actions
-    def do_actions():
-      """
-      Does the actions in the given order.
-      """
-      for action in actions:
-        action.do_action()
-    def undo_actions():
-      """
-      Undoes the actions in the reverse order.
-      """
-      for action in reversed(actions):
-        action.undo_action()
-    Action.__init__(self, do_actions, undo_actions, description)
+    Action.__init__(self, self.do_actions, self.undo_actions, description)
+  def do_actions(self):
+    """
+    Does the actions in the given order.
+    """
+    for action in self.actions:
+      action.do_action()
+  def undo_actions(self):
+    """
+    Undoes the actions in the reverse order.
+    """
+    for action in reversed(self.actions):
+      action.undo_action()
   def __str__(self):
     return '%s[%s]' % (self.description, ', '.join(map(str, self.actions)))
+
+class Ordered_Multi_Action(Multi_Action):
+  """
+  Identical to Multi_Action, but actions are undone in the same order they are
+      done (as opposed to reversed order).
+  """
+  def undo_actions(self):
+    for action in self.actions:
+      action.undo_action()
 
 class Action_History:
   """

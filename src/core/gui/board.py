@@ -46,6 +46,7 @@ from constants import WIRE_COLOR
 from core.undo.undo import Action
 from core.undo.undo import Action_History
 from core.undo.undo import Multi_Action
+from core.undo.undo import Ordered_Multi_Action
 from core.util.util import is_callable
 from core.util.util import rects_overlap
 from find_wire_path import find_wire_path
@@ -109,6 +110,8 @@ class Board(Frame):
     self._drag_start_point = None
     self._drag_last_point = None
     self._drag_safe = False
+    self._drag_selected_wires = set()
+    self._drag_wire_paths = {}
     # state for selection
     self._selected_drawables = set()
     self._selection_start_point = None
@@ -119,9 +122,6 @@ class Board(Frame):
     self._wire_end = None
     self._wire_start_connector_created = False
     self._wire_parts = []
-    self._board_coverage = set()
-    self._drawable_coverage = set()
-    self._wire_coverage = set()
     self._valid_wire_path = False
     # state for key-press callbacks
     self._ctrl_pressed = False
@@ -257,20 +257,27 @@ class Board(Frame):
     """
     Moves the given |drawable| by (|dx|, |dy|). Assumes that |drawable| is on
         this board.
+    self._update_selected_coverage and self._update_unselected_coverage must be
+        called as appropriate before this method is called.
     """
     assert drawable in self._drawables, 'drawable is not on board'
     if dx or dy:
-      # mark the board changed
-      self.set_changed(True)
       # move the drawable on the canvas
       drawable.move(self._canvas, dx, dy)
       # update the drawable's offset
       self._update_drawable_offset(drawable, dx, dy)
-      # update wire paths for wires connected to the moved drawable
-      board_coverage = self.get_board_coverage(True, False)
-      for wire in drawable.wires():
-        wire.set_path(find_wire_path(board_coverage - wire.path_coverage,
-            wire.start_connector.center, wire.end_connector.center))
+      # mark the board changed
+      self.set_changed(True)
+  def _update_wire_path(self, wire):
+    """
+    Updates the given |wire|'s path.
+    self._update_selected_coverage and self._update_unselected_coverage must be
+        called as appropriate before this method is called.
+    """
+    start = wire.start_connector.center
+    end = wire.end_connector.center
+    wire.set_path(find_wire_path((self._selected_drawable_coverage |
+        self._unselected_coverage_c) - set([start, end]), start, end))
   def _empty_current_drawable_selection(self):
     """
     Voids the current selection of drawables, if any.
@@ -344,21 +351,16 @@ class Board(Frame):
         keeps all of the selected drawables within the bounds of the board and
         results in no overlapping drawables, False otherwise.
     """
-    unselected_drawables = filter(lambda drawable: not isinstance(drawable,
-        Wire_Connector_Drawable), set(self._get_drawables()) -
-        self._selected_drawables)
     for drawable in self._selected_drawables:
       ox, oy = self.get_drawable_offset(drawable)
       new_offset = (ox + dx, oy + dy)
       # check that this drawable is within the board bounds
       if not self._drawable_within_board_bounds(drawable, new_offset):
         return False
-      # check that this drawable does not overlap other drawables
-      new_bbox = drawable.bounding_box(new_offset)
-      for other_drawable in unselected_drawables:
-        if rects_overlap(new_bbox, other_drawable.bounding_box(
-            self.get_drawable_offset(other_drawable))):
-          return False
+      # check that this drawable does not overlap any unselected drawables
+      if self._get_drawable_coverage(drawable, new_offset) & (
+          self._unselected_coverage_c):
+        return False
     return True
   def _drag_press(self, event):
     """
@@ -380,6 +382,12 @@ class Board(Frame):
       drawable.show_selected_highlight(self._canvas)
     # record drag state
     self._drag_start_point = self._drag_last_point = (event.x, event.y)
+    self._drag_selected_wires = reduce(set.union, [set(drawable.wires()) for
+        drawable in self._selected_drawables], set())
+    self._drag_wire_paths = {wire:wire.path for wire in
+        self._drag_selected_wires}
+    self._update_selected_coverage()
+    self._update_unselected_coverage()
   def _drag_move(self, event):
     """
     Callback for button move for dragging.
@@ -390,31 +398,37 @@ class Board(Frame):
     # drag movement amount
     dx = snap(event.x - last_x)
     dy = snap(event.y - last_y)
-    # update drag last point
-    self._drag_last_point = (last_x + dx, last_y + dy)
-    self._drag_safe = self._move_good_for_selected_drawables(dx, dy)
-    # move each of the selected drawables
-    for drawable in self._selected_drawables:
-      self._move_drawable(drawable, dx, dy)
-    self._redraw_wires()
-    # show guide lines
-    x1 = y1 = float('inf')
-    x2 = y2 = -float('inf')
-    for drawable in self._selected_drawables:
-      if isinstance(drawable, Wire_Connector_Drawable):
-        x, y = iter(drawable.connectors).next().center
-        x1 = min(x1, x)
-        x2 = max(x2, x)
-        y1 = min(y1, y)
-        y2 = max(y2, y)
-      else:
-        _x1, _y1, _x2, _y2 = drawable.bounding_box(self.get_drawable_offset(
-            drawable))
-        x1 = min(x1, _x1)
-        y1 = min(y1, _y1)
-        x2 = max(x2, _x2)
-        y2 = max(y2, _y2)
-    self._draw_guide_lines([(x1, y1), (x2, y2)])
+    if dx or dy:
+      # update drag last point
+      self._drag_last_point = (last_x + dx, last_y + dy)
+      self._drag_safe = self._move_good_for_selected_drawables(dx, dy)
+      # move each of the selected drawables
+      for drawable in self._selected_drawables:
+        self._move_drawable(drawable, dx, dy)
+      # update wire paths after updating selected coverage
+      self._update_selected_coverage()
+      for drawable in self._selected_drawables:
+        for wire in drawable.wires():
+          self._update_wire_path(wire)
+      self._redraw_wires()
+      # show guide lines
+      x1 = y1 = float('inf')
+      x2 = y2 = -float('inf')
+      for drawable in self._selected_drawables:
+        if isinstance(drawable, Wire_Connector_Drawable):
+          x, y = iter(drawable.connectors).next().center
+          x1 = min(x1, x)
+          x2 = max(x2, x)
+          y1 = min(y1, y)
+          y2 = max(y2, y)
+        else:
+          _x1, _y1, _x2, _y2 = drawable.bounding_box(self.get_drawable_offset(
+              drawable))
+          x1 = min(x1, _x1)
+          y1 = min(y1, _y1)
+          x2 = max(x2, _x2)
+          y2 = max(y2, _y2)
+      self._draw_guide_lines([(x1, y1), (x2, y2)])
   def _drag_release(self, event):
     """
     Callback for button release for dragging.
@@ -427,13 +441,25 @@ class Board(Frame):
     if self._drag_safe:
       if dx or dy:
         # record movement action for undo / redo
-        self._action_history.record_action(Multi_Action(map(lambda drawable:
+        move_multi_action = Multi_Action(map(lambda drawable:
             Action(lambda: self._move_drawable(drawable, dx, dy),
             lambda: self._move_drawable(drawable, -dx, -dy), 'move'),
-            self._selected_drawables), 'moves'))
+            self._selected_drawables), 'moves')
+        path_actions = []
+        path_action_maker = lambda wire, old_path, new_path: Action(
+            lambda: wire.set_path(new_path), lambda: wire.set_path(old_path))
+        for wire in self._drag_selected_wires:
+          old_path = self._drag_wire_paths[wire]
+          new_path = wire.path
+          path_actions.append(path_action_maker(wire, old_path, new_path))
+        path_multi_action = Multi_Action(path_actions)
+        self._action_history.record_action(Ordered_Multi_Action([
+            move_multi_action, path_multi_action]))
     else:
       for drawable in self._selected_drawables:
         self._move_drawable(drawable, -dx, -dy)
+        for wire in drawable.wires():
+          wire.path = self._drag_wire_paths[wire]
       self._redraw_wires()
     # remove guide lines if shown
     self._remove_guide_lines()
@@ -441,6 +467,8 @@ class Board(Frame):
     self._drag_start_point = None
     self._drag_last_point = None
     self._drag_safe = False
+    self._drag_selected_wires.clear()
+    self._drag_wire_paths.clear()
   def _select_press(self, event):
     """
     Callback for button press for selection.
@@ -525,6 +553,7 @@ class Board(Frame):
     """
     self._empty_current_drawable_selection()
     self._wire_start = (snap(event.x), snap(event.y))
+    self._update_unselected_coverage()
     # if there isn't a connector at wire start, or if that connector is
     #     disabled, don't allow drawing wire
     start_connector = self._connector_at(self._wire_start)
@@ -555,9 +584,6 @@ class Board(Frame):
       else:
         self._wire_start = None
         return
-    self._board_coverage = self.get_board_coverage(True, False)
-    self._drawable_coverage = self.get_drawables_coverage(False, True)
-    self._wire_coverage = self.get_wire_coverage(True)
   def _wire_move(self, event):
     """
     Callback for when a wire is changed while being created.
@@ -569,16 +595,16 @@ class Board(Frame):
         # erase previous wire path
         self._erase_previous_wire_path()
         # find new wire path
-        if wire_end in self._drawable_coverage:
+        if wire_end in self._unselected_drawable_coverage:
           coverage = set()
-        elif wire_end in self._wire_coverage:
-          coverage = self._board_coverage - set([wire_end])
+        elif wire_end in self._unselected_wire_coverage:
+          coverage = self._unselected_coverage - set([wire_end])
         else:
-          coverage = self._board_coverage
+          coverage = self._unselected_coverage
         wire_path = find_wire_path(coverage, self._wire_start, wire_end)
         # draw wires
-        self._valid_wire_path = not self._drawable_coverage & path_coverage(
-            wire_path)
+        self._valid_wire_path = not (self._unselected_drawable_coverage &
+            path_coverage(wire_path))
         color = WIRE_COLOR if self._valid_wire_path else 'red'
         for i in xrange(len(wire_path) - 1):
           self._draw_wire(wire_path[i], wire_path[i + 1], color)
@@ -642,9 +668,6 @@ class Board(Frame):
     self._wire_end = None
     self._wire_start_connector_created = False
     self._wire_parts = []
-    self._board_coverage = set()
-    self._drawable_coverage = set()
-    self._wire_coverage = set()
     self._valid_wire_path = False
   def _canvas_button_press(self, event):
     """
@@ -774,16 +797,34 @@ class Board(Frame):
     Moves the currently selected items by |dx| in the x-direction and |dy| in
         the y-direction.
     """
-    if self._selected_drawables and (dx or dy) and (
-        self._move_good_for_selected_drawables(dx, dy)):
-      for drawable in self._selected_drawables:
-        self._move_drawable(drawable, dx, dy)
-      self._redraw_wires()
-      self._action_history.record_action(Multi_Action(map(lambda drawable:
-          Action(lambda: self._move_drawable(drawable, dx, dy),
-          lambda: self._move_drawable(drawable, -dx, -dy), 'move'),
-          self._selected_drawables), 'move selected'))
-      self.set_changed(True)
+    if self._selected_drawables and (dx or dy):
+      self._update_selected_coverage()
+      self._update_unselected_coverage()
+      if self._move_good_for_selected_drawables(dx, dy):
+        selected_wires = reduce(set.union, [set(drawable.wires()) for drawable
+            in self._selected_drawables])
+        old_wire_paths = {wire:wire.path for wire in selected_wires}
+        for drawable in self._selected_drawables:
+          self._move_drawable(drawable, dx, dy)
+        self._update_selected_coverage()
+        for wire in selected_wires:
+          self._update_wire_path(wire)
+        self._redraw_wires()
+        move_multi_action = Multi_Action(map(lambda drawable:
+            Action(lambda: self._move_drawable(drawable, dx, dy),
+            lambda: self._move_drawable(drawable, -dx, -dy), 'move'),
+            self._selected_drawables), 'moves')
+        path_actions = []
+        path_action_maker = lambda wire, old_path, new_path: Action(
+            lambda: wire.set_path(new_path), lambda: wire.set_path(old_path))
+        for wire in selected_wires:
+          old_path = old_wire_paths[wire]
+          new_path = wire.path
+          path_actions.append(path_action_maker(wire, old_path, new_path))
+        path_multi_action = Multi_Action(path_actions)
+        self._action_history.record_action(Ordered_Multi_Action([
+            move_multi_action, path_multi_action]))
+        self.set_changed(True)
   def _delete_selected_items(self):
     """
     Deletes the currently selected items.
@@ -1300,48 +1341,73 @@ class Board(Frame):
     Returns True if there is a text currently being editted, False otherwise.
     """
     return bool(self._canvas.focus())
-  def _coverage_with_connectors_removed(self, coverage):
-    """
-    Returns the set |coverage| with all coordinate points at which there is a
-        connector removed.
-    """
-    return set(filter(lambda point: not self._connector_at(point), coverage))
-  def _get_drawable_coverage(self, drawable, bbox):
+  def _get_drawable_coverage(self, drawable, (ox, oy)):
     """
     Returns the set of coordinate points on the board occupied by |drawable|.
     """
-    ox, oy = drawable.offset
-    coverage = [(x, y) for x in xrange(ox, ox + drawable.width + 1,
+    return set([(x, y) for x in xrange(ox, ox + drawable.width + 1,
         BOARD_GRID_SEPARATION) for y in xrange(oy, oy + drawable.height + 1,
-        BOARD_GRID_SEPARATION)]
-    if not bbox:
-      coverage = filter(lambda (x, y): self._canvas.find_closest(x, y)[0] in
-          drawable.parts, coverage)
-    return set(coverage)
-  def get_drawables_coverage(self, bbox, include_connectors):
+        BOARD_GRID_SEPARATION)])
+  def _connector_coverage(self, drawables):
     """
-    Returns the set of coordinate points on the board occupied by drawables.
+    Returns the set of points on the board covevered by connectors.
     """
     coverage = set()
-    for drawable in self._get_drawables():
-      coverage |= self._get_drawable_coverage(drawable, bbox)
-    return (coverage if include_connectors else
-        self._coverage_with_connectors_removed(coverage))
-  def get_wire_coverage(self, include_connectors):
+    for drawable in drawables:
+      for connector in drawable.connectors:
+        coverage.add(connector.center)
+    return coverage
+  def _update_selected_coverage(self):
     """
-    Returns the set of coordinate points on the board occupied by wires.
+    Updates the following variables that track selected coverage:
+      self._selected_connector_coverage,
+      self._selected_drawable_coverage,
+      self._selected_wire_coverage,
+      self._selected_coverage,
+      self._selected_coverage_c.
     """
-    coverage = set()
-    for wire in self._get_wires():
-      coverage |= wire.path_coverage
-    return (coverage if include_connectors else
-        self._coverage_with_connectors_removed(coverage))
-  def get_board_coverage(self, bbox, include_connectors):
+    connector_coverage = self._connector_coverage(self._get_drawables())
+    self._selected_connector_coverage = self._connector_coverage(
+        self._selected_drawables)
+    self._selected_drawable_coverage = reduce(set.union, [
+        self._get_drawable_coverage(drawable, drawable.offset) for drawable in
+        self._selected_drawables], set())
+    self._selected_drawable_coverage -= connector_coverage
+    wires = reduce(list.__add__, [list(drawable.wires()) for drawable in
+        self._selected_drawables], [])
+    self._selected_wire_coverage = reduce(set.union, [wire.path_coverage for
+        wire in wires], set())
+    self._selected_wire_coverage -= connector_coverage
+    self._selected_coverage = (self._selected_drawable_coverage |
+        self._selected_wire_coverage)
+    self._selected_coverage_c = (self._selected_coverage |
+        self._selected_connector_coverage)
+  def _update_unselected_coverage(self):
     """
-    Returns the set of occupied coordinate points on the board.
+    Updates the following variables that track unselected coverage:
+      self._unselected_connector_coverage,
+      self._unselected_drawable_coverage,
+      self._unselected_wire_coverage,
+      self._unselected_coverage,
+      self._unselected_coverage_c.
     """
-    return (self.get_drawables_coverage(bbox, include_connectors) |
-        self.get_wire_coverage(include_connectors))
+    connector_coverage = self._connector_coverage(self._get_drawables())
+    unselected_drawables = set(self._get_drawables()) - self._selected_drawables
+    self._unselected_connector_coverage = self._connector_coverage(
+        unselected_drawables)
+    self._unselected_drawable_coverage = reduce(set.union, [
+        self._get_drawable_coverage(drawable, drawable.offset) for drawable in
+        unselected_drawables], set())
+    self._unselected_drawable_coverage -= connector_coverage
+    wires = [wire for wire in self._get_wires() if wire.start_connector.drawable
+        not in self._selected_drawables and wire.end_connector.drawable not in
+        self._selected_drawables]
+    self._unselected_wire_coverage = reduce(set.union, [wire.path_coverage for
+        wire in wires], set())
+    self._unselected_coverage = (self._unselected_drawable_coverage |
+        self._unselected_wire_coverage)
+    self._unselected_coverage_c = (self._unselected_coverage |
+        self._unselected_connector_coverage)
   def set_busy_cursor(self):
     """
     Changes cursor to watch to indicate business.
