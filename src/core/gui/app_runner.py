@@ -140,11 +140,17 @@ class App_Runner:
     Adds basic shortcuts.
     """
     self.board.parent.bind('<Control-n>', lambda event: self._new_file())
+    self.board.parent.bind('<Control-N>', lambda event: self._new_file())
     self.board.parent.bind('<Control-o>', lambda event: self._open_file())
+    self.board.parent.bind('<Control-O>', lambda event: self._open_file())
     self.board.parent.bind('<Control-q>', lambda event: self.board.quit())
+    self.board.parent.bind('<Control-Q>', lambda event: self.board.quit())
     self.board.parent.bind('<Control-s>', lambda event: self._save_file())
+    self.board.parent.bind('<Control-S>', lambda event: self._save_file())
     self.board.parent.bind('<Control-y>', lambda event: self.board.redo())
+    self.board.parent.bind('<Control-Y>', lambda event: self.board.redo())
     self.board.parent.bind('<Control-z>', lambda event: self.board.undo())
+    self.board.parent.bind('<Control-Z>', lambda event: self.board.undo())
     self.board.add_key_binding('d', self._toggle_cursor)
   def _init_board(self):
     """
