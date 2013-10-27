@@ -13,14 +13,30 @@ the data will be discussed in detail in Chapter \ref{ch:discussion}.
 \begin{figure}[H]
 \Tree [.{All Alternatives}
     [{Distance} {Block} ].Placement !\qsetw{4cm}
-    [{AP}
-     [I D ].{PN}
-     [I D ].{PP} ].Wiring !\qsetw{4cm}
+    [{All}
+     [I D ].{Node}
+     [I D ].{Pair} ].Wiring !\qsetw{4cm}
     [{Component} {Wire} ].Resistors !\qsetw{4cm}
     [$A*$ {Best First} ].Search ]
 \label{fig:alternatives}
 \caption{All possible alternatives to the algorithm.}
 \end{figure}
+
+As comparing all $40$ possible implementations of the algorithm is tedious, we
+will compare the alternatives for each aspect of the algorithm while holding
+other aspects fixed. Hence, we will carryout the following comparisons:
+
+\begin{enumerate}
+\item Placement: Distance vs. Blocking. Wiring method will be per-pair,
+decreasing, resistors will be treated as components, and we will use $A*$.
+\item Wiring: All pairs vs. Per-node, decreasing vs. Per-node, increasing vs.
+Per-pair, decreasing vs. Per-pair, increasing. Placement method will be
+blocking, resistors will be treated as components, and we will use $A*$.
+\item Resistor treatment: As components vs. As wires. Placement method will be
+blocking, wiring method will be per-pair, decreasing, and we will use $A*$.
+\item Search: $A*$ vs. Best First. Placement method will be blocking, wiring
+method will be per-pair, decreasing, and resistors will be treated as components.
+\end{enumerate}
 
 The data to compare the alternatives is gathered as described in Chapter
 \ref{ch:methods}. We run the algorithm on $4425$ randomly generated schematics
@@ -33,32 +49,29 @@ In comparing alternatives, there are $3$ items we will consider:
 \item Which alternative, when successful, produces the best layouts?
 \end{enumerate}
 
+In comparing success, we will look at bar graphs of the number of successes on
+each of the $4425$ schematic out of the $10$ runs. We will also look at tables
+that provide the same data in more detail. To get an understanding of how the
+success rates vary with complexity, we will look at plots of circuit complexity
+versus success rate, where our measure of circuit complexity will be the number
+of pins in the circuit as discussed in Chapter \ref{ch:methods} (TODO: this is
+currently not done, be sure to give a histogram of numbers of pins in the
+circuits).
+
 In comparing success time, we will look at CPU time spent on the wiring step, as
 the placement step has much less variability. We will look at plots of circuit
-complexity versus wiring times to do the comparisons. Our measure of complexity
-of a circuit will be the number of pins in the circuit as discussed in Chapter
-\ref{ch:methods} (TODO: this is currently not done, be sure to give a histogram
-of numbers of pins in the circuits).
+complexity versus wiring times to do the comparisons.
 
 In comparing the goodness of layouts, we will compare numbers of wires, total
-lengths of wires, and numbers of wire crosses.
+lengths of wires, and numbers of wire crosses as functions of circuit complexity.
+
+Below we will present the data for each of the comparisons outlined above. Note
+that in all figures that follow, error bars indicate $1.96$ times the
+standard error.
+Discussion of these results will follow in Chapter \ref{ch:discussion}.
 
 \section{Comparing placement methods}
 \label{sec:compare_placement}
-
-We have two placement methods available: choosing a placement that aims to
-minimize the sum of pairwise distances between pairs of points on the protoboard
-that need to be interconnected, and choosing a placement that aims to minimize
-the number of rows blocked off (in some sense) in each column. To compare these
-two placement methods, we keep the other alternatives fixed at some choices.
-In the data given below, the wiring method used is per-pair wiring, in decreasing
-order of distances apart, resistors are treated as components, and we use $A*$ as
-our search algorithm.
-
-First we look at the success rates that result from the two placement methods.
-Figure \ref{fig:placement_success} presents a bar graph that compares the numbers
-of times, out of $10$ runs, each method succeeded over the $4425$ schematics.
-Table \ref{tb:placement_success} presents the same data more precisely.
 
 \begin{figure}[H]
 \begin{center}
@@ -90,10 +103,6 @@ Blocking & $162$ & $38$ & $51$ & $57$ & $72$ & $85$ & $109$ & $106$ & $144$ & $2
 \caption{Placement method comparison: success rates.}
 \end{table}
 
-Next we look at the trends of success for the two methods as circuits get more
-complex. Figure \ref{fig:placement_success_trend} presents the average success
-rate at each discrete complexity level.
-
 \begin{figure}[H]
 \begin{center}
 \includegraphics[width=\textwidth]{Images/placement_success_trend_comparison.png}
@@ -101,10 +110,6 @@ rate at each discrete complexity level.
 \label{fig:placement_success_trend}
 \end{center}
 \end{figure}
-
-Now we look at the trends of wiring time for the two methods as circuits get
-more complex. Figure \ref{fig:placement_time_trend} presents the average wiring
-time (in seconds) at each discrete complexity level.
 
 \begin{figure}[H]
 \begin{center}
@@ -114,11 +119,6 @@ time (in seconds) at each discrete complexity level.
 \end{center}
 \end{figure}
 
-Finally wee look at the quality of the layouts the two alternative placement
-methods produces. Figure \ref{fig:placement_quality_trend} gives average number of
-wires, average number of wire crosses, and average total lengths of wires at
-each discrete complexity level.
-
 \begin{figure}
 \begin{center}
 \includegraphics[width=\textwidth]{Images/placement_quality_trend_comparison.png}
@@ -127,9 +127,70 @@ each discrete complexity level.
 \end{center}
 \end{figure}
 
-Discussion of all of these results follows in Chapter \ref{ch:discussion}.
-
 \section{Comparing wiring methods}
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[width=\textwidth]{Images/wiring_success_comparison.png}
+\caption{Wiring method comparison: success rates.}
+\label{fig:wiring_success}
+\end{center}
+\end{figure}
+
+\begin{table}[H]
+\begin{center}
+\begin{singlespace}
+\begin{tabular}{|c||c|c|c|c|c|c|c|c|c|c|c|}
+\hline
+ & \multicolumn{11}{|c|}{Number of times succeeded out of $10$} \\
+\hline
+ & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 \\
+\hline\hline
+All & $458$ & $114$ & $111$ & $112$ & $127$ & $145$ & $177$ & $139$ & $172$ & $227$ & $2643$ \\
+ & $0.10$ & $0.03$ & $0.03$ & $0.03$ & $0.03$ & $0.03$ & $0.04$ & $0.03$ & $0.04$ & $0.05$ & $0.60$ \\
+\hline
+ Node D & $195$ & $50$ & $58$ & $66$ & $104$ & $83$ & $125$ & $176$ & $162$ & $268$ & $3138$ \\
+  & $0.04$ & $0.01$ & $0.01$ & $0.01$ & $0.02$ & $0.02$ & $0.03$ & $0.04$ & $0.04$ & $0.06$ & $0.71$ \\
+\hline
+  Node I & $154$ & $50$ & $55$ & $62$ & $85$ & $71$ & $106$ & $141$ & $156$ & $217$ & $3328$ \\
+   & $0.03$ & $0.01$ & $0.01$ & $0.01$ & $0.02$ & $0.02$ & $0.02$ & $0.03$ & $0.04$ & $0.05$ & $0.75$ \\
+\hline
+   Pair D & $162$ & $38$ & $51$ & $57$ & $72$ & $85$ & $109$ & $106$ & $144$ & $203$ & $3398$ \\
+    & $0.04$ & $0.01$ & $0.01$ & $0.01$ & $0.02$ & $0.02$ & $0.02$ & $0.02$ & $0.03$ & $0.05$ & $0.77$ \\
+\hline
+    Pair I & $177$ & $40$ & $59$ & $54$ & $91$ & $92$ & $100$ & $118$ & $132$ & $212$ & $3350$ \\
+     & $0.04$ & $0.01$ & $0.01$ & $0.01$ & $0.02$ & $0.02$ & $0.02$ & $0.03$ & $0.03$ & $0.05$ & $0.76$ \\
+\hline
+\end{tabular}
+\end{singlespace}
+\end{center}
+\label{tb:wiring_success}
+\caption{Wiring method comparison: success rates.}
+\end{table}
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[width=\textwidth]{Images/wiring_success_trend_comparison.png}
+\caption{Wiring method comparison: success rate trends.}
+\label{fig:wiring_success_trend}
+\end{center}
+\end{figure}
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[width=\textwidth]{Images/wiring_time_trend_comparison.png}
+\caption{Wiring method comparison: wiring time trends.}
+\label{fig:wiring_time_trend}
+\end{center}
+\end{figure}
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=\textwidth]{Images/wiring_quality_trend_comparison.png}
+\caption{Wiring method comparison: layout quality trends.}
+\label{fig:wiring_quality_trend}
+\end{center}
+\end{figure}
 
 \section{Comparing resistor treatments}
 
