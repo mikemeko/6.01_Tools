@@ -12,11 +12,6 @@ that we obtained.
 
 \subsection{Comparing placement methods}
 
-The results presented in Section \ref{sec:compare_placement} suggest very
-interesting behaviors of our two placement methods: the blocking method and the
-distance method. In this section, we will discuss several such behaviors and
-draw on the appropriate data for support.
-
 In Figure \ref{fig:placement_success} and Table \ref{tb:placement_success} we
 see that the distance method exceeds the blocking method in number of circuits
 solved $10$ times out of $10$ as well as in the number of circuits solved $0$
@@ -66,7 +61,9 @@ increases, success rate generally decreases for both of the placement methods.
 The curves in Figure \ref{fig:placement_success_trend} seem to shoot back up
 at the far end of the figure, but this is a result of the fact that there are
 very few circuits at that end of the figure, on which the algorithm happened to
-be consistently successful.
+be consistently successful. It is important to note, once again, that the success
+rates for the two placement methods are very comparable despite the difference
+discussed above.
 
 Let us now consider wiring time as the basis for comparison. Once again, in
 Figure \ref{fig:placement_time_trend} we notice a very interesting separation
@@ -109,6 +106,61 @@ It is clear that both methods have their strengths and weaknesses. In Section
 get us the best of both worlds (?).
 
 \subsection{Comparing wiring methods}
+
+To compare the wiring methods, let us start with the success rate for each method.
+Figures \ref{fig:wiring_success} and \ref{fig:wiring_success_trend}, and Table
+\ref{fig:wiring_success} provide the appropriate data. The very first fact we
+observe is that the all-pairs method has a much smaller success rate than all of
+the other alternatives, especially as circuit complexity increases. The reason
+for this, in large part, is the fact that we impose a cutoff on the number of
+nodes to expand in the search (TODO: this must be discussed in Methods). As we
+are using just the one search to connect all pairs of locations, the search
+cutoff would be expected to have more of an effect on the all-pairs method. The
+other four alternatives have very comparable success rates.
+
+Next we look at Figure \ref{fig:wiring_time_trend} to compare wiring times for
+the five methods. Once again, we observe that the all-pairs methods takes
+significanlty more time than the other methods. When attempting to connect all
+pairs in one search, the method searches for an appealing layout, which may
+require searching through a large number of alternatives, especially for more
+complex circuits. Hence, we would expect the all-pairs methods to generally take
+more time than the other alternatives. We also observe from Figure
+\ref{fig:wiring_time_trend} that the wiring times for the two per-node methods
+are comparable, and that the wiring times for the two per-pair methods are also
+comparable, but that the per-node wiring times are generally bigger than the
+per-pair wiring times. This trend is also expected as the per-node methods
+attempt to connect multiple pairs of locations at once while keeping the layout
+pleasing, and this generally requires searching through more alternatives than
+connecting each of the pairs of locations individually. It is important to note
+that per-node, increaseing generally takes more time than per-pair, decreasing,
+and also that per-pair, increasing generally takes more time than per-pair,
+decreasing.
+
+Finally let us look at Figure \ref{fig:wiring_quality_trend} to compare the
+quality of the layouts produced by the five alternative wiring methods. First,
+as we observed in the placement method comparison, we see that there is very
+little difference in terms of number of wires used and the total wire length.
+However, there are significant differences in the number of wire crosses. We see
+that the all-pairs method generates layouts with much fewer wire crosses than
+the other methods. This is completely expected since we run one search to
+connect all pairs of locations while attempting to keep the layout as nice as
+possible. Conversely, the per-pair, decreasing and per-node, decreasing methods
+result in the most number of wire crosses. It is very interesting to note that
+the per-node, decreasing method produces more wire crosses on average than the
+per-pair,
+increasing method. Here we observe that the order in which we consider pairs of
+locations has a telling effect on how good the layouts will be. In essence,
+connecting the harder pairs of locations generally produces more wire corsses.
+
+What we have observed is that while the all-pairs method is the least successful
+method and the one that generally takes the longest among the five,
+it generally produces the best layouts when it does succeed. On the other hand,
+the alternatives that break down the problem into smaller pieces succeed more
+often and finish more quickly while producing worse results. Furthermore,
+the more finely we breakdown the problem, the faster the overall algorithm.
+Lastly, ordering subproblems from hardest to easiest has the effect of making the
+overall wiring step complete faster but producing worse results than the reverse
+order and not necessarily getting a markedly better success rate.
 
 \subsection{Comparing resistor treatments}
 
