@@ -85,14 +85,13 @@ class Proto_Board_Visualizer(Frame):
     # check if cursor is on a wire
     item = self._canvas.find_closest(event.x, event.y)[0]
     if item in self._wire_parts:
-      self._tooltip_helper.show_tooltip(event.x, event.y,
-          self._wire_parts[item])
       self._wire_highlight(self._wire_parts[item])
       return
     # check if cursor is on a piece
     for piece in self._proto_board.get_pieces():
       if self._point_inside_piece(piece, event.x, event.y):
-        self._tooltip_helper.show_tooltip(event.x, event.y, piece.label,
+        self._tooltip_helper.show_tooltip(event.x, event.y,
+            'ID: %s' % piece.label,
             background=TOOLTIP_DRAWABLE_LABEL_BACKGROUND)
         self._piece_highlight(piece.labels_at((event.x, event.y),
             self._rc_to_xy(piece.top_left_loc)))
@@ -103,7 +102,6 @@ class Proto_Board_Visualizer(Frame):
     if loc:
       node = self._proto_board.node_for(loc)
       if node:
-        self._tooltip_helper.show_tooltip(event.x, event.y, node)
         self._wire_highlight(node)
         return
     self._wire_highlight(None)

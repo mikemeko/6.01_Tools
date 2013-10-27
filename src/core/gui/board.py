@@ -1076,19 +1076,18 @@ class Board(Frame):
         if isinstance(connector.drawable, Wire_Connector_Drawable):
           wires = list(connector.wires())
           if wires:
-            self._tooltip_helper.show_tooltip(event.x, event.y, wires[0].label)
             self._drawable_highlight(None)
             self._wire_highlight(wires[0].label)
       # check if cursor is on a drawable
       elif drawable:
         if not isinstance(drawable, Wire_Connector_Drawable):
-          self._tooltip_helper.show_tooltip(event.x, event.y, drawable.label,
+          self._tooltip_helper.show_tooltip(event.x, event.y,
+              'ID: %s' % drawable.label,
               background=TOOLTIP_DRAWABLE_LABEL_BACKGROUND)
           self._drawable_highlight(drawable.label)
           self._wire_highlight(None)
       # check if the cursor is on a wire
       elif wire:
-        self._tooltip_helper.show_tooltip(event.x, event.y, wire.label)
         self._drawable_highlight(None)
         self._wire_highlight(wire.label)
       else:
