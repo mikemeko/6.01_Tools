@@ -916,6 +916,14 @@ class Board(Frame):
       else:
         self.display_message('At least one of the selected items cannot be '
             'deleted', WARNING)
+  def _rotate_selected_item(self):
+    """
+    Rotates the currently selected item, if there is exactly one.
+    """
+    if len(self._selected_drawables) == 1:
+      self._rotate_drawable(iter(self._selected_drawables).next())
+    else:
+      self.display_message('Can only rotate one item at a time', WARNING)
   def set_cursor_state(self, state):
     """
     Sets this board's cursor state to |state|, which must be either 'draw' or
@@ -959,6 +967,8 @@ class Board(Frame):
       self._move_selected_items(BOARD_GRID_SEPARATION, 0)
     elif keysym == 'Up':
       self._move_selected_items(0, -BOARD_GRID_SEPARATION)
+    elif keysym == 'r':
+      self._rotate_selected_item()
     elif keysym in ('BackSpace', 'Delete'):
       # delete selected items as long there is not text edit in progress
       if not self.edit_in_progress():
@@ -980,34 +990,42 @@ class Board(Frame):
     elif keysym in ('Shift_L', 'Shift_R'):
       self._shift_pressed = False
       self._canvas.configure(cursor='arrow')
+  def _rotate_drawable(self, drawable):
+    """
+    Rotates the given |drawable|.
+    """
+    # make sure that it is not connected to other drawables
+    if any(drawable.wires()):
+      self.display_message('Cannot rotate a connected item', WARNING)
+      return
+    # remove current drawable and add rotated version
+    rotated_drawable = drawable.rotated()
+    if rotated_drawable is drawable:
+      self.display_message('Item cannot be rotated', WARNING)
+      return
+    else:
+      # save offset for undo / redo
+      offset = drawable.offset
+      def switch(remove, add):
+        """
+        Removes |remove| and adds |add|.
+        """
+        remove.delete_from(self._canvas)
+        self._add_drawable(add, offset)
+        self._empty_current_drawable_selection()
+        self._select(add)
+      # do rotation
+      switch(drawable, rotated_drawable)
+      self._action_history.record_action(Action(
+          lambda: switch(drawable, rotated_drawable),
+          lambda: switch(rotated_drawable, drawable), 'rotate'))
   def _rotate(self, event):
     """
     Callback for item rotation. Marks the board changed if any item is rotated.
     """
     drawable_to_rotate = self._drawable_at((event.x, event.y))
     if drawable_to_rotate:
-      # make sure that it is not connected to other drawables
-      if any(drawable_to_rotate.wires()):
-        self.display_message('Cannot rotate a connected item', WARNING)
-        return
-      # remove current drawable and add rotated version
-      rotated_drawable = drawable_to_rotate.rotated()
-      if rotated_drawable is drawable_to_rotate:
-        self.display_message('Item cannot be rotated', WARNING)
-      else:
-        # save offset for undo / redo
-        offset = drawable_to_rotate.offset
-        def switch(remove, add):
-          """
-          Removes |remove| and adds |add|.
-          """
-          remove.delete_from(self._canvas)
-          self._add_drawable(add, offset)
-        # do rotation
-        switch(drawable_to_rotate, rotated_drawable)
-        self._action_history.record_action(Action(
-            lambda: switch(drawable_to_rotate, rotated_drawable),
-            lambda: switch(rotated_drawable, drawable_to_rotate), 'rotate'))
+      self._rotate_drawable(drawable_to_rotate)
   def set_drawable_highlight(self, f):
     """
     Resets the drawable highlighting function to |f|.
