@@ -139,7 +139,5 @@ if __name__ == '__main__':
   app_runner.board.add_key_binding('g', lambda: run_analysis(app_runner.board,
       proto_board_layout))
   app_runner.board.add_key_binding('w', close_all_windows, CTRL_DOWN)
-  # welcome :)
-  app_runner.board.display_message('Welcome :)')
   # run
   app_runner.run()
