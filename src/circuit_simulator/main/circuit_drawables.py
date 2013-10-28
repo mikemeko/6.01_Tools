@@ -795,7 +795,7 @@ class Photosensors_Drawable(Pin_Drawable):
     """
     assert is_callable(on_signal_file_changed), ('on_signal_file_changed must '
         'be callable')
-    Pin_Drawable.__init__(self, 'Head\nPhoto', color, PHOTOSENSORS_SIZE,
+    Pin_Drawable.__init__(self, 'Head\nEyes', color, PHOTOSENSORS_SIZE,
         PHOTOSENSORS_SIZE)
     self.color = color
     self.group_id = group_id
