@@ -28,17 +28,10 @@ UI:
 - [8/31/13] Separate simulation from schematic, signal files should not have to
     be specified in the schematic, they only need to be specified at simulation
     time.
-- [8/31/13] A wire that is drawn and snapped to an existing wire should be
-    connected to that wire (break existing wire into two pieces).
-- [8/31/13] Click and drag on a wire should start drawing a new wire that is
-    connected to that wire (break existing wire into two pieces).
-- [8/31/13] On dragging items, keep wires vertical/horizontal.
 - [8/31/13] Should be able to select and manipulate wires just like items.
 - [8/31/13] Would be nice if we only allow drawing wires from connector to
     connector, and have very smart wire drawing.
 - [8/31/13] Copy/paste (? probes, grouped things)
-- [8/31/13] Maybe the palette should have buttons instead of things that don't
-    look like buttons?
 
 SYSTEM ANALYSIS:
 - [8/31/13] Do a better job of finding feedback loops without delays.
@@ -99,6 +92,11 @@ UI:
 - [10/16/13] [8/31/13] Crossing wires should be marked by a little curve.
 - [10/18/13] [8/31/13] When hover over an item on the board, highlight
     respective item on protoboard, and vice versa.
+- [10/27/13] [8/31/13] A wire that is drawn and snapped to an existing wire
+    should be connected to that wire (break existing wire into two pieces).
+- [10/27/13] [8/31/13] Click and drag on a wire should start drawing a new wire
+    that is connected to that wire (break existing wire into two pieces).
+- [10/27/13] [8/31/13] On dragging items, keep wires vertical/horizontal.
 
 MISC:
 
