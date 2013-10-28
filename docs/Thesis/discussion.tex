@@ -3,6 +3,91 @@
 \chapter{Discussion}
 \label{ch:discussion}
 
+In this section we provide justifications for the choices made in solving the
+protoboard layout problem, and also detailed analysis of the data presented in
+Chapter \ref{ch:results}.
+
+\section{Justifying Placement Choices}
+\label{sec:justify_placement}
+
+\subsubsection{Resistors}
+
+For the sake of simplicity, and to significantly reduce the search space
+\q, for every resistor in the schematic, I use one resistor piece on the
+protoboard placed in the middle strip of the protoboard as shown in Figure
+\ref{fig:piece_placement}. This choice, i.e. allowing the resistor pieces to
+only reside in the middle strip of the protoboard, is critical
+as the resistor pieces can generally be placed at numerous places on the
+protoboard.
+With this restriction, there are $63$ slots available for one resistor. Without
+this restriction, there are a total of $763$ slots available. The restirction is
+good when we consider the reduction in the search space size. On the other hand,
+the restriction is bad when we
+consider the size of circuits the algorithm can layout. Given that the number
+of resistors in a typical 6.01 circuit is very
+small \q, this restriction proves to be very useful.
+
+\subsubsection{Op Amps}
+
+Op Amps are the trickiest components to handle because each Op Amp package put
+on the protoboard contains two Op Amps within it. Equation
+\ref{eq:opamp} presents an expression for the value $f(n)$, the number of
+different ways to package together $n$ Op Amps. For example, if we have $2$ Op
+Amps, we can either use one Op Amp package for each, or put them both in the
+same package, which we can do in one of two different ways. Hence, $f(2) = 3$.
+To get a sense of how many different packagings are possible, Table
+\ref{tb:opamp} gives the values of $f(n)$ for various $n$.
+
+\begin{equation}
+f(n) = \sum\limits_{k=0}^{\lfloor\frac{n}{2}\rfloor}{\frac{n!}{k!(n - 2k)!}}
+\label{eq:opamp}
+\end{equation}
+
+\begin{table}
+\begin{center}
+\begin{singlespace}
+\begin{tabular}{c | c}
+$n$ & $f(n)$ \\
+\hline
+\hline
+1 & 1 \\
+2 & 3 \\
+3 & 7 \\
+4 & 25 \\
+5 & 81 \\
+6 & 331 \\
+7 & 1303 \\
+8 & 5937 \\
+9 & 26785 \\
+10 & 133651
+\end{tabular}
+\end{singlespace}
+\end{center}
+\label{tb:opamp}
+\caption{Number of ways of packaging together $n$ Op Amps for various values of
+$n$.}
+\end{table}
+
+Our placement approach explores all possible ways
+of packaging up the Op Amps. We do this because the typical 6.01 circuit contains
+no more than $6$ Op Amps, and so we are tasked with exploring at most $331$
+alternatives, which doesn't happen to be too computationally intensive. If the
+algorithm was meant to handle a larger number of Op Amps (for example $10$), then
+this approach would be silly, and we would have to resort to perhaps considering
+the packagings that require the fewest number of Op Amps to make a choice.
+
+\subsubsection{Pots}
+
+Each pot piece can be placed in one of two vertical locations on the protoboard.
+Each pot piece also has two possible orientations. TODO: really 6 different
+vertical locations.
+
+\subsubsection{Head, Motor, and Robot Connectors}
+
+Our choices for the connector pieces is certainly one of the two presented in
+Figure \ref{fig:piece_placement}. Any other placement of the connector pieces
+would unecessarily take up valueable rows.
+
 \section{Explaining the Results}
 
 Chapter \ref{ch:results} presented quantitative data to compare the various

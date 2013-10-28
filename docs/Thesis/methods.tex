@@ -20,35 +20,24 @@ of all the circuit pieces on the protoboard. The second task is wiring them up
 appropriately.
 
 \section{Part 1: Piece Placement}
+\label{sec:placement}
 
 Let us first consider how to place a set of circuit pieces on the protoboard for
-a given circuit schematic.
-
-\subsection{The Pieces}
-
-Any given circuit may contain resistors, Op Amps, pots, motors, head connector
-parts, or robot connector parts. For each of these components, we must put down
-a corresponding piece on the protoboard.
-
-\subsubsection{Resistors}
-\label{sec:resistor_pieces}
-
-For the sake of simplicity, and to significantly reduce the search space
-\q, for every resistor in the schematic, I use one
-resistor piece on the protoboard placed in the middle strip of the protoboard
-as shown in Figure \ref{fig:piece_placement}. This choice, i.e. allowing the
-resistor pieces to only reside in the middle strip of the protoboard, is critical
-as the resistor pieces can generally be placed at numerous places on the
-protoboard.
-With this restriction, there are $63$ slots available for one resistor. Without
-this restriction, there are a total of $763$ slots available. The restirction is
-good when we consider the reduction in the search space size. On the other hand,
-the restriction is bad when we
-consider the size of circuits the algorithm can layout. Given that the number
-of resistors in a typical 6.01 circuit is very
-small \q, this restriction proves
-to be very useful, but we will consider the alternative in Section
-\ref{sec:resistors_as_wires}.
+a given circuit schematic. Any given circuit may contain resistors, Op Amps,
+pots, motors, head connector parts, or robot connector parts. For each of these
+components, we must put down a corresponding piece on the protoboard. As each
+piece may be placed on the protoboard in one of many different ways, I first
+decided on a fixed set of allowed placements for each of the pieces. Figure
+\ref{fig:piece_placement} presents these acceptable placements.
+Resistors are placed in the middle strip of the protoboard. Op Amp pieces are
+also placed in the middle strip of the protoboard, but with two possible
+orientations. Op Amp pieces are unique in that each Op Amp pieces contains two
+Op Amps within it. Thus, we face the task of packaging the Op Amps in the
+schematic in the ``best" possible way, i.e. so as to require as little work as
+possible when wiring the pieces together. Section \ref{sec:justify_placement}
+more precisely discusses the number of possibilities. Pots have two possible
+vertical positions (TODO: this is wrong!) as well as two possible orientations.
+The connector pieces have two possible vertical positions each.
 
 \begin{figure}
 \begin{center}
@@ -59,76 +48,18 @@ protoboard.}
 \end{center}
 \end{figure}
 
-\subsubsection{Op Amps}
-
-Op Amps are the trickiest components to handle because each Op Amp package put
-on the protoboard contains two Op Amps within it. Thus, we face the task of
-packaging the Op Amps in the schematic in the ``best" possible way, i.e. so as
-to require as little work as possible when wiring the pieces together. Equation
-\ref{eq:opamp} presents an expression for the value $f(n)$, the number of
-different ways to package together $n$ Op Amps. For example, if we have $2$ Op
-Amps, we can either use one Op Amp package for each, or put them both in the
-same package, which we can do in one of two different ways. Hence, $f(2) = 3$.
-To get a sense of how many different packagings are possible, Table
-\ref{tb:opamp} gives the values of $f(n)$ for various $n$.
-
-\begin{equation}
-f(n) = \sum\limits_{k=0}^{\lfloor\frac{n}{2}\rfloor}{\frac{n!}{k!(n - 2k)!}}
-\label{eq:opamp}
-\end{equation}
-
-\begin{table}
-\begin{center}
-\begin{singlespace}
-\begin{tabular}{c | c}
-$n$ & $f(n)$ \\
-\hline
-\hline
-1 & 1 \\
-2 & 3 \\
-3 & 7 \\
-4 & 25 \\
-5 & 81 \\
-6 & 331 \\
-7 & 1303 \\
-8 & 5937 \\
-9 & 26785 \\
-10 & 133651
-\end{tabular}
-\end{singlespace}
-\end{center}
-\label{tb:opamp}
-\caption{Number of ways of packaging together $n$ Op Amps for various values of
-$n$.}
-\end{table}
-
-Each Op Amp package is placed in the middle strip of the protoboard, with two
-acceptable orientations, as shown in Figure \ref{fig:piece_placement}.
-
-\subsubsection{Pots}
-
-Each pot piece can be placed in one of two vertical locations on the protoboard.
-Each pot piece also has two possible orientations. Figure
-\ref{fig:piece_placement} provides examples of all acceptable options.
-
-\subsubsection{Head, Motor, and Robot Connectors}
-
-We use a 6-pin connector to connect to a motor, and an 8-pin connector to
-connect to either a head or a robot. Each connector can be placed in one of two
-vertical locations on the protoboard, as shown in Figure
-\ref{fig:piece_placement}.
-
 \subsection{Choosing a Placement}
 
 When choosing a placement of circuit pieces on the protoboard, we have at hand a
 plethora of options. First we must choose among a possibly large number of ways
 to package together the Op Amps in the circuit. For each possible packaging of
-Op Amps, we must consider various ways of placing the pieces on the protoboard.
+Op Amps, we must consider various ways of placing the pieces on the protoboard,
+even with the restrictions put forth above.
 
 \subsubsection{Simplifications}
 
 I reduce this large number of options by only allowing placements in which no
-two pieces share a column. Once again, this is not necessary in general, but the
+two pieces share a column. This is not necessary in general, but the
 number of pieces necessary for a typical 6.01 circuit would certainly fit in
 this framework.
 
@@ -336,7 +267,7 @@ this heuristic verses using no heuristic.
 \section{Treating Resistors as Wires}
 \label{sec:resistors_as_wires}
 
-The discussion in Section \ref{sec:resistor_pieces} presented that we treat
+The discussion in Section \ref{sec:placement} presented that we treat
 resistors just as we do the other components. That is, we give each resistor a
 fixed place on the protoboard in the first step of the algorithm before the
 wiring step. However, resistors have the special property among the circuit
