@@ -241,7 +241,7 @@ class Board(Frame):
     self._remove_guide_lines()
     # draw new guide lines
     fill = DRAG_SAFE_COLOR if self._drag_safe else DRAG_UNSAFE_COLOR
-    width = 1 if self._drag_safe else 2
+    width = 1 if self._drag_safe else 1
     for x, y in points:
       self._guide_line_parts.extend([self._canvas.create_line(x, 0, x,
           self.height, fill=fill, width=width), self._canvas.create_line(0, y,
