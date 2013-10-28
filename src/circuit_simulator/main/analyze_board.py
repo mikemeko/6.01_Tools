@@ -84,11 +84,11 @@ def run_analysis(board, analyze, solve_circuit=False,
   robot_pwr = defaultdict(str)
   robot_gnd = defaultdict(str)
   robot_power_label = defaultdict(str)
-  robot_vi1 = defaultdict(lambda: (None, None))
-  robot_vi2 = defaultdict(lambda: (None, None))
-  robot_vi3 = defaultdict(lambda: (None, None))
-  robot_vi4 = defaultdict(lambda: (None, None))
-  robot_vo = defaultdict(lambda: (None, None))
+  robot_ai1 = defaultdict(lambda: (None, None))
+  robot_ai2 = defaultdict(lambda: (None, None))
+  robot_ai3 = defaultdict(lambda: (None, None))
+  robot_ai4 = defaultdict(lambda: (None, None))
+  robot_ao = defaultdict(lambda: (None, None))
   # first identify all power and ground nodes and use the same name for all
   #     power nodes, as well as the same name for all ground nodes
   power_nodes, ground_nodes = set(), set()
@@ -271,16 +271,16 @@ def run_analysis(board, analyze, solve_circuit=False,
     elif isinstance(drawable, Robot_IO_Drawable):
       node = maybe_rename_node(nodes[0]) if nodes else None
       robot_connector_group_ids.add(drawable.group_id)
-      if drawable.name == 'Vi1':
-        robot_vi1[drawable.group_id] = (node, drawable.label)
-      elif drawable.name == 'Vi2':
-        robot_vi2[drawable.group_id] = (node, drawable.label)
-      elif drawable.name == 'Vi3':
-        robot_vi3[drawable.group_id] = (node, drawable.label)
-      elif drawable.name == 'Vi4':
-        robot_vi4[drawable.group_id] = (node, drawable.label)
-      elif drawable.name == 'Vo':
-        robot_vo[drawable.group_id] = (node, drawable.label)
+      if drawable.name == 'Ai1':
+        robot_ai1[drawable.group_id] = (node, drawable.label)
+      elif drawable.name == 'Ai2':
+        robot_ai2[drawable.group_id] = (node, drawable.label)
+      elif drawable.name == 'Ai3':
+        robot_ai3[drawable.group_id] = (node, drawable.label)
+      elif drawable.name == 'Ai4':
+        robot_ai4[drawable.group_id] = (node, drawable.label)
+      elif drawable.name == 'Ao':
+        robot_ao[drawable.group_id] = (node, drawable.label)
   # collect robot head pieces together
   for group_id in head_connector_group_ids:
     head_connector = Head_Connector(n_motor_pot_top[group_id],
@@ -298,15 +298,15 @@ def run_analysis(board, analyze, solve_circuit=False,
     plotters.append(Head_Plotter(head_connector))
   # collect robot connector pieces together
   for group_id in robot_connector_group_ids:
-    vi1_node, vi1_label = robot_vi1[group_id]
-    vi2_node, vi2_label = robot_vi2[group_id]
-    vi3_node, vi3_label = robot_vi3[group_id]
-    vi4_node, vi4_label = robot_vi4[group_id]
-    vo_node, vo_label = robot_vo[group_id]
+    ai1_node, ai1_label = robot_ai1[group_id]
+    ai2_node, ai2_label = robot_ai2[group_id]
+    ai3_node, ai3_label = robot_ai3[group_id]
+    ai4_node, ai4_label = robot_ai4[group_id]
+    ao_node, ao_label = robot_ao[group_id]
     robot_connector = Robot_Connector(robot_pwr[group_id], robot_gnd[group_id],
-        vi1_node, vi2_node, vi3_node, vi4_node, vo_node)
+        ai1_node, ai2_node, ai3_node, ai4_node, ao_node)
     robot_connector.label = ','.join(filter(bool, [robot_power_label[group_id],
-        vi1_label, vi2_label, vi3_label, vi4_label, vo_label]))
+        ai1_label, ai2_label, ai3_label, ai4_label, ao_label]))
     circuit_components.append(robot_connector)
   # if both probes are given, display probe voltage difference graph
   if probe_plus and probe_minus:
