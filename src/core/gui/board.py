@@ -423,11 +423,12 @@ class Board(Frame):
       drawable_coverage = self._get_drawable_coverage(drawable, new_offset)
       if drawable_coverage & self._unselected_drawable_coverage:
         return False
-      connector_intersection = (drawable_coverage &
-          self._unselected_connector_coverage)
       drawable_connectors = set((x + dx, y + dy) for x, y in [connector.center
           for connector in drawable.connectors])
-      if not connector_intersection.issubset(drawable_connectors):
+      if drawable_connectors & self._unselected_wire_coverage:
+        return False
+      if not (drawable_coverage & self._unselected_connector_coverage).issubset(
+          drawable_connectors):
         return False
     return True
   def _drag_press(self, event):
@@ -669,10 +670,11 @@ class Board(Frame):
         # find new wire path
         if wire_end in self._unselected_drawable_coverage:
           coverage = set()
-        elif wire_end in self._unselected_wire_coverage:
-          coverage = self._unselected_coverage - set([wire_end])
+        elif wire_end in (self._unselected_wire_coverage |
+            self._unselected_connector_coverage):
+          coverage = self._unselected_coverage_c - set([wire_end])
         else:
-          coverage = self._unselected_coverage
+          coverage = self._unselected_coverage_c
         wire_path = find_wire_path(coverage, self._wire_start, wire_end)
         # draw wires
         self._valid_wire_path = not (self._unselected_drawable_coverage &
@@ -728,6 +730,7 @@ class Board(Frame):
               wire_path)
           if self._wire_start_connector_created:
             self._action_history.combine_last_n(2)
+        self._redraw_wires()
         # mark the board changed
         self.set_changed(True)
     else:
@@ -1435,6 +1438,8 @@ class Board(Frame):
     self.set_changed(False)
     # return cursor to normal state
     self.reset_cursor_state()
+    # redraw wires
+    self._redraw_wires()
   def edit_in_progress(self):
     """
     Returns True if there is a text currently being editted, False otherwise.
@@ -1503,6 +1508,7 @@ class Board(Frame):
         self._selected_drawables]
     self._unselected_wire_coverage = reduce(set.union, [wire.path_coverage for
         wire in wires], set())
+    self._unselected_wire_coverage -= connector_coverage
     self._unselected_coverage = (self._unselected_drawable_coverage |
         self._unselected_wire_coverage)
     self._unselected_coverage_c = (self._unselected_coverage |
