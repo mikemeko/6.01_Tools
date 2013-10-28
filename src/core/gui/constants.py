@@ -100,8 +100,8 @@ CROSS_COST = 100
 BEND_COST = 2
 
 # images
-HAND_IMAGE = 'core/gui/images/hand.png'
-PENCIL_IMAGE = 'core/gui/images/pencil.png'
+HAND_IMAGE = 'core/gui/images/hand.gif'
+PENCIL_IMAGE = 'core/gui/images/pencil.gif'
 
 # debug options
 DEBUG_DISPLAY_WIRE_LABELS = False
