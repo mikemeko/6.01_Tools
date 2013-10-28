@@ -4,14 +4,19 @@ Representation for a proto board.
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
+from constants import BODY_BOTTOM_ROWS
+from constants import BODY_TOP_ROWS
 from constants import PROTO_BOARD_WIDTH
 from constants import PROTO_BOARD_HEIGHT
 from constants import RAIL_ILLEGAL_COLUMNS
+from constants import RAIL_ROWS
 from core.data_structures.disjoint_set_forest import Disjoint_Set_Forest
 from string import ascii_lowercase
 from string import ascii_uppercase
 from string import digits
+from util import body_section_rows
 from util import section_locs
+from wire import Wire
 
 class Proto_Board:
   """
@@ -242,3 +247,77 @@ class Proto_Board:
   def __hash__(self):
     return hash((frozenset(self._wires), frozenset(self._pieces),
         self._loc_disjoint_set_forest))
+  def prettified(self):
+    """
+    Makes the protoboard slightly more appealing by collapsing long vertical
+        wires (when possible) and shifting horizontal wires up or down to avoid
+        corssing wires (when possible).
+    I apologize for really ugly code :(
+    """
+    new = Proto_Board().with_loc_disjoint_set_forest(
+        self._loc_disjoint_set_forest)
+    for piece in self._pieces:
+      new = new.with_piece(piece)
+    wires_so_far = []
+    # place vertical wires first
+    for wire in sorted(self._wires, key=lambda wire: wire.horizontal()):
+      if wire.vertical():
+        r1, c1 = wire.loc_1
+        r2, c2 = wire.loc_2
+        assert c1 == c2
+        if r1 > r2:
+          r1, r2 = r2, r1
+          c1, c2 = c2, c1
+        if r2 - r1 == 1:
+          new = new.with_wire(wire)
+          wires_so_far.append(wire)
+          continue
+        def safe(r):
+          return r == r1 or r == r2 or (self.free((r, c1)) and self.rep_for(
+              (r, c1)) is None)
+        if r1 in RAIL_ROWS and r2 in BODY_BOTTOM_ROWS and all(safe(r) for r in
+            [2, 6, 7]):
+          pairs = ((r1, 2), (6, 7))
+        elif r1 in RAIL_ROWS and r2 in RAIL_ROWS and all(safe(r) for r in
+            [2, 6, 7, 11]):
+          pairs = ((r1, 2), (6, 7), (11, r2))
+        elif r1 in BODY_TOP_ROWS and r2 in RAIL_ROWS and all(safe(r) for r in
+            [6, 7, 11]):
+          pairs = ((6, 7), (11, r2))
+        else:
+          pairs = ((r1, r2),)
+        for _r, r_ in pairs:
+          w = Wire((_r, c1), (r_, c1), wire.node)
+          new = new.with_wire(w)
+          wires_so_far.append(w)
+      elif wire.horizontal():
+        r1, c1 = wire.loc_1
+        r2, c2 = wire.loc_2
+        assert r1 == r2
+        def cost(r):
+          test_wire = Wire((r, c1), (r, c2), '')
+          cost = 0
+          # crossing pieces (unacceptable)
+          cost += 1e100 * sum(piece.crossed_by(test_wire) for piece in
+              new.get_pieces())
+          # crossing original wires (unacceptable)
+          cost += 1e10 * sum((w != wire and test_wire.crosses(w)) for w in
+              self._wires)
+          # corssing new wires (preferred against)
+          for w in wires_so_far:
+            if test_wire.crosses(w):
+              if w.horizontal(): # (unacceptable)
+                cost += 1e5
+              else:
+                cost += 1e1
+          # close to the middle (preferred)
+          cost += 1e0 * abs(r - 6.5)
+          return cost
+        best_r = min(body_section_rows(r1), key=cost)
+        w = Wire((best_r, c1), (best_r, c2), wire.node)
+        new = new.with_wire(w)
+        wires_so_far.append(w)
+      else:
+        new = new.with_wire(wire)
+        wires_so_far.append(wire)
+    return new

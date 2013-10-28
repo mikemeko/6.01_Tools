@@ -134,7 +134,7 @@ def combined_solve_layout(circuit):
           failed_loc_pairs.append(loc_pair)
           print 'Fail'
       if not failed_loc_pairs:
-        return proto_board
+        return proto_board.prettified()
       else:
         partially_solved.append((proto_board, failed_loc_pairs))
   if not partially_solved:
@@ -145,4 +145,7 @@ def combined_solve_layout(circuit):
   proto_board, failed_loc_pairs = min(partially_solved, key=cost)
   print 'Using terrible wirer for: %s' % [(loc_1, loc_2) for (loc_1, loc_2,
       resistor, node) in failed_loc_pairs]
-  return find_terrible_wiring(failed_loc_pairs, proto_board)
+  terrible_proto_board = find_terrible_wiring(failed_loc_pairs, proto_board)
+  if terrible_proto_board is not None:
+    return terrible_proto_board.prettified()
+  return None
