@@ -44,7 +44,7 @@ def current_name(item, n1, n2):
   return '%d %s->%s' % (id(item), n1, n2)
 
 def run_analysis(board, analyze, solve_circuit=False,
-    ensure_pwr_gnd_nodes=False, no_shorts=True, ensure_signal_files=False):
+    ensure_pwr_gnd_nodes=False, no_shorts=False, ensure_signal_files=False):
   """
   Extracts a Circuit object from what is drawn on the given |board| and calls
       the given function |analyze| on it. The funtion |analyze| should take as

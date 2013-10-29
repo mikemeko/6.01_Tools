@@ -129,15 +129,16 @@ if __name__ == '__main__':
   app_runner.palette.add_drawable_type(Motor_Drawable, LEFT, None)
   # add buttons to analyze circuit
   app_runner.palette.add_drawable_type(Proto_Board_Run_Drawable, RIGHT,
-      lambda event: run_analysis(app_runner.board, proto_board_layout))
+      lambda event: run_analysis(app_runner.board, proto_board_layout,
+      no_shorts=True))
   app_runner.palette.add_drawable_type(Simulate_Run_Drawable, RIGHT,
       lambda event: run_analysis(app_runner.board, simulate,
-      solve_circuit=True))
+      solve_circuit=True, no_shorts=True))
   # shortcuts
   app_runner.board.add_key_binding('s', lambda: run_analysis(app_runner.board,
-      simulate, solve_circuit=True))
+      simulate, solve_circuit=True, no_shorts=True))
   app_runner.board.add_key_binding('g', lambda: run_analysis(app_runner.board,
-      proto_board_layout))
+      proto_board_layout, no_shorts=True))
   app_runner.board.add_key_binding('w', close_all_windows, CTRL_DOWN)
   # run
   app_runner.run()
