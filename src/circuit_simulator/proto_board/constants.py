@@ -68,4 +68,4 @@ COST_TYPE_BLOCKING = 'BLOCKING'
 COST_TYPE_DISTANCE = 'DISTANCE'
 
 # limitation on wire lengths
-VALID_WIRE_LENGTHS = set(range(1, 14)) | {20, 30, 40, 50}
+VALID_WIRE_LENGTHS = set(range(2, 14)) | {20, 30, 40, 50}
