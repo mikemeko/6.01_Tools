@@ -19,6 +19,50 @@ from core.gui.components import Wire_Connector_Drawable
 from core.save.save import open_board_from_file
 from mock_board import Mock_Board
 
+def get_circuit_stats(circuit):
+  num_resistors = 0
+  num_pots = 0
+  num_op_amps = 0
+  num_motors = 0
+  head_present = False
+  robot_present = False
+  pin_nodes = []
+  def add_pin_nodes(*args):
+    for pin_node in args:
+      if pin_node:
+        pin_nodes.append(pin_node)
+  for component in circuit.components:
+    if isinstance(component, Resistor):
+      num_resistors += 1
+      add_pin_nodes(component.n1, component.n2)
+    elif isinstance(component, Pot):
+      num_pots += 1
+      add_pin_nodes(component.n_top, component.n_middle, component.n_bottom)
+    elif isinstance(component, Op_Amp):
+      num_op_amps += 1
+      add_pin_nodes(component.na1, component.na2, component.nb1)
+    elif isinstance(component, Motor):
+      num_motors += 1
+      add_pin_nodes(component.motor_plus, component.motor_minus)
+    elif isinstance(component, Head_Connector):
+      head_present = True
+      add_pin_nodes(component.n_pot_top, component.n_pot_middle,
+          component.n_pot_bottom, component.n_photo_left,
+          component.n_photo_common, component.n_photo_right,
+          component.n_motor_plus, component.n_motor_minus)
+    elif isinstance(component, Robot_Connector):
+      robot_present = True
+      add_pin_nodes(component.pwr, component.gnd, component.Vi1,
+          component.Vi2, component.Vi3, component.Vi4, component.Vo)
+  interconnecting_nodes = set()
+  for i, node in enumerate(pin_nodes):
+    if node in (pin_nodes[:i] + pin_nodes[i + 1:]):
+      interconnecting_nodes.add(node)
+  num_nodes = len(interconnecting_nodes)
+  num_schematic_pins = sum(n in interconnecting_nodes for n in pin_nodes)
+  return (num_resistors, num_pots, num_op_amps, num_motors, head_present,
+      robot_present, num_nodes, num_schematic_pins)
+
 class Schematic_Tester:
   def __init__(self, resistors_as_components, cost_type, solve_mode,
       solve_order, best_first, filter_wire_lengths):
@@ -33,46 +77,9 @@ class Schematic_Tester:
     Attempts to produce the protoboard layout for the given |circut| and returns
         stats corresponding to the layout.
     """
-    num_resistors = 0
-    num_pots = 0
-    num_op_amps = 0
-    num_motors = 0
-    head_present = False
-    robot_present = False
-    pin_nodes = []
-    def add_pin_nodes(*args):
-      for pin_node in args:
-        if pin_node:
-          pin_nodes.append(pin_node)
-    for component in circuit.components:
-      if isinstance(component, Resistor):
-        num_resistors += 1
-        add_pin_nodes(component.n1, component.n2)
-      elif isinstance(component, Pot):
-        num_pots += 1
-        add_pin_nodes(component.n_top, component.n_middle, component.n_bottom)
-      elif isinstance(component, Op_Amp):
-        num_op_amps += 1
-        add_pin_nodes(component.na1, component.na2, component.nb1)
-      elif isinstance(component, Motor):
-        num_motors += 1
-        add_pin_nodes(component.motor_plus, component.motor_minus)
-      elif isinstance(component, Head_Connector):
-        head_present = True
-        add_pin_nodes(component.n_pot_top, component.n_pot_middle,
-            component.n_pot_bottom, component.n_photo_left,
-            component.n_photo_common, component.n_photo_right,
-            component.n_motor_plus, component.n_motor_minus)
-      elif isinstance(component, Robot_Connector):
-        robot_present = True
-        add_pin_nodes(component.pwr, component.gnd, component.Vi1,
-            component.Vi2, component.Vi3, component.Vi4, component.Vo)
-    interconnecting_nodes = set()
-    for i, node in enumerate(pin_nodes):
-      if node in (pin_nodes[:i] + pin_nodes[i + 1:]):
-        interconnecting_nodes.add(node)
-    num_nodes = len(interconnecting_nodes)
-    num_schematic_pins = sum(n in interconnecting_nodes for n in pin_nodes)
+    (num_resistors, num_pots, num_op_amps, num_motors, head_present,
+        robot_present, num_nodes, num_schematic_pins) = get_circuit_stats(
+        circuit)
     solve_data = solve_layout(circuit,
         resistors_as_components=self.resistors_as_components,
         cost_type=self.cost_type, mode=self.solve_mode, order=self.solve_order,

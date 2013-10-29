@@ -102,37 +102,44 @@ def _wire_loc_pair(loc_pair, proto_board):
       mode=MODE_PER_PAIR, order=ORDER_DECREASING, best_first=False,
       filter_wire_lengths=True, max_states_to_expand=40, verbose=False)[0]
 
-def combined_solve_layout(circuit):
+def combined_solve_layout(circuit, verbose=True):
   """
   Creates a layout for the given |circuit| by using a combination of methods.
       Returns None on failure.
   """
   partially_solved = []
   for cost_type in (COST_TYPE_BLOCKING, COST_TYPE_DISTANCE):
-    print 'Cost type: %s' % cost_type
+    if verbose:
+      print 'Cost type: %s' % cost_type
     placement, resistor_node_pairs = get_piece_placement(circuit,
-        resistors_as_components=True, cost_type=cost_type, verbose=True)
+        resistors_as_components=True, cost_type=cost_type, verbose=verbose)
     if placement is None:
-      print '\tToo many components.'
+      if verbose:
+        print '\tToo many components.'
       continue
     for order_sign in (-1, 1):
       proto_board, nodes, loc_pairs = _setup(placement, resistor_node_pairs)
-      print proto_board
+      if verbose:
+        print proto_board
       loc_pairs.sort(key=lambda (loc_1, loc_2, resistor, node): order_sign *
           dist(loc_1, loc_2))
-      print 'Order: %d' % order_sign
+      if verbose:
+        print 'Order: %d' % order_sign
       failed_loc_pairs = []
       for loc_pair in loc_pairs:
         loc_1, loc_2, resistor, node = loc_pair
-        print 'Connecting %s -- %s' % (loc_1, loc_2)
+        if verbose:
+          print 'Connecting %s -- %s' % (loc_1, loc_2)
         wired_proto_board = _wire_loc_pair(loc_pair, proto_board)
         if wired_proto_board:
           proto_board = wired_proto_board
-          print proto_board
-          print 'Success'
+          if verbose:
+            print proto_board
+            print 'Success'
         else:
           failed_loc_pairs.append(loc_pair)
-          print 'Fail'
+          if verbose:
+            print 'Fail'
       if not failed_loc_pairs:
         return proto_board.prettified()
       else:
@@ -143,8 +150,9 @@ def combined_solve_layout(circuit):
     return sum(dist(loc_1, loc_2) ** 2 for loc_1, loc_2, resistor, node in
         failed_loc_pairs)
   proto_board, failed_loc_pairs = min(partially_solved, key=cost)
-  print 'Using terrible wirer for: %s' % [(loc_1, loc_2) for (loc_1, loc_2,
-      resistor, node) in failed_loc_pairs]
+  if verbose:
+    print 'Using terrible wirer for: %s' % [(loc_1, loc_2) for (loc_1, loc_2,
+        resistor, node) in failed_loc_pairs]
   terrible_proto_board = find_terrible_wiring(failed_loc_pairs, proto_board)
   if terrible_proto_board is not None:
     return terrible_proto_board.prettified()
