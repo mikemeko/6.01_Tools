@@ -14,8 +14,10 @@ from collections import defaultdict
 from constants import COST_TYPE_BLOCKING
 from constants import COST_TYPE_DISTANCE
 from constants import GROUND_RAIL
+from constants import MODE_PER_NODE
 from constants import MODE_PER_PAIR
 from constants import ORDER_DECREASING
+from constants import ORDER_INCREASING
 from constants import POWER_RAIL
 from constants import RAIL_LEGAL_COLUMNS
 from find_proto_board_wiring import find_terrible_wiring
@@ -157,3 +159,91 @@ def combined_solve_layout(circuit, verbose=True):
   if terrible_proto_board is not None:
     return terrible_proto_board.prettified()
   return None
+
+def many_layouts(circuit):
+  """
+  Generates layouts using verious methods. Returns a list of protoboards.
+  """
+  layouts = []
+  print 'Distance'
+  layouts.append(solve_layout(circuit,
+      resistors_as_components=True,
+      cost_type=COST_TYPE_DISTANCE,
+      mode=MODE_PER_PAIR,
+      order=ORDER_DECREASING,
+      best_first=False,
+      filter_wire_lengths=False,
+      verbose=True)['proto_board'])
+  print 'Blocking'
+  layouts.append(solve_layout(circuit,
+      resistors_as_components=True,
+      cost_type=COST_TYPE_BLOCKING,
+      mode=MODE_PER_PAIR,
+      order=ORDER_DECREASING,
+      best_first=False,
+      filter_wire_lengths=False,
+      verbose=True)['proto_board'])
+  print 'All pairs'
+  layouts.append(solve_layout(circuit,
+      resistors_as_components=True,
+      cost_type=COST_TYPE_BLOCKING,
+      mode=MODE_ALL_PAIRS,
+      order=ORDER_DECREASING,
+      best_first=False,
+      filter_wire_lengths=False,
+      verbose=True)['proto_board'])
+  print 'Per-pair, decreasing'
+  layouts.append(solve_layout(circuit,
+      resistors_as_components=True,
+      cost_type=COST_TYPE_BLOCKING,
+      mode=MODE_PER_PAIR,
+      order=ORDER_DECREASING,
+      best_first=False,
+      filter_wire_lengths=False,
+      verbose=True)['proto_board'])
+  print 'Per-pair, increasing'
+  layouts.append(solve_layout(circuit,
+      resistors_as_components=True,
+      cost_type=COST_TYPE_BLOCKING,
+      mode=MODE_PER_PAIR,
+      order=ORDER_INCREASING,
+      best_first=False,
+      filter_wire_lengths=False,
+      verbose=True)['proto_board'])
+  print 'Per-node, decreasing'
+  layouts.append(solve_layout(circuit,
+      resistors_as_components=True,
+      cost_type=COST_TYPE_BLOCKING,
+      mode=MODE_PER_NODE,
+      order=ORDER_DECREASING,
+      best_first=False,
+      filter_wire_lengths=False,
+      verbose=True)['proto_board'])
+  print 'Per-node, increasing'
+  layouts.append(solve_layout(circuit,
+      resistors_as_components=True,
+      cost_type=COST_TYPE_BLOCKING,
+      mode=MODE_PER_NODE,
+      order=ORDER_INCREASING,
+      best_first=False,
+      filter_wire_lengths=False,
+      verbose=True)['proto_board'])
+  print 'Resistors as wires'
+  layouts.append(solve_layout(circuit,
+      resistors_as_components=False,
+      cost_type=COST_TYPE_BLOCKING,
+      mode=MODE_PER_PAIR,
+      order=ORDER_DECREASING,
+      best_first=False,
+      filter_wire_lengths=False,
+      verbose=True)['proto_board'])
+  print 'Best First Search'
+  layouts.append(solve_layout(circuit,
+      resistors_as_components=True,
+      cost_type=COST_TYPE_BLOCKING,
+      mode=MODE_PER_PAIR,
+      order=ORDER_DECREASING,
+      best_first=True,
+      filter_wire_lengths=False,
+      verbose=True)['proto_board'])
+  return layouts

@@ -93,7 +93,17 @@ would unecessarily take up valueable rows.
 Chapter \ref{ch:results} presented quantitative data to compare the various
 alternatives we have in solving the protoboard layout problem. Here, we will
 analyze that data and give reasonings for why we obtained the results
-that we obtained.
+that we obtained. For each comparison, we present exemplar layouts generated
+by the alternative methods for the schematic shown in Figure
+\ref{fig:exemplar_schematic}.
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=\textwidth]{Images/exemplar_schematic.png}
+\caption{Exemplar schematic.}
+\label{fig:exemplar_schematic}
+\end{center}
+\end{figure}
 
 \subsection{Comparing placement methods}
 
@@ -190,6 +200,14 @@ It is clear that both methods have their strengths and weaknesses. In Section
 \ref{sec:method_combination} we will discuss how combining these two methods can
 get us the best of both worlds (?).
 
+\begin{figure}
+\begin{center}
+\includegraphics[width=\textwidth]{Images/exemplar_per_pair_decreasing.png}
+\includegraphics[width=\textwidth]{Images/exemplar_distance.png}
+\caption{Blocking vs. Distance.}
+\end{center}
+\end{figure}
+
 \subsection{Comparing wiring methods}
 
 To compare the wiring methods, let us start with the success rate for each method.
@@ -247,7 +265,31 @@ Lastly, ordering subproblems from hardest to easiest has the effect of making th
 overall wiring step complete faster but producing worse results than the reverse
 order and not necessarily getting a markedly better success rate.
 
+\begin{figure}
+\begin{center}
+\includegraphics[width=\textwidth]{Images/exemplar_all_pairs.png}
+\includegraphics[width=\textwidth]{Images/exemplar_per_node_increasing.png}
+\includegraphics[width=\textwidth]{Images/exemplar_per_node_decreasing.png}
+\end{center}
+\end{figure}
+\begin{figure}
+\begin{center}
+\includegraphics[width=\textwidth]{Images/exemplar_per_pair_increasing.png}
+\includegraphics[width=\textwidth]{Images/exemplar_per_pair_decreasing.png}
+\caption{All-pairs vs. Per-node, increasing vs. Per-node, decreasing vs.
+Per-pair, increasing vs. Per-pair, decreasing.}
+\end{center}
+\end{figure}
+
 \subsection{Comparing resistor treatments}
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=\textwidth]{Images/exemplar_per_pair_decreasing.png}
+\includegraphics[width=\textwidth]{Images/exemplar_resistors_as_wires.png}
+\caption{Resistors as components vs. Resistors as wires.}
+\end{center}
+\end{figure}
 
 \subsection{Comparing search methods}
 
@@ -276,6 +318,14 @@ success and quality. If we choose Best First Search, most runs will be successfu
 and terminate quickly, but will produce very poor results. If we choose $A*$,
 not as many runs will be successful, and the successful runs will take longer to
 terminate, but we will get much better layouts.
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=\textwidth]{Images/exemplar_per_pair_decreasing.png}
+\includegraphics[width=\textwidth]{Images/exemplar_best_first.png}
+\caption{$A*$ vs. Best First Search.}
+\end{center}
+\end{figure}
 
 \subsection{Putting them all together}
 \label{sec:method_combination}
