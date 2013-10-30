@@ -261,7 +261,7 @@ class Proto_Board:
         self._loc_disjoint_set_forest)
     for piece in self._pieces:
       new = new.with_piece(piece)
-    for wire in self._wires:
+    for i, wire in enumerate(self._wires):
       if wire.vertical():
         r1, c1 = wire.loc_1
         r2, c2 = wire.loc_2
@@ -298,10 +298,9 @@ class Proto_Board:
         rows = [2, 3, 4, 5, 6] if r1 <= 6 else [11, 10, 9, 8, 7]
         for _r in rows:
           test_wire = Wire((_r, c1), (_r, c2), wire.node)
-          if (not any(test_wire.crosses(w) for w in self._wires) and not any(
-              test_wire.crosses(w) for w in new._wires) and not any(
-              piece.crossed_by(test_wire) for piece in new._pieces)) or (
-              _r == r1):
+          if (not any(test_wire.crosses(w) for w in self._wires[i + 1:]) and not
+              any(test_wire.crosses(w) for w in new._wires) and not any(
+              piece.crossed_by(test_wire) for piece in new._pieces)):
             r = _r
         new = new.with_wire(Wire((r, c1), (r, c2), wire.node))
       else:
