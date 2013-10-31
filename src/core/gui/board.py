@@ -1145,10 +1145,9 @@ class Board(Frame):
     """
     Callback on exit.
     """
-    self._cancel_message_remove_timer()
-    if self._on_exit:
-      self._on_exit()
-    Frame.quit(self)
+    if not self._on_exit or self._on_exit():
+      self._cancel_message_remove_timer()
+      Frame.quit(self)
   def _cancel_message_remove_timer(self):
     """
     Cancles timer that has been set to remove current message (if any).
