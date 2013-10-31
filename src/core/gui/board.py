@@ -690,6 +690,8 @@ class Board(Frame):
       if self._wire_parts:
         start_connector = self._connector_at(self._wire_start)
         assert start_connector
+        # mark the board changed
+        self.set_changed(True)
         end_connector = self._connector_at(self._wire_end)
         snap_wire = None
         if not end_connector:
@@ -731,8 +733,6 @@ class Board(Frame):
           if self._wire_start_connector_created:
             self._action_history.combine_last_n(2)
         self._redraw_wires()
-        # mark the board changed
-        self.set_changed(True)
     else:
       self._erase_previous_wire_path()
       if self._wire_start_connector_created:
