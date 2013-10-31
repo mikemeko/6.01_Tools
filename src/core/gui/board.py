@@ -1520,7 +1520,7 @@ class Board(Frame):
     """
     Changes cursor to watch to indicate business.
     """
-    self._canvas.config(cursor='watch')
+    self._canvas.config(cursor='wait')
   def set_regular_cursor(self):
     """
     Changes cursor to arrow.
