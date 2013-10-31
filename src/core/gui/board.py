@@ -1227,12 +1227,11 @@ class Board(Frame):
     # remove message since an action has resulted in a board change
     self.remove_message()
     # once the board is changed, don't show wire label tooltips
-    self.hide_label_tooltips()
-    # remove highlight outlines, if any
     self._clear_drawable_outlines()
     self._drawable_highlight(None)
     self._clear_wire_outlines()
     self._wire_highlight(None)
+    self.hide_label_tooltips()
   def _add_drawable(self, drawable, offset):
     """
     Adds the given |drawable| at the given |offset|.
@@ -1377,16 +1376,20 @@ class Board(Frame):
     Starts showing label tooltips. Tooltips will be hidden on call to
         self.hide_label_tooltips or if the board is changed.
     Label tooltips must be enabled for this board.
+    TODO(mikemeko): this method should have a different name.
     """
     assert self._label_tooltips_enabled, 'label tooltips are not enabled'
     self._show_label_tooltips = True
   def hide_label_tooltips(self):
     """
     Stops showing label tooltips.
+    TODO(mikemeko): this method should have a different name.
     """
     if self._label_tooltips_enabled:
       self._tooltip_helper.hide_tooltip()
       self._show_label_tooltips = False
+      self._drawable_highlight = lambda label: None
+      self._wire_highlight = lambda label: None
   def get_drawable_offset(self, drawable):
     """
     Returns the offset with which the given |drawable| is drawn. Assumes that
