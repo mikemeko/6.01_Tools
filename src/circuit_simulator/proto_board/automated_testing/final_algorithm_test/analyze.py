@@ -36,6 +36,8 @@ class Test_Result:
     self.num_wires = get_int(line[5])
     self.num_wire_crosses = get_int(line[6])
     self.total_wire_length = get_int(line[7])
+    self.num_runs = get_int(line[8])
+    self.num_forced_wires = get_int(line[9])
 
 def analyze(result_file):
   lines = [line.strip() for line in open(result_file).readlines()]
@@ -46,7 +48,8 @@ def analyze(result_file):
   pylab.figure()
   time_mapping = defaultdict(list)
   for result in results:
-    time_mapping[result.num_schematic_pins].append(result.total_time)
+    if result.solved:
+      time_mapping[result.num_schematic_pins].append(result.total_time)
   pylab.errorbar(time_mapping.keys(), map(mean, time_mapping.values()),
       yerr=map(se, time_mapping.values()))
   pylab.xlabel('Number of pins')
@@ -78,6 +81,17 @@ def analyze(result_file):
       yerr=map(se, total_wire_length_mapping.values()))
   ax3.set_ylabel('Total wire length')
   pylab.xlabel('Number of pins')
+  # forced wire trend
+  pylab.figure()
+  forced_wire_mapping = defaultdict(list)
+  for result in results:
+    if result.solved:
+      forced_wire_mapping[result.num_schematic_pins].append(
+          result.num_forced_wires)
+  pylab.errorbar(forced_wire_mapping.keys(), map(mean,
+      forced_wire_mapping.values()), yerr=map(se, forced_wire_mapping.values()))
+  pylab.xlabel('Number of pins')
+  pylab.ylabel('Number of forced wires')
   pylab.show()
 
 if __name__ == '__main__':

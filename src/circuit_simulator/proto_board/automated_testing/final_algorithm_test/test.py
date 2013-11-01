@@ -24,9 +24,10 @@ from time import clock
 def _run(circuit, *args):
   num_schematic_pins = get_circuit_stats(circuit)[-1]
   start_time = clock()
-  proto_board = combined_solve_layout(circuit, verbose=False)
+  solve_data = combined_solve_layout(circuit, verbose=False)
   end_time = clock()
-  return proto_board, end_time - start_time, num_schematic_pins
+  return (solve_data['proto_board'], solve_data['num_runs'],
+      solve_data['num_forced_wires'], end_time - start_time, num_schematic_pins)
 
 def _test(file_name):
   board = Mock_Board()
@@ -42,7 +43,9 @@ if __name__ == '__main__':
       'num_schematic_pins',
       'num_wires',
       'num_wire_crosses',
-      'total_wire_length')
+      'total_wire_length',
+      'num_runs',
+      'num_forced_wires')
   output_file_name = ('circuit_simulator/proto_board/automated_testing/'
       'final_algorithm_test/%s_results' % basename(normpath(argv[1])))
   open(output_file_name, 'w').write(';'.join(header))
@@ -54,8 +57,8 @@ if __name__ == '__main__':
         print file_name
         for i in xrange(10):
           print 'run %d' % (i + 1)
-          proto_board, total_time, num_schematic_pins = _test(join(dir_path,
-              file_name))
+          (proto_board, num_runs, num_forced_wires, total_time,
+              num_schematic_pins) = _test(join(dir_path, file_name))
           solved = proto_board is not None
           if solved:
             num_wires = proto_board.num_wires()
@@ -70,5 +73,5 @@ if __name__ == '__main__':
               'r').readlines()]
           results.append(';'.join(map(str, (file_name, i, solved, total_time,
               num_schematic_pins, num_wires, num_wire_crosses,
-              total_wire_length))))
+              total_wire_length, num_runs, num_forced_wires))))
           open(output_file_name, 'w').write('\n'.join(results))

@@ -87,7 +87,8 @@ if __name__ == '__main__':
         discovered proto board.
     """
     app_runner.board.set_busy_cursor()
-    proto_board = combined_solve_layout(circuit)
+    solve_data = combined_solve_layout(circuit)
+    proto_board = solve_data['proto_board']
     if proto_board:
       # show labels on board for easy schematic-layout matching
       app_runner.board.show_label_tooltips()
