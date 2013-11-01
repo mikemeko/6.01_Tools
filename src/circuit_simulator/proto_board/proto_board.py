@@ -14,7 +14,6 @@ from core.data_structures.disjoint_set_forest import Disjoint_Set_Forest
 from string import ascii_lowercase
 from string import ascii_uppercase
 from string import digits
-from util import body_section_rows
 from util import section_locs
 from wire import Wire
 
@@ -262,6 +261,11 @@ class Proto_Board:
     for piece in self._pieces:
       new = new.with_piece(piece)
     for i, wire in enumerate(self._wires):
+      # don't include useless wires
+      if (all(self.free(loc) for loc in set(section_locs(wire.loc_1)) - {
+          wire.loc_1}) or all(self.free(loc) for loc in set(section_locs(
+          wire.loc_2)) - {wire.loc_2})):
+        continue
       if wire.vertical():
         r1, c1 = wire.loc_1
         r2, c2 = wire.loc_2
