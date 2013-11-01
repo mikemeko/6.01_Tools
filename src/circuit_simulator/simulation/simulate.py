@@ -4,7 +4,6 @@ import lib601.sig as sig
 #import sig
 reload(sig)
 from lib601.plotWindow import PlotWindow
-from random import random
 
 import Tkinter
 tcl =Tkinter.Tcl()
@@ -228,7 +227,7 @@ class OpAmp:
         if knowns[self.vO]:
             warn('Voltage on node {0:d} set by multiple sources.'.format(self.vO))
             raise MultipleSources('Voltage on node {0:d} set by multiple sources.'.format(self.vO))
-        voltages[self.vO] = 0
+        voltages[self.vO] = 1e-4
         knowns[self.vO] = True
     def update(self,voltages,knowns):
         v = self.K*(voltages[self.vP]-voltages[self.vM])
@@ -237,7 +236,7 @@ class OpAmp:
             v = voltages[self.pP]
         if v<voltages[self.pM]:
             v = voltages[self.pM]
-        voltages[self.vO] = v + random() * 1e-4
+        voltages[self.vO] = v
         knowns[self.vO] = True
     def addConductance(self,gMatrix):
         gMatrix[self.vO][self.vO] += 1./0.0001
