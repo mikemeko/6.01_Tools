@@ -4,7 +4,7 @@ import lib601.sig as sig
 #import sig
 reload(sig)
 from lib601.plotWindow import PlotWindow
-
+from random import random
 
 import Tkinter
 tcl =Tkinter.Tcl()
@@ -237,7 +237,7 @@ class OpAmp:
             v = voltages[self.pP]
         if v<voltages[self.pM]:
             v = voltages[self.pM]
-        voltages[self.vO] = v
+        voltages[self.vO] = v + random() * 1e-4
         knowns[self.vO] = True
     def addConductance(self,gMatrix):
         gMatrix[self.vO][self.vO] += 1./0.0001
