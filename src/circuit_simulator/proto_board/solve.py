@@ -161,7 +161,7 @@ def combined_solve_layout(circuit, verbose=True):
         resistor, node) in failed_loc_pairs]
   solve_data['proto_board'] = find_terrible_wiring(failed_loc_pairs,
       proto_board)
-  solve_data['num_forced_wires'] = len(failed_loc_pars)
+  solve_data['num_forced_wires'] = len(failed_loc_pairs)
   return solve_data
 
 def many_layouts(circuit):
