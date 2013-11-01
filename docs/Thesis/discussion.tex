@@ -93,7 +93,17 @@ would unecessarily take up valueable rows.
 Chapter \ref{ch:results} presented quantitative data to compare the various
 alternatives we have in solving the protoboard layout problem. Here, we will
 analyze that data and give reasonings for why we obtained the results
-that we obtained.
+that we obtained. For each comparison, we present exemplar layouts generated
+by the alternative methods for the schematic shown in Figure
+\ref{fig:exemplar_schematic}.
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=\textwidth]{Images/exemplar_schematic.png}
+\caption{Exemplar schematic.}
+\label{fig:exemplar_schematic}
+\end{center}
+\end{figure}
 
 \subsection{Comparing placement methods}
 
@@ -190,6 +200,14 @@ It is clear that both methods have their strengths and weaknesses. In Section
 \ref{sec:method_combination} we will discuss how combining these two methods can
 get us the best of both worlds (?).
 
+\begin{figure}
+\begin{center}
+\includegraphics[width=\textwidth]{Images/exemplar_per_pair_decreasing.png}
+\includegraphics[width=\textwidth]{Images/exemplar_distance.png}
+\caption{Blocking vs. Distance.}
+\end{center}
+\end{figure}
+
 \subsection{Comparing wiring methods}
 
 To compare the wiring methods, let us start with the success rate for each method.
@@ -247,9 +265,67 @@ Lastly, ordering subproblems from hardest to easiest has the effect of making th
 overall wiring step complete faster but producing worse results than the reverse
 order and not necessarily getting a markedly better success rate.
 
+\begin{figure}
+\begin{center}
+\includegraphics[width=\textwidth]{Images/exemplar_all_pairs.png}
+\includegraphics[width=\textwidth]{Images/exemplar_per_node_increasing.png}
+\includegraphics[width=\textwidth]{Images/exemplar_per_node_decreasing.png}
+\end{center}
+\end{figure}
+\begin{figure}
+\begin{center}
+\includegraphics[width=\textwidth]{Images/exemplar_per_pair_increasing.png}
+\includegraphics[width=\textwidth]{Images/exemplar_per_pair_decreasing.png}
+\caption{All-pairs vs. Per-node, increasing vs. Per-node, decreasing vs.
+Per-pair, increasing vs. Per-pair, decreasing.}
+\end{center}
+\end{figure}
+
 \subsection{Comparing resistor treatments}
 
+\begin{figure}
+\begin{center}
+\includegraphics[width=\textwidth]{Images/exemplar_per_pair_decreasing.png}
+\includegraphics[width=\textwidth]{Images/exemplar_resistors_as_wires.png}
+\caption{Resistors as components vs. Resistors as wires.}
+\end{center}
+\end{figure}
+
 \subsection{Comparing search methods}
+
+We now compare our two alternative search algorithms: $A*$ and Best First Search.
+Let us start by comparing success rates. Figures \ref{fig:search_success} and
+\ref{fig:search_success_trend} and Table \ref{fig:search_success} present the
+appropriate data. We clearly observe that Best First Search is much more
+successful than $A*$. $98\%$ of the test circuits were solved at least $8$ times
+out of $10$ when we used Best First Search, versues $85\%$ when we used $A*$.
+This result is not surprising because Best First Search hungrily hunts for
+layouts that satisfy the connection requirements without caring for the
+aesthetics of the layouts. Hence, Best First Search is much less succeptible to
+the $300$ states to expand restriction than $A*$. The fact that the quality of
+the results we get from Best First Search are worse
+is clearly evident from Figure \ref{fig:search_quality_trend}. Most importantly, the
+number of wire crosses in the layouts produced by Best First Search are markedly
+greater than the number of wire crosses in the layouts produced by $A*$. We also
+observe that the total wire length is greater when using Best First Search. The
+fact that Best First Search settles for any layout that satisfies the connection
+requirements suggests that it should finish more quickly in addition to being
+more successful. Firgure \ref{fig:search_time_trend} supports exactly this
+expectation.
+
+Our choice of a search algorithm forces us to consider a treadoff between quick
+success and quality. If we choose Best First Search, most runs will be successful
+and terminate quickly, but will produce very poor results. If we choose $A*$,
+not as many runs will be successful, and the successful runs will take longer to
+terminate, but we will get much better layouts.
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=\textwidth]{Images/exemplar_per_pair_decreasing.png}
+\includegraphics[width=\textwidth]{Images/exemplar_best_first.png}
+\caption{$A*$ vs. Best First Search.}
+\end{center}
+\end{figure}
 
 \subsection{Putting them all together}
 \label{sec:method_combination}

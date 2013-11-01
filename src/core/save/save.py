@@ -14,6 +14,8 @@ from core.gui.components import Wire
 from os.path import isfile
 from tkFileDialog import askopenfilename
 from tkMessageBox import askquestion
+from tkMessageBox import CANCEL
+from tkMessageBox import YESNOCANCEL
 from tkFileDialog import asksaveasfilename
 from util import strip_dir
 from util import strip_file_name
@@ -63,8 +65,8 @@ def request_save_board():
   Presents a pop-up window asking the user whether to save the file. Returns
       True if the user responds yes, False otherwise.
   """
-  return askquestion(title=REQUEST_SAVE_TITLE,
-      message=REQUEST_SAVE_MESSAGE) == 'yes'
+  return askquestion(title=REQUEST_SAVE_TITLE, message=REQUEST_SAVE_MESSAGE,
+      type=YESNOCANCEL, default=CANCEL)
 
 def open_board_from_file(board, file_name, deserializers, file_extension):
   """

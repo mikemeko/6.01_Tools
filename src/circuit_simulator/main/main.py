@@ -107,6 +107,7 @@ if __name__ == '__main__':
     else:
       app_runner.board.display_message('Could not find proto board wiring',
           ERROR, False)
+    app_runner.board.set_regular_cursor()
   # add circuit components to palette
   app_runner.palette.add_drawable_type(Power_Drawable, LEFT, None)
   app_runner.palette.add_drawable_type(Ground_Drawable, LEFT, None)

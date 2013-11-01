@@ -184,29 +184,42 @@ class App_Runner:
     self._save_as(self._file_name)
   def _request_save(self):
     """
-    Requests for a file save if necessary.
+    Requests for a file save if necessary. Returns True if there isn't anything
+        to save or, in the case that there is something to save, if the user
+        either decides to save the file (will be presented with a dialog to do
+        so) or decides not to save the file. Returns False if the user cancels
+        the request for save (i.e. does neither).
     """
-    if self.board.changed() and request_save_board():
-      self._save_file()
+    if self.board.changed():
+      save = request_save_board()
+      if save == 'yes':
+        self._save_file()
+        return True
+      elif save == 'no':
+        return True
+      else:
+        return False
+    else:
+      return True
   def _open_file(self, new_file_name=None):
     """
     Opens a saved file of this app's type.
     """
-    self._request_save()
-    new_file_name = new_file_name or get_board_file_name(self._file_name,
-        self._app_name, self._file_extension)
-    if open_board_from_file(self.board, new_file_name, self._deserializers,
-        self._file_extension):
-      self._file_name = new_file_name
-      self._on_changed(False)
-    self.board.reset_cursor_state()
+    if self._request_save():
+      new_file_name = new_file_name or get_board_file_name(self._file_name,
+          self._app_name, self._file_extension)
+      if open_board_from_file(self.board, new_file_name, self._deserializers,
+          self._file_extension):
+        self._file_name = new_file_name
+        self._on_changed(False)
+      self.board.reset_cursor_state()
   def _new_file(self):
     """
     Opens a new file of this app's type.
     """
-    self._request_save()
-    self._file_name = None
-    self._init_board()
+    if self._request_save():
+      self._file_name = None
+      self._init_board()
   def run(self):
     """
     Runs this app.

@@ -690,6 +690,8 @@ class Board(Frame):
       if self._wire_parts:
         start_connector = self._connector_at(self._wire_start)
         assert start_connector
+        # mark the board changed
+        self.set_changed(True)
         end_connector = self._connector_at(self._wire_end)
         snap_wire = None
         if not end_connector:
@@ -731,8 +733,6 @@ class Board(Frame):
           if self._wire_start_connector_created:
             self._action_history.combine_last_n(2)
         self._redraw_wires()
-        # mark the board changed
-        self.set_changed(True)
     else:
       self._erase_previous_wire_path()
       if self._wire_start_connector_created:
@@ -1145,10 +1145,9 @@ class Board(Frame):
     """
     Callback on exit.
     """
-    self._cancel_message_remove_timer()
-    if self._on_exit:
-      self._on_exit()
-    Frame.quit(self)
+    if not self._on_exit or self._on_exit():
+      self._cancel_message_remove_timer()
+      Frame.quit(self)
   def _cancel_message_remove_timer(self):
     """
     Cancles timer that has been set to remove current message (if any).
@@ -1227,12 +1226,11 @@ class Board(Frame):
     # remove message since an action has resulted in a board change
     self.remove_message()
     # once the board is changed, don't show wire label tooltips
-    self.hide_label_tooltips()
-    # remove highlight outlines, if any
     self._clear_drawable_outlines()
     self._drawable_highlight(None)
     self._clear_wire_outlines()
     self._wire_highlight(None)
+    self.hide_label_tooltips()
   def _add_drawable(self, drawable, offset):
     """
     Adds the given |drawable| at the given |offset|.
@@ -1377,16 +1375,20 @@ class Board(Frame):
     Starts showing label tooltips. Tooltips will be hidden on call to
         self.hide_label_tooltips or if the board is changed.
     Label tooltips must be enabled for this board.
+    TODO(mikemeko): this method should have a different name.
     """
     assert self._label_tooltips_enabled, 'label tooltips are not enabled'
     self._show_label_tooltips = True
   def hide_label_tooltips(self):
     """
     Stops showing label tooltips.
+    TODO(mikemeko): this method should have a different name.
     """
     if self._label_tooltips_enabled:
       self._tooltip_helper.hide_tooltip()
       self._show_label_tooltips = False
+      self._drawable_highlight = lambda label: None
+      self._wire_highlight = lambda label: None
   def get_drawable_offset(self, drawable):
     """
     Returns the offset with which the given |drawable| is drawn. Assumes that
@@ -1517,4 +1519,12 @@ class Board(Frame):
     """
     Changes cursor to watch to indicate business.
     """
-    self._canvas.config(cursor='watch')
+    try:
+      self._canvas.config(cursor='wait')
+    except:
+      self._canvas.config(cursor='watch')
+  def set_regular_cursor(self):
+    """
+    Changes cursor to arrow.
+    """
+    self._canvas.config(cursor='arrow')

@@ -809,7 +809,7 @@ class Photosensors_Drawable(Pin_Drawable):
     if self.direction == DIRECTION_UP:
       return ox, cy, cx, oy, ox + w, cy
     elif self.direction == DIRECTION_RIGHT:
-      return cx, oy, cx, oy + h, ox + w, cy
+      return cx, oy, ox + w, cy, cx, oy + h
     elif self.direction == DIRECTION_DOWN:
       return ox + w, cy, cx, oy + h, ox, cy
     elif self.direction == DIRECTION_LEFT:

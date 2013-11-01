@@ -68,6 +68,7 @@ lengths of wires, and numbers of wire crosses as functions of circuit complexity
 Below we will present the data for each of the comparisons outlined above. Note
 that in all figures that follow, error bars indicate $1.96$ times the
 standard error.
+
 Discussion of these results will follow in Chapter \ref{ch:discussion}.
 
 \section{Comparing placement methods}
@@ -195,6 +196,60 @@ All & $458$ & $114$ & $111$ & $112$ & $127$ & $145$ & $177$ & $139$ & $172$ & $2
 \section{Comparing resistor treatments}
 
 \section{Comparing search methods}
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[width=\textwidth]{Images/search_success_comparison.png}
+\caption{Search method comparison: success rates.}
+\label{fig:search_success}
+\end{center}
+\end{figure}
+
+\begin{table}[H]
+\begin{center}
+\begin{singlespace}
+\begin{tabular}{|c||c|c|c|c|c|c|c|c|c|c|c|}
+\hline
+ & \multicolumn{11}{|c|}{Number of times succeeded out of $10$} \\
+\hline
+ & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 \\
+\hline\hline
+$A*$ & $162$ & $38$ & $51$ & $57$ & $72$ & $85$ & $109$ & $106$ & $144$ & $203$ & $3398$ \\
+ & $0.04$ & $0.01$ & $0.01$ & $0.01$ & $0.02$ & $0.02$ & $0.02$ & $0.02$ & $0.03$ & $0.05$ & $0.77$ \\
+\hline
+ Best First & $6$ & $5$ & $2$ & $1$ & $13$ & $10$ & $29$ & $45$ & $84$ & $245$ & $3985$ \\
+  & $0.00$ & $0.00$ & $0.00$ & $0.00$ & $0.00$ & $0.00$ & $0.01$ & $0.01$ & $0.02$ & $0.06$ & $0.90$ \\
+\hline
+\end{tabular}
+\end{singlespace}
+\end{center}
+\label{tb:search_success}
+\caption{Search method comparison: success rates.}
+\end{table}
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[width=\textwidth]{Images/search_success_trend_comparison.png}
+\caption{Search method comparison: success rate trends.}
+\label{fig:search_success_trend}
+\end{center}
+\end{figure}
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[width=\textwidth]{Images/search_time_trend_comparison.png}
+\caption{Search method comparison: wiring time trends.}
+\label{fig:search_time_trend}
+\end{center}
+\end{figure}
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=\textwidth]{Images/search_quality_trend_comparison.png}
+\caption{Search method comparison: layout quality trends.}
+\label{fig:search_quality_trend}
+\end{center}
+\end{figure}
 
 \section{Putting them all together}
 

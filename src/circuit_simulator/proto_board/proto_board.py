@@ -253,14 +253,15 @@ class Proto_Board:
         wires (when possible) and shifting horizontal wires up or down to avoid
         corssing wires (when possible).
     I apologize for really ugly code :(
+    This is targetted for the regular protoboard structure, and not any others.
+        I.e. changing the constants will result in this code not being as
+        useful.
     """
     new = Proto_Board().with_loc_disjoint_set_forest(
         self._loc_disjoint_set_forest)
     for piece in self._pieces:
       new = new.with_piece(piece)
-    wires_so_far = []
-    # place vertical wires first
-    for wire in sorted(self._wires, key=lambda wire: wire.horizontal()):
+    for i, wire in enumerate(self._wires):
       if wire.vertical():
         r1, c1 = wire.loc_1
         r2, c2 = wire.loc_2
@@ -270,7 +271,6 @@ class Proto_Board:
           c1, c2 = c2, c1
         if r2 - r1 == 1:
           new = new.with_wire(wire)
-          wires_so_far.append(wire)
           continue
         def safe(r):
           return r == r1 or r == r2 or (self.free((r, c1)) and self.rep_for(
@@ -289,35 +289,20 @@ class Proto_Board:
         for _r, r_ in pairs:
           w = Wire((_r, c1), (r_, c1), wire.node)
           new = new.with_wire(w)
-          wires_so_far.append(w)
       elif wire.horizontal():
         r1, c1 = wire.loc_1
         r2, c2 = wire.loc_2
         assert r1 == r2
-        def cost(r):
-          test_wire = Wire((r, c1), (r, c2), '')
-          cost = 0
-          # crossing pieces (unacceptable)
-          cost += 1e100 * sum(piece.crossed_by(test_wire) for piece in
-              new.get_pieces())
-          # crossing original wires (unacceptable)
-          cost += 1e10 * sum((w != wire and test_wire.crosses(w)) for w in
-              self._wires)
-          # corssing new wires (preferred against)
-          for w in wires_so_far:
-            if test_wire.crosses(w):
-              if w.horizontal(): # (unacceptable)
-                cost += 1e5
-              else:
-                cost += 1e1
-          # close to the middle (preferred)
-          cost += 1e0 * abs(r - 6.5)
-          return cost
-        best_r = min(body_section_rows(r1), key=cost)
-        w = Wire((best_r, c1), (best_r, c2), wire.node)
-        new = new.with_wire(w)
-        wires_so_far.append(w)
+        r = r1
+        # try to get horizontal wires closer to the center
+        rows = [2, 3, 4, 5, 6] if r1 <= 6 else [11, 10, 9, 8, 7]
+        for _r in rows:
+          test_wire = Wire((_r, c1), (_r, c2), wire.node)
+          if (not any(test_wire.crosses(w) for w in self._wires[i + 1:]) and not
+              any(test_wire.crosses(w) for w in new._wires) and not any(
+              piece.crossed_by(test_wire) for piece in new._pieces)):
+            r = _r
+        new = new.with_wire(Wire((r, c1), (r, c2), wire.node))
       else:
         new = new.with_wire(wire)
-        wires_so_far.append(wire)
     return new

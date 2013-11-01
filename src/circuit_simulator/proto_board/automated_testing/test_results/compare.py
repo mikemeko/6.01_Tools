@@ -19,7 +19,7 @@ def se(l):
   """
   return 1.96 * sem(l)
 
-colors = ['r', 'g', 'b', 'c', 'm']
+colors = ['r', 'b', 'g', 'c', 'm']
 
 def compare(files, methods):
   all_results = []

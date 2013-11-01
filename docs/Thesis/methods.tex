@@ -300,21 +300,40 @@ of schematics. These $6$ bases are depicted in Figure
 necessary in a 6.01 circuit. Each sub-part also offers at least $3$ points of
 connection with other subparts. The random generation algorithm takes all
 possible combinations of
-$6$ bases, allowing for repetition of bases. The only bases that can appear at most
-once in a schematic are the Head Connector and Robot Connector - there is no need
-for more that one of each of these in 6.01 labs. All other bases may appear up
-to $6$ times. For a given combination of bases, we generate $10$ schematics as
-follows. For each number of connections $k$ from $0$ to $9$, we generate a
-schematic in which we put $k$ randomly chosen wires interconnecting the bases
-in the combination.
+$6$ bases, allowing for repetition of bases with some restictions.
+The Head Connector and Robot Connector bases can appear at most once as there is
+no need for more than one of each of these in 6.01 labs. The pot-follower base (
+i.e. the base that contains one pot and a follower op amp) can appear at most
+twice as we never need more than two pots in 6.01 circuits. The motor base can
+also appear at most twice as we never need more than two motors per circuit in
+6.01 labs. The other bases, T-resistor configuration and voltage divider, can be
+repeated up to 6 times. For a given combination of bases, we generate up $n$
+schematics, where $n$ dependes on the number of bases in the configurations (
+larger for configurations with more bases in them).
+We generate the $n$ schematics by choosing a number of interconnections between
+the bases from $0$ to $n-1$. For each number of interconnections, we generate
+a schematic in which we put that many randomly chosen wires interconnecting
+the bases in the combination. Figure \ref{fig:example_random_schematic} presents
+a sample randomly generated schematic.
 
-This scheme produces a total of $5242$ test schematics out of a possible total
-of $889785038484423775$.
+This scheme produces a total of $4425$ test schematics out of a possible total
+of approximately $1.2e27$. When testing a particular algorithm on these test
+schematics, we run the algorithm on each test schematic $10$ times. Chapter
+\ref{ch:results} presents the data collected in this manner comparing the
+various alternatives discussed in this Chapter.
 
 \begin{figure}
 \begin{center}
-\includegraphics{Images/placeholder.jpg}
+\includegraphics[width=\textwidth]{Images/auto_generation_bases.png}
 \caption{Bases for random schematic generation.}
 \label{fig:random_gen_bases}
+\end{center}
+\end{figure}
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=\textwidth]{Images/auto_generation_example.png}
+\caption{Sample randomly generated schematic.}
+\label{fig:example_random_schematic}
 \end{center}
 \end{figure}
