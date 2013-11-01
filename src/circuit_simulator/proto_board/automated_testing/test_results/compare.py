@@ -87,7 +87,8 @@ def compare(files, methods):
   for results in all_results:
     time_mapping = defaultdict(list)
     for result in results:
-      time_mapping[result.num_schematic_pins].append(result.wiring_time)
+      if result.solved:
+        time_mapping[result.num_schematic_pins].append(result.wiring_time)
     all_time_mappings.append(time_mapping)
   for i, time_mapping in enumerate(all_time_mappings):
     pylab.errorbar(time_mapping.keys(), map(mean, time_mapping.values()),
