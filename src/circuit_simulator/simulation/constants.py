@@ -28,7 +28,7 @@ PHOTODETECTOR_K = 5e-7
 
 # sampling constants
 NUM_SAMPLES = 100
-T = 0.01 # sampling periond
+T = 0.02 # sampling periond
 
 # default simulation signals
 DEFAULT_LAMP_ANGLE_SIGNAL = Constant_CT_Signal(0)

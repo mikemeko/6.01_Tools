@@ -5,7 +5,7 @@ import lib601.sig as sig
 reload(sig)
 from lib601.plotWindow import PlotWindow
 
-
+import random
 import Tkinter
 tcl =Tkinter.Tcl()
 def reafter():
@@ -228,11 +228,12 @@ class OpAmp:
         if knowns[self.vO]:
             warn('Voltage on node {0:d} set by multiple sources.'.format(self.vO))
             raise MultipleSources('Voltage on node {0:d} set by multiple sources.'.format(self.vO))
-        voltages[self.vO] = 0
+        voltages[self.vO] = random.uniform(-1e-9,1e9)
         knowns[self.vO] = True
     def update(self,voltages,knowns):
         v = self.K*(voltages[self.vP]-voltages[self.vM])
         v = self.alpha*v+(1.-self.alpha)*voltages[self.vO]
+        v = v+random.uniform(-1e-9,1e-9)
         if v>voltages[self.pP]:
             v = voltages[self.pP]
         if v<voltages[self.pM]:
