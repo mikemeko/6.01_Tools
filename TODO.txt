@@ -18,7 +18,6 @@ THESIS:
 - [9/24/13] Keep writing!
 
 PROTOBOARD LAYOUT:
-- [8/31/13] post process protoboards to make them prettier.
 
 CIRCUIT ANALYSIS:
 - [8/31/13] Allow multiple sets of probes.
@@ -72,6 +71,7 @@ PROTOBOARD LAYOUT:
 - [10/16/13] [8/31/13] If the layout generation fails at a particular pair of
     locations, output what it has found so far. Better yet, let the user help it
     out!
+- [10/31/13] [8/31/13] post process protoboards to make them prettier.
 
 SYSTEM ANALYSIS:
 
