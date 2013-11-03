@@ -283,6 +283,40 @@ Per-pair, increasing vs. Per-pair, decreasing.}
 
 \subsection{Comparing resistor treatments}
 
+We now look at the two alternative treatments for wires: as components vs. as
+wires. From Figures \ref{fig:resistor_success} and \ref{fig:resistor_success_trend}
+and Table \ref{tb:resistor_success}, we observe that treating resistors as wires
+results in a considerably smaller success rate than treating resistors as
+components. Recall that the wiring method used here is per-pair, decreasing wiring.
+When treating resistors as wires, we get more location pairs to connect.
+The key difference for
+the location pairs that correspond to resistors is that in connecting the given
+pair of locations with wires, one of the wires is required to have length $3$,
+the length of a resistor. Intuitively, this restriction should make the search
+harder, and the data we have obtained suggests that the search is indeed
+significantly more difficult with the restriction than without.
+
+When we treat resistors as wires, and the search does succeed, we observe from
+Figure \ref{fig:resistor_time_trend} that it takes more time than treating
+resistors as wires, as expected.
+
+Finally we look at the quality of layouts produced by the two methods. First,
+we observe from Figure \ref{fig:resistor_quality_trend} that treating resistors
+as wires produces layouts with fewer wires and smaller total length of wires
+than treating resistors as components. This is certainly expected because each
+resistor can be suitably placed to require fewer wires than would be required
+if we forced the resistor to reside in the middle strip of the protoboard. We
+do note, however, that treating resistors as wires results in more wire crosses
+despite requiring fewer wires, especially as circuit complexity increases. This
+can be attributed to the fact that treating resistors as wires is likely to
+produce more compact layouts in which wire crosses are more likely to happen
+than the spreadout settings we force when we treat resistors as components.
+
+In this comparison, we can easily state that, with a limited search (i.e. with
+a search in which we have a limited number of states to expand), treating
+resistors as components is a better strategy than treating resistors as wires
+based on the big difference in success rate.
+
 \begin{figure}
 \begin{center}
 \includegraphics[width=\textwidth]{Images/exemplar_per_pair_decreasing.png}
