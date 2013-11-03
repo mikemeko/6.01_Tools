@@ -261,11 +261,6 @@ class Proto_Board:
     for piece in self._pieces:
       new = new.with_piece(piece)
     for i, wire in enumerate(self._wires):
-      # don't include useless wires
-      if (all(self.free(loc) for loc in set(section_locs(wire.loc_1)) - {
-          wire.loc_1}) or all(self.free(loc) for loc in set(section_locs(
-          wire.loc_2)) - {wire.loc_2})):
-        continue
       if wire.vertical():
         r1, c1 = wire.loc_1
         r2, c2 = wire.loc_2
@@ -294,6 +289,11 @@ class Proto_Board:
           w = Wire((_r, c1), (r_, c1), wire.node)
           new = new.with_wire(w)
       elif wire.horizontal():
+        # don't include useless horizontal wires
+        if (all(self.free(loc) for loc in set(section_locs(wire.loc_1)) - {
+            wire.loc_1}) or all(self.free(loc) for loc in set(section_locs(
+            wire.loc_2)) - {wire.loc_2})):
+          continue
         r1, c1 = wire.loc_1
         r2, c2 = wire.loc_2
         assert r1 == r2
