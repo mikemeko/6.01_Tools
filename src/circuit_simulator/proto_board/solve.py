@@ -111,7 +111,7 @@ def combined_solve_layout(circuit, verbose=True):
   """
   solve_data = {'num_runs': 0, 'num_forced_wires': 0, 'proto_board': None}
   partially_solved = []
-  for cost_type in (COST_TYPE_BLOCKING, COST_TYPE_DISTANCE):
+  for cost_type in (COST_TYPE_DISTANCE, COST_TYPE_BLOCKING):
     if verbose:
       print 'Cost type: %s' % cost_type
     placement, resistor_node_pairs = get_piece_placement(circuit,
@@ -120,7 +120,7 @@ def combined_solve_layout(circuit, verbose=True):
       if verbose:
         print '\tToo many components.'
       continue
-    for order_sign in (-1, 1):
+    for order_sign in (1, -1):
       solve_data['num_runs'] += 1
       proto_board, nodes, loc_pairs = _setup(placement, resistor_node_pairs)
       if verbose:
