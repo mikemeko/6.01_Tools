@@ -44,7 +44,38 @@ def analyze(result_file):
   results = [Test_Result(line) for line in lines[1:]]
   print 'Success rate: %.2f' % (float(len([result for result in results if
       result.solved])) / len(results))
+  # num trials
+  fig, ax = pylab.subplots()
+  pylab.xlim(xmin=0.5, xmax=10.5)
+  pylab.ylim(ymin=0, ymax=44000)
+  num_trials = defaultdict(int)
+  for result in results:
+    if result.num_forced_wires > 0:
+      num_trials[4 + result.num_forced_wires] += 1
+    else:
+      for i in range(1, 5):
+        if result.num_runs == i:
+          num_trials[i] += 1
+          break
+  keys = sorted(num_trials.keys())
+  values = [num_trials[key] for key in keys]
+  labels = ['%d' % i for i in keys if i <= 4] + ['+%d' % (i - 4) for i in keys
+      if i > 4]
+  colors = ['g'] * 4 + ['r'] * (len(keys) - 4)
+  width = 0.8
+  rects = ax.bar(keys, values, width=width, color=colors)
+  total = float(sum(rect.get_height() for rect in rects))
+  for rect in rects:
+    height = rect.get_height()
+    ax.text(rect.get_x() + rect.get_width() / 2., height + 400, '%d\n%.1f%%' % (
+        int(height), int(height) / total * 100), ha='center', va='bottom')
+  ax.set_xticks([i + width/2 for i in keys])
+  ax.set_xticklabels(labels)
+  pylab.xlabel('Number of trials')
+  pylab.ylabel('Count')
+  pylab.show()
   # time trend
+  pylab.autoscale(enable=True)
   pylab.figure()
   time_mapping = defaultdict(list)
   for result in results:
