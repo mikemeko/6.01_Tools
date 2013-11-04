@@ -112,72 +112,29 @@ see that the distance method exceeds the blocking method in number of circuits
 solved $10$ times out of $10$ as well as in the number of circuits solved $0$
 to $2$ times out of $10$. On the other hand, the blocking method exceeds the
 distance method in number of circuits solved from $3$ to $9$ times out
-of $10$. If our primary goal is avoiding failure, then these results suggest
-that the blocking method is a better placement method. If, on the other hand,
-our primary goal is being consistent on success (while not necessarily being
-successful), then these results perhaps suggest that the distance method is
-better. In a sense, these results suggest that while the blocking method
-generally produces placements that are easier for the wiring stage, it has more
-variability in the placements it produces for the same circuit. The distance
-method, on the other hand, produces worse placements (i.e. placements that are
-harder to wire), but has much less variability. This observation from the data
-makes intuitive sense as there are likely to be more placements that are minimal
-in blocking rows than placements that minimize pairwise distances between pairs
-of protoboard locations that need to be connected.
-
-Despite the important differences presented above, it is interesting to note
-that the
-success rates of the two placement methods are not that different form each
-other. Looking at the percentages given in Table \ref{tb:placement_success}, we
-see that the success rates are very comparable.
-
-When we consider success rate as a function of the complexity of circuits, we
-reach some interesting patterns. From Figure \ref{fig:placement_success_trend} we
-can gather that when the number of pins in the circuit is less than roughly $26$,
-the blocking method generally has a higher success rate, but when the number of
-pins is greater than $26$, the success rates of the two methods are very
-comparable. This suggests that the blocking method is a better placement method
-for the less complex circuits, but does not do any better on the more
-complex ones. These results compliment what we found above. These results
-suggest that the blocking method generally produces placements that are easy to
-wire. These placements are easy in that the search in wiring is less likely to
-get stuck while trying to connect a pair of locations. This is precisely a result
-of the fact that the blocking method attempts to free as many rows as possible.
-The blocking method is less effective on the more complex circuits because
-despite freeing rows, it may ask for elaborate connections to be made, i.e.
-connections between distant pairs of locations on the protoboard. The distance
-method, on the other hand, attempts to avoid this problem by trying to minimize
-the distances between the locations that need to be connected. Hence we would
-not expect the blocking method to be better on the more complex circuits.
-Interestingly, it does not seem to be worse on the more complex circuits either.
-
-As we would expect, we certainly observe that as the complexity of the circuits
+of $10$. Overall, the blocking placement method is slightly more successful
+than the distance placement method. Despite this difference, we note that the
+two alternatives have very
+close success rates. As a function of circuit complexity, Figure
+\ref{fig:placement_success_trend} suggests that the two alternatives have almost
+identical success rates. As we would expect, we certainly observe that as the
+complexity of the circuits
 increases, success rate generally decreases for both of the placement methods.
 The curves in Figure \ref{fig:placement_success_trend} seem to shoot back up
 at the far end of the figure, but this is a result of the fact that there are
 very few circuits at that end of the figure, on which the algorithm happened to
-be consistently successful. It is important to note, once again, that the success
-rates for the two placement methods are very comparable despite the difference
-discussed above.
+be consistently successful.
 
-Let us now consider wiring time as the basis for comparison. Once again, in
-Figure \ref{fig:placement_time_trend} we notice a very interesting separation
-at roughly $26$ pins per circuit. When the number of pins in the circuits is
-less than $26$, the wiring times for the two methods are very comparable.
-When the number of pins in the circuits is greater than $26$, however, the
-blocking methods consistently takes longer. This is very much related to the
-discussion above that the blocking method may often ask for elaborate connections
-to be made. As the complexity of circuits increases, the blocking method will
-require the wiring step to make more elaborate connections than would the distance
-method. Hence, when we are using the blocking method and the algorithm does succeed,
-we would certainly expect the wiring step to take longer than if we had used the
-distance method.
-
-As we would expect, we certainly see that as the complexity of the circuits
-increases, the amount of time spent by the wiring step also increases. As we did
-for the success rate trends as a function of circuit complexity, we observe that
-there are outliers at the far end of the figure due to a very small sample of the
-most complex circuits in the randomly generated schematic dataset.
+When we consider wiring time as the basis for comparison, we observe from
+Figure \ref{fig:placement_time_trend} that, once again, the two metods are
+very similar. We see that the distance method generally takes slightly less
+wiring time than the blocking method, but the difference between the two is
+almost negligible. As we would expect, we certainly see that as the complexity
+of the circuits increases, the amount of time spent by the wiring step also
+increases. As we did for the success rate trends as a function of circuit
+complexity, we observe that there are outliers at the far end of the figure due
+to a very small sample of the most complex circuits in the randomly generated
+schematic dataset.
 
 Finally, let us look at layout complexity as the basis for comparison. Figure
 \ref{fig:placement_quality_trend} presents graphs that compare numbers of wires,
@@ -193,9 +150,10 @@ when we look at the total length of wires used in the layouts, the blocking
 method exceeds the distance method consistently, with the difference getting
 higher as complexity increases. This can be explained by the fact that the
 blocking method may require elaborate connections, especially as the circuits
-get more complex.
+get more complex while the distance method is tuned to require wirings between
+pairs of locations that are closer together.
 
-It is difficult to conclusively pick a better placement method from these results.
+It is difficult to conclusively pick the better placement method from these results.
 It is clear that both methods have their strengths and weaknesses. In Section
 \ref{sec:method_combination} we will discuss how combining these two methods can
 get us the best of both worlds (?).
@@ -282,6 +240,40 @@ Per-pair, increasing vs. Per-pair, decreasing.}
 \end{figure}
 
 \subsection{Comparing resistor treatments}
+
+We now look at the two alternative treatments for wires: as components vs. as
+wires. From Figures \ref{fig:resistor_success} and \ref{fig:resistor_success_trend}
+and Table \ref{tb:resistor_success}, we observe that treating resistors as wires
+results in a considerably smaller success rate than treating resistors as
+components. Recall that the wiring method used here is per-pair, decreasing wiring.
+When treating resistors as wires, we get more location pairs to connect.
+The key difference for
+the location pairs that correspond to resistors is that in connecting the given
+pair of locations with wires, one of the wires is required to have length $3$,
+the length of a resistor. Intuitively, this restriction should make the search
+harder, and the data we have obtained suggests that the search is indeed
+significantly more difficult with the restriction than without.
+
+When we treat resistors as wires, and the search does succeed, we observe from
+Figure \ref{fig:resistor_time_trend} that it takes more time than treating
+resistors as wires, as expected.
+
+Finally we look at the quality of layouts produced by the two methods. First,
+we observe from Figure \ref{fig:resistor_quality_trend} that treating resistors
+as wires produces layouts with fewer wires and smaller total length of wires
+than treating resistors as components. This is certainly expected because each
+resistor can be suitably placed to require fewer wires than would be required
+if we forced the resistor to reside in the middle strip of the protoboard. We
+do note, however, that treating resistors as wires results in more wire crosses
+despite requiring fewer wires, especially as circuit complexity increases. This
+can be attributed to the fact that treating resistors as wires is likely to
+produce more compact layouts in which wire crosses are more likely to happen
+than the spreadout settings we force when we treat resistors as components.
+
+In this comparison, we can easily state that, with a limited search (i.e. with
+a search in which we have a limited number of states to expand), treating
+resistors as components is a better strategy than treating resistors as wires
+based on the big difference in success rate.
 
 \begin{figure}
 \begin{center}
