@@ -67,7 +67,7 @@ def generate():
   """
   Generates and saves a large number of test schematics.
   """
-  seed(2000)
+  seed(1000)
   bases_dir = 'auto_generation_bases'
   output_dir = 'auto_generated_dataset'
   def _generate_for(b00, b01, b02, b10, b11, b12, combo):
