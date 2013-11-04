@@ -322,6 +322,41 @@ terminate, but we will get much better layouts.
 \subsection{Putting them all together}
 \label{sec:method_combination}
 
+Now we will discuss whey the combination algorithm given in Algorithm
+\ref{alg:combined} is structured the way it is, and we will also
+discuss the data we obtained for the combined algorithm. Recall that the combined
+algorithm makes four attempts at generating a complete layout. We try both
+placement methods, the distance method first and the blocking method second. We
+try the distance method first because it tends to generate layouts with fewer
+crossing wires and smaller total wire length. We use per-pair wiring, and
+consider both orders of doing the wiring, increasing order first and decreasing
+order second. We use per-pair wiring because it takes considerably
+less time than either per-node or all-pair wiring, and neither of the other
+wiring methods has a better success rate. We try increasing order first because
+that tends to generate layouts with fewer crossing wires then decreasing order.
+
+Let us now consider the data we obtained for the combined algorithm. Firstly, we
+saw that the combined algorithm had a $100\%$ success rate, which is critical
+when we consider the fact that students will be using a tool that almost never fails.
+Next, Figure \ref{fig:final_num_trials} presents very encouraging results as well.
+Not only is the algorithm $100\%$ successful, on the test dataset of $4425$
+schematics, with $10$ runs carried out on each schematic, the algorithm succeeded
+$98.2\%$ of the time without having to put down forced wires. The algorithm was
+required to put down more than $2$ forced wires only $0.1\%$ of the time. When
+we look at Figure \ref{fig:final_num_forced_wires}, we observe, as expected, that
+the number of forced wires increases with circuit complexity. From Figure
+\ref{fig:final_time_trend} we see that as the circuit gets more complex, the
+amount of time the algorithm takes sharply increases. This is due to a more
+difficult placement task (especially as we have more Op Amps) as well as a more
+difficult wiring task. An important aspect of this Figure is that the maximum
+point on the plot occurs at less than $200$ seconds. This indicates that on the
+test dataset, the algorithm took at most just over $3$ minutes to run. This is
+encouraging from a practical stand point because $3$ minutes is not terribly long
+for a student to have to wait for a layout to be generated.
+Finally Figure \ref{fig:final_quality_trend} presents trends of quality as a
+function of circuit complexity. Most importatnly, we observe that the average
+number of wire crosses never exceeds $1$.
+
 \section{Remarks}
 
 \textit{Why are these results encouraging? What are their implications? Relate

@@ -305,7 +305,21 @@ $A*$ & $162$ & $38$ & $51$ & $57$ & $72$ & $85$ & $109$ & $106$ & $144$ & $203$ 
 \end{center}
 \end{figure}
 
-\section{Putting them all together}
+\section{Combined algorithm}
+
+Here we provide data for the combined algorithm presented in Section
+\ref{sec:combined_alg}. To generate this data, we use a different dataset of
+$4425$ schematics. As desired, the algorithm has a $100\%$ success rate.
+Figure \ref{fig:final_num_trials} gives a breakdown of how the algorithm
+succeeded. The first four columns correspond to success from one of the four
+combinations of placement and wiring methods. The last 5 columns correspond to
+layouts in which none of the four combinations was successful and we had to
+force a certain number of wires. Figure \ref{fig:final_num_forced_wires} gives
+the average number of forced wires as a function of circuit complexity. Figure
+\ref{fig:final_time_trend} gives the average total time taken by the algorithm
+as a function of circuit complexity. Finally, Figure \ref{fig:final_quality_trend}
+gives statistics on the quality of the layouts produced as a function of circuit
+complexity.
 
 \begin{figure}[H]
 \begin{center}
