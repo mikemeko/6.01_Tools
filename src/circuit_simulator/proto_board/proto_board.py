@@ -8,6 +8,7 @@ from constants import BODY_BOTTOM_ROWS
 from constants import BODY_TOP_ROWS
 from constants import PROTO_BOARD_WIDTH
 from constants import PROTO_BOARD_HEIGHT
+from constants import RAIL_BOTTOM_ROWS
 from constants import RAIL_ILLEGAL_COLUMNS
 from constants import RAIL_ROWS
 from core.data_structures.disjoint_set_forest import Disjoint_Set_Forest
@@ -261,9 +262,15 @@ class Proto_Board:
     for piece in self._pieces:
       new = new.with_piece(piece)
     for i, wire in enumerate(self._wires):
+      r1, c1 = wire.loc_1
+      r2, c2 = wire.loc_2
+      # don't include useless wires
+      if (r1 not in RAIL_BOTTOM_ROWS and r2 not in RAIL_BOTTOM_ROWS) and (
+          all(self.free(loc) for loc in set(section_locs(wire.loc_1)) - {
+          wire.loc_1}) or all(self.free(loc) for loc in set(section_locs(
+          wire.loc_2)) - {wire.loc_2})):
+        continue
       if wire.vertical():
-        r1, c1 = wire.loc_1
-        r2, c2 = wire.loc_2
         assert c1 == c2
         if r1 > r2:
           r1, r2 = r2, r1
@@ -289,13 +296,6 @@ class Proto_Board:
           w = Wire((_r, c1), (r_, c1), wire.node)
           new = new.with_wire(w)
       elif wire.horizontal():
-        # don't include useless horizontal wires
-        if (all(self.free(loc) for loc in set(section_locs(wire.loc_1)) - {
-            wire.loc_1}) or all(self.free(loc) for loc in set(section_locs(
-            wire.loc_2)) - {wire.loc_2})):
-          continue
-        r1, c1 = wire.loc_1
-        r2, c2 = wire.loc_2
         assert r1 == r2
         r = r1
         # try to get horizontal wires closer to the center
