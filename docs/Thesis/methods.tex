@@ -264,6 +264,74 @@ cost of a vertex, we simply add up this value for each of the pairs of locations
 that need to be connected. Chapter \ref{ch:results} presents the performance of
 this heuristic verses using no heuristic.
 
+\section{Combining the methods}
+
+With the methods discussed so far, we aimed to completly solve the layout problem
+with one placement method and one wiring method. However, as we will soon see,
+such an algorithm is bound to fail on some set of schematics. When we ultimately
+put the final algorithm in front of students, we would like to avoid failure.
+The algorithm should always be able to generate layouts. Generating a layout
+with a few diagonal or crossing wires is better than silently failing and leaving
+the student empty handed. Here, we will discuss how we combine the methods
+described so far into one layout algorithm. The motivation for this combination
+will be discussed in Chapter \ref{ch:discussion} based on the data we obtain
+for the alternatives described above. Algorithm \ref{alg:combined} presents the
+combination algorithm.
+
+\begin{algorithm}
+\KwData{A circuit schematic $C$.}
+\KwResult{A layout corresponding to $C$.}
+\BlankLine
+\ForEach{Placement cost metric $M$ in (DISTANCE, BLOCKING)}{
+$P$ $\leftarrow$ Placement for $C$ by using cost metric $M$.\\
+\ForEach{Order $O$ in (INCREASING, DECREASING)}{
+$pairs$ $\leftarrow$ Pairs of location on $P$ to connect given scematic $C$ and connection order $O$.\\
+\ForEach{$(loc_1, loc_2)$ in $pairs$}{
+Attempt to connect $loc_1$ and $loc_2$ on $P$.\\
+If sucessful, update $P$ accordingly and then post-process $P$.\\
+If not, record that the pair $(loc_1, loc_2)$ was not successfully connected.\\
+}
+If all pairs are successfully connected, post-process and return $P$.\\
+}}
+Pick ``best" unfinished layout.\\
+Connect remaining pairs with shortest possible wires (possibly diagonal).\\
+Post-process and return resulting layout.\\
+\caption{Layout algorithm obtained by combining multiple ideas.}
+\label{alg:combined}
+\end{algorithm}
+
+There are a few key items in Algorithm \ref{alg:combined}. The algorithm works
+by attempting to solve the problem in four different ways: two different ways of
+doing placement together with two different orders of wiring pairs. Note,
+therefore, that we have chosen per-pair wiring. If any one of the four trials
+succeeds, the algorithm immediately returns the corresponding layout. If all
+four trials fail, on the other hand, the algorithm picks the ``best" partial
+solution and completes that solution by placing possibly diagaonal wires, ``best"
+being the partial solution that would require the least amount of additional
+wiring. This last step makes it highly unlikely that the algorithm will ever fail.
+The only way for the algorithm to fail is for there to be two nodes that need to be
+connected where all of the protoboard locations for at least one of the nodes is
+occupied, which is highly unlikely to happen. This high success rate comes at the
+cost of placing wires that will almost surely cross other wires on the board.
+
+The algorithm also has a post-processing step that attempts to to improve the
+layout. The post-processing step makes three types of simple changes to the
+layout. First, we throw away any wires that do not serve to connect two parts
+of the circuit. That is, we throw away wires which have one end connected to
+the circuit, and the other end connected to nothing at all. This could happen
+in the search done by the wiring step, though very rarely. Second, we truncate
+long vertical wires into an equivalent set of smaller wires. For example, a wire
+going from one of the top rails to one of the bottom rails can be replaced by
+three smaller wires making the same connection. This change frees up rows for
+subsequent connections. Finally, if shifting a horizontal wire up or down
+results in fewer wire crosses, we make that change.
+
+The last important aspect of this final algorithm not explicitly stated in
+Algorithm \ref{alg:combined} is that, as it is the algorithm that will be put
+in front of students, it will be allowed to use wires of a select few lengths.
+The kits that students work with certainly do not come with wires of all lengths,
+so we force the wiring step to use wires of only those allowed lengths.
+
 \section{Treating Resistors as Wires}
 \label{sec:resistors_as_wires}
 
