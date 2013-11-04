@@ -54,9 +54,20 @@ each of the $4425$ schematic out of the $10$ runs. We will also look at tables
 that provide the same data in more detail. To get an understanding of how the
 success rates vary with complexity, we will look at plots of circuit complexity
 versus success rate, where our measure of circuit complexity will be the number
-of pins in the circuit as discussed in Chapter \ref{ch:methods} (TODO: this is
-currently not done, be sure to give a histogram of numbers of pins in the
-circuits).
+of pins in the circuit. A pin in a circuit is a connection point on a circuit
+component that is connected by wires to another connection point (on the same
+component or a different component). Hence, the number of pins in the circuit is
+a reasonable metric for how complex the circuit is. Figure
+\ref{fig:complexity_hist} presents a histogram of the number of pins in the
+schematics in dataset that will be used to do all comparisons in this Chapter.
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[width=\textwidth]{Images/complexity_hist.png}
+\caption{TODO.}
+\label{fig:complexity_hist}
+\end{center}
+\end{figure}
 
 In comparing success time, we will look at CPU time spent on the wiring step, as
 the placement step has much less variability. We will look at plots of circuit
