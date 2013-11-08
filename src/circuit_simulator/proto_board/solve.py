@@ -14,11 +14,13 @@ from collections import defaultdict
 from constants import COST_TYPE_BLOCKING
 from constants import COST_TYPE_DISTANCE
 from constants import GROUND_RAIL
+from constants import GROUND_RAIL_2
 from constants import MODE_PER_NODE
 from constants import MODE_PER_PAIR
 from constants import ORDER_DECREASING
 from constants import ORDER_INCREASING
 from constants import POWER_RAIL
+from constants import POWER_RAIL_2
 from constants import RAIL_LEGAL_COLUMNS
 from find_proto_board_wiring import find_terrible_wiring
 from find_proto_board_wiring import find_wiring
@@ -42,10 +44,11 @@ def _setup(placement, resistor_node_pairs):
   for node in (GROUND, POWER):
     if node not in node_locs_mapping:
       node_locs_mapping[node] = []
-  node_locs_mapping[GROUND].append((GROUND_RAIL, iter(
-      RAIL_LEGAL_COLUMNS).next()))
-  node_locs_mapping[POWER].append((POWER_RAIL, iter(
-      RAIL_LEGAL_COLUMNS).next()))
+  legal_rail_column = iter(RAIL_LEGAL_COLUMNS).next()
+  node_locs_mapping[GROUND].append((GROUND_RAIL, legal_rail_column))
+  node_locs_mapping[GROUND].append((GROUND_RAIL_2, legal_rail_column))
+  node_locs_mapping[POWER].append((POWER_RAIL, legal_rail_column))
+  node_locs_mapping[POWER].append((POWER_RAIL_2, legal_rail_column))
   proto_board = proto_board.with_loc_disjoint_set_forest(
       node_disjoint_set_forest(node_locs_mapping))
   return proto_board, nodes, loc_pairs_to_connect(placement,
