@@ -231,7 +231,7 @@ def find_placement(pieces, resistors_as_components, cost_type):
         for piece in set([current_piece, current_piece.inverted()]):
           for top_left_row in piece.possible_top_left_rows:
             piece.top_left_row = top_left_row
-            new_placement = deepcopy(placement)
+            new_placement = placement[:]
             new_placement.insert(i, piece)
             new_placement_cost = cost(new_placement, resistors_as_components,
                 cost_type)
