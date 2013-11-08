@@ -686,7 +686,7 @@ class Board(Frame):
     """
     Callback for when wire creation is complete.
     """
-    if self._valid_wire_path:
+    if self._valid_wire_path and self._wire_start != self._wire_end:
       if self._wire_parts:
         start_connector = self._connector_at(self._wire_start)
         assert start_connector
