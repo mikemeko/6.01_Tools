@@ -265,9 +265,9 @@ class Proto_Board:
       r1, c1 = wire.loc_1
       r2, c2 = wire.loc_2
       # don't include useless wires
-      if (r1 not in RAIL_BOTTOM_ROWS and r2 not in RAIL_BOTTOM_ROWS) and (
-          all(self.free(loc) for loc in set(section_locs(wire.loc_1)) - {
-          wire.loc_1}) or all(self.free(loc) for loc in set(section_locs(
+      if (r1 not in RAIL_BOTTOM_ROWS and all(self.free(loc) for loc in set(
+          section_locs(wire.loc_1)) - {wire.loc_1})) or (r2 not in
+          RAIL_BOTTOM_ROWS and all(self.free(loc) for loc in set(section_locs(
           wire.loc_2)) - {wire.loc_2})):
         continue
       if wire.vertical():

@@ -31,6 +31,7 @@ from time import clock
 from traceback import print_exc
 from util import dist
 from util import node_disjoint_set_forest
+from wire import Wire
 
 def _setup(placement, resistor_node_pairs):
   """
@@ -47,9 +48,7 @@ def _setup(placement, resistor_node_pairs):
       node_locs_mapping[node] = []
   legal_rail_column = iter(RAIL_LEGAL_COLUMNS).next()
   node_locs_mapping[GROUND].append((GROUND_RAIL, legal_rail_column))
-  node_locs_mapping[GROUND].append((GROUND_RAIL_2, legal_rail_column))
   node_locs_mapping[POWER].append((POWER_RAIL, legal_rail_column))
-  node_locs_mapping[POWER].append((POWER_RAIL_2, legal_rail_column))
   proto_board = proto_board.with_loc_disjoint_set_forest(
       node_disjoint_set_forest(node_locs_mapping))
   return proto_board, nodes, loc_pairs_to_connect(placement,
@@ -132,6 +131,10 @@ def combined_solve_layout(circuit, verbose=True):
     for order_sign in (1, -1):
       solve_data['num_runs'] += 1
       proto_board, nodes, loc_pairs = _setup(placement, resistor_node_pairs)
+      # use top rails only for power and ground
+      proto_board = proto_board.with_wire(Wire((GROUND_RAIL, 2), (GROUND_RAIL_2,
+          2), GROUND)).with_wire(Wire((POWER_RAIL, 3), (POWER_RAIL_2, 3),
+          POWER))
       if verbose:
         print proto_board
       loc_pairs.sort(key=lambda (loc_1, loc_2, resistor, node): order_sign *
