@@ -13,6 +13,7 @@ from constants import MAX_STATES_TO_EXPAND
 from constants import MODE_ALL_PAIRS
 from constants import MODE_PER_NODE
 from constants import MODE_PER_PAIR
+from constants import MODE_TERRIBLE
 from constants import ORDER_DECREASING
 from constants import ORDER_INCREASING
 from constants import PROTO_BOARD_HEIGHT
@@ -250,12 +251,14 @@ def find_wiring(loc_pairs, start_proto_board, mode, order, best_first,
       MODE_ALL_PAIRS: connect all pairs in one search.
       MODE_PER_NODE: connect the pairs for each node in a separate search.
       MODE_PER_PAIR: connect each pair in a separate search.
+      MODE_TERRIBLE: connect each pair with a straight wire.
   |order|: ORDER_DECREASING | ORDER_INCREASING
       MODE_ALL_PAIRS: ignored.
       MODE_PER_NODE: order of number of pairs per node to consider.
       MODE_PER_PAIR: order of pairwise distance to consider.
+      MODE_TERRIBLE: ignored.
   """
-  assert mode in (MODE_ALL_PAIRS, MODE_PER_NODE, MODE_PER_PAIR)
+  assert mode in (MODE_ALL_PAIRS, MODE_PER_NODE, MODE_PER_PAIR, MODE_TERRIBLE)
   if mode is not MODE_ALL_PAIRS:
     assert order in (ORDER_DECREASING, ORDER_INCREASING)
   if mode is MODE_ALL_PAIRS:
@@ -264,9 +267,11 @@ def find_wiring(loc_pairs, start_proto_board, mode, order, best_first,
   elif mode is MODE_PER_NODE:
     return _find_wiring_per_node(loc_pairs, start_proto_board, order,
         best_first, filter_wire_lengths, max_states_to_expand, verbose)
-  else: # mode is MODE_PER_PAIR
+  elif mode is MODE_PER_PAIR:
     return _find_wiring_per_pair(loc_pairs, start_proto_board, order,
         best_first, filter_wire_lengths, max_states_to_expand, verbose)
+  else: # mode is MODE_TERRIBLE
+    return find_terrible_wiring(loc_pairs, start_proto_board), []
 
 def _find_wiring_all(loc_pairs, start_proto_board, best_first,
     filter_wire_lengths, max_states_to_expand, verbose):

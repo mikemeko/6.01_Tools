@@ -6,6 +6,7 @@ Options:
       -a: all pairs
       -n: per node
       -p: per pair [DEFAULT]
+      -x: terrible
     Order:
       -d: decreasing [DEFAULT]
       -i: increasing
@@ -31,6 +32,7 @@ from circuit_simulator.proto_board.constants import COST_TYPE_DISTANCE
 from circuit_simulator.proto_board.constants import MODE_ALL_PAIRS
 from circuit_simulator.proto_board.constants import MODE_PER_NODE
 from circuit_simulator.proto_board.constants import MODE_PER_PAIR
+from circuit_simulator.proto_board.constants import MODE_TERRIBLE
 from circuit_simulator.proto_board.constants import ORDER_DECREASING
 from circuit_simulator.proto_board.constants import ORDER_INCREASING
 from collections import defaultdict
@@ -45,7 +47,7 @@ from test_schematic import Schematic_Tester
 from time import time
 
 WIRING_MODE_OPTIONS = {'-a': MODE_ALL_PAIRS, '-n': MODE_PER_NODE,
-    '-p': MODE_PER_PAIR}
+    '-p': MODE_PER_PAIR, '-x': MODE_TERRIBLE}
 WIRING_ORDER_OPTIONS = {'-d': ORDER_DECREASING, '-i': ORDER_INCREASING}
 PLACEMENT_OPTIONS = {'-b': COST_TYPE_BLOCKING, '-t': COST_TYPE_DISTANCE}
 RESISTOR_OPTIONS = {'-c': True, '-w': False}
