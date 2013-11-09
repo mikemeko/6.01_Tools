@@ -13,6 +13,7 @@ Options:
   Placement:
     -b: blocking [DEFAULT]
     -t: distance
+    -m: random
   Resistors:
     -c: as components [DEFAULT]
     -w: as wires
@@ -53,6 +54,7 @@ PLACEMENT_OPTIONS = {'-b': COST_TYPE_BLOCKING, '-t': COST_TYPE_DISTANCE}
 RESISTOR_OPTIONS = {'-c': True, '-w': False}
 SEARCH_OPTIONS = {'-r': False, '-s': True}
 WIRE_FILTER_OPTIONS = {'-f': True}
+RANDOM_PLACEMENT_OPTIONS = {'-m': True}
 
 if __name__ == '__main__':
   # schematics that have already been solved
@@ -87,9 +89,13 @@ if __name__ == '__main__':
   assert len(wire_filter_options) <= 1
   filter_wire_lengths = (WIRE_FILTER_OPTIONS[wire_filter_options[0]] if
       wire_filter_options else False)
+  random_placement_options = filter(RANDOM_PLACEMENT_OPTIONS.has_key, argv)
+  assert len(random_placement_options) <= 1
+  random_placement = (RANDOM_PLACEMENT_OPTIONS[random_placement_options[0]] if
+      random_placement_options else False)
   start_time = time()
   tester = Schematic_Tester(resistors_as_components, cost_type, solve_mode,
-      solve_order, best_first, filter_wire_lengths)
+      solve_order, best_first, filter_wire_lengths, random_placement)
   header = (
       'file',
       'run #',

@@ -65,13 +65,14 @@ def get_circuit_stats(circuit):
 
 class Schematic_Tester:
   def __init__(self, resistors_as_components, cost_type, solve_mode,
-      solve_order, best_first, filter_wire_lengths):
+      solve_order, best_first, filter_wire_lengths, random_placement):
     self.resistors_as_components = resistors_as_components
     self.cost_type = cost_type
     self.solve_mode = solve_mode
     self.solve_order = solve_order
     self.best_first = best_first
     self.filter_wire_lengths = filter_wire_lengths
+    self.random_placement = random_placement
   def _run_test(self, circuit, *args):
     """
     Attempts to produce the protoboard layout for the given |circut| and returns
@@ -84,7 +85,8 @@ class Schematic_Tester:
         resistors_as_components=self.resistors_as_components,
         cost_type=self.cost_type, mode=self.solve_mode, order=self.solve_order,
         best_first=self.best_first,
-        filter_wire_lengths=self.filter_wire_lengths, verbose=False)
+        filter_wire_lengths=self.filter_wire_lengths,
+        random_placement=self.random_placement, verbose=False)
     proto_board = solve_data['proto_board']
     loc_pairs = solve_data['loc_pairs']
     num_loc_pairs = len(loc_pairs) if loc_pairs is not None else None

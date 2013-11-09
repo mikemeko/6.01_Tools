@@ -10,6 +10,7 @@ from circuit_piece_placement import locs_for_node
 from circuit_simulator.main.constants import GROUND
 from circuit_simulator.main.constants import POWER
 from circuit_to_circuit_pieces import get_piece_placement
+from circuit_to_circuit_pieces import get_random_piece_placement
 from collections import defaultdict
 from constants import COST_TYPE_BLOCKING
 from constants import COST_TYPE_DISTANCE
@@ -55,14 +56,15 @@ def _setup(placement, resistor_node_pairs):
       resistor_node_pairs)
 
 def solve_layout(circuit, resistors_as_components, cost_type, mode, order,
-    best_first, filter_wire_lengths, verbose=True):
+    best_first, filter_wire_lengths, random_placement, verbose=True):
   """
   Attempts to produce a layout for the given |circuit| and returns a dictionary
       containing data corresponding to the solution, most importantly the key
       'proto_board' mapped to the produced layout. The value will be None if no
       layout could be found. |cost_type| is a parameter for which placement cost
       to use, see circuit_piece_placement.py. |mode| and |order| are parameters
-      for how the wiring should be solved, see find_proto_board_wiring.py.
+      for how the wiring should be solved, see find_proto_board_wiring.py. If
+      |random_placement| evaluates to True, the placement will be random.
   """
   if verbose:
     print 'Resistors as components: %s' % resistors_as_components
@@ -74,8 +76,12 @@ def solve_layout(circuit, resistors_as_components, cost_type, mode, order,
   solve_data = defaultdict(lambda: None)
   try:
     placement_start = clock()
-    placement, resistor_node_pairs = get_piece_placement(circuit,
-        resistors_as_components, cost_type, verbose)
+    if random_placement:
+      placement = get_random_piece_placement(circuit)
+      resistor_node_pairs = []
+    else:
+      placement, resistor_node_pairs = get_piece_placement(circuit,
+          resistors_as_components, cost_type, verbose)
     solve_data['placement_time'] = clock() - placement_start
     solve_data['placement'] = placement
     solve_data['resistor_node_pairs'] = resistor_node_pairs
@@ -180,6 +186,7 @@ def many_layouts(circuit):
       order=ORDER_DECREASING,
       best_first=False,
       filter_wire_lengths=False,
+      random_placement=False,
       verbose=True)['proto_board'])
   print 'Blocking'
   layouts.append(solve_layout(circuit,
@@ -189,6 +196,7 @@ def many_layouts(circuit):
       order=ORDER_DECREASING,
       best_first=False,
       filter_wire_lengths=False,
+      random_placement=False,
       verbose=True)['proto_board'])
   print 'All pairs'
   layouts.append(solve_layout(circuit,
@@ -198,6 +206,7 @@ def many_layouts(circuit):
       order=ORDER_DECREASING,
       best_first=False,
       filter_wire_lengths=False,
+      random_placement=False,
       verbose=True)['proto_board'])
   print 'Per-pair, decreasing'
   layouts.append(solve_layout(circuit,
@@ -207,6 +216,7 @@ def many_layouts(circuit):
       order=ORDER_DECREASING,
       best_first=False,
       filter_wire_lengths=False,
+      random_placement=False,
       verbose=True)['proto_board'])
   print 'Per-pair, increasing'
   layouts.append(solve_layout(circuit,
@@ -216,6 +226,7 @@ def many_layouts(circuit):
       order=ORDER_INCREASING,
       best_first=False,
       filter_wire_lengths=False,
+      random_placement=False,
       verbose=True)['proto_board'])
   print 'Per-node, decreasing'
   layouts.append(solve_layout(circuit,
@@ -225,6 +236,7 @@ def many_layouts(circuit):
       order=ORDER_DECREASING,
       best_first=False,
       filter_wire_lengths=False,
+      random_placement=False,
       verbose=True)['proto_board'])
   print 'Per-node, increasing'
   layouts.append(solve_layout(circuit,
@@ -234,6 +246,7 @@ def many_layouts(circuit):
       order=ORDER_INCREASING,
       best_first=False,
       filter_wire_lengths=False,
+      random_placement=False,
       verbose=True)['proto_board'])
   print 'Resistors as wires'
   layouts.append(solve_layout(circuit,
@@ -243,6 +256,7 @@ def many_layouts(circuit):
       order=ORDER_DECREASING,
       best_first=False,
       filter_wire_lengths=False,
+      random_placement=False,
       verbose=True)['proto_board'])
   print 'Best First Search'
   layouts.append(solve_layout(circuit,
@@ -252,5 +266,6 @@ def many_layouts(circuit):
       order=ORDER_DECREASING,
       best_first=True,
       filter_wire_lengths=False,
+      random_placement=False,
       verbose=True)['proto_board'])
   return layouts

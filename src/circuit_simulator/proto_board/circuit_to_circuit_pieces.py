@@ -16,6 +16,7 @@ Terms used in this file:
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
 from circuit_piece_placement import find_placement
+from circuit_piece_placement import set_locations
 from circuit_pieces import Head_Connector_Piece
 from circuit_pieces import Motor_Connector_Piece
 from circuit_pieces import Op_Amp_Piece
@@ -33,6 +34,7 @@ from circuit_simulator.simulation.circuit import Resistor
 from circuit_simulator.simulation.circuit import Signalled_Pot
 from circuit_simulator.simulation.circuit import Robot_Connector
 from itertools import permutations
+import random
 
 def all_1_2_partitions(n):
   """
@@ -213,3 +215,44 @@ def get_piece_placement(circuit, resistors_as_components, cost_type,
     print '\tdone.'
   return best_placement, ([] if resistors_as_components else
       resistors)
+
+def get_random_piece_placement(circuit):
+  """
+  Produces a random placement for the given |circuit|.
+  """
+  resistors = filter(lambda obj: obj.__class__ == Resistor, circuit.components)
+  resistor_pieces = map(resistor_piece_from_resistor, resistors)
+  pots = filter(lambda obj: obj.__class__ == Signalled_Pot, circuit.components)
+  pot_pieces = map(pot_piece_from_pot, pots)
+  motors = filter(lambda obj: obj.__class__ == Motor, circuit.components)
+  motor_connector_pieces = map(motor_connector_piece_from_motor, motors)
+  robot_connectors = filter(lambda obj: obj.__class__ == Robot_Connector,
+      circuit.components)
+  robot_connector_pieces = map(robot_connector_piece_from_robot_connector,
+      robot_connectors)
+  head_connectors = filter(lambda obj: obj.__class__ == Head_Connector,
+      circuit.components)
+  head_connector_pieces = map(head_connector_piece_from_head_connector,
+      head_connectors)
+  jfet_op_amps = filter(lambda obj: obj.__class__ == Op_Amp and obj.jfet,
+      circuit.components)
+  jfet_partition = random.choice(all_1_2_partitions(len(jfet_op_amps)))
+  jfet_grouping = random.choice(all_groupings(jfet_op_amps, jfet_partition))
+  jfet_pieces = map(op_amp_piece_from_op_amp, jfet_grouping)
+  power_op_amps = filter(lambda obj: obj.__class__ == Op_Amp and not obj.jfet,
+      circuit.components)
+  power_partition = random.choice(all_1_2_partitions(len(power_op_amps)))
+  power_grouping = random.choice(all_groupings(power_op_amps, power_partition))
+  power_pieces = map(op_amp_piece_from_op_amp, power_grouping)
+  pieces = (resistor_pieces + pot_pieces + motor_connector_pieces +
+      robot_connector_pieces + head_connector_pieces + jfet_pieces +
+      power_pieces)
+  random.shuffle(pieces)
+  placement = []
+  for piece in pieces:
+    add_piece = random.choice([piece, piece.inverted()])
+    add_piece.top_left_row = random.choice(add_piece.possible_top_left_rows)
+    placement.append(add_piece)
+  if set_locations(placement, resistors_as_components=False):
+    return placement
+  return None
