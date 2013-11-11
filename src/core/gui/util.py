@@ -18,7 +18,7 @@ from constants import WIRE_ARROW_LENGTH
 from constants import WIRE_COLOR
 from constants import WIRE_INTERSECT_MARKER_SIZE
 from constants import WIRE_WIDTH
-from core.math.line_segment_intersect import intersect
+from core.math.line_segments import intersect
 from math import atan2
 from math import cos
 from math import pi

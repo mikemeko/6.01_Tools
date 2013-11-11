@@ -412,7 +412,8 @@ def find_terrible_wiring(loc_pairs, start_proto_board):
           proto_board.get_wires())
       num_pieces_crossed = sum(piece.crossed_by(wire) for piece in
           proto_board.get_pieces())
-      return 100 * (num_wires_crossed + num_pieces_crossed) + dist(l1, l2)
+      return (dist(l1, l2) + 10 * wire.diagonal() + 100 * num_wires_crossed +
+          1000 * num_pieces_crossed)
     l1, l2 = min(candidates, key=cost)
     proto_board = proto_board.with_wire(Wire(l1, l2, node))
   return proto_board

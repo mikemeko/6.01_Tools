@@ -1,16 +1,16 @@
 """
-Unittests for line_segment_intersect.py.
+Unittests for line_segments.py.
 """
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
-from core.math.line_segment_intersect import intersect
+from core.math.line_segments import intersect
 from unittest import main
 from unittest import TestCase
 
 class Line_Segment_Intersect_Test(TestCase):
   """
-  Tests for core/math/line_segment_intersect.
+  Tests for core/math/line_segments.
   """
   def _assert_intersect(self, segment1, segment2):
     assert intersect(segment1, segment2)
@@ -33,6 +33,7 @@ class Line_Segment_Intersect_Test(TestCase):
     self._assert_dont_intersect(((0, 0), (0, 2)), ((0, 3), (0, 4)))
     self._assert_dont_intersect(((0, 0), (2, 2)), ((1, 0), (3, 2)))
     self._assert_dont_intersect(((0, 0), (2, 2)), ((5, 2), (4, 6)))
+    self._assert_dont_intersect(((8, 29), (11, 29)), ((12, 29), (14, 29)))
 
 if __name__ == '__main__':
   main()

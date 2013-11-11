@@ -55,6 +55,17 @@ class Proto_Board:
     """
     return sum(reduce(list.__add__, [[wire.crosses(other_wire) for other_wire in
         self._wires[i + 1:]] for i, wire in enumerate(self._wires)], []))
+  def num_wire_piece_crosses(self):
+    """
+    Returns the number of wires that cross pieces on this proto board.
+    """
+    return sum(reduce(list.__add__, [[piece.crossed_by(wire) for wire in
+        self._wires] for piece in self._pieces], []))
+  def num_diagonal_wires(self):
+    """
+    Returns the number of diagonal wires on this proto board.
+    """
+    return sum(wire.diagonal() for wire in self._wires)
   def get_pieces(self):
     """
     Returns a generator for the Circuit_Pieces on this proto board.

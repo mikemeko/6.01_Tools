@@ -25,9 +25,11 @@ from constants import RESISTOR_COLORS
 from constants import RESISTOR_INNER_COLOR
 from constants import RESISTOR_OUTER_COLOR
 from core.gui.util import create_circle
+from core.math.line_segments import intersect
 from core.util.util import rects_overlap
 from Tkinter import CENTER
 from util import loc_to_cmax_rep
+from util import num_vertical_separators
 from util import section_locs
 from visualization.constants import CONNECTOR_SIZE
 from visualization.constants import CONNECTOR_SPACING
@@ -126,15 +128,25 @@ class Circuit_Piece:
   def crossed_by(self, wire):
     """
     Returns True if the given |wire| crosses this piece, False otherwise.
+    This method assumes that neither of the end points of |wire| is on this
+        piece itself.
     """
     assert isinstance(wire, Wire), 'wire must be a Wire'
     r_min, c_min, r_max, c_max = self.bbox()
-    wire_r_min = min(wire.r_1, wire.r_2)
-    wire_r_max = max(wire.r_1, wire.r_2)
-    wire_c_min = min(wire.c_1, wire.c_2)
-    wire_c_max = max(wire.c_1, wire.c_2)
-    return rects_overlap(self.bbox(), (wire_r_min, wire_c_min, wire_r_max,
-        wire_c_max))
+    r_min += 2 * num_vertical_separators(r_min)
+    r_max += 2 * num_vertical_separators(r_max)
+    segment_1 = ((r_min, c_min), (r_min, c_max))
+    segment_2 = ((r_min, c_min), (r_max, c_min))
+    segment_3 = ((r_max, c_min), (r_max, c_max))
+    segment_4 = ((r_min, c_max), (r_max, c_max))
+    wire_r1, wire_c1 = wire.loc_1
+    wire_r2, wire_c2 = wire.loc_2
+    wire_r1 += 2 * num_vertical_separators(wire_r1)
+    wire_r2 += 2 * num_vertical_separators(wire_r2)
+    wire_segment = ((wire_r1, wire_c1), (wire_r2, wire_c2))
+    return any([intersect(segment_1, wire_segment), intersect(segment_2,
+        wire_segment), intersect(segment_3, wire_segment), intersect(segment_4,
+        wire_segment)])
   def overlaps_with(self, other):
     """
     Returns True if the given |other| piece overlaps with this piece, False

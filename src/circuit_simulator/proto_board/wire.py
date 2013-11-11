@@ -5,7 +5,8 @@ Representation for a wire on a proto board.
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
 from constants import NUM_ROWS_PER_VERTICAL_SEPARATION
-from core.math.line_segment_intersect import intersect
+from core.math.line_segments import intersect
+from core.math.line_segments import translate
 from core.util.util import sign
 from math import sqrt
 from util import num_vertical_separators
@@ -33,8 +34,28 @@ class Wire:
     Returns True if this wire and the |other| wire intersect, False otherwise.
     """
     assert isinstance(other, Wire), 'other must be a Wire'
-    return  intersect((self.loc_1, self.loc_2), (other.loc_1,
-        other.loc_2)) != False
+    if not self.diagonal() and not other.diagonal():
+      return intersect((self.loc_1, self.loc_2), (other.loc_1,
+          other.loc_2)) != False
+    else:
+      r00, c00 = self.loc_1
+      r01, c01 = self.loc_2
+      r10, c10 = other.loc_1
+      r11, c11 = other.loc_2
+      r00 += 2 * num_vertical_separators(r00)
+      r01 += 2 * num_vertical_separators(r01)
+      r10 += 2 * num_vertical_separators(r10)
+      r11 += 2 * num_vertical_separators(r11)
+      segment_1 = ((r00, c00), (r01, c01))
+      segment_2 = ((r10, c10), (r11, c11))
+      # if wires are diagonal, they might intersect due to the thickness of the
+      #     wires, so account for that
+      d = 0.25
+      for d1 in (-d, 0, d):
+        for d2 in (-d, 0, d):
+          if intersect(translate(segment_1, d1), translate(segment_2, d2)):
+            return True
+      return False
   def length(self):
     """
     Returns the length of this wire.
@@ -53,6 +74,12 @@ class Wire:
     Returns True if this wire is vertical, False otherwise.
     """
     return self.c_1 == self.c_2
+  def diagonal(self):
+    """
+    Returns True if this wire is diagonal (i.e. neither horizontal nor vertical)
+        False otherwise.
+    """
+    return not (self.horizontal() or self.vertical())
   def locs(self):
     """
     Returns an (approximate) list of the locations on the proto board covered by
