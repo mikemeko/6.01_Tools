@@ -101,11 +101,15 @@ class Schematic_Tester:
       num_wires = proto_board.num_wires()
       total_wire_length = sum(wire.length() for wire in proto_board.get_wires())
       num_wire_crosses = proto_board.num_wire_crosses()
+      num_piece_crosses = proto_board.num_wire_piece_crosses()
+      num_diagonal_wires = proto_board.num_diagonal_wires()
     else:
       num_op_amp_packages = None
       num_wires = None
       total_wire_length = None
       num_wire_crosses = None
+      num_piece_crosses = None
+      num_diagonal_wires = None
     return (
         solved,
         placement_time,
@@ -124,6 +128,8 @@ class Schematic_Tester:
         num_wire_crosses,
         num_nodes,
         num_loc_pairs,
+        num_piece_crosses,
+        num_diagonal_wires,
         proto_board)
   def test_schematic(self, schematic_file):
     """
