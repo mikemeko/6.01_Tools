@@ -36,7 +36,7 @@ Op Amps within it. Thus, we face the task of packaging the Op Amps in the
 schematic in the ``best" possible way, i.e. so as to require as little work as
 possible when wiring the pieces together. Section \ref{sec:justify_placement}
 more precisely discusses the number of possibilities. Pots have two possible
-vertical positions (TODO: this is wrong!) as well as two possible orientations.
+vertical positions as well as two possible orientations.
 The connector pieces have two possible vertical positions each.
 
 \begin{figure}
@@ -47,8 +47,6 @@ protoboard.}
 \label{fig:piece_placement}
 \end{center}
 \end{figure}
-
-\subsection{Choosing a Placement}
 
 When choosing a placement of circuit pieces on the protoboard, we have at hand a
 plethora of options. First we must choose among a possibly large number of ways
@@ -227,15 +225,17 @@ information, we may choose one of the following three strategies to carryout the
 search:
 
 \begin{enumerate}
-\item For each node, collect a set of pairs of locations on the protoboard
+\item All pairs: For each node, collect a set of pairs of locations on the
+protoboard
 corresponding to a minimum spanning tree of the locations for that node, so that
 if all pairs of locations in this spanning tree are connected, then the
 locations for the node will be interconnected. Collect all such pairs of
 locations for all of the nodes in the circuit, and have the starting vertex hold
 this set of pairs of locations.
-\item Treat each node separately. That is, iteratively interconnect the
+\item Per-node: Treat each node separately. That is, iteratively interconnect the
 locations for each of the nodes until there are no more nodes in the circuit.
-\item Treat each pair of locations that needs to be connected separately. That
+\item Per-pair: Treat each pair of locations that needs to be connected
+separately. That
 is, iteratively connect pairs of locations that need to be connected until there
 are no more pairs.
 \end{enumerate}
