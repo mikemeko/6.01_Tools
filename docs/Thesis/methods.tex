@@ -91,9 +91,11 @@ as little work during wiring as possible.
 The key idea is that if two pieces are meant to be connected together by wires,
 then they ought to be placed close to each other on the protoboard. We can
 capture this idea by assigning heuristic costs to the placements and choosing
-a placement that produces the minimal heuristic cost.
+a placement that produces the minimal heuristic cost. To this end, there are two
+heuristic cost functions we considered.
 
-Let us first devise the cost function to achieve this goal. Given a circuit
+\paragraph{Distance Based Cost}
+Given a circuit
 schematic and a corresponding placement of the circuit pieces on the protoboard,
 what do we need to connect with wires? Well, every pair of components in the
 schematic that are connected by a wire gives us a corresponding pair of
@@ -102,7 +104,7 @@ express this requirement a little bit more concisely. We ought to consider all
 of the nodes in the schematic, and find the circuit components in the schematic
 that are connected to the respective nodes. Now for each node in the circuit, we
 get a set of locations on the protoboard that ought to be interconnected. The
-first step in devising the cost function we are looking for is to have a way to
+first step in devising the distance based cost function is to have a way to
 estimate the cost of connecting two locations on the protoboard. A simple such
 cost function that comes to mind is the Manhattan distance between the two
 locations. Recall that we want to produce aesthetically pleasing protoboard
@@ -115,7 +117,21 @@ of the locations. Now we can define the cost of a placement to be the sum over
 all nodes in the circuit of the cost for interconnecting the locations for each
 node.
 
-Now that we have a cost function for placements, we can aim to find a
+\paragraph{Blocking Based Cost}
+The most scare resource on the protoboard are the rows. We are given $10$ rows
+with which to work, and in producing a layout, we must fit all the wires within
+these $10$ rows. This gives us an idea on how to define how hard a placement
+will be to wire. Given a set of pieces, we can find a set of pairs of locations
+on the board that need to be connected as we did above.
+As noted in Section \ref{sec:what_is_protoboard} there are two groups of $5$
+rows on a protoboard. Now for each group of rows and each column in the group of
+rows, we can count how many pieces reside in that column, and how many wires may
+pass through the column (in connecting a given pair of locations assuming an
+empty protoboard). Our goal will be to minimize the number of columns that
+would be used heavily. In our implimentation, the final cost is computed as
+the sum of the squares of the counts for each column.
+
+Using one of the two cost functions discussed above, we can aim to find a
 placement with the minimal cost. However, this involves trying all possible
 orderings of the pieces with which we are working. For example, if we are trying
 to order $10$ pieces, we would need to look at $10! = 3628800$ possible
