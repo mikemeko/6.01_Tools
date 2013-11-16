@@ -3,10 +3,29 @@
 \chapter{Methods}
 \label{ch:methods}
 
-In this Section, I discuss my solution to the problem and various alternatives I
-considered along the way.
+In this Section, I discuss my solution to the problem stated in Chapter
+\ref{ch:intro} and various alternatives I considered along the way. First I will
+briefly introduce the schematic entry GUI. Next, I will discuss in detail how
+we solved the protoboard layout problem and how we evaluated our solution.
 
-\section{Overview}
+\section{GUI}
+
+We designed the schematic entry GUI to have a rich set of features so as to make
+drawing schematics a very easy and intuitive task for students.
+Figure \ref{fig:gui_example} gives a version of the schematic drawn in Figure
+\ref{fig:schematic} as drawn of the schematic entry tool. Appendix \ref{app:gui}
+discusses the features and capabilities of the schematic entry GUI in much
+further detail.
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=\textwidth]{Images/gui_example.png}
+\caption{TODO}
+\label{fig:gui_example}
+\end{center}
+\end{figure}
+
+\section{Solving the Layout Problem}
 
 I solved this problem by formulating it as a search problem. By this I mean,
 given a schematic of a circuit, I start from an empty protoboard, and I search
@@ -19,7 +38,7 @@ I broke down the problem into two parts. The first task is finding a placement
 of all the circuit pieces on the protoboard. The second task is wiring them up
 appropriately.
 
-\section{Part 1: Piece Placement}
+\subsection{Part 1: Piece Placement}
 \label{sec:placement}
 
 Let us first consider how to place a set of circuit pieces on the protoboard for
@@ -177,7 +196,7 @@ Using one of the above methods, we can find a placement of circuit pieces on a
 protoboard. Our next task is wiring them together to produce a circuit
 equivalent to the circuit schematic of interest.
 
-\section{Part 2: Wiring}
+\subsection{Part 2: Wiring}
 
 In the previous section we discussed what locations we need to wire together:
 for every node in the circuit, we get a set of locations on the protoboard that
@@ -185,7 +204,7 @@ need to be interconnected. The question now is how to achieve this wiring. We
 approach the problem as a search problem and use the $A*$ search algorithm to
 solve it.
 
-\subsection{Using $A*$}
+\subsubsection{Using $A*$}
 
 When using the $A*$ algorithm, we need to design four things:
 
@@ -201,7 +220,7 @@ the goal of the search, and
 goal vertex.
 \end{enumerate}
 
-\subsection{Vertices}
+\subsubsection{Vertices}
 
 Each vertex will hold a representation of some protoboard. Each representation
 will contain all of the pieces, and possibly a set of wires interconnecting the
@@ -260,12 +279,12 @@ The choice of one of these strategies has a significant effect on the outcome of
 the search. We will discuss the difference in detail in Chapter
 \ref{ch:results}.
 
-\subsection{Goal test}
+\subsubsection{Goal test}
 
 Given a vertex, we know that it is a goal vertex if all of the pairs of
 locations it holds are already connected in the protoboard it holds.
 
-\subsection{Search heuristic}
+\subsubsection{Search heuristic}
 
 In $A*$ search, choosing the right heuristic can often make the search much more
 efficient. In our problem, one option we have is not to use a heuristic, and
@@ -280,7 +299,7 @@ cost of a vertex, we simply add up this value for each of the pairs of locations
 that need to be connected. Chapter \ref{ch:results} presents the performance of
 this heuristic verses using no heuristic.
 
-\section{Combining the methods}
+\subsection{Combining the methods}
 \label{sec:combined_alg}
 
 With the methods discussed so far, we aimed to completly solve the layout problem
@@ -349,7 +368,7 @@ in front of students, it will be allowed to use wires of a select few lengths.
 The kits that students work with certainly do not come with wires of all lengths,
 so we force the wiring step to use wires of only those allowed lengths.
 
-\section{Treating Resistors as Wires}
+\subsection{Treating Resistors as Wires}
 \label{sec:resistors_as_wires}
 
 The discussion in Section \ref{sec:placement} presented that we treat
@@ -369,7 +388,7 @@ protoboard. Second, we must keep careful track of pairs of locations that need
 to be connected by simple wires and pairs of locations that need to be connected
 using resistors.
 
-\section{Evaluation Method}
+\subsection{Evaluation Method}
 
 Here we present how we go about evaluating a particular solution to the problem.
 How can we tell if a layout tool is good? In particular, how can we tell if a
