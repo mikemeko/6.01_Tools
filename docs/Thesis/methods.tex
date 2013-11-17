@@ -368,26 +368,6 @@ in front of students, it will be allowed to use wires of a select few lengths.
 The kits that students work with certainly do not come with wires of all lengths,
 so we force the wiring step to use wires of only those allowed lengths.
 
-\subsection{Treating Resistors as Wires}
-\label{sec:resistors_as_wires}
-
-The discussion in Section \ref{sec:placement} presented that we treat
-resistors just as we do the other components. That is, we give each resistor a
-fixed place on the protoboard in the first step of the algorithm before the
-wiring step. However, resistors have the special property among the circuit
-pieces that they can be thought of as wires of length $3$.
-Hence, it may be possible to handle resistors in the wiring step instead of the
-placement step. Chapter \ref{ch:results} presents a comparison of these two
-approaches.
-
-Note that treating resistors in the wiring step is not a trivial task. First,
-there may be nodes in the circuit that are connected to some resistors, but no
-other pieces. In this case, we must be sure to reserve space on the protoboard
-for that node as the wiring step relies on the presence of each node on the
-protoboard. Second, we must keep careful track of pairs of locations that need
-to be connected by simple wires and pairs of locations that need to be connected
-using resistors.
-
 \subsection{Evaluation Method}
 
 Here we present how we go about evaluating a particular solution to the problem.
