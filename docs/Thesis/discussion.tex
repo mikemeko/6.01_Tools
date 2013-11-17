@@ -114,11 +114,16 @@ distance method in number of circuits solved from $3$ to $9$ times out
 of $10$. Overall, the blocking placement method is slightly more successful
 than the distance placement method. Despite this difference, we note that the
 two alternatives have very
-close success rates. As a function of circuit complexity, Figure
+close success rates. We do note, however, that both methods are significantly
+more successful than using a random placement. As a function of circuit
+complexity, Figure
 \ref{fig:placement_success_trend} suggests that the two alternatives have almost
 identical success rates. As we would expect, we certainly observe that as the
 complexity of the circuits
 increases, success rate generally decreases for both of the placement methods.
+Once again, we observe that the distance and blocking based placement methods
+are much more successful than random placement, especially as the circuit
+complexity increases.
 The curves in Figure \ref{fig:placement_success_trend} seem to shoot back up
 at the far end of the figure, but this is a result of the fact that there are
 very few circuits at that end of the figure, on which the algorithm happened to
@@ -126,7 +131,8 @@ be consistently successful.
 
 When we consider wiring time as the basis for comparison, we observe from
 Figure \ref{fig:placement_time_trend} that, once again, the two metods are
-very similar. We see that the distance method generally takes slightly less
+very similar, with random placement being markedly worse than both.
+We see that the distance method generally takes slightly less
 wiring time than the blocking method, but the difference between the two is
 almost negligible. As we would expect, we certainly see that as the complexity
 of the circuits increases, the amount of time spent by the wiring step also
@@ -135,9 +141,12 @@ complexity, we observe that there are outliers at the far end of the figure due
 to a very small sample of the most complex circuits in the randomly generated
 schematic dataset.
 
-Finally, let us look at layout complexity as the basis for comparison. Figure
+Finally, let us look at layout goodness as the basis for comparison. Figure
 \ref{fig:placement_quality_trend} presents graphs that compare numbers of wires,
-numbers of wire crosses, and total wire lengths. We first observe that the
+numbers of wire crosses, and total wire lengths.
+Figure \ref{fig:placement_badness_trend} shows the trend of layout badness
+computed using our metric as a function of circuit complexity.
+We first observe that the
 number of wires used by the two methods are almost identical. As the complexity
 of the circuit increases, we see that the blocking method uses more wires than
 does the distance method, but by and large the values are very comparable. This
@@ -150,9 +159,13 @@ method exceeds the distance method consistently, with the difference getting
 higher as complexity increases. This can be explained by the fact that the
 blocking method may require elaborate connections, especially as the circuits
 get more complex while the distance method is tuned to require wirings between
-pairs of locations that are closer together.
+pairs of locations that are closer together. Finally, we do see that the random
+placement method, per our badness metric, produces much worse layouts than the
+other two methods even when it does succeed.
 
-It is difficult to conclusively pick the better placement method from these results.
+It is difficult to conclusively pick the best placement method from these
+results. What we can certainly tell is that the distance based method and the
+blocking based method are both significantly better than random placement.
 It is clear that both methods have their strengths and weaknesses. In Section
 \ref{sec:method_combination} we will discuss how combining these two methods can
 get us the best of both worlds (?).
