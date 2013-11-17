@@ -400,12 +400,6 @@ a schematic in which we put that many randomly chosen wires interconnecting
 the bases in the combination. Figure \ref{fig:example_random_schematic} presents
 a sample randomly generated schematic.
 
-This scheme produces a total of $4425$ test schematics out of a possible total
-of approximately $1.2e27$. When testing a particular algorithm on these test
-schematics, we run the algorithm on each test schematic $10$ times. Chapter
-\ref{ch:results} presents the data collected in this manner comparing the
-various alternatives discussed in this Chapter.
-
 \begin{figure}
 \begin{center}
 \includegraphics[width=\textwidth]{Images/auto_generation_bases.png}
@@ -421,3 +415,24 @@ various alternatives discussed in this Chapter.
 \label{fig:example_random_schematic}
 \end{center}
 \end{figure}
+
+This scheme produces a total of $4425$ test schematics out of a possible total
+of approximately $1.2e27$. When testing a particular algorithm on these test
+schematics, we run the algorithm on each test schematic $10$ times. Chapter
+\ref{ch:results} presents the data collected in this manner comparing the
+various alternatives discussed in this Chapter.
+
+An important question we must answer is how we quantify the goodness (or badness)
+of a particular layout. Our approach takes a weighted sum of a particular set of
+attributes of a given layout, where the weights are chosen comparatively. We set
+the badness of a layout to be:
+\begin{align*}
+&1 \cdot NUMBER\_OF\_WIRES + \\
+&10 \cdot TOTAL\_WIRE\_LENGTH + \\
+&50 \cdot NUMBER\_OF\_WIRE\_CROSSES + \\
+&100 \cdot NUMBER\_OF\_DIAGONAL\_WIRES + \\
+&1000 \cdot NUMBER\_OF\_WIRE\_OCCLUSIONS + \\
+&1000 \cdot NUMBER\_OF\_WIRE\text{-}PIECE\_CROSSINGS.
+\end{align*}
+We will use this metric to decide which of a given set of alternatives tends to
+produce the better layouts.
