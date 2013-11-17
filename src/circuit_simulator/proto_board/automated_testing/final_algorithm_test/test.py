@@ -45,7 +45,10 @@ if __name__ == '__main__':
       'num_wire_crosses',
       'total_wire_length',
       'num_runs',
-      'num_forced_wires')
+      'num_forced_wires',
+      'num_piece_crosses',
+      'num_diagonal_wires',
+      'num_occlusions')
   output_file_name = ('circuit_simulator/proto_board/automated_testing/'
       'final_algorithm_test/%s_results' % basename(normpath(argv[1])))
   open(output_file_name, 'w').write(';'.join(header))
@@ -65,13 +68,20 @@ if __name__ == '__main__':
             num_wire_crosses = proto_board.num_wire_crosses()
             total_wire_length = sum(wire.length() for wire in
                 proto_board.get_wires())
+            num_piece_crosses = proto_board.num_wire_piece_crosses()
+            num_diagonal_wires = proto_board.num_diagonal_wires()
+            num_occlusions = proto_board.num_occlusions()
           else:
             num_wires = None
             num_wire_crosses = None
             total_wire_length = None
+            num_piece_crosses = None
+            num_diagonal_wires = None
+            num_occlusions = None
           results = [line.strip() for line in open(output_file_name,
               'r').readlines()]
           results.append(';'.join(map(str, (file_name, i, solved, total_time,
               num_schematic_pins, num_wires, num_wire_crosses,
-              total_wire_length, num_runs, num_forced_wires))))
+              total_wire_length, num_runs, num_forced_wires, num_piece_crosses,
+              num_diagonal_wires, num_occlusions))))
           open(output_file_name, 'w').write('\n'.join(results))

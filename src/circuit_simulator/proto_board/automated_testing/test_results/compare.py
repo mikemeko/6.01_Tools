@@ -4,9 +4,10 @@ Script to generate comparison plots.
 
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
-from analyze_data import Test_Group
-from analyze_data import Test_Result
+from test_results.analyze_data import Test_Group
+from test_results.analyze_data import Test_Result
 from collections import defaultdict
+from layout_badness import badness
 from numpy import mean
 from numpy import std
 from scipy.stats import sem
@@ -129,6 +130,30 @@ def compare(files, methods):
     ax3.set_ylabel('Total wire length')
   pylab.xlabel('Number of pins')
   ax1.legend(methods, bbox_to_anchor=(0., 1.02, 1., .102), loc=3,
+        ncol=len(methods), mode='expand', borderaxespad=0.)
+
+  # badness comparison
+  pylab.figure()
+  all_badness_mappings = []
+  for results in all_results:
+    badness_mapping = defaultdict(list)
+    for result in results:
+      if result.solved:
+        properties = defaultdict(int)
+        properties['num_wire_crossings'] = result.num_wire_crosses
+        properties['num_wire_occlusions'] = result.num_occlusions
+        properties['num_diagonal_wires'] = result.num_diagonal_wires
+        properties['num_wire_piece_crossings'] = result.num_piece_crosses
+        properties['num_wires'] = result.num_wires
+        properties['total_wire_length'] = result.total_wire_length
+        badness_mapping[result.num_schematic_pins].append(badness(properties))
+    all_badness_mappings.append(badness_mapping)
+  for i, badness_mapping in enumerate(all_badness_mappings):
+    pylab.errorbar(badness_mapping.keys(), map(mean, badness_mapping.values()),
+        yerr=map(se, badness_mapping.values()), color=colors[i])
+  pylab.xlabel('Number of pins')
+  pylab.ylabel('Layout badness')
+  pylab.legend(methods, bbox_to_anchor=(0., 1.02, 1., .102), loc=3,
         ncol=len(methods), mode='expand', borderaxespad=0.)
 
   pylab.show()

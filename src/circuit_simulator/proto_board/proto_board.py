@@ -55,6 +55,24 @@ class Proto_Board:
     """
     return sum(reduce(list.__add__, [[wire.crosses(other_wire) for other_wire in
         self._wires[i + 1:]] for i, wire in enumerate(self._wires)], []))
+  def num_occlusions(self):
+    """
+    Returns the number of wire occlusions on this proto board.
+    """
+    def occlude(wire_1, wire_2):
+      if not wire_1.crosses(wire_2):
+        return False
+      dr_1 = wire_1.r_1 - wire_1.r_2
+      dr_2 = wire_2.r_1 - wire_2.r_2
+      if (dr_1 == 0 or dr_2 == 0) and dr_1 != dr_2:
+        return False
+      if dr_1 == dr_2 == 0:
+        return True
+      dc_1 = wire_1.c_1 - wire_1.c_2
+      dc_2 = wire_2.c_1 - wire_2.c_2
+      return abs(float(dc_1) / dr_1 - float(dc_2) / dr_2) < 1e-6
+    return sum(reduce(list.__add__, [[occlude(wire, other_wire) for other_wire
+        in self._wires[i + 1:]] for i, wire in enumerate(self._wires)], []))
   def num_wire_piece_crosses(self):
     """
     Returns the number of wires that cross pieces on this proto board.

@@ -5,6 +5,7 @@ Analysis for test results on final algorithm.
 __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
 from collections import defaultdict
+from layout_badness import badness
 from numpy import mean
 from scipy.stats import sem
 from sys import argv
@@ -38,6 +39,10 @@ class Test_Result:
     self.total_wire_length = get_int(line[7])
     self.num_runs = get_int(line[8])
     self.num_forced_wires = get_int(line[9])
+    # attributes added to most recent test runs
+    self.num_piece_crosses = get_int(line[10]) if len(line) > 10 else 0
+    self.num_diagonal_wires = get_int(line[11]) if len(line) > 11 else 0
+    self.num_occlusions = get_int(line[12]) if len(line) > 12 else 0
 
 def analyze(result_file):
   lines = [line.strip() for line in open(result_file).readlines()]
@@ -123,6 +128,23 @@ def analyze(result_file):
       forced_wire_mapping.values()), yerr=map(se, forced_wire_mapping.values()))
   pylab.xlabel('Number of pins')
   pylab.ylabel('Number of forced wires')
+  # badness comparison
+  pylab.figure()
+  badness_mapping = defaultdict(list)
+  for result in results:
+    if result.solved:
+      properties = defaultdict(int)
+      properties['num_wire_crossings'] = result.num_wire_crosses
+      properties['num_wire_occlusions'] = result.num_occlusions
+      properties['num_diagonal_wires'] = result.num_diagonal_wires
+      properties['num_wire_piece_crossings'] = result.num_piece_crosses
+      properties['num_wires'] = result.num_wires
+      properties['total_wire_length'] = result.total_wire_length
+      badness_mapping[result.num_schematic_pins].append(badness(properties))
+  pylab.errorbar(badness_mapping.keys(), map(mean, badness_mapping.values()),
+      yerr=map(se, badness_mapping.values()))
+  pylab.xlabel('Number of pins')
+  pylab.ylabel('Layout badness')
   pylab.show()
 
 if __name__ == '__main__':

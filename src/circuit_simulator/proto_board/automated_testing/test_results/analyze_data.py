@@ -65,15 +65,24 @@ class Test_Result:
     self.num_wire_crosses = get_int(line[g.next()])
     self.num_nodes = get_int(line[g.next()])
     self.num_loc_pairs = get_int(line[g.next()])
+    # attributes added to most recent test runs
+    def next_int():
+      i = g.next()
+      return get_int(line[i]) if len(line) > i else 0
+    self.num_piece_crosses = next_int()
+    self.num_diagonal_wires = next_int()
+    self.num_occlusions = next_int()
   def __str__(self):
     return ('%s: identifier=%s, run=%s, solved=%s, placement_time=%s, '
         'wiring_time=%s, total_time=%s, num_expanded=%s, num_pin=%s, '
         'num_nodes=%s, num_loc_pairs=%s, num_wires=%s, num_wire_crosses=%s, '
-        'total_wire_length=%s, ' % (self.file_name, self.identifier, self.run,
+        'total_wire_length=%s, num_piece_crosses=%s, num_digonal_wires=%s '
+        'num_occlusions=%s' % (self.file_name, self.identifier, self.run,
         self.solved, self.placement_time, self.wiring_time, self.total_time,
         self.num_expanded, self.num_schematic_pins, self.num_nodes,
         self.num_loc_pairs, self.num_wires, self.num_wire_crosses,
-        self.total_wire_length))
+        self.total_wire_length, self.num_piece_crosses, self.num_diagonal_wires,
+        self.num_occlusions))
 
 class Test_Group:
   def __init__(self, group_results):

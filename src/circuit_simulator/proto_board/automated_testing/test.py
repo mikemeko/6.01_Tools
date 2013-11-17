@@ -117,7 +117,8 @@ if __name__ == '__main__':
       'num_nodes',
       'num_loc_pairs',
       'num_piece_crosses',
-      'num_diagonal_wires')
+      'num_diagonal_wires',
+      'num_occlusions')
   output_file_name = ('circuit_simulator/proto_board/automated_testing/'
       'test_results/%s_%s' % (basename(normpath(argv[1])),
       datetime.now().strftime('%d%b%I:%M%p')))
