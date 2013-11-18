@@ -283,6 +283,54 @@ Finally Figure \ref{fig:final_quality_trend} presents trends of quality as a
 function of circuit complexity. Most importatnly, we observe that the average
 number of wire crosses never exceeds $1$.
 
+\section{Further Work}
+
+\subsection{Treating Resistors As Wires}
+
+Our current solution treats resistors as one of the circuit components that we
+work with. However, resistors have the special property among the components that
+they look exactly like wires of length $3$.
+In fact, the length need not even be specified.
+We can think of resistors as wires of a fixed range of lengths. So one idea we
+may attempt is to treat resistors in the wiring step of the algorithm instead of
+the placement step. The search that we do in the wiring step would now need to be
+more elaborate. Not only do we need to keep track of pairs of locations on the
+protoboard that need to be connected, but we also need to know whether to put
+a resistor between the two locations. In the latter case, we essentially have the
+restriction that one of the wires we use to connect the pair of locations needs
+to be of a length that can fit a resistor.
+
+While this idea appears very promising, there are a few difficulties we may face
+in implementing it. First, if there is any node in our circuit that is only
+connected to resistors (and no other circuit components), then that node will be
+unrepresented on the protoboard at the end of the placement step. One rather
+unsatisfying solution to this problem may be reserving an empty column on the
+protoboard for the node that we can use in the wiring step. A better solution may
+be discovering the best places for the node as we are placing down resistors in
+the wiring step, but this solution would certainly make the search we carry out
+more complicated. Second, we will need a new kind of heuristic for our $A*$
+search that takes resistors into account. The first idea that comes to mind may
+be highly penalizing an absent resistor. Even with an ammended heuristic, there
+are cases we can imagine where the search may have a difficult time getting an
+answer, for instance a pair of locations that are right next to each other that
+must be connected by a resistor.
+
+\subsection{Building layouts similar to previously generated layouts}
+
+One of the weaknesses of our tool is that it may generate different layouts for
+the same circuit schematic. This is not a result of an explicit randomization
+in our algorithm, but rather a side effect of some data structures we use such
+as Python sets and dictionaries. A similar problem is that a slight change in
+the circuit schematic may result in a completely different layout. It is,
+therefore, very important that students in 6.01 be confident that they desiged
+the right circuit before taking the time to build their circuit.
+This is where the simulation
+capabilities of our tool come in to play. As an alternative solution to this
+problem, it may be very useful to have our
+tool remember the last placement it used and try to produce a new placement as
+similar to the last one as possible in the case that the circuit was not
+dramatically changed between requests for a layout.
+
 \section{Remarks}
 
 \textit{Why are these results encouraging? What are their implications? Relate
