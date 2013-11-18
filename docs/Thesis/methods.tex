@@ -81,7 +81,7 @@ number of pieces necessary for a typical 6.01 circuit would certainly fit in
 this framework.
 
 Next, I specify that there be exactly two columns on the protoboard separating
-each consecuitive pair of pieces, unless the pieces are both resistors, in which
+each consecutive pair of pieces, unless the pieces are both resistors, in which
 case there must be exactly one column separating them. These numbers of columns
 were chosen to leave enough space for wiring. Given a set of pieces to be put on
 the protoboard, this specification reduces the
@@ -147,7 +147,7 @@ rows on a protoboard. Now for each group of rows and each column in the group of
 rows, we can count how many pieces reside in that column, and how many wires may
 pass through the column (in connecting a given pair of locations assuming an
 empty protoboard). Our goal will be to minimize the number of columns that
-would be used heavily. In our implimentation, the final cost is computed as
+would be used heavily. In our implementation, the final cost is computed as
 the sum of the squares of the counts for each column.
 
 Using one of the two cost functions discussed above, we can aim to find a
@@ -205,7 +205,7 @@ approach the problem as a search problem and use the $A*$ search algorithm to
 solve it. In fact the wiring step uses an infrastructure for the $A*$ search
 algorithm exactly as presented in the Search module of 6.01. Hence students in
 the class may very much appreciate an application of something they learned
-earlier in the cource to produce a tool that they are using for something that
+earlier in the course to produce a tool that they are using for something that
 may seem completely unrelated.
 
 \subsubsection{Using $A*$}
@@ -213,7 +213,7 @@ may seem completely unrelated.
 When using the $A*$ algorithm, we need to design four things:
 
 \begin{enumerate}
-\item The notion of a vertex\footnote{The prefered name is ``node" but I will
+\item The notion of a vertex\footnote{The preferred name is ``node" but I will
 use vertex since we already use node to refer to nodes in circuits.} in the
 search tree, the cost associated with a vertex, and how we obtain the neighbors
 of a vertex,
@@ -306,7 +306,7 @@ this heuristic verses using no heuristic.
 \subsection{Combining the methods}
 \label{sec:combined_alg}
 
-With the methods discussed so far, we aimed to completly solve the layout problem
+With the methods discussed so far, we aimed to completely solve the layout problem
 with one placement method and one wiring method. However, as we will soon see,
 such an algorithm is bound to fail on some set of schematics. When we ultimately
 put the final algorithm in front of students, we would like to avoid failure.
@@ -325,10 +325,10 @@ combination algorithm.
 \ForEach{Placement cost metric $M$ in (DISTANCE, BLOCKING)}{
 $P$ $\leftarrow$ Placement for $C$ by using cost metric $M$.\\
 \ForEach{Order $O$ in (INCREASING, DECREASING)}{
-$pairs$ $\leftarrow$ Pairs of location on $P$ to connect given scematic $C$ and connection order $O$.\\
+$pairs$ $\leftarrow$ Pairs of location on $P$ to connect given schematic $C$ and connection order $O$.\\
 \ForEach{$(loc_1, loc_2)$ in $pairs$}{
 Attempt to connect $loc_1$ and $loc_2$ on $P$.\\
-If sucessful, update $P$ accordingly and then post-process $P$.\\
+If successful, update $P$ accordingly and then post-process $P$.\\
 If not, record that the pair $(loc_1, loc_2)$ was not successfully connected.\\
 }
 If all pairs are successfully connected, post-process and return $P$.\\
@@ -346,7 +346,7 @@ doing placement together with two different orders of wiring pairs. Note,
 therefore, that we have chosen per-pair wiring. If any one of the four trials
 succeeds, the algorithm immediately returns the corresponding layout. If all
 four trials fail, on the other hand, the algorithm picks the ``best" partial
-solution and completes that solution by placing possibly diagaonal wires, ``best"
+solution and completes that solution by placing possibly diagonal wires, ``best"
 being the partial solution that would require the least amount of additional
 wiring. This last step makes it highly unlikely that the algorithm will ever fail.
 The only way for the algorithm to fail is for there to be two nodes that need to be
@@ -388,7 +388,7 @@ of schematics. These $6$ bases are depicted in Figure
 necessary in a 6.01 circuit. Each sub-part also offers at least $3$ points of
 connection with other subparts. The random generation algorithm takes all
 possible combinations of
-$6$ bases, allowing for repetition of bases with some restictions.
+$6$ bases, allowing for repetition of bases with some restrictions.
 The Head Connector and Robot Connector bases can appear at most once as there is
 no need for more than one of each of these in 6.01 labs. The pot-follower base (
 i.e. the base that contains one pot and a follower op amp) can appear at most
@@ -396,7 +396,7 @@ twice as we never need more than two pots in 6.01 circuits. The motor base can
 also appear at most twice as we never need more than two motors per circuit in
 6.01 labs. The other bases, T-resistor configuration and voltage divider, can be
 repeated up to 6 times. For a given combination of bases, we generate up $n$
-schematics, where $n$ dependes on the number of bases in the configurations (
+schematics, where $n$ depends on the number of bases in the configurations (
 larger for configurations with more bases in them).
 We generate the $n$ schematics by choosing a number of interconnections between
 the bases from $0$ to $n-1$. For each number of interconnections, we generate

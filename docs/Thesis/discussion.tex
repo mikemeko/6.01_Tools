@@ -20,7 +20,7 @@ only reside in the middle strip of the protoboard, is critical
 as the resistor pieces can generally be placed at numerous places on the
 protoboard.
 With this restriction, there are $63$ slots available for one resistor. Without
-this restriction, there are a total of $763$ slots available. The restirction is
+this restriction, there are a total of $763$ slots available. The restriction is
 good when we consider the reduction in the search space size. On the other hand,
 the restriction is bad when we
 consider the size of circuits the algorithm can layout. Given that the number
@@ -85,7 +85,7 @@ Each pot piece also has two possible orientations.
 
 Our choices for the connector pieces is certainly one of the two presented in
 Figure \ref{fig:piece_placement}. Any other placement of the connector pieces
-would unecessarily take up valueable rows.
+would unnecessarily take up valuable rows.
 
 \section{Explaining the Results}
 
@@ -120,7 +120,7 @@ very few circuits at that end of the figure, on which the algorithm happened to
 be consistently successful.
 
 When we consider wiring time as the basis for comparison, we observe from
-Figure \ref{fig:placement_time_trend} that, once again, the two metods are
+Figure \ref{fig:placement_time_trend} that, once again, the two methods are
 very similar, with random placement being markedly worse than both.
 We see that the distance method generally takes slightly less
 wiring time than the blocking method, but the difference between the two is
@@ -175,7 +175,7 @@ other four alternatives have very comparable success rates.
 
 Next we look at Figure \ref{fig:wiring_time_trend} to compare wiring times for
 the five methods. Once again, we observe that the all-pairs methods takes
-significanlty more time than the other methods. When attempting to connect all
+significantly more time than the other methods. When attempting to connect all
 pairs in one search, the method searches for an appealing layout, which may
 require searching through a large number of alternatives, especially for more
 complex circuits. Hence, we would expect the all-pairs methods to generally take
@@ -187,7 +187,7 @@ per-pair wiring times. This trend is also expected as the per-node methods
 attempt to connect multiple pairs of locations at once while keeping the layout
 pleasing, and this generally requires searching through more alternatives than
 connecting each of the pairs of locations individually. It is important to note
-that per-node, increaseing generally takes more time than per-pair, decreasing,
+that per-node, increasing generally takes more time than per-pair, decreasing,
 and also that per-pair, increasing generally takes more time than per-pair,
 decreasing.
 
@@ -205,7 +205,7 @@ the per-node, decreasing method produces more wire crosses on average than the
 per-pair,
 increasing method. Here we observe that the order in which we consider pairs of
 locations has a telling effect on how good the layouts will be. In essence,
-connecting the harder pairs of locations generally produces more wire corsses.
+connecting the harder pairs of locations generally produces more wire crosses.
 
 What we have observed is that while the all-pairs method is the least successful
 method and the one that generally takes the longest among the five,
@@ -224,10 +224,10 @@ Let us start by comparing success rates. Figures \ref{fig:search_success} and
 \ref{fig:search_success_trend} and Table \ref{fig:search_success} present the
 appropriate data. We clearly observe that Best First Search is much more
 successful than $A*$. $98\%$ of the test circuits were solved at least $8$ times
-out of $10$ when we used Best First Search, versues $85\%$ when we used $A*$.
+out of $10$ when we used Best First Search, versus $85\%$ when we used $A*$.
 This result is not surprising because Best First Search hungrily hunts for
 layouts that satisfy the connection requirements without caring for the
-aesthetics of the layouts. Hence, Best First Search is much less succeptible to
+aesthetics of the layouts. Hence, Best First Search is much less susceptible to
 the $300$ states to expand restriction than $A*$. The fact that the quality of
 the results we get from Best First Search are worse
 is clearly evident from Figure \ref{fig:search_quality_trend}. Most importantly, the
@@ -236,10 +236,10 @@ greater than the number of wire crosses in the layouts produced by $A*$. We also
 observe that the total wire length is greater when using Best First Search. The
 fact that Best First Search settles for any layout that satisfies the connection
 requirements suggests that it should finish more quickly in addition to being
-more successful. Firgure \ref{fig:search_time_trend} supports exactly this
+more successful. Figure \ref{fig:search_time_trend} supports exactly this
 expectation.
 
-Our choice of a search algorithm forces us to consider a treadoff between quick
+Our choice of a search algorithm forces us to consider a tread-off between quick
 success and quality. If we choose Best First Search, most runs will be successful
 and terminate quickly, but will produce very poor results. If we choose $A*$,
 not as many runs will be successful, and the successful runs will take longer to
@@ -280,7 +280,7 @@ test dataset, the algorithm took at most just over $3$ minutes to run. This is
 encouraging from a practical stand point because $3$ minutes is not terribly long
 for a student to have to wait for a layout to be generated.
 Finally Figure \ref{fig:final_quality_trend} presents trends of quality as a
-function of circuit complexity. Most importatnly, we observe that the average
+function of circuit complexity. Most importantly, we observe that the average
 number of wire crosses never exceeds $1$.
 
 \section{Further Work}
@@ -310,7 +310,7 @@ be discovering the best places for the node as we are placing down resistors in
 the wiring step, but this solution would certainly make the search we carry out
 more complicated. Second, we will need a new kind of heuristic for our $A*$
 search that takes resistors into account. The first idea that comes to mind may
-be highly penalizing an absent resistor. Even with an ammended heuristic, there
+be highly penalizing an absent resistor. Even with an amended heuristic, there
 are cases we can imagine where the search may have a difficult time getting an
 answer, for instance a pair of locations that are right next to each other that
 must be connected by a resistor.
@@ -322,7 +322,7 @@ the same circuit schematic. This is not a result of an explicit randomization
 in our algorithm, but rather a side effect of some data structures we use such
 as Python sets and dictionaries. A similar problem is that a slight change in
 the circuit schematic may result in a completely different layout. It is,
-therefore, very important that students in 6.01 be confident that they desiged
+therefore, very important that students in 6.01 be confident that they designed
 the right circuit before taking the time to build their circuit.
 This is where the simulation
 capabilities of our tool come in to play. As an alternative solution to this
