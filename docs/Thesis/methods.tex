@@ -202,7 +202,11 @@ In the previous section we discussed what locations we need to wire together:
 for every node in the circuit, we get a set of locations on the protoboard that
 need to be interconnected. The question now is how to achieve this wiring. We
 approach the problem as a search problem and use the $A*$ search algorithm to
-solve it.
+solve it. In fact the wiring step uses an infrastructure for the $A*$ search
+algorithm exactly as presented in the Search module of 6.01. Hence students in
+the class may very much appreciate an application of something they learned
+earlier in the cource to produce a tool that they are using for something that
+may seem completely unrelated.
 
 \subsubsection{Using $A*$}
 
