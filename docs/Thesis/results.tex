@@ -16,26 +16,23 @@ the data will be discussed in detail in Chapter \ref{ch:discussion}.
     [{All}
      [$\uparrow$ $\downarrow$ ].{Node}
      [$\uparrow$ $\downarrow$ ].{Pair} ].Wiring !\qsetw{4cm}
-    [{Component} {Wire} ].Resistors !\qsetw{4cm}
     [$A*$ {Best First} ].Search ]
 \label{fig:alternatives}
 \caption{All possible alternatives to the algorithm.}
 \end{figure}
 
-As comparing all $40$ possible implementations of the algorithm is tedious, we
+As comparing all $20$ possible implementations of the algorithm is tedious, we
 will compare the alternatives for each aspect of the algorithm while holding
 other aspects fixed. Hence, we will carryout the following comparisons:
 
 \begin{enumerate}
 \item Placement: Distance vs. Blocking. Wiring method will be per-pair,
-decreasing, resistors will be treated as components, and we will use $A*$.
+decreasing, and we will use $A*$.
 \item Wiring: All pairs vs. Per-node, decreasing vs. Per-node, increasing vs.
 Per-pair, decreasing vs. Per-pair, increasing. Placement method will be
-blocking, resistors will be treated as components, and we will use $A*$.
-\item Resistor treatment: As components vs. As wires. Placement method will be
-blocking, wiring method will be per-pair, decreasing, and we will use $A*$.
-\item Search: $A*$ vs. Best First. Placement method will be blocking, wiring
-method will be per-pair, decreasing, and resistors will be treated as components.
+blocking, and we will use $A*$.
+\item Search: $A*$ vs. Best First. Placement method will be blocking, and wiring
+method will be per-pair, decreasing.
 \end{enumerate}
 
 The data to compare the alternatives is gathered as described in Chapter
@@ -108,6 +105,9 @@ Blocking & $162$ & $38$ & $51$ & $57$ & $72$ & $85$ & $109$ & $106$ & $144$ & $2
  Distance & $258$ & $55$ & $54$ & $50$ & $52$ & $77$ & $86$ & $97$ & $93$ & $130$ & $3473$ \\
   & $0.06$ & $0.01$ & $0.01$ & $0.01$ & $0.01$ & $0.02$ & $0.02$ & $0.02$ & $0.02$ & $0.03$ & $0.78$ \\
 \hline
+  Random & $893$ & $512$ & $387$ & $364$ & $292$ & $259$ & $247$ & $277$ & $311$ & $321$ & $562$ \\
+   & $0.20$ & $0.12$ & $0.09$ & $0.08$ & $0.07$ & $0.06$ & $0.06$ & $0.06$ & $0.07$ & $0.07$ & $0.13$ \\
+\hline
 \end{tabular}
 \end{singlespace}
 \end{center}
@@ -139,6 +139,14 @@ Blocking & $162$ & $38$ & $51$ & $57$ & $72$ & $85$ & $109$ & $106$ & $144$ & $2
 \end{center}
 \end{figure}
 
+\begin{figure}
+\begin{center}
+\includegraphics[width=\textwidth]{Images/placement_badness_trend_comparison.png}
+\caption{Placement method comparison: layout badness trends.}
+\label{fig:placement_badness_trend}
+\end{center}
+\end{figure}
+
 \section{Comparing wiring methods}
 
 \begin{figure}[H]
@@ -161,17 +169,20 @@ Blocking & $162$ & $38$ & $51$ & $57$ & $72$ & $85$ & $109$ & $106$ & $144$ & $2
 All & $458$ & $114$ & $111$ & $112$ & $127$ & $145$ & $177$ & $139$ & $172$ & $227$ & $2643$ \\
  & $0.10$ & $0.03$ & $0.03$ & $0.03$ & $0.03$ & $0.03$ & $0.04$ & $0.03$ & $0.04$ & $0.05$ & $0.60$ \\
 \hline
- Node D & $195$ & $50$ & $58$ & $66$ & $104$ & $83$ & $125$ & $176$ & $162$ & $268$ & $3138$ \\
-  & $0.04$ & $0.01$ & $0.01$ & $0.01$ & $0.02$ & $0.02$ & $0.03$ & $0.04$ & $0.04$ & $0.06$ & $0.71$ \\
+ Node I & $154$ & $50$ & $55$ & $62$ & $85$ & $71$ & $106$ & $141$ & $156$ & $217$ & $3328$ \\
+  & $0.03$ & $0.01$ & $0.01$ & $0.01$ & $0.02$ & $0.02$ & $0.02$ & $0.03$ & $0.04$ & $0.05$ & $0.75$ \\
 \hline
-  Node I & $154$ & $50$ & $55$ & $62$ & $85$ & $71$ & $106$ & $141$ & $156$ & $217$ & $3328$ \\
-   & $0.03$ & $0.01$ & $0.01$ & $0.01$ & $0.02$ & $0.02$ & $0.02$ & $0.03$ & $0.04$ & $0.05$ & $0.75$ \\
+  Node D & $195$ & $50$ & $58$ & $66$ & $104$ & $83$ & $125$ & $176$ & $162$ & $268$ & $3138$ \\
+   & $0.04$ & $0.01$ & $0.01$ & $0.01$ & $0.02$ & $0.02$ & $0.03$ & $0.04$ & $0.04$ & $0.06$ & $0.71$ \\
 \hline
-   Pair D & $162$ & $38$ & $51$ & $57$ & $72$ & $85$ & $109$ & $106$ & $144$ & $203$ & $3398$ \\
-    & $0.04$ & $0.01$ & $0.01$ & $0.01$ & $0.02$ & $0.02$ & $0.02$ & $0.02$ & $0.03$ & $0.05$ & $0.77$ \\
+   Pair I & $177$ & $40$ & $59$ & $54$ & $91$ & $92$ & $100$ & $118$ & $132$ & $212$ & $3350$ \\
+    & $0.04$ & $0.01$ & $0.01$ & $0.01$ & $0.02$ & $0.02$ & $0.02$ & $0.03$ & $0.03$ & $0.05$ & $0.76$ \\
 \hline
-    Pair I & $177$ & $40$ & $59$ & $54$ & $91$ & $92$ & $100$ & $118$ & $132$ & $212$ & $3350$ \\
-     & $0.04$ & $0.01$ & $0.01$ & $0.01$ & $0.02$ & $0.02$ & $0.02$ & $0.03$ & $0.03$ & $0.05$ & $0.76$ \\
+    Pair D & $162$ & $38$ & $51$ & $57$ & $72$ & $85$ & $109$ & $106$ & $144$ & $203$ & $3398$ \\
+     & $0.04$ & $0.01$ & $0.01$ & $0.01$ & $0.02$ & $0.02$ & $0.02$ & $0.02$ & $0.03$ & $0.05$ & $0.77$ \\
+\hline
+     Straight & $0$ & $0$ & $0$ & $0$ & $0$ & $0$ & $0$ & $0$ & $0$ & $0$ & $4425$ \\
+      & $0.00$ & $0.00$ & $0.00$ & $0.00$ & $0.00$ & $0.00$ & $0.00$ & $0.00$ & $0.00$ & $0.00$ & $1.00$ \\
 \hline
 \end{tabular}
 \end{singlespace}
@@ -182,9 +193,12 @@ All & $458$ & $114$ & $111$ & $112$ & $127$ & $145$ & $177$ & $139$ & $172$ & $2
 
 \begin{figure}[H]
 \begin{center}
-\includegraphics[width=\textwidth]{Images/wiring_success_trend_comparison.png}
-\caption{Wiring method comparison: success rate trends.}
-\label{fig:wiring_success_trend}
+\begin{tabular}{cc}
+\includegraphics[width=7cm]{Images/wiring_all_success_trend.png} &
+\includegraphics[width=7cm]{Images/wiring_node_success_trend.png} \\
+\includegraphics[width=7cm]{Images/wiring_straight_success_trend.png} &
+\includegraphics[width=7cm]{Images/wiring_pair_success_trend.png}
+\end{tabular}
 \end{center}
 \end{figure}
 
@@ -204,59 +218,11 @@ All & $458$ & $114$ & $111$ & $112$ & $127$ & $145$ & $177$ & $139$ & $172$ & $2
 \end{center}
 \end{figure}
 
-\section{Comparing resistor treatments}
-
-\begin{figure}[H]
-\begin{center}
-\includegraphics[width=\textwidth]{Images/resistor_success_comparison.png}
-\caption{Resistor treatment comparison: success rates.}
-\label{fig:resistor_success}
-\end{center}
-\end{figure}
-
-\begin{table}[H]
-\begin{center}
-\begin{singlespace}
-\begin{tabular}{|c||c|c|c|c|c|c|c|c|c|c|c|}
-\hline
- & \multicolumn{11}{|c|}{Number of times succeeded out of $10$} \\
-\hline
- & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 \\
-\hline\hline
-As components & $162$ & $38$ & $51$ & $57$ & $72$ & $85$ & $109$ & $106$ & $144$ & $203$ & $3398$ \\
- & $0.04$ & $0.01$ & $0.01$ & $0.01$ & $0.02$ & $0.02$ & $0.02$ & $0.02$ & $0.03$ & $0.05$ & $0.77$ \\
-\hline
- As wires & $2424$ & $421$ & $276$ & $187$ & $171$ & $146$ & $140$ & $101$ & $91$ & $77$ & $391$ \\
-  & $0.55$ & $0.10$ & $0.06$ & $0.04$ & $0.04$ & $0.03$ & $0.03$ & $0.02$ & $0.02$ & $0.02$ & $0.09$ \\
-\hline
-\end{tabular}
-\end{singlespace}
-\end{center}
-\label{tb:resistor_success}
-\caption{Resistor treatment comparison: success rates.}
-\end{table}
-
-\begin{figure}[H]
-\begin{center}
-\includegraphics[width=\textwidth]{Images/resistor_success_trend_comparison.png}
-\caption{Resistor treatment comparison: success rate trends.}
-\label{fig:resistor_success_trend}
-\end{center}
-\end{figure}
-
-\begin{figure}[H]
-\begin{center}
-\includegraphics[width=\textwidth]{Images/resistor_time_trend_comparison.png}
-\caption{Resistor treatment comparison: wiring time trends.}
-\label{fig:resistor_time_trend}
-\end{center}
-\end{figure}
-
 \begin{figure}
 \begin{center}
-\includegraphics[width=\textwidth]{Images/resistor_quality_trend_comparison.png}
-\caption{Resistor treatment comparison: layout quality trends.}
-\label{fig:resistor_quality_trend}
+\includegraphics[width=\textwidth]{Images/wiring_badness_trend_comparison.png}
+\caption{Wiring method comparison: layout badness trends.}
+\label{fig:wiring_badness_trend}
 \end{center}
 \end{figure}
 

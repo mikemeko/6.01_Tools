@@ -1,0 +1,150 @@
+
+###
+Methods
+###
+\subsection{Treating Resistors as Wires}
+\label{sec:resistors_as_wires}
+
+The discussion in Section \ref{sec:placement} presented that we treat
+resistors just as we do the other components. That is, we give each resistor a
+fixed place on the protoboard in the first step of the algorithm before the
+wiring step. However, resistors have the special property among the circuit
+pieces that they can be thought of as wires of length $3$.
+Hence, it may be possible to handle resistors in the wiring step instead of the
+placement step. Chapter \ref{ch:results} presents a comparison of these two
+approaches.
+
+Note that treating resistors in the wiring step is not a trivial task. First,
+there may be nodes in the circuit that are connected to some resistors, but no
+other pieces. In this case, we must be sure to reserve space on the protoboard
+for that node as the wiring step relies on the presence of each node on the
+protoboard. Second, we must keep careful track of pairs of locations that need
+to be connected by simple wires and pairs of locations that need to be connected
+using resistors.
+
+###
+Results
+###
+
+\begin{figure}[H]
+\Tree [.{All Alternatives}
+    [{Distance} {Block} ].Placement !\qsetw{4cm}
+    [{All}
+     [$\uparrow$ $\downarrow$ ].{Node}
+     [$\uparrow$ $\downarrow$ ].{Pair} ].Wiring !\qsetw{4cm}
+    [{Component} {Wire} ].Resistors !\qsetw{4cm}
+    [$A*$ {Best First} ].Search ]
+\label{fig:alternatives}
+\caption{All possible alternatives to the algorithm.}
+\end{figure}
+
+-------
+
+\item Resistor treatment: As components vs. As wires. Placement method will be
+blocking, wiring method will be per-pair, decreasing, and we will use $A*$.
+
+-------
+
+\section{Comparing resistor treatments}
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[width=\textwidth]{Images/resistor_success_comparison.png}
+\caption{Resistor treatment comparison: success rates.}
+\label{fig:resistor_success}
+\end{center}
+\end{figure}
+
+\begin{table}[H]
+\begin{center}
+\begin{singlespace}
+\begin{tabular}{|c||c|c|c|c|c|c|c|c|c|c|c|}
+\hline
+ & \multicolumn{11}{|c|}{Number of times succeeded out of $10$} \\
+\hline
+ & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 \\
+\hline\hline
+As components & $162$ & $38$ & $51$ & $57$ & $72$ & $85$ & $109$ & $106$ & $144$ & $203$ & $3398$ \\
+ & $0.04$ & $0.01$ & $0.01$ & $0.01$ & $0.02$ & $0.02$ & $0.02$ & $0.02$ & $0.03$ & $0.05$ & $0.77$ \\
+\hline
+ As wires & $2424$ & $421$ & $276$ & $187$ & $171$ & $146$ & $140$ & $101$ & $91$ & $77$ & $391$ \\
+  & $0.55$ & $0.10$ & $0.06$ & $0.04$ & $0.04$ & $0.03$ & $0.03$ & $0.02$ & $0.02$ & $0.02$ & $0.09$ \\
+\hline
+\end{tabular}
+\end{singlespace}
+\end{center}
+\label{tb:resistor_success}
+\caption{Resistor treatment comparison: success rates.}
+\end{table}
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[width=\textwidth]{Images/resistor_success_trend_comparison.png}
+\caption{Resistor treatment comparison: success rate trends.}
+\label{fig:resistor_success_trend}
+\end{center}
+\end{figure}
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[width=\textwidth]{Images/resistor_time_trend_comparison.png}
+\caption{Resistor treatment comparison: wiring time trends.}
+\label{fig:resistor_time_trend}
+\end{center}
+\end{figure}
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=\textwidth]{Images/resistor_quality_trend_comparison.png}
+\caption{Resistor treatment comparison: layout quality trends.}
+\label{fig:resistor_quality_trend}
+\end{center}
+\end{figure}
+
+###
+Discussions
+###
+
+\subsection{Comparing resistor treatments}
+
+We now look at the two alternative treatments for wires: as components vs. as
+wires. From Figures \ref{fig:resistor_success} and \ref{fig:resistor_success_trend}
+and Table \ref{tb:resistor_success}, we observe that treating resistors as wires
+results in a considerably smaller success rate than treating resistors as
+components. Recall that the wiring method used here is per-pair, decreasing wiring.
+When treating resistors as wires, we get more location pairs to connect.
+The key difference for
+the location pairs that correspond to resistors is that in connecting the given
+pair of locations with wires, one of the wires is required to have length $3$,
+the length of a resistor. Intuitively, this restriction should make the search
+harder, and the data we have obtained suggests that the search is indeed
+significantly more difficult with the restriction than without.
+
+When we treat resistors as wires, and the search does succeed, we observe from
+Figure \ref{fig:resistor_time_trend} that it takes more time than treating
+resistors as wires, as expected.
+
+Finally we look at the quality of layouts produced by the two methods. First,
+we observe from Figure \ref{fig:resistor_quality_trend} that treating resistors
+as wires produces layouts with fewer wires and smaller total length of wires
+than treating resistors as components. This is certainly expected because each
+resistor can be suitably placed to require fewer wires than would be required
+if we forced the resistor to reside in the middle strip of the protoboard. We
+do note, however, that treating resistors as wires results in more wire crosses
+despite requiring fewer wires, especially as circuit complexity increases. This
+can be attributed to the fact that treating resistors as wires is likely to
+produce more compact layouts in which wire crosses are more likely to happen
+than the spreadout settings we force when we treat resistors as components.
+
+In this comparison, we can easily state that, with a limited search (i.e. with
+a search in which we have a limited number of states to expand), treating
+resistors as components is a better strategy than treating resistors as wires
+based on the big difference in success rate.
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=\textwidth]{Images/exemplar_per_pair_decreasing.png}
+\includegraphics[width=\textwidth]{Images/exemplar_resistors_as_wires.png}
+\caption{Resistors as components vs. Resistors as wires.}
+\end{center}
+\end{figure}

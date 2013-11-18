@@ -20,7 +20,21 @@ def se(l):
   """
   return 1.96 * sem(l)
 
-colors = ['r', 'b', 'g', 'c', 'm']
+colors = ['r', 'b', 'g', 'c', 'm', 'orange']
+
+def legend(p, labels, nrows, ncols):
+  assert nrows in (1, 2)
+  if nrows == 1:
+    bbox_to_anchor = (0., 1.02, 1., .102)
+  else:
+    bbox_to_anchor = (0., 0.99, 1., .102)
+  p.legend(
+      labels,
+      bbox_to_anchor=bbox_to_anchor,
+      loc=3,
+      ncol=ncols,
+      mode='expand',
+      borderaxespad=0.)
 
 def compare(files, methods):
   all_results = []
@@ -34,6 +48,9 @@ def compare(files, methods):
       results_by_identifier[result.identifier].append(result)
     groups = [Test_Group(value) for value in results_by_identifier.values()]
     all_groups.append(groups)
+
+  nrows = 1 if len(methods) < 5 else 2
+  ncols = len(methods) if len(methods) < 5 else (len(methods) + 1) / 2
 
   # success plot
   pylab.figure()
@@ -50,8 +67,7 @@ def compare(files, methods):
         color=colors[i])
   pylab.xlabel('Number of times succeeded out of 10')
   pylab.ylabel('Count')
-  pylab.legend(methods, bbox_to_anchor=(0., 1.02, 1., .102), loc=3,
-        ncol=len(methods), mode='expand', borderaxespad=0.)
+  legend(pylab, methods, nrows, ncols)
 
   # success table
   num_schematics = sum(all_successes[0])
@@ -79,8 +95,7 @@ def compare(files, methods):
         yerr=map(se, success_mapping.values()), color=colors[i])
   pylab.xlabel('Number of pins')
   pylab.ylabel('Success rate')
-  pylab.legend(methods, bbox_to_anchor=(0., 1.02, 1., .102), loc=3,
-        ncol=len(methods), mode='expand', borderaxespad=0.)
+  legend(pylab, methods, nrows, ncols)
 
   # time trend
   pylab.figure()
@@ -96,8 +111,7 @@ def compare(files, methods):
         yerr=map(se, time_mapping.values()), color=colors[i])
   pylab.xlabel('Number of pins')
   pylab.ylabel('Wiring time (seconds)')
-  pylab.legend(methods, bbox_to_anchor=(0., 1.02, 1., .102), loc=3,
-        ncol=len(methods), mode='expand', borderaxespad=0.)
+  legend(pylab, methods, nrows, ncols)
 
   # quality
   pylab.figure()
@@ -129,8 +143,7 @@ def compare(files, methods):
         color=colors[i])
     ax3.set_ylabel('Total wire length')
   pylab.xlabel('Number of pins')
-  ax1.legend(methods, bbox_to_anchor=(0., 1.02, 1., .102), loc=3,
-        ncol=len(methods), mode='expand', borderaxespad=0.)
+  legend(ax1, methods, nrows, ncols)
 
   # badness comparison
   pylab.figure()
@@ -153,8 +166,7 @@ def compare(files, methods):
         yerr=map(se, badness_mapping.values()), color=colors[i])
   pylab.xlabel('Number of pins')
   pylab.ylabel('Layout badness')
-  pylab.legend(methods, bbox_to_anchor=(0., 1.02, 1., .102), loc=3,
-        ncol=len(methods), mode='expand', borderaxespad=0.)
+  legend(pylab, methods, nrows, ncols)
 
   pylab.show()
 
