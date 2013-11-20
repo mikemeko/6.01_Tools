@@ -110,7 +110,7 @@ def _wire_loc_pair(loc_pair, proto_board):
   """
   return find_wiring(loc_pairs=[loc_pair], start_proto_board=proto_board,
       mode=MODE_PER_PAIR, order=ORDER_DECREASING, best_first=False,
-      filter_wire_lengths=True, max_states_to_expand=70, verbose=False)[0]
+      filter_wire_lengths=True, verbose=False)[0]
 
 def combined_solve_layout(circuit, verbose=True):
   """
