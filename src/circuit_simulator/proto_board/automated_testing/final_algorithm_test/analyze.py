@@ -64,8 +64,8 @@ def analyze(result_file):
           break
   keys = sorted(num_trials.keys())
   values = [num_trials[key] for key in keys]
-  labels = ['%d' % i for i in keys if i <= 4] + ['+%d' % (i - 4) for i in keys
-      if i > 4]
+  labels = ['1\ntrail'] + ['%d\ntrials' % i for i in keys if 2 <= i <= 4] + [
+      '1\nfailed\npair'] + ['%d\nfailed\npairs' % (i-4) for i in keys if i > 5]
   colors = ['g'] * 4 + ['r'] * (len(keys) - 4)
   width = 0.8
   rects = ax.bar(keys, values, width=width, color=colors)

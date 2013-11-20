@@ -52,6 +52,16 @@ def compare(files, methods):
   nrows = 1 if len(methods) < 5 else 2
   ncols = len(methods) if len(methods) < 5 else (len(methods) + 1) / 2
 
+  pylab.figure()
+  for results in all_results:
+    num_expanded = []
+    for result in results:
+      if result.num_expanded:
+        #num_expanded.extend(result.num_expanded)
+        num_expanded.append(max(result.num_expanded))
+    pylab.hist(num_expanded, bins=20, alpha=0.5)
+  pylab.xlabel('Maximum number of expanded states per run')
+  pylab.show()
   # success plot
   pylab.figure()
   plot_keys = range(11)

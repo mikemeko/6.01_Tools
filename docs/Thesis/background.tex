@@ -9,13 +9,13 @@ previous work done that relates to this project.
 
 \section{Technical Background}
 
-As already mentioned, this project aims to produces a new teaching tool for the
-introductory course 6.01. We will now discuss the scope of circuits in 6.01.
+As already mentioned, this project aims to produces a new teaching tool for
+6.01. As such, let us first discuss the scope of circuits in 6.01.
 
 \subsection{What are our circuit components?}
 
 The rudimentary circuit components that students work with are resistors,
-operational amplifiers (op amps), and potentiometers (pots). Students start out
+operational amplifiers (op-amps), and potentiometers (pots). Students start out
 by building very simple circuits, and then go on to building
 more complicated circuits with time. The simplest circuits that students build
 aim to control lego motors in a particular way. In constructing these circuits,
@@ -34,7 +34,7 @@ head by probing the pot. Figure \ref{fig:robot} displays a robot with a head.
 Students use $8$-pin \textit{head connectors} to connect their circuits to
 robot heads.
 
-All together, our components are resistors, op amps, pots, motor connectors,
+All together, our components are resistors, op-amps, pots, motor connectors,
 robot connectors, and head connectors.
 
 \begin{figure}
@@ -55,8 +55,8 @@ sketch on a piece of paper in the process of designing a circuit. Figure
 
 \begin{figure}
 \begin{center}
-\includegraphics[width=\textwidth]{Images/sample_schematic.jpeg}
-\caption{Sample circuit schematic.}
+\includegraphics[width=\textwidth]{sample_schematic-22.mps}
+\caption{Sample circuit schematic: head angular position controller.}
 \label{fig:schematic}
 \end{center}
 \end{figure}
@@ -64,10 +64,11 @@ sketch on a piece of paper in the process of designing a circuit. Figure
 \subsection{What is a protoboard?}
 \label{sec:what_is_protoboard}
 
-Protoboards are constructs that make it easy to quickly build and test small
+Protoboards are constructs that make it easy to quickly build and test
 circuits. They present a $2$-dimensional array of cleverly interconnected dots
 in which circuit pieces and wires can be inserted. Figure
-\ref{fig:physical_protoboard} presents an example of a physical protoboard. In
+\ref{fig:physical_protoboard} presents an example of an empty physical
+protoboard. In
 the orientation depicted in Figure \ref{fig:physical_protoboard}, a protoboard
 has $4$ groups of rows: the first $2$ rows, the next $5$ rows, the next $5$
 rows, and finally the last $2$ rows. In the first and last groups, the dots on
@@ -78,7 +79,9 @@ interconnection scheme is depicted in Figure \ref{fig:physical_protoboard}.
 \begin{figure}
 \begin{center}
 \includegraphics[width=\textwidth]{Images/physical_protoboard.jpg}
-\caption{Physical protoboard.}
+\caption{Physical protoboard. In the top and bottom groups, the dots are
+interconnected horizontally. In the middle two groups, the dots are
+interconnected vertically.}
 \label{fig:physical_protoboard}
 \end{center}
 \end{figure}
@@ -102,20 +105,23 @@ example schematic shown in Figure \ref{fig:schematic}.
 
 For each of the circuit components we are interested in, there is a corresponding
 circuit piece that may be inserted into the protoboard. The one exception is that
-op amps come in pairs. That is, each op amp circuit piece that is inserted in the
-protoboard actually contains two op amp components within it. This raises an
+op-amps come in pairs. That is, each op-amp circuit piece that is inserted in the
+protoboard actually contains two op-amp components within it. This raises an
 important design question when we layout a schematic: what is the best way to
-group together the op amps in a schematic to result in the ``best" layout? In
+group together the op-amps in a schematic to result in the ``best" layout? In
 answering this question, the designer must have some criteria for what makes a
 layout ``good." While there are no conclusive answers for this question,
 general rules of thumb are (in no particular order):
 
 \begin{itemize}
-\item The layout should have no crossing wires.
 \item The layout should not have any wires that cross circuit pieces.
-\item The layout should only have horizontal and vertical wires.
+\item The layout should have no occlusions (i.e. crossing wires with identical
+orientations).
+\item The layout should have no crossing wires.
+\item The layout should only have horizontal and vertical wires (i.e. no
+diagonal wires).
 \item The layout should have as few wires as possible.
-\item The total length of wires in a layout should be as small as possible.
+\item The total length of wires in the layout should be as small as possible.
 \end{itemize}
 
 Given the background information discussed thus far, the goal of our project is
@@ -136,13 +142,13 @@ member. After they iteratively amend their design and are happy with it, they
 build the circuit on a simulation tool called Circuits Maximus (CMax)\cite{cmax}.
 With this
 tool, students can layout their circuits on a simulated protoboard as if they
-were laying it out on a physical one. CMax allows students to test the circuit
+were laying it out on a physical one. CMax allows students to simulate the circuit
 to make sure that it behaves as desired. Circuit layout is much easier on CMax
 than on a physical protoboard. Hence, CMax provides a very fast and safe way of
 debugging circuit layouts. Once the students are satisfied with their
 observations from CMax, they build their circuits on physical protoboards and
 carryout the appropriate experiments. Figure \ref{fig:cmax_sample} presents a
-layout of the schematic in Figure \ref{fig:schematic}.
+CMax layout of the schematic in Figure \ref{fig:schematic}.
 
 \begin{figure}
 \begin{center}
@@ -170,7 +176,9 @@ when the circuits get complicated and involve many pieces, translating a
 schematic diagram into a protoboard layout gets to be quite challenging and
 time-consuming. In these situations, students often end up with convoluted and
 unpleasant layouts that are very difficult to debug in the likely case of the
-circuit not behaving as expected.
+circuit not behaving as expected. Not only are such layouts difficult to debug
+for the students themselves, but they are also often difficult for staff
+members to fathom.
 
 In the best case scenario, students should not have to produce protoboard
 layouts for their schematic diagrams. Indeed they should work out the right
@@ -188,7 +196,7 @@ drawings on the simulation tool. In fact, students my go straight to building
 the schematic drawings on the simulation tool, bypassing the experimentation on
 paper. Once they have a schematic drawn, they can analyze it with the tool,
 discuss it with staff members, and amend it easily and quickly with the
-user-friendly graphical user interface of the simulation tool. When they are
+user-friendly GUI of the simulation tool. When they are
 satisfied with the behaviors of their schematic circuit, they can produce the
 corresponding protoboard layout simply at the click of a button -- this would be
 the most important advantage of this tool. They can then build the layout on a

@@ -2,6 +2,10 @@
   \newcommand{\singleletter}[1]{#1} \newcommand{\switchargs}[2]{#2#1}
 \begin{thebibliography}{1}
 
+\bibitem{sixohone}
+Introduction to \uppercase{EECS I}.
+\newblock http://web.mit.edu/6.01.
+
 \bibitem{cmax}
 6.01 Staff.
 \newblock Cmax.

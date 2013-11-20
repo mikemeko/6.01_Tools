@@ -5,6 +5,9 @@
 *.lof
 *.log
 *.lot
+*.mpo
+*.mps
+*.mpx
 *.out
 *.pyc
 *.swp

@@ -12,9 +12,9 @@ Chapter \ref{ch:results}.
 
 \subsubsection{Resistors}
 
-For the sake of simplicity, and to significantly reduce the search space
-\q, for every resistor in the schematic, I use one resistor piece on the
-protoboard placed in the middle strip of the protoboard as shown in Figure
+For the sake of simplicity, and to significantly reduce the search space, for
+every resistor in the schematic, we use one resistor piece placed in the middle
+strip of the protoboard as shown in Figure
 \ref{fig:piece_placement}. This choice, i.e. allowing the resistor pieces to
 only reside in the middle strip of the protoboard, is critical
 as the resistor pieces can generally be placed at numerous places on the
@@ -25,15 +25,15 @@ good when we consider the reduction in the search space size. On the other hand,
 the restriction is bad when we
 consider the size of circuits the algorithm can layout. Given that the number
 of resistors in a typical 6.01 circuit is very
-small \q, this restriction proves to be very useful.
+small, this restriction proves to be very useful.
 
-\subsubsection{Op Amps}
+\subsubsection{Op-amps}
 
-Op Amps are the trickiest components to handle because each Op Amp package put
-on the protoboard contains two Op Amps within it. Equation
+Op-amps are the trickiest components to handle because each op-amp package put
+on the protoboard contains two op-amps within it. Equation
 \ref{eq:opamp} presents an expression for the value $f(n)$, the number of
-different ways to package together $n$ Op Amps. For example, if we have $2$ Op
-Amps, we can either use one Op Amp package for each, or put them both in the
+different ways to package together $n$ op-amps. For example, if we have $2$ Op
+Amps, we can either use one op-amp package for each, or put them both in the
 same package, which we can do in one of two different ways. Hence, $f(2) = 3$.
 To get a sense of how many different packagings are possible, Table
 \ref{tb:opamp} gives the values of $f(n)$ for various $n$.
@@ -64,28 +64,17 @@ $n$ & $f(n)$ \\
 \end{singlespace}
 \end{center}
 \label{tb:opamp}
-\caption{Number of ways of packaging together $n$ Op Amps for various values of
+\caption{Number of ways of packaging together $n$ op-amps for various values of
 $n$.}
 \end{table}
 
 Our placement approach explores all possible ways
-of packaging up the Op Amps. We do this because the typical 6.01 circuit contains
-no more than $6$ Op Amps, and so we are tasked with exploring at most $331$
+of packaging up the op-amps. We do this because the typical 6.01 circuit contains
+no more than $6$ op-amps, and so we are tasked with exploring at most $331$
 alternatives, which doesn't happen to be too computationally intensive. If the
-algorithm was meant to handle a larger number of Op Amps (for example $10$), then
+algorithm was meant to handle a larger number of op-amps (for example $10$), then
 this approach would be silly, and we would have to resort to perhaps considering
-the packagings that require the fewest number of Op Amps to make a choice.
-
-\subsubsection{Pots}
-
-Each pot piece can be placed in one of two vertical locations on the protoboard.
-Each pot piece also has two possible orientations.
-
-\subsubsection{Head, Motor, and Robot Connectors}
-
-Our choices for the connector pieces is certainly one of the two presented in
-Figure \ref{fig:piece_placement}. Any other placement of the connector pieces
-would unnecessarily take up valuable rows.
+the packagings that require the fewest number of op-amps to make a choice.
 
 \section{Explaining the Results}
 
@@ -94,7 +83,7 @@ alternatives we have in solving the protoboard layout problem. Here, we will
 analyze that data and give reasonings for why we obtained the results
 that we obtained.
 
-\subsection{Comparing placement methods}
+\subsection{Comparing Placement Methods}
 
 In Figure \ref{fig:placement_success} and Table \ref{tb:placement_success} we
 see that the distance method exceeds the blocking method in number of circuits
@@ -139,10 +128,8 @@ computed using our metric as a function of circuit complexity.
 We first observe that the
 number of wires used by the two methods are almost identical. As the complexity
 of the circuit increases, we see that the blocking method uses more wires than
-does the distance method, but by and large the values are very comparable. This
-makes intuitive sense as we are rarely required to use more wires than
-absolutely necessary (keeping wires horizontal and vertical) to connect a pair
-of locations (?). When we look at the number of wire crosses in the layouts, we
+does the distance method, but by and large the values are very comparable. When
+we look at the number of wire crosses in the layouts, we
 see that the blocking method consistently results in more wire crosses. Similarly,
 when we look at the total length of wires used in the layouts, the blocking
 method exceeds the distance method consistently, with the difference getting
@@ -156,15 +143,12 @@ other two methods even when it does succeed.
 It is difficult to conclusively pick the best placement method from these
 results. What we can certainly tell is that the distance based method and the
 blocking based method are both significantly better than random placement.
-It is clear that both methods have their strengths and weaknesses. In Section
-\ref{sec:method_combination} we will discuss how combining these two methods can
-get us the best of both worlds (?).
 
-\subsection{Comparing wiring methods}
+\subsection{Comparing Wiring Methods}
 
 To compare the wiring methods, let us start with the success rate for each method.
 Figures \ref{fig:wiring_success} and \ref{fig:wiring_success_trend}, and Table
-\ref{fig:wiring_success} provide the appropriate data. The very first fact we
+\ref{tb:wiring_success} provide the appropriate data. The very first fact we
 observe is that the all-pairs method has a much smaller success rate than all of
 the other alternatives, especially as circuit complexity increases. The reason
 for this, in large part, is the fact that we impose a cutoff on the number of
@@ -217,7 +201,7 @@ Lastly, ordering subproblems from hardest to easiest has the effect of making th
 overall wiring step complete faster but producing worse results than the reverse
 order and not necessarily getting a markedly better success rate.
 
-\subsection{Comparing search methods}
+\subsection{Comparing Search Methods}
 
 We now compare our two alternative search algorithms: $A*$ and Best First Search.
 Let us start by comparing success rates. Figures \ref{fig:search_success} and
@@ -245,7 +229,7 @@ and terminate quickly, but will produce very poor results. If we choose $A*$,
 not as many runs will be successful, and the successful runs will take longer to
 terminate, but we will get much better layouts.
 
-\subsection{Putting them all together}
+\subsection{Putting Them All Together}
 \label{sec:method_combination}
 
 Now we will discuss whey the combination algorithm given in Algorithm
@@ -267,13 +251,12 @@ when we consider the fact that students will be using a tool that almost never f
 Next, Figure \ref{fig:final_num_trials} presents very encouraging results as well.
 Not only is the algorithm $100\%$ successful, on the test dataset of $4425$
 schematics, with $10$ runs carried out on each schematic, the algorithm succeeded
-$98.2\%$ of the time without having to put down forced wires. The algorithm was
-required to put down more than $2$ forced wires only $0.1\%$ of the time. When
-we look at Figure \ref{fig:final_num_forced_wires}, we observe, as expected, that
-the number of forced wires increases with circuit complexity. From Figure
+$97.1\%$ of the time without having to put down forced wires. The algorithm was
+required to put down more than $2$ forced wires only $0.3\%$ of the time.
+From Figure
 \ref{fig:final_time_trend} we see that as the circuit gets more complex, the
 amount of time the algorithm takes sharply increases. This is due to a more
-difficult placement task (especially as we have more Op Amps) as well as a more
+difficult placement task (especially as we have more op-amps) as well as a more
 difficult wiring task. An important aspect of this Figure is that the maximum
 point on the plot occurs at less than $200$ seconds. This indicates that on the
 test dataset, the algorithm took at most just over $3$ minutes to run. This is
@@ -285,7 +268,7 @@ number of wire crosses never exceeds $1$.
 
 \section{Further Work}
 
-\subsection{Treating Resistors As Wires}
+\subsection{Treating Resistors as Wires}
 
 Our current solution treats resistors as one of the circuit components that we
 work with. However, resistors have the special property among the components that
@@ -315,7 +298,7 @@ are cases we can imagine where the search may have a difficult time getting an
 answer, for instance a pair of locations that are right next to each other that
 must be connected by a resistor.
 
-\subsection{Building layouts similar to previously generated layouts}
+\subsection{Building Layouts Similar to Previously Generated Layouts}
 
 One of the weaknesses of our tool is that it may generate different layouts for
 the same circuit schematic. This is not a result of an explicit randomization

@@ -74,7 +74,8 @@ def a_star(start_node, goal_test, heuristic=lambda state: 0, best_first=False,
         if child.state not in expanded:
           agenda.push(child, (not best_first) * child.cost +
               heuristic(child.state))
-    if max_states_to_expand and len(expanded) > max_states_to_expand:
+    if max_states_to_expand is not None and (len(expanded) >
+        max_states_to_expand):
       if PRINT_FAIL_REASON:
         if verbose:
           print 'exceeded number of states to expand'

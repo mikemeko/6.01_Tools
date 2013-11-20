@@ -53,7 +53,7 @@ success rates vary with complexity, we will look at plots of circuit complexity
 versus success rate, where our measure of circuit complexity will be the number
 of pins in the circuit. A pin in a circuit is a connection point on a circuit
 component that is connected by wires to another connection point (on the same
-component or a different component). Hence, the number of pins in the circuit is
+component or a different component). The number of pins in the circuit is
 a reasonable metric for how complex the circuit is. Figure
 \ref{fig:complexity_hist} presents a histogram of the number of pins in the
 schematics in dataset that will be used to do all comparisons in this Chapter.
@@ -61,7 +61,8 @@ schematics in dataset that will be used to do all comparisons in this Chapter.
 \begin{figure}[H]
 \begin{center}
 \includegraphics[width=\textwidth]{Images/complexity_hist.png}
-\caption{TODO.}
+\caption{Histogram of the complexity the $4425$ schematics that we will use for
+evaluation.}
 \label{fig:complexity_hist}
 \end{center}
 \end{figure}
@@ -71,7 +72,8 @@ the placement step has much less variability. We will look at plots of circuit
 complexity versus wiring times to do the comparisons.
 
 In comparing the goodness of layouts, we will compare numbers of wires, total
-lengths of wires, and numbers of wire crosses as functions of circuit complexity.
+lengths of wires, numbers of wire crosses, and our layout badness metric as
+functions of circuit complexity.
 
 Below we will present the data for each of the comparisons outlined above. Note
 that in all figures that follow, error bars indicate $1.96$ times the
@@ -88,10 +90,10 @@ methods for the schematic shown in Figure \ref{fig:exemplar_schematic}.
 \end{center}
 \end{figure}
 
-\section{Comparing placement methods}
+\section{Comparing Placement Methods}
 \label{sec:compare_placement}
 
-\begin{figure}
+\begin{figure}[H]
 \begin{center}
 \includegraphics[width=\textwidth]{Images/exemplar_per_pair_decreasing.png}
 \includegraphics[width=\textwidth]{Images/exemplar_distance.png}
@@ -164,21 +166,26 @@ Blocking & $162$ & $38$ & $51$ & $57$ & $72$ & $85$ & $109$ & $106$ & $144$ & $2
 \end{center}
 \end{figure}
 
-\section{Comparing wiring methods}
+\section{Comparing Wiring Methods}
 
-\begin{figure}
+\begin{figure}[H]
 \begin{center}
 \includegraphics[width=\textwidth]{Images/exemplar_all_pairs.png}
 \includegraphics[width=\textwidth]{Images/exemplar_per_node_increasing.png}
-\includegraphics[width=\textwidth]{Images/exemplar_per_node_decreasing.png}
 \end{center}
 \end{figure}
-\begin{figure}
+\begin{figure}[H]
 \begin{center}
+\includegraphics[width=\textwidth]{Images/exemplar_per_node_decreasing.png}
 \includegraphics[width=\textwidth]{Images/exemplar_per_pair_increasing.png}
+\end{center}
+\end{figure}
+\begin{figure}[H]
+\begin{center}
 \includegraphics[width=\textwidth]{Images/exemplar_per_pair_decreasing.png}
+\includegraphics[width=\textwidth]{Images/exemplar_straight_wiring.png}
 \caption{All-pairs vs. Per-node, increasing vs. Per-node, decreasing vs.
-Per-pair, increasing vs. Per-pair, decreasing.}
+Per-pair, increasing vs. Per-pair, decreasing vs. Straight.}
 \end{center}
 \end{figure}
 
@@ -233,7 +240,7 @@ All & $458$ & $114$ & $111$ & $112$ & $127$ & $145$ & $177$ & $139$ & $172$ & $2
 \includegraphics[width=7cm]{Images/wiring_pair_success_trend.png}
 \end{tabular}
 \end{center}
-\label{tb:wiring_success_trend}
+\label{fig:wiring_success_trend}
 \caption{Wiring method comparison: success rate trends.}
 \end{figure}
 
@@ -245,7 +252,7 @@ All & $458$ & $114$ & $111$ & $112$ & $127$ & $145$ & $177$ & $139$ & $172$ & $2
 \end{center}
 \end{figure}
 
-\begin{figure}
+\begin{figure}[H]
 \begin{center}
 \includegraphics[width=\textwidth]{Images/wiring_quality_trend_comparison.png}
 \caption{Wiring method comparison: layout quality trends.}
@@ -253,7 +260,7 @@ All & $458$ & $114$ & $111$ & $112$ & $127$ & $145$ & $177$ & $139$ & $172$ & $2
 \end{center}
 \end{figure}
 
-\begin{figure}
+\begin{figure}[H]
 \begin{center}
 \includegraphics[width=\textwidth]{Images/wiring_badness_trend_comparison.png}
 \caption{Wiring method comparison: layout badness trends.}
@@ -261,9 +268,9 @@ All & $458$ & $114$ & $111$ & $112$ & $127$ & $145$ & $177$ & $139$ & $172$ & $2
 \end{center}
 \end{figure}
 
-\section{Comparing search methods}
+\section{Comparing Search Methods}
 
-\begin{figure}
+\begin{figure}[H]
 \begin{center}
 \includegraphics[width=\textwidth]{Images/exemplar_per_pair_decreasing.png}
 \includegraphics[width=\textwidth]{Images/exemplar_best_first.png}
@@ -317,7 +324,7 @@ $A*$ & $162$ & $38$ & $51$ & $57$ & $72$ & $85$ & $109$ & $106$ & $144$ & $203$ 
 \end{center}
 \end{figure}
 
-\begin{figure}
+\begin{figure}[H]
 \begin{center}
 \includegraphics[width=\textwidth]{Images/search_quality_trend_comparison.png}
 \caption{Search method comparison: layout quality trends.}
@@ -325,7 +332,15 @@ $A*$ & $162$ & $38$ & $51$ & $57$ & $72$ & $85$ & $109$ & $106$ & $144$ & $203$ 
 \end{center}
 \end{figure}
 
-\section{Combined algorithm}
+\begin{figure}[H]
+\begin{center}
+\includegraphics[width=\textwidth]{Images/search_badness_trend_comparison.png}
+\caption{Search method comparison: layout badness trends.}
+\label{fig:search_badness_trend}
+\end{center}
+\end{figure}
+
+\section{Combined Algorithm}
 
 Here we provide data for the combined algorithm presented in Section
 \ref{sec:combined_alg}. To generate this data, we use a different dataset of
@@ -333,34 +348,35 @@ $4425$ schematics. As desired, the algorithm has a $100\%$ success rate.
 Figure \ref{fig:final_num_trials} gives a breakdown of how the algorithm
 succeeded. The first four columns correspond to success from one of the four
 combinations of placement and wiring methods. The last 5 columns correspond to
-layouts in which none of the four combinations was successful and we had to
-force a certain number of wires. Figure \ref{fig:final_num_forced_wires} gives
-the average number of forced wires as a function of circuit complexity. Figure
+layouts in which none of the four combinations was successful on all pairs of
+locations and we had to
+force a certain number of wires. Figure
 \ref{fig:final_time_trend} gives the average total time taken by the algorithm
-as a function of circuit complexity. Finally, Figure \ref{fig:final_quality_trend}
-gives statistics on the quality of the layouts produced as a function of circuit
-complexity.
+as a function of circuit complexity. Finally, Figures
+\ref{fig:final_quality_trend} and \ref{fig:final_badness_trend}
+give statistics on the quality of the layouts produced by the combined algorithm
+as a function of circuit complexity.
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[width=\textwidth]{Images/exemplar_combined_algorithm.png}
+\caption{Combined algorithm exemplar.}
+\end{center}
+\end{figure}
 
 \begin{figure}[H]
 \begin{center}
 \includegraphics[width=\textwidth]{Images/final_algorithm_num_trials.png}
-\caption{TODO.}
+\caption{Combined algorithm success summary.}
 \label{fig:final_num_trials}
 \end{center}
 \end{figure}
 
 \begin{figure}[H]
 \begin{center}
-\includegraphics[width=\textwidth]{Images/final_algorithm_num_forced_wires.png}
-\caption{TODO.}
-\label{fig:final_num_forced_wires}
-\end{center}
-\end{figure}
-
-\begin{figure}[H]
-\begin{center}
 \includegraphics[width=\textwidth]{Images/final_algorithm_time_trend.png}
-\caption{TODO.}
+\caption{Combined algorithm total CPU time trend as a function of circuit
+complexity.}
 \label{fig:final_time_trend}
 \end{center}
 \end{figure}
@@ -368,7 +384,15 @@ complexity.
 \begin{figure}[H]
 \begin{center}
 \includegraphics[width=\textwidth]{Images/final_algorithm_quality_trend.png}
-\caption{TODO.}
+\caption{Combined algorithm quality trend.}
 \label{fig:final_quality_trend}
+\end{center}
+\end{figure}
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[width=\textwidth]{Images/final_algorithm_badness_trend.png}
+\caption{Combined algorithm layout badness trend.}
+\label{fig:final_badness_trend}
 \end{center}
 \end{figure}
