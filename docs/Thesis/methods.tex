@@ -478,11 +478,11 @@ attributes of a given layout, where the weights are chosen comparatively. We set
 the badness of a layout to be:
 \begin{align*}
 &1 \cdot NUMBER\_OF\_WIRES + \\
-&10 \cdot TOTAL\_WIRE\_LENGTH + \\
-&50 \cdot NUMBER\_OF\_WIRE\_CROSSES + \\
-&100 \cdot NUMBER\_OF\_DIAGONAL\_WIRES + \\
-&1000 \cdot NUMBER\_OF\_WIRE\_OCCLUSIONS + \\
-&1000 \cdot NUMBER\_OF\_WIRE\text{-}PIECE\_CROSSINGS.
+&1 \cdot TOTAL\_WIRE\_LENGTH + \\
+&5 \cdot NUMBER\_OF\_WIRE\_CROSSES + \\
+&5 \cdot NUMBER\_OF\_DIAGONAL\_WIRES + \\
+&50 \cdot NUMBER\_OF\_WIRE\text{-}PIECE\_CROSSINGS + \\
+&500 \cdot NUMBER\_OF\_WIRE\_OCCLUSIONS.
 \end{align*}
 We will use this metric to decide which of a given set of alternatives tends to
-produce the better layouts.
+produce the better layouts. TODO: discuss how we chose these numbers.

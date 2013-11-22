@@ -6,12 +6,12 @@ __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 
 from collections import defaultdict
 
-C_WIRE_CROSSING = 50
-C_WIRE_OCCLUSION = 1000
-C_DIAGONAL_WIRE = 100
-C_WIRE_PIECE_CROSSING = 1000
 C_WIRE = 1
-C_WIRE_LENGTH = 10
+C_WIRE_LENGTH = 1
+C_WIRE_CROSSING = 5
+C_DIAGONAL_WIRE = 5
+C_WIRE_PIECE_CROSSING = 50
+C_WIRE_OCCLUSION = 500
 
 def badness(properties):
   assert isinstance(properties, defaultdict)
