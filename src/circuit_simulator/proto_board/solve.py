@@ -16,8 +16,10 @@ from constants import COST_TYPE_BLOCKING
 from constants import COST_TYPE_DISTANCE
 from constants import GROUND_RAIL
 from constants import GROUND_RAIL_2
+from constants import MODE_ALL_PAIRS
 from constants import MODE_PER_NODE
 from constants import MODE_PER_PAIR
+from constants import MODE_TERRIBLE
 from constants import ORDER_DECREASING
 from constants import ORDER_INCREASING
 from constants import POWER_RAIL
@@ -191,7 +193,7 @@ def many_layouts(circuit):
       filter_wire_lengths=False,
       random_placement=False,
       verbose=True)['proto_board'])
-  print 'Blocking'
+  print 'Blocking, Per-pair decreasing'
   layouts.append(solve_layout(circuit,
       resistors_as_components=True,
       cost_type=COST_TYPE_BLOCKING,
@@ -206,16 +208,6 @@ def many_layouts(circuit):
       resistors_as_components=True,
       cost_type=COST_TYPE_BLOCKING,
       mode=MODE_ALL_PAIRS,
-      order=ORDER_DECREASING,
-      best_first=False,
-      filter_wire_lengths=False,
-      random_placement=False,
-      verbose=True)['proto_board'])
-  print 'Per-pair, decreasing'
-  layouts.append(solve_layout(circuit,
-      resistors_as_components=True,
-      cost_type=COST_TYPE_BLOCKING,
-      mode=MODE_PER_PAIR,
       order=ORDER_DECREASING,
       best_first=False,
       filter_wire_lengths=False,
@@ -271,4 +263,16 @@ def many_layouts(circuit):
       filter_wire_lengths=False,
       random_placement=False,
       verbose=True)['proto_board'])
+  print 'Terrible'
+  layouts.append(solve_layout(circuit,
+      resistors_as_components=True,
+      cost_type=COST_TYPE_BLOCKING,
+      mode=MODE_TERRIBLE,
+      order=ORDER_DECREASING,
+      best_first=False,
+      filter_wire_lengths=False,
+      random_placement=False,
+      verbose=True)['proto_board'])
+  print 'Combined'
+  layouts.append(combined_solve_layout(circuit, verbose=True)['proto_board'])
   return layouts

@@ -168,24 +168,26 @@ Blocking & $162$ & $38$ & $51$ & $57$ & $72$ & $85$ & $109$ & $106$ & $144$ & $2
 
 \section{Comparing Wiring Methods}
 
+We used the distance based placement method instead of the
+blocking based
+placement method to generate the per-node, decreasing exemplar as the the
+combination of the blocking based method with this wiring method consistently
+failed on the schematic we are using to generate exemplars.
+
 \begin{figure}[H]
 \begin{center}
 \includegraphics[width=\textwidth]{Images/exemplar_all_pairs.png}
 \includegraphics[width=\textwidth]{Images/exemplar_per_node_increasing.png}
-\end{center}
-\end{figure}
-\begin{figure}[H]
-\begin{center}
 \includegraphics[width=\textwidth]{Images/exemplar_per_node_decreasing.png}
-\includegraphics[width=\textwidth]{Images/exemplar_per_pair_increasing.png}
 \end{center}
 \end{figure}
 \begin{figure}[H]
 \begin{center}
+\includegraphics[width=\textwidth]{Images/exemplar_per_pair_increasing.png}
 \includegraphics[width=\textwidth]{Images/exemplar_per_pair_decreasing.png}
 \includegraphics[width=\textwidth]{Images/exemplar_straight_wiring.png}
-\caption{All-pairs vs. Per-node, increasing vs. Per-node, decreasing vs.
-Per-pair, increasing vs. Per-pair, decreasing vs. Straight.}
+\caption{All-pairs vs. Per-node, increasing vs. Per-node, decreasing
+vs. Per-pair, increasing vs. Per-pair, decreasing vs. Straight.}
 \end{center}
 \end{figure}
 
