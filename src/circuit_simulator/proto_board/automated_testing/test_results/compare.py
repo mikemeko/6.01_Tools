@@ -75,6 +75,7 @@ def compare(files, methods):
         num_expanded.append(max(result.num_expanded))
     pylab.hist(num_expanded, bins=20, alpha=0.5)
   pylab.xlabel('Maximum number of expanded states per run')
+  pylab.ylabel('Count')
 
   # success plot
   pylab.figure()

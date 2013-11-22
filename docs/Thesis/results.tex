@@ -398,3 +398,55 @@ complexity.}
 \label{fig:final_badness_trend}
 \end{center}
 \end{figure}
+
+\section{Effect of limiting the number of vertices to expand in $A*$}
+
+For each of the $5$ wiring methods we have looked at, we have run tests on $4425$
+schematics. We have tested each method $10$ times on each schematic. Hench, we
+have $44250$ data points for each of the wiring methods. Here we provide
+histograms that show the maximum number of expanded vertices in the $A*$ search
+among the $44250$ runs for each of the $5$ methods.
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[width=\textwidth]{Images/max_expanded_all_pairs.png}
+\caption{Histogram of number of vertices expanded for all pairs wiring.}
+\label{fig:max_expanded_all_pairs}
+\end{center}
+\end{figure}
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[width=\textwidth]{Images/max_expanded_per_node_increasing.png}
+\caption{Histogram of maximum number of vertices expanded for per-node,
+increasing wiring.}
+\label{fig:max_expanded_per_node_increasing}
+\end{center}
+\end{figure}
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[width=\textwidth]{Images/max_expanded_per_node_decreasing.png}
+\caption{Histogram of maximum number of vertices expanded for per-node,
+decreasing wiring.}
+\label{fig:max_expanded_per_node_decreasing}
+\end{center}
+\end{figure}
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[width=\textwidth]{Images/max_expanded_per_pair_increasing.png}
+\caption{Histogram of maximum number of vertices expanded for per-pair,
+increasing wiring.}
+\label{fig:max_expanded_per_pair_increasing}
+\end{center}
+\end{figure}
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[width=\textwidth]{Images/max_expanded_per_pair_decreasing.png}
+\caption{Histogram of maximum number of vertices expanded for per-pair,
+decreasing wiring.}
+\label{fig:max_expanded_per_pair_decreasing}
+\end{center}
+\end{figure}
