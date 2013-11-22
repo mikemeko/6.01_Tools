@@ -52,6 +52,20 @@ def compare(files, methods):
   nrows = 1 if len(methods) < 5 else 2
   ncols = len(methods) if len(methods) < 5 else (len(methods) + 1) / 2
 
+  # plots number of states expanded versus time
+  # only makes sense for all pairs data
+  """
+  pylab.figure()
+  for results in all_results:
+    abu = defaultdict(list)
+    for result in results:
+      if result.num_expanded:
+        abu[max(result.num_expanded)].append(result.wiring_time)
+    pylab.plot(abu.keys(), map(mean, abu.values()))
+  pylab.show()
+  return
+  """
+
   pylab.figure()
   for results in all_results:
     num_expanded = []
@@ -61,7 +75,7 @@ def compare(files, methods):
         num_expanded.append(max(result.num_expanded))
     pylab.hist(num_expanded, bins=20, alpha=0.5)
   pylab.xlabel('Maximum number of expanded states per run')
-  pylab.show()
+
   # success plot
   pylab.figure()
   plot_keys = range(11)
