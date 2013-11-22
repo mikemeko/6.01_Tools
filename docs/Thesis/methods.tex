@@ -210,11 +210,35 @@ may seem completely unrelated.
 
 \subsubsection{Using $A*$}
 
-When using the $A*$ algorithm, we need to design four things:
+The $A*$ algorithm can be used to search for a path from some starting vertex
+\footnote{The preferred terminology is ``a node in a graph" but here we will
+use the term ``vertex" since we already use ``node" to refer to nodes in
+circuits.} in
+a graph to some goal vertex \footnote{In fact, $A*$ guarantees an optimal path, a
+path that has the minimum possible cost from the starting vertex to a goal
+vertex, if we use a heuristic that is \emph{admissible}. A heuristic is said to
+be admissible if it does not overestimate the actual minimal cost to a goal
+vertex
+for any state. Here, however, we will not worry about the admissibility of our
+heuristic as our main goal is designing the heuristic to prune as many states as
+possible.}. The algorithm works by keeping track of an agenda
+of vertices to consider
+in a priority queue where the value associated with each vertex in the priority
+queue is the sum of the cost to get from the start vertex to the vertex at hand
+and the value of the heuristic
+computed at the state of the vertex. At each step of of the algorithm, we pop
+one vertex from the priority queue (the vertex with the minimum associated
+value). If the vertex happens to satisfy the goal of
+the search, we return the state for that vertex as the answer to the search
+problem. Otherwise, we add the children vertices of that vertex to the priority
+queue and continue. When adding children vertices, we take care not to reconsider
+states that we have already considered via a different path. We call the process
+of popping a vertex from the priority queue and treating it as described
+\emph{expanding} the vertex.
+In general, when using the $A*$ algorithm, we need to design four things:
 
 \begin{enumerate}
-\item The notion of a vertex\footnote{The preferred name is ``node" but I will
-use vertex since we already use node to refer to nodes in circuits.} in the
+\item The notion of a vertex in the
 search tree, the cost associated with a vertex, and how we obtain the neighbors
 of a vertex,
 \item The starting vertex,
@@ -305,25 +329,16 @@ and nothing more.
 
 \subsubsection{Limiting the number of expanded vertices}
 
-The $A*$ algorithm works by keeping track of an agenda of vertices to consider
-in a priority queue where the value associated with each vertex in the priority
-queue is the sum of the cost of the vertex and the value of the heuristic
-computed at the state of the vertex. At each step of of the algorithm, we pop
-one vertex from the priority queue (the vertex with the minimum associated
-value). If the vertex happens to satisfy the goal of
-the search, we return the state for that vertex as the answer to the search
-problem. Otherwise, we add the children vertices of that vertex to the priority
-queue and continue. When adding children vertices, we take care not to reconsider
-states that we have already considered via a different path. We call the process
-of popping a vertex from the priority queue and treating it as described
-\emph{expanding} the vertex. With this
-implementation, the algorithm terminates if we either find a solution, or we
-exhaust the search space without finding an answer. In our search problem, the
-number of states is very large, so this implementation of $A*$ sometimes run out
+With the implementation of $A*$ we have discussed so far, the algorithm
+terminates if we either find a solution, or we
+exhaust the search space without finding a solution. In our search problem, the
+number of states is very large, so this implementation of $A*$ may sometimes
+run out
 of memory during the search. To mitigate this problem, we introduce a limit to
 the number of vertices the algorithm expands before giving up. That is, if the
 algorithm expands a certain fixed number of vertices and still has not found an
 answer, the algorithm gives up. For us, this limit is set to $300$ vertices.
+In Chapter \ref{ch:results} we provide data to justify this choice.
 
 \subsection{Combining the Methods}
 \label{sec:combined_alg}
