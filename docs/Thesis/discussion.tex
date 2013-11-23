@@ -20,7 +20,7 @@ number of ways $T(n)$ in which we can choose pairs out of $n$ items. Equation
 \ref{eq:telephone} givens an expression for $T(n)$.
 
 \begin{equation}
-T(n) = \sum_{i = 0}^{\lfloor \frac{n}{2} \rfloor}{\frac{n!}{i! (n - 2i)! 2^i}}
+T(n) = \sum_{k = 0}^{\lfloor \frac{n}{2} \rfloor}{\frac{n!}{k! (n - 2k)! 2^k}}
 \label{eq:telephone}
 \end{equation}
 
@@ -112,11 +112,13 @@ see that the distance method exceeds the blocking method in number of circuits
 solved $10$ times out of $10$ as well as in the number of circuits solved $0$
 to $2$ times out of $10$. On the other hand, the blocking method exceeds the
 distance method in number of circuits solved from $3$ to $9$ times out
-of $10$. Overall, the blocking placement method is slightly more successful
-than the distance placement method. Despite this difference, we note that the
+of $10$. Overall, the blocking placement method ($89.0\%$ overall success rate)
+is slightly more successful than the distance placement method ($87.6\%$ overall
+success rate). Despite this difference, we note that the
 two alternatives have very
 close success rates. We do note, however, that both methods are significantly
-more successful than using a random placement. As a function of circuit
+more successful than using a random placement ($43.5\%$ overall success rate).
+As a function of circuit
 complexity, Figure
 \ref{fig:placement_success_trend} suggests that the two alternatives have almost
 identical success rates. As we would expect, we certainly observe that as the
@@ -140,7 +142,10 @@ of the circuits increases, the amount of time spent by the wiring step also
 increases. As we did for the success rate trends as a function of circuit
 complexity, we observe that there are outliers at the far end of the figure due
 to a very small sample of the most complex circuits in the randomly generated
-schematic dataset.
+schematic dataset. As circuit complexity increases, the variance in wiring time
+when using random placement also increases significantly. This is a result of
+the fact that random placement frequently fails on the most complex
+circuits, and so the sample size we have for successful runs is very small.
 
 Finally, let us look at layout goodness as the basis for comparison. Figure
 \ref{fig:placement_quality_trend} presents graphs that compare numbers of wires,
@@ -148,17 +153,16 @@ numbers of wire crosses, and total wire lengths.
 Figure \ref{fig:placement_badness_trend} shows the trend of layout badness
 computed using our metric as a function of circuit complexity.
 We first observe that the
-number of wires used by the two methods are almost identical. As the complexity
-of the circuit increases, we see that the blocking method uses more wires than
-does the distance method, but by and large the values are very comparable. When
+number of wires used by the two methods are almost identical. When
 we look at the number of wire crosses in the layouts, we
 see that the blocking method consistently results in more wire crosses. Similarly,
 when we look at the total length of wires used in the layouts, the blocking
 method exceeds the distance method consistently, with the difference getting
-higher as complexity increases. This can be explained by the fact that the
-blocking method may require elaborate connections, especially as the circuits
-get more complex while the distance method is tuned to require wirings between
-pairs of locations that are closer together. Finally, we do see that the random
+higher as complexity increases.
+This is somewhat expected because the blocking method does not directly aim to
+put pieces that need to be connected close together whereas the distance method
+directly tries to minimize the total wire length that may be needed.
+Finally, we do see that the random
 placement method, per our badness metric, produces much worse layouts than the
 other two methods even when it does succeed.
 
@@ -172,12 +176,14 @@ To compare the wiring methods, let us start with the success rate for each metho
 Figures \ref{fig:wiring_success} and \ref{fig:wiring_success_trend}, and Table
 \ref{tb:wiring_success} provide the appropriate data. The very first fact we
 observe is that the all-pairs method has a much smaller success rate than all of
-the other alternatives, especially as circuit complexity increases. The reason
-for this, in large part, is the fact that we impose a cutoff on the number of
-nodes to expand in the search (TODO: this must be discussed in Methods). As we
-are using just the one search to connect all pairs of locations, the search
-cutoff would be expected to have more of an effect on the all-pairs method. The
-other four alternatives have very comparable success rates.
+the other alternatives, especially as circuit complexity increases. This is in
+large part due to the maximum allowed number of vertices to expand in $A*$. The
+figures in Section \ref{sec:expand_limit} clearly depict that this limit affects
+the all-pairs wiring method much more than it does the others. This result is
+expected because the search task in all-pairs wiring is more difficult than in
+the other alternatives. Notice that as the search tasks gets lighter from
+all-pairs to per-node to per-pair wiring, the effect of the expanding limit
+decreases. The other four alternatives have very comparable success rates.
 
 Next we look at Figure \ref{fig:wiring_time_trend} to compare wiring times for
 the five methods. Once again, we observe that the all-pairs methods takes
@@ -227,7 +233,7 @@ order and not necessarily getting a markedly better success rate.
 
 We now compare our two alternative search algorithms: $A*$ and Best First Search.
 Let us start by comparing success rates. Figures \ref{fig:search_success} and
-\ref{fig:search_success_trend} and Table \ref{fig:search_success} present the
+\ref{fig:search_success_trend} and Table \ref{tb:search_success} present the
 appropriate data. We clearly observe that Best First Search is much more
 successful than $A*$. $98\%$ of the test circuits were solved at least $8$ times
 out of $10$ when we used Best First Search, versus $85\%$ when we used $A*$.
