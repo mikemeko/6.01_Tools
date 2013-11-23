@@ -52,7 +52,7 @@ Resistors are placed in the middle strip of the protoboard. Op-amp pieces are
 also placed in the middle strip of the protoboard, but with two possible
 orientations. Op-amp pieces are unique in that each op-amp pieces contains two
 op-amps within it. Thus, we face the task of packaging the op-amps in the
-schematic in the ``best" possible way, i.e. so as to require as little work as
+schematic in the ``best'' possible way, i.e. so as to require as little work as
 possible when wiring the pieces together. Section \ref{sec:justify_placement}
 more precisely discusses the number of possibilities. Pots have two possible
 vertical positions as well as two possible orientations.
@@ -211,8 +211,8 @@ may seem completely unrelated.
 \subsubsection{Using $A*$}
 
 The $A*$ algorithm can be used to search for a path from some starting vertex
-\footnote{The preferred terminology is ``a node in a graph" but here we will
-use the term ``vertex" since we already use ``node" to refer to nodes in
+\footnote{The preferred terminology is ``a node in a graph'' but here we will
+use the term ``vertex'' since we already use ``node'' to refer to nodes in
 circuits.} in
 a graph to some goal vertex \footnote{In fact, $A*$ guarantees an optimal path, a
 path that has the minimum possible cost from the starting vertex to a goal
@@ -371,7 +371,7 @@ If not, record that the pair $(loc_1, loc_2)$ was not successfully connected.\\
 }
 If all pairs are successfully connected, return $P$.\\
 }}
-Pick ``best" unfinished layout.\\
+Pick ``best'' unfinished layout.\\
 Connect remaining pairs with shortest possible wires (possibly diagonal).\\
 Post-process and return resulting layout.\\
 \caption{Layout algorithm obtained by combining multiple ideas.}
@@ -383,8 +383,8 @@ by attempting to solve the problem in four different ways: two different ways of
 doing placement together with two different orders of wiring pairs. Note,
 therefore, that we have chosen per-pair wiring. If any one of the four trials
 succeeds, the algorithm immediately returns the corresponding layout. If all
-four trials fail, on the other hand, the algorithm picks the ``best" partial
-solution and completes that solution by placing possibly diagonal wires, ``best"
+four trials fail, on the other hand, the algorithm picks the ``best'' partial
+solution and completes that solution by placing possibly diagonal wires, ``best''
 being the partial solution that would require the least amount of additional
 wiring. This last step makes it highly unlikely that the algorithm will ever fail.
 The only way for the algorithm to fail is for there to be two nodes that need to be
