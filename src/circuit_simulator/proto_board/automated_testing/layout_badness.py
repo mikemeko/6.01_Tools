@@ -7,7 +7,7 @@ __author__ = 'mikemeko@mit.edu (Michael Mekonnen)'
 from collections import defaultdict
 
 C_WIRE = 1
-C_WIRE_LENGTH = 1
+C_WIRE_LENGTH = 2
 C_WIRE_CROSSING = 5
 C_DIAGONAL_WIRE = 5
 C_WIRE_PIECE_CROSSING = 50
