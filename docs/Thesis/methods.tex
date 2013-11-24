@@ -321,15 +321,24 @@ locations for all of the nodes in the circuit, and have the starting vertex
 represent
 this set of pairs of locations. In this strategy, we run exactly $1$ search to
 solve the problem.
-\item Per-node: Treat each node separately. That is, iteratively connect the
-locations for each of the nodes until there are no more disconnected nodes in
-the circuit. In this strategy, we run a number of searches equal to the number
-of nodes in the circuit to solve the problem.
-\item Per-pair: Treat each pair of locations that needs to be connected
-separately. That
-is, iteratively connect pairs of locations that need to be connected until there
-are no more disconnected pairs. In this strategy, we run a number of searches
-equal to the number of pairs of locations that must be connected.
+\item Per-node, increasing: Treat each node separately. That is, iteratively
+connect the locations for each of the nodes until there are no more disconnected
+nodes in the circuit. In this strategy, we run a number of searches equal to the
+number of nodes in the circuit to solve the problem. Order the searches in
+\emph{increasing} order of the number of locations per node, breaking ties
+arbitrarily.
+\item Per-node, decreasing: Similar to per-node, increasing, but here order the
+searches in \emph{decreasing} order of the number of locations per node.
+\item Per-pair, increasing: Treat each pair of locations that needs to be
+connected separately. That is, iteratively connect pairs of locations that need
+to be connected until there are no more disconnected pairs.
+In this strategy, we run a number of searches equal to the number of pairs of
+locations that must be connected. Order the searches in \emph{increasing} order
+of the Manhattan distance between the pairs of locations, breaking ties
+arbitrarily.
+\item Per-pair, decreasing: Similar to per-pair, increasing, but here order the
+searches in \emph{decreasing} order of Manhattan distance between the pairs of
+locations.
 \end{enumerate}
 
 When using one of the latter two choices presented above, since we will

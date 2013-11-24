@@ -3,25 +3,40 @@
 \chapter{Results}
 \label{ch:results}
 
-In Chapter \ref{ch:methods} we discussed a general solution to the protoboard
-layout problem, and various alternatives that can be used in implementing the
+In Chapter \ref{ch:methods}, we discussed a general solution to the protoboard
+layout problem and various alternatives that can be used in implementing the
 solution. Figure \ref{fig:alternatives} presents the alternatives in a structured
-way. Here, we will explore these alternatives and compare them quantitatively.
-This section will provide data that is useful in comparing the alternatives, and
-the data will be discussed in detail in Chapter \ref{ch:discussion}.
+way. In this chapter, we will explore these alternatives and compare them
+quantitatively.
+This section will provide useful data for comparing the alternative strategies,
+and the data will be discussed in detail in Chapter \ref{ch:discussion}.
 
 \begin{figure}[H]
-\Tree [.{All Alternatives}
-    [{Distance} {Block} ].Placement !\qsetw{4cm}
-    [{All}
-     [$\uparrow$ $\downarrow$ ].{Node}
-     [$\uparrow$ $\downarrow$ ].{Pair} ].Wiring !\qsetw{4cm}
-    [$A*$ {Best First} ].Search ]
+\centering
+\subfigure{
+\Tree [{Distance} {Blocking} {Random} ].Placement
+}
+\hspace{1cm}
+\subfigure{
+\Tree [{All pairs}
+       [$\uparrow$ $\downarrow$ ].{Per-node}
+       [$\uparrow$ $\downarrow$ ].{Per-pair}
+       {Straight} ].Wiring
+}\\
+\subfigure{
+\Tree [{$A*$} {Best First} ].Search
+}
 \label{fig:alternatives}
 \caption{All possible alternatives to the algorithm.}
 \end{figure}
 
-As comparing all $20$ possible implementations of the algorithm is tedious, we
+The Straight wiring option is an option in which we do not run a search to
+connect pairs of locations, we simply put down exactly one wire to connect each
+pair of locations. We use this strategy as a basis for comparison with the other
+five strategies.
+
+As comparing all $3 \times 6 \times 2 = 36$ possible implementations of the
+algorithm is tedious, we
 will compare the alternatives for each aspect of the algorithm while holding
 other aspects fixed. Hence, we will carryout the following comparisons:
 
@@ -39,48 +54,42 @@ The data to compare the alternatives is gathered as described in Chapter
 \ref{ch:methods}. We run the algorithm on $4425$ randomly generated schematics
 of varying complexities. The algorithm is run $10$ times on each schematic.
 
-In comparing alternatives, there are $3$ items we will consider:
+In comparing alternatives, we consider $3$ questions:
 \begin{enumerate}
-\item Which alternative is the most successful?
+\item Which alternative is successful most often?
 \item Which alternative, when successful, takes the least amount of time?
 \item Which alternative, when successful, produces the best layouts?
 \end{enumerate}
 
-In comparing success, we will look at bar graphs of the number of successes on
-each of the $4425$ schematic out of the $10$ runs. We will also look at tables
-that provide the same data in more detail. To get an understanding of how the
-success rates vary with complexity, we will look at plots of circuit complexity
-versus success rate, where our measure of circuit complexity will be the number
-of pins in the circuit. A pin in a circuit is a connection point on a circuit
+We are also interested in how each of these attributes (success rate, running
+time, and layout quality) vary with circuit complexity. To quantitatively
+describe the complexity of a circuit, we look at the number of pins in the
+circuit, where a pin is defined to be a connection point on a circuit
 component that is connected by wires to another connection point (on the same
-component or a different component). The number of pins in the circuit is
-a reasonable metric for how complex the circuit is. Figure
+component or a different component). Figure
 \ref{fig:complexity_hist} presents a histogram of the number of pins in the
-schematics in dataset that will be used to do all comparisons in this Chapter.
+schematics in dataset that will be used to do all comparisons in this chapter,
+not including the data presented in Section \ref{sec:combined_algorithm}, for
+which we used a newly generated dataset of schematics to analyze the performance
+of the combined algorithm.
 
 \begin{figure}[H]
 \begin{center}
 \includegraphics[width=\textwidth]{Images/complexity_hist.eps}
-\caption{Histogram of the complexity the $4425$ schematics that we will use for
-evaluation.}
+\caption{Histogram of the complexity the $4425$ schematics used for evaluation.}
 \label{fig:complexity_hist}
 \end{center}
 \end{figure}
 
-In comparing success time, we will look at CPU time spent on the wiring step, as
-the placement step has much less variability. We will look at plots of circuit
-complexity versus wiring times to do the comparisons.
-
-In comparing the goodness of layouts, we will compare numbers of wires, total
+To compare success rates, we will look at number of successes out of $10$ runs
+on each of the $4425$ schematics. To compare running time, we will look at CPU
+time spent on the wiring step, as the placement step has much less variability.
+To compare the goodness of layouts, we will look at numbers of wires, total
 lengths of wires, numbers of wire crosses, and our layout badness metric as
-functions of circuit complexity.
-
-Below we will present the data for each of the comparisons outlined above. Note
-that in all figures that follow, error bars indicate $1.96$ times the
-standard error.
-
-For each comparison, we present exemplar layouts generated by the alternative
-methods for the schematic shown in Figure \ref{fig:exemplar_schematic}.
+functions of circuit complexity. Note that in all figures that follow,
+error bars indicate $1.96$ times the standard error. For each comparison,
+we present exemplar layouts generated by the alternative methods for the
+schematic shown in Figure \ref{fig:exemplar_schematic}.
 
 \begin{figure}
 \begin{center}
@@ -430,16 +439,17 @@ $A*$ & $162$ & $38$ & $51$ & $57$ & $72$ & $85$ & $109$ & $106$ & $144$ & $203$ 
 \end{figure}
 
 \section{Combined Algorithm}
+\label{sec:combined_algorithm}
 
 Here we provide data for the combined algorithm presented in Section
-\ref{sec:combined_alg}. To generate this data, we use a different dataset of
+\ref{sec:combined_alg}. To generate this data, we used a different dataset of
 $4425$ schematics. As desired, the algorithm has a $100\%$ success rate.
 Figure \ref{fig:final_num_trials} gives a breakdown of how the algorithm
 succeeded. The first four columns correspond to success from one of the four
 combinations of placement and wiring methods. The last 5 columns correspond to
 layouts in which none of the four combinations was successful on all pairs of
-locations and we had to
-force a certain number of wires. Figure
+locations and we had to connect a few pairs of locations by putting down a
+straight wire bridging the locations. Figure
 \ref{fig:final_time_trend} gives the average total time taken by the algorithm
 as a function of circuit complexity. Finally, Figures
 \ref{fig:final_quality_trend} and \ref{fig:final_badness_trend}
