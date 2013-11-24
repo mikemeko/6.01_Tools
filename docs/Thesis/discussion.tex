@@ -4,7 +4,7 @@
 \label{ch:discussion}
 
 In this section we provide justifications for the choices made in solving the
-protoboard layout problem, and also detailed analysis of the data presented in
+protoboard layout problem, as well as detailed analysis of the data presented in
 Chapter \ref{ch:results}.
 
 \section{Search Space Size}
@@ -34,18 +34,18 @@ will be hopeless.
 
 \subsubsection{Resistors}
 
-For the sake of simplicity, and to significantly reduce the search space, for
-every resistor in the schematic, we use one resistor piece placed in the middle
-strip of the protoboard as shown in Figure
-\ref{fig:piece_placement}. This choice, i.e. allowing the resistor pieces to
-only reside in the middle strip of the protoboard, is critical
+For the sake of simplicity, and to significantly reduce the search space, we
+place resistors in the middle strip of the protoboard as shown in Figure
+\ref{fig:piece_placement}. This choice is critical,
 as the resistor pieces can generally be placed at numerous places on the
 protoboard.
 With this restriction, there are $63$ slots available for one resistor. Without
 this restriction, there are a total of $763$ slots available. The restriction is
 good when we consider the reduction in the search space size. On the other hand,
-the restriction is bad when we
-consider the size of circuits the algorithm can layout. Given that the number
+this restriction is bad as it imposes a restriction on the size of the
+schematics (in terms of the number of components) for which a layout can be
+generated.
+Given that the number
 of resistors in a typical 6.01 circuit is very
 small, this restriction proves to be very useful.
 
@@ -53,15 +53,17 @@ small, this restriction proves to be very useful.
 
 Op-amps are the trickiest components to handle because each op-amp package put
 on the protoboard contains two op-amps within it. Equation
-\ref{eq:opamp} presents an expression for the value $f(n)$, the number of
-different ways to package together $n$ op-amps. For example, if we have $2$ Op
-Amps, we can either use one op-amp package for each, or put them both in the
-same package, which we can do in one of two different ways. Hence, $f(2) = 3$.
-To get a sense of how many different packagings are possible, Table
-\ref{tb:opamp} gives the values of $f(n)$ for various $n$.
+\ref{eq:opamp} presents an expression for the number of
+different ways to package together $n$ op-amps. For example, if we have $2$
+op-amps, we can either use one op-amp package for each, or put them both in the
+same package, which we can do in one of two different ways. All together, there
+are $3$ different ways to package together $2$ op-amps.
+Table \ref{tb:opamp} gives the number of different packagings possible for
+various $n$.
 
 \begin{equation}
-f(n) = \sum\limits_{k=0}^{\lfloor\frac{n}{2}\rfloor}{\frac{n!}{k!(n - 2k)!}}
+\text{Number of ways to package $n$ op-amps} =
+\sum\limits_{k=0}^{\lfloor\frac{n}{2}\rfloor}{\frac{n!}{k!(n - 2k)!}}
 \label{eq:opamp}
 \end{equation}
 
@@ -69,7 +71,7 @@ f(n) = \sum\limits_{k=0}^{\lfloor\frac{n}{2}\rfloor}{\frac{n!}{k!(n - 2k)!}}
 \begin{center}
 \begin{singlespace}
 \begin{tabular}{c | c}
-$n$ & $f(n)$ \\
+$n$ & Number of ways to package $n$ op-amps \\
 \hline
 \hline
 1 & 1 \\
@@ -91,55 +93,48 @@ $n$.}
 \end{table}
 
 Our placement approach explores all possible ways
-of packaging up the op-amps. We do this because the typical 6.01 circuit contains
+of packaging the op-amps. We do this because the typical 6.01 circuit contains
 no more than $6$ op-amps, and so we are tasked with exploring at most $331$
-alternatives, which doesn't happen to be too computationally intensive. If the
+alternatives, which is not too computationally intensive. If the
 algorithm was meant to handle a larger number of op-amps (for example $10$), then
-this approach would be silly, and we would have to resort to perhaps considering
-the packagings that require the fewest number of op-amps to make a choice.
+this approach would not work as the number of alternatives to consider would be
+far too large, and we would have to consider different strategies.
 
 \section{Explaining the Results}
 
-Chapter \ref{ch:results} presented quantitative data to compare the various
-alternatives we have in solving the protoboard layout problem. Here, we will
-analyze that data and give reasonings for why we obtained the results
+Chapter \ref{ch:results} presented quantitative data to compare alternative
+strategies for solving the protoboard layout problem. Here, we will
+analyze those data and give reasonings for why we obtained the results
 that we obtained.
 
 \subsection{Comparing Placement Methods}
 
-In Figure \ref{fig:placement_success} and Table \ref{tb:placement_success} we
-see that the distance method exceeds the blocking method in number of circuits
-solved $10$ times out of $10$ as well as in the number of circuits solved $0$
-to $2$ times out of $10$. On the other hand, the blocking method exceeds the
-distance method in number of circuits solved from $3$ to $9$ times out
-of $10$. Overall, the blocking placement method ($89.0\%$ overall success rate)
+The blocking placement method ($89.0\%$ overall success rate)
 is slightly more successful than the distance placement method ($87.6\%$ overall
-success rate). Despite this difference, we note that the
-two alternatives have very
-close success rates. We do note, however, that both methods are significantly
-more successful than using a random placement ($43.5\%$ overall success rate).
+success rate). While these alternative methods are not significantly different
+in terms of success rate, we note that both methods are significantly
+more successful than the random placement alternative ($43.5\%$ overall success
+rate).
 As a function of circuit
 complexity, Figure
 \ref{fig:placement_success_trend} suggests that the two alternatives have almost
-identical success rates. As we would expect, we certainly observe that as the
-complexity of the circuits
-increases, success rate generally decreases for both of the placement methods.
+identical success rates. As we would expect, success rate generally decreases
+for both of the placement methods as circuit complexity increases.
 Once again, we observe that the distance and blocking based placement methods
-are much more successful than random placement, especially as the circuit
-complexity increases.
-The curves in Figure \ref{fig:placement_success_trend} seem to shoot back up
-at the far end of the figure, but this is a result of the fact that there are
-very few circuits at that end of the figure, on which the algorithm happened to
-be consistently successful.
+are much more successful than the random placement method, especially as the
+circuit complexity increases.
+The rise in success rate for high circuit complexity is a result of the fact
+that there are very few circuits of the highest complexity, on which the
+algorithm happened to be consistently successful.
 
 When we consider wiring time as the basis for comparison, we observe from
 Figure \ref{fig:placement_time_trend} that, once again, the two methods are
 very similar, with random placement being markedly worse than both.
 We see that the distance method generally takes slightly less
-wiring time than the blocking method, but the difference between the two is
-almost negligible. As we would expect, we certainly see that as the complexity
+time than the blocking method, but the difference between the two is
+almost negligible. As we would expect, we see that as the complexity
 of the circuits increases, the amount of time spent by the wiring step also
-increases. As we did for the success rate trends as a function of circuit
+increases. As with the success rate trends as a function of circuit
 complexity, we observe that there are outliers at the far end of the figure due
 to a very small sample of the most complex circuits in the randomly generated
 schematic dataset. As circuit complexity increases, the variance in wiring time
@@ -147,7 +142,7 @@ when using random placement also increases significantly. This is a result of
 the fact that random placement frequently fails on the most complex
 circuits, and so the sample size we have for successful runs is very small.
 
-Finally, let us look at layout goodness as the basis for comparison. Figure
+Finally, we consider layout goodness. Figure
 \ref{fig:placement_quality_trend} presents graphs that compare numbers of wires,
 numbers of wire crosses, and total wire lengths.
 Figure \ref{fig:placement_badness_trend} shows the trend of layout badness
@@ -155,79 +150,77 @@ computed using our metric as a function of circuit complexity.
 We first observe that the
 number of wires used by the two methods are almost identical. When
 we look at the number of wire crosses in the layouts, we
-see that the blocking method consistently results in more wire crosses. Similarly,
+see that the blocking method consistently results in more wire crosses.
+Similarly,
 when we look at the total length of wires used in the layouts, the blocking
 method exceeds the distance method consistently, with the difference getting
-higher as complexity increases.
+higher as circuit complexity increases.
 This is somewhat expected because the blocking method does not directly aim to
 put pieces that need to be connected close together whereas the distance method
-directly tries to minimize the total wire length that may be needed.
-Finally, we do see that the random
+directly tries to minimize the total wire length that may be needed. In terms
+of the layout badness metric, we observe once again that the distance method
+is slightly better than the placement method for almost all circuit complexity
+values. Finally, we observe that the random
 placement method, per our badness metric, produces much worse layouts than the
-other two methods even when it does succeed.
+other two methods when it does succeed.
 
 It is difficult to conclusively pick the best placement method from these
-results. What we can certainly tell is that the distance based method and the
+results. What we can determine is that the distance based method and the
 blocking based method are both significantly better than random placement.
 
 \subsection{Comparing Wiring Methods}
 
-To compare the wiring methods, let us start with the success rate for each method.
 Figures \ref{fig:wiring_success} and \ref{fig:wiring_success_trend}, and Table
-\ref{tb:wiring_success} provide the appropriate data. The very first fact we
-observe is that the all-pairs method has a much smaller success rate than all of
-the other alternatives, especially as circuit complexity increases. This is in
+\ref{tb:wiring_success} show that the all pairs wiring method has a much smaller
+success rate than all of
+the other alternatives, especially as circuit complexity increases. The reason
+why the all pairs method has a smaller success rate is in
 large part due to the maximum allowed number of vertices to expand in $A*$. The
-figures in Section \ref{sec:expand_limit} clearly depict that this limit affects
-the all-pairs wiring method much more than it does the others. This result is
-expected because the search task in all-pairs wiring is more difficult than in
-the other alternatives. Notice that as the search tasks gets lighter from
-all-pairs to per-node to per-pair wiring, the effect of the expanding limit
+figures in Section \ref{sec:expand_limit} depict that this limit affects
+the all pairs wiring method much more than it does the others. This result is
+expected because the search task in all pairs wiring is more difficult than in
+the other alternatives. Notice that as the search tasks get less difficult from
+all pairs to per-node to per-pair wiring, the effect of the expanding limit
 decreases. The other four alternatives have very comparable success rates.
 
-Next we look at Figure \ref{fig:wiring_time_trend} to compare wiring times for
-the five methods. Once again, we observe that the all-pairs methods takes
-significantly more time than the other methods. When attempting to connect all
-pairs in one search, the method searches for an appealing layout, which may
-require searching through a large number of alternatives, especially for more
-complex circuits. Hence, we would expect the all-pairs methods to generally take
-more time than the other alternatives. We also observe from Figure
+Figure \ref{fig:wiring_time_trend} compares wiring time across
+the five methods. Once again, we observe that the all pairs methods takes
+significantly more time than the other methods. We also observe from Figure
 \ref{fig:wiring_time_trend} that the wiring times for the two per-node methods
 are comparable, and that the wiring times for the two per-pair methods are also
 comparable, but that the per-node wiring times are generally bigger than the
 per-pair wiring times. This trend is also expected as the per-node methods
-attempt to connect multiple pairs of locations at once while keeping the layout
-pleasing, and this generally requires searching through more alternatives than
-connecting each of the pairs of locations individually. It is important to note
-that per-node, increasing generally takes more time than per-pair, decreasing,
-and also that per-pair, increasing generally takes more time than per-pair,
-decreasing.
+attempt to connect multiple pairs of locations at once, which generally requires
+searching through more alternatives than
+connecting each of the pairs of locations individually.
 
-Finally let us look at Figure \ref{fig:wiring_quality_trend} to compare the
+Finally, Figures \ref{fig:wiring_quality_trend} and
+\ref{fig:wiring_badness_trend} compare the
 quality of the layouts produced by the five alternative wiring methods. First,
 as we observed in the placement method comparison, we see that there is very
 little difference in terms of number of wires used and the total wire length.
-However, there are significant differences in the number of wire crosses. We see
-that the all-pairs method generates layouts with much fewer wire crosses than
-the other methods. This is completely expected since we run one search to
-connect all pairs of locations while attempting to keep the layout as nice as
-possible. Conversely, the per-pair, decreasing and per-node, decreasing methods
-result in the most number of wire crosses. It is very interesting to note that
+However, there are noticeable differences in the number of wire crosses. We see
+that the all pairs method generates layouts with much fewer wire crosses than
+the other methods. This is expected since the algorithm runs one search to
+connect all pairs of locations. Conversely, the per-pair, decreasing and
+per-node, decreasing methods
+result in the largest number of wire crosses. Note that
 the per-node, decreasing method produces more wire crosses on average than the
 per-pair,
-increasing method. Here we observe that the order in which we consider pairs of
+increasing method. We observe that the order in which we consider pairs of
 locations has a telling effect on how good the layouts will be. In essence,
 connecting the harder pairs of locations generally produces more wire crosses.
 
-What we have observed is that while the all-pairs method is the least successful
-method and the one that generally takes the longest among the five,
-it generally produces the best layouts when it does succeed. On the other hand,
-the alternatives that break down the problem into smaller pieces succeed more
-often and finish more quickly while producing worse results. Furthermore,
-the more finely we breakdown the problem, the faster the overall algorithm.
+While the all pairs method is the least successful
+method and generally takes the longest among the five,
+it tends to produce the best layouts when it does succeed. On the other hand,
+the alternatives that break the problem down into smaller pieces succeed more
+often and finish more quickly, though they tend to produce worse results.
+Furthermore,
+the more finely we break down the problem, the faster the overall algorithm runs.
 Lastly, ordering subproblems from hardest to easiest has the effect of making the
-overall wiring step complete faster but producing worse results than the reverse
-order and not necessarily getting a markedly better success rate.
+overall wiring step faster, but produces worse results than the reverse
+order and does not result in a markedly better success rate.
 
 \subsection{Comparing Search Methods}
 
