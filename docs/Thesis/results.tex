@@ -60,7 +60,7 @@ schematics in dataset that will be used to do all comparisons in this Chapter.
 
 \begin{figure}[H]
 \begin{center}
-\includegraphics[width=\textwidth]{Images/complexity_hist.png}
+\includegraphics[width=\textwidth]{Images/complexity_hist.eps}
 \caption{Histogram of the complexity the $4425$ schematics that we will use for
 evaluation.}
 \label{fig:complexity_hist}
@@ -109,7 +109,7 @@ methods for the schematic shown in Figure \ref{fig:exemplar_schematic}.
 
 \begin{figure}[H]
 \begin{center}
-\includegraphics[width=\textwidth]{Images/placement_success_comparison.png}
+\includegraphics[width=\textwidth]{Images/placement_success_comparison.eps}
 \caption{Placement method comparison: success rates.}
 \label{fig:placement_success}
 \end{center}
@@ -142,7 +142,7 @@ Blocking & $162$ & $38$ & $51$ & $57$ & $72$ & $85$ & $109$ & $106$ & $144$ & $2
 
 \begin{figure}[H]
 \begin{center}
-\includegraphics[width=\textwidth]{Images/placement_success_trend_comparison.png}
+\includegraphics[width=\textwidth]{Images/placement_success_trend_comparison.eps}
 \caption{Placement method comparison: success rate trends.}
 \label{fig:placement_success_trend}
 \end{center}
@@ -150,7 +150,7 @@ Blocking & $162$ & $38$ & $51$ & $57$ & $72$ & $85$ & $109$ & $106$ & $144$ & $2
 
 \begin{figure}[H]
 \begin{center}
-\includegraphics[width=\textwidth]{Images/placement_time_trend_comparison.png}
+\includegraphics[width=\textwidth]{Images/placement_time_trend_comparison.eps}
 \caption{Placement method comparison: wiring time trends.}
 \label{fig:placement_time_trend}
 \end{center}
@@ -158,7 +158,7 @@ Blocking & $162$ & $38$ & $51$ & $57$ & $72$ & $85$ & $109$ & $106$ & $144$ & $2
 
 \begin{figure}
 \begin{center}
-\includegraphics[width=\textwidth]{Images/placement_quality_trend_comparison.png}
+\includegraphics[width=\textwidth]{Images/placement_quality_trend_comparison.eps}
 \caption{Placement method comparison: layout quality trends.}
 \label{fig:placement_quality_trend}
 \end{center}
@@ -166,7 +166,7 @@ Blocking & $162$ & $38$ & $51$ & $57$ & $72$ & $85$ & $109$ & $106$ & $144$ & $2
 
 \begin{figure}
 \begin{center}
-\includegraphics[width=\textwidth]{Images/placement_badness_trend_comparison.png}
+\includegraphics[width=\textwidth]{Images/placement_badness_trend_comparison.eps}
 \caption{Placement method comparison: layout badness trends.}
 \label{fig:placement_badness_trend}
 \end{center}
@@ -222,7 +222,7 @@ failed on the schematic shown in Figure \ref{fig:exemplar_schematic}.}
 
 \begin{figure}[H]
 \begin{center}
-\includegraphics[width=\textwidth]{Images/wiring_success_comparison.png}
+\includegraphics[width=\textwidth]{Images/wiring_success_comparison.eps}
 \caption{Wiring method comparison: success rates.}
 \label{fig:wiring_success}
 \end{center}
@@ -263,21 +263,20 @@ All & $458$ & $114$ & $111$ & $112$ & $127$ & $145$ & $177$ & $139$ & $172$ & $2
 \end{table}
 
 \begin{figure}[H]
-\begin{center}
-\begin{tabular}{cc}
-\includegraphics[width=7cm]{Images/wiring_all_success_trend.png} &
-\includegraphics[width=7cm]{Images/wiring_node_success_trend.png} \\
-\includegraphics[width=7cm]{Images/wiring_straight_success_trend.png} &
-\includegraphics[width=7cm]{Images/wiring_pair_success_trend.png}
-\end{tabular}
-\end{center}
+\centering
+\subfigure[All pairs]{
+\includegraphics[width=7cm]{Images/wiring_all_success_trend.eps}}
+\subfigure[Per-node]{
+\includegraphics[width=7cm]{Images/wiring_node_success_trend.eps}}
+\subfigure[Per-pair]{
+\includegraphics[width=7cm]{Images/wiring_pair_success_trend.eps}}
 \label{fig:wiring_success_trend}
 \caption{Wiring method comparison: success rate trends.}
 \end{figure}
 
 \begin{figure}[H]
 \begin{center}
-\includegraphics[width=\textwidth]{Images/wiring_time_trend_comparison.png}
+\includegraphics[width=\textwidth]{Images/wiring_time_trend_comparison.eps}
 \caption{Wiring method comparison: wiring time trends.}
 \label{fig:wiring_time_trend}
 \end{center}
@@ -285,7 +284,7 @@ All & $458$ & $114$ & $111$ & $112$ & $127$ & $145$ & $177$ & $139$ & $172$ & $2
 
 \begin{figure}[H]
 \begin{center}
-\includegraphics[width=\textwidth]{Images/wiring_quality_trend_comparison.png}
+\includegraphics[width=\textwidth]{Images/wiring_quality_trend_comparison.eps}
 \caption{Wiring method comparison: layout quality trends.}
 \label{fig:wiring_quality_trend}
 \end{center}
@@ -293,7 +292,7 @@ All & $458$ & $114$ & $111$ & $112$ & $127$ & $145$ & $177$ & $139$ & $172$ & $2
 
 \begin{figure}[H]
 \begin{center}
-\includegraphics[width=\textwidth]{Images/wiring_badness_trend_comparison.png}
+\includegraphics[width=\textwidth]{Images/wiring_badness_trend_comparison.eps}
 \caption{Wiring method comparison: layout badness trends.}
 \label{fig:wiring_badness_trend}
 \end{center}
@@ -310,7 +309,7 @@ among the $44250$ runs for each of the $5$ methods.
 
 \begin{figure}[H]
 \begin{center}
-\includegraphics[width=\textwidth]{Images/max_expanded_all_pairs.png}
+\includegraphics[width=\textwidth]{Images/max_expanded_all_pairs.eps}
 \caption{Histogram of number of vertices expanded for all pairs wiring.}
 \label{fig:max_expanded_all_pairs}
 \end{center}
@@ -318,7 +317,7 @@ among the $44250$ runs for each of the $5$ methods.
 
 \begin{figure}[H]
 \begin{center}
-\includegraphics[width=\textwidth]{Images/max_expanded_per_node_increasing.png}
+\includegraphics[width=\textwidth]{Images/max_expanded_per_node_increasing.eps}
 \caption{Histogram of maximum number of vertices expanded for per-node,
 increasing wiring.}
 \label{fig:max_expanded_per_node_increasing}
@@ -327,7 +326,7 @@ increasing wiring.}
 
 \begin{figure}[H]
 \begin{center}
-\includegraphics[width=\textwidth]{Images/max_expanded_per_node_decreasing.png}
+\includegraphics[width=\textwidth]{Images/max_expanded_per_node_decreasing.eps}
 \caption{Histogram of maximum number of vertices expanded for per-node,
 decreasing wiring.}
 \label{fig:max_expanded_per_node_decreasing}
@@ -336,7 +335,7 @@ decreasing wiring.}
 
 \begin{figure}[H]
 \begin{center}
-\includegraphics[width=\textwidth]{Images/max_expanded_per_pair_increasing.png}
+\includegraphics[width=\textwidth]{Images/max_expanded_per_pair_increasing.eps}
 \caption{Histogram of maximum number of vertices expanded for per-pair,
 increasing wiring.}
 \label{fig:max_expanded_per_pair_increasing}
@@ -345,7 +344,7 @@ increasing wiring.}
 
 \begin{figure}[H]
 \begin{center}
-\includegraphics[width=\textwidth]{Images/max_expanded_per_pair_decreasing.png}
+\includegraphics[width=\textwidth]{Images/max_expanded_per_pair_decreasing.eps}
 \caption{Histogram of maximum number of vertices expanded for per-pair,
 decreasing wiring.}
 \label{fig:max_expanded_per_pair_decreasing}
@@ -370,7 +369,7 @@ decreasing wiring.}
 
 \begin{figure}[H]
 \begin{center}
-\includegraphics[width=\textwidth]{Images/search_success_comparison.png}
+\includegraphics[width=\textwidth]{Images/search_success_comparison.eps}
 \caption{Search method comparison: success rates.}
 \label{fig:search_success}
 \end{center}
@@ -400,7 +399,7 @@ $A*$ & $162$ & $38$ & $51$ & $57$ & $72$ & $85$ & $109$ & $106$ & $144$ & $203$ 
 
 \begin{figure}[H]
 \begin{center}
-\includegraphics[width=\textwidth]{Images/search_success_trend_comparison.png}
+\includegraphics[width=\textwidth]{Images/search_success_trend_comparison.eps}
 \caption{Search method comparison: success rate trends.}
 \label{fig:search_success_trend}
 \end{center}
@@ -408,7 +407,7 @@ $A*$ & $162$ & $38$ & $51$ & $57$ & $72$ & $85$ & $109$ & $106$ & $144$ & $203$ 
 
 \begin{figure}[H]
 \begin{center}
-\includegraphics[width=\textwidth]{Images/search_time_trend_comparison.png}
+\includegraphics[width=\textwidth]{Images/search_time_trend_comparison.eps}
 \caption{Search method comparison: wiring time trends.}
 \label{fig:search_time_trend}
 \end{center}
@@ -416,7 +415,7 @@ $A*$ & $162$ & $38$ & $51$ & $57$ & $72$ & $85$ & $109$ & $106$ & $144$ & $203$ 
 
 \begin{figure}[H]
 \begin{center}
-\includegraphics[width=\textwidth]{Images/search_quality_trend_comparison.png}
+\includegraphics[width=\textwidth]{Images/search_quality_trend_comparison.eps}
 \caption{Search method comparison: layout quality trends.}
 \label{fig:search_quality_trend}
 \end{center}
@@ -424,7 +423,7 @@ $A*$ & $162$ & $38$ & $51$ & $57$ & $72$ & $85$ & $109$ & $106$ & $144$ & $203$ 
 
 \begin{figure}[H]
 \begin{center}
-\includegraphics[width=\textwidth]{Images/search_badness_trend_comparison.png}
+\includegraphics[width=\textwidth]{Images/search_badness_trend_comparison.eps}
 \caption{Search method comparison: layout badness trends.}
 \label{fig:search_badness_trend}
 \end{center}
@@ -456,7 +455,7 @@ as a function of circuit complexity.
 
 \begin{figure}[H]
 \begin{center}
-\includegraphics[width=\textwidth]{Images/final_algorithm_num_trials.png}
+\includegraphics[width=\textwidth]{Images/final_algorithm_num_trials.eps}
 \caption{Combined algorithm success summary.}
 \label{fig:final_num_trials}
 \end{center}
@@ -464,7 +463,7 @@ as a function of circuit complexity.
 
 \begin{figure}[H]
 \begin{center}
-\includegraphics[width=\textwidth]{Images/final_algorithm_time_trend.png}
+\includegraphics[width=\textwidth]{Images/final_algorithm_time_trend.eps}
 \caption{Combined algorithm total CPU time trend as a function of circuit
 complexity.}
 \label{fig:final_time_trend}
@@ -473,7 +472,7 @@ complexity.}
 
 \begin{figure}[H]
 \begin{center}
-\includegraphics[width=\textwidth]{Images/final_algorithm_quality_trend.png}
+\includegraphics[width=\textwidth]{Images/final_algorithm_quality_trend.eps}
 \caption{Combined algorithm quality trend.}
 \label{fig:final_quality_trend}
 \end{center}
@@ -481,7 +480,7 @@ complexity.}
 
 \begin{figure}[H]
 \begin{center}
-\includegraphics[width=\textwidth]{Images/final_algorithm_badness_trend.png}
+\includegraphics[width=\textwidth]{Images/final_algorithm_badness_trend.eps}
 \caption{Combined algorithm layout badness trend.}
 \label{fig:final_badness_trend}
 \end{center}

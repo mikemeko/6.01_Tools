@@ -52,6 +52,20 @@ def compare(files, methods):
   nrows = 1 if len(methods) < 5 else 2
   ncols = len(methods) if len(methods) < 5 else (len(methods) + 1) / 2
 
+  # number of pins hist
+  """
+  pylab.figure()
+  l = []
+  for results in all_results:
+    for result in results:
+      l.append(result.num_schematic_pins)
+  pylab.hist(l, bins=40, alpha=0.5)
+  pylab.xlabel('Number of pins')
+  pylab.ylabel('Count')
+  pylab.show()
+  return
+  """
+
   # plots number of states expanded versus time
   # only makes sense for all pairs data
   """
