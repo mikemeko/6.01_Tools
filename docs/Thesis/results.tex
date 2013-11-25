@@ -43,11 +43,11 @@ other aspects fixed. Hence, we will carryout the following comparisons:
 \begin{enumerate}
 \item Placement: Distance vs. Blocking. Wiring method will be per-pair,
 decreasing, and we will use $A*$.
-\item Wiring: All pairs vs. Per-node, decreasing vs. Per-node, increasing vs.
-Per-pair, decreasing vs. Per-pair, increasing. Placement method will be
+\item Wiring: All pairs vs. Per-node (decreasing) vs. Per-node (increasing) vs.
+Per-pair (decreasing) vs. Per-pair (increasing). Placement method will be
 blocking, and we will use $A*$.
 \item Search: $A*$ vs. Best First. Placement method will be blocking, and wiring
-method will be per-pair, decreasing.
+method will be per-pair (decreasing).
 \end{enumerate}
 
 The data to compare the alternatives is gathered as described in Chapter
@@ -193,14 +193,14 @@ Blocking & $162$ & $38$ & $51$ & $57$ & $72$ & $85$ & $109$ & $106$ & $144$ & $2
 \begin{figure}[H]
 \begin{center}
 \includegraphics[width=\textwidth]{Images/exemplar_per_node_increasing.png}
-\caption{Per-node, increasing exemplar.}
+\caption{Per-node (increasing) exemplar.}
 \end{center}
 \end{figure}
 
 \begin{figure}[H]
 \begin{center}
 \includegraphics[width=\textwidth]{Images/exemplar_per_node_decreasing.png}
-\caption{Per-node, decreasing exemplar.
+\caption{Per-node (decreasing) exemplar.
 We used the distance based placement method instead of the blocking based
 placement method to generate this exemplar as the
 combination of the blocking based method with this wiring method consistently
@@ -211,14 +211,14 @@ failed on the schematic shown in Figure \ref{fig:exemplar_schematic}.}
 \begin{figure}[H]
 \begin{center}
 \includegraphics[width=\textwidth]{Images/exemplar_per_pair_increasing.png}
-\caption{Per-pair, increasing exemplar.}
+\caption{Per-pair (increasing) exemplar.}
 \end{center}
 \end{figure}
 
 \begin{figure}[H]
 \begin{center}
 \includegraphics[width=\textwidth]{Images/exemplar_per_pair_decreasing.png}
-\caption{Per-pair, decreasing exemplar.}
+\caption{Per-pair (decreasing) exemplar.}
 \end{center}
 \end{figure}
 

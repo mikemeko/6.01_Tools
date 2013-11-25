@@ -8,6 +8,7 @@ protoboard layout problem, as well as detailed analysis of the data presented in
 Chapter \ref{ch:results}.
 
 \section{Search Space Size}
+\label{sec:search_space_size}
 
 The proposed solution to this problem involves several simplifications and uses
 of heuristics. This is a result of the fact that the search space we are working
@@ -209,10 +210,10 @@ little difference in terms of number of wires used and the total wire length.
 However, there are noticeable differences in the number of wire crosses. We see
 that the all pairs method generates layouts with much fewer wire crosses than
 the other methods. This is expected since the algorithm runs one search to
-connect all pairs of locations. Conversely, the per-pair, decreasing and
-per-node, decreasing methods
+connect all pairs of locations. Conversely, the per-pair (decreasing) and
+per-node (decreasing) methods
 result in the largest number of wire crosses. Note that
-the per-node, decreasing method produces more wire crosses on average than the
+the per-node (decreasing) method produces more wire crosses on average than the
 per-pair,
 increasing method. We observe that the order in which we consider pairs of
 locations has a telling effect on how good the layouts will be. In essence,

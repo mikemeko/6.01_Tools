@@ -319,9 +319,8 @@ the cost of that child vertex should reflect that fact.
 
 An important consideration we need to make is how to organize the
 search. Recall that we have a set of nodes in the circuit of interest, and for
-each node we have a set of locations that need to be interconnected. Given this
-information, we considered the following three strategies to carryout the
-search:
+each node we have a set of locations that need to be interconnected.
+We considered the following five different strategies to carry out the search:
 
 \begin{enumerate}
 \item All pairs: For each node, collect a set of pairs of locations on the
@@ -333,71 +332,65 @@ locations for all of the nodes in the circuit, and have the starting vertex
 represent
 this set of pairs of locations. In this strategy, we run exactly $1$ search to
 solve the problem.
-\item Per-node, increasing: Treat each node separately. That is, iteratively
+\item Per-node (increasing): Treat each node separately. That is, iteratively
 connect the locations for each of the nodes until there are no more disconnected
 nodes in the circuit. In this strategy, we run a number of searches equal to the
-number of nodes in the circuit to solve the problem. Order the searches in
+number of nodes in the circuit. Order the searches in
 \emph{increasing} order of the number of locations per node, breaking ties
 arbitrarily.
-\item Per-node, decreasing: Similar to per-node, increasing, but here order the
+\item Per-node (decreasing): Similar to per-node (increasing), but order the
 searches in \emph{decreasing} order of the number of locations per node.
-\item Per-pair, increasing: Treat each pair of locations that needs to be
+\item Per-pair (increasing): Treat each pair of locations that needs to be
 connected separately. That is, iteratively connect pairs of locations that need
 to be connected until there are no more disconnected pairs.
 In this strategy, we run a number of searches equal to the number of pairs of
 locations that must be connected. Order the searches in \emph{increasing} order
 of the Manhattan distance between the pairs of locations, breaking ties
 arbitrarily.
-\item Per-pair, decreasing: Similar to per-pair, increasing, but here order the
+\item Per-pair (decreasing): Similar to per-pair (increasing), but order the
 searches in \emph{decreasing} order of Manhattan distance between the pairs of
 locations.
 \end{enumerate}
 
-When using one of the latter two choices presented above, since we will
-generally have to do multiple searches, it will be important to decide on the
-order in which we run the searches. For each strategy, we considered one of
-two choices. In per-node wiring, we may consider the nodes either in
-\emph{increasing} or \emph{decreasing} order of number of locations associated
-with each node. In per-pair wiring, we may consider the pairs either in
-\emph{increasing} or \emph{decreasing} order of Manhattan distance from
-each other. Ties are broken arbitrarily in each case.
-
-The choice of one of the three strategies presented above as well as the choice
-of order in the latter two strategies has a significant effect on the outcome of
-the search. We will look at the difference in detail in Chapter \ref{ch:results}.
+The choice of one of the five strategies presented above
+has a significant effect on the outcome of the wiring step.
+We will look at the difference in detail in Chapter \ref{ch:results}.
 
 \subsubsection{Goal test}
 
-Given a vertex, we know that it is a goal vertex if all of the pairs of
-locations it holds are already connected in the protoboard it holds.
+We test that a given vertex is a goal vertex by verifying that its
+representation indicates no further pairs of locations to connect.
 
 \subsubsection{Search heuristic}
 
 In $A*$ search, choosing the right heuristic can often make the search much more
 efficient. Given a
 vertex, we can estimate its distance from a goal as follows. For each pair of
-locations $(loc_1, loc_2)$ that need to be connected, we could consider its
-distance from the
+locations $(\text{loc}_1, \text{loc}_2)$ that need to be connected, we could consider the
+pair's distance from the
 goal to be the smallest Manhattan distance between any location connected to
-$loc_1$ and any other location connected to $loc_2$. To compute the heuristic
+$\text{loc}_1$ and any other location connected to $\text{loc}_2$. To compute the heuristic
 cost of a vertex, we simply add up this value for each of the pairs of locations
 that need to be connected. In Chapter \ref{ch:results} we will compare the
 performance of $A*$ with this heuristic versus carrying out Best First Search
 with this heuristic. In Best First Search, as opposed to in $A*$, vertices are
-considered in order of decreasing heuristic value.
+considered in order of decreasing heuristic value, without consideration for
+the cost incurred on the path from the starting vertex.
 
 \subsubsection{Limiting the number of expanded vertices}
 
-With the implementation of $A*$ we have discussed so far, the algorithm
+With the implementation of $A*$ discussed so far, the algorithm
 terminates if we either find a solution, or we
 exhaust the search space without finding a solution. In our search problem, the
-number of states is very large, so this implementation of $A*$ may sometimes
-run out
+number of states is very large (Section \ref{sec:search_space_size} discusses
+the search space size
+in more detail), so this implementation of $A*$ may sometimes run out
 of memory during the search. To mitigate this problem, we introduce a limit to
 the number of vertices the algorithm expands before giving up. That is, if the
 algorithm expands a certain fixed number of vertices and still has not found an
 answer, the algorithm gives up. For us, this limit is set to $300$ vertices.
-In Chapter \ref{ch:results} we provide data to justify this choice.
+In Chapter \ref{ch:results} we provide data that describes the effect of this
+choice.
 
 \subsection{Combining the Methods}
 \label{sec:combined_alg}
@@ -412,19 +405,20 @@ with a few diagonal or crossing wires is better than silently failing and leavin
 the student empty handed. Here, we will discuss how we combine the methods
 described so far into one layout algorithm. The motivation for this combination
 will be discussed in Chapter \ref{ch:discussion} based on the data we obtain
-for the alternatives described above. Algorithm \ref{alg:combined} presents the
+for the alternatives described thus far.
+Algorithm \ref{alg:combined} presents the
 combined algorithm.
 
 \begin{algorithm}
 \KwData{A circuit schematic $C$.}
-\KwResult{A layout corresponding to $C$.}
+\KwResult{A protoboard layout corresponding to $C$.}
 \BlankLine
 \ForEach{Placement cost metric $M$ in (DISTANCE, BLOCKING)}{
 $P$ $\leftarrow$ Placement for $C$ by using cost metric $M$.\\
 Connect the top and bottom rails on $P$.\\
 \ForEach{Order $O$ in (INCREASING, DECREASING)}{
 $pairs$ $\leftarrow$ Pairs of location on $P$ to connect given schematic $C$ and connection order $O$.\\
-\ForEach{$(loc_1, loc_2)$ in $pairs$}{
+\ForEach{$(\text{loc}_1, \text{loc}_2)$ in $pairs$}{
 Attempt to connect $loc_1$ and $loc_2$ on $P$.\\
 If successful, update $P$ accordingly and then post-process $P$.\\
 If not, record that the pair $(loc_1, loc_2)$ was not successfully connected.\\
@@ -434,7 +428,7 @@ If all pairs are successfully connected, return $P$.\\
 Pick unfinished layout with fewest and most compact disconnected pairs.\\
 Connect remaining pairs with shortest possible wires (possibly diagonal).\\
 Post-process and return resulting layout.\\
-\caption{Layout algorithm obtained by combining multiple ideas.}
+\caption{Layout algorithm obtained by combining multiple alternatives.}
 \label{alg:combined}
 \end{algorithm}
 
@@ -448,7 +442,8 @@ four trials fail, on the other hand, the algorithm picks one of the four
 unfinished layouts that would require comparatively little additional wiring and
 completes that solution by placing possibly diagonal wires. This last step makes
 it highly unlikely that the algorithm will ever fail.
-The only way for the algorithm to fail is for there to be two nodes that need to be
+The only way for the algorithm to fail is for there to be two nodes on the
+protoboard that need to be
 connected where all of the protoboard locations for at least one of the nodes are
 occupied, which is highly unlikely. This high success rate comes at the
 cost of placing wires that will almost surely cross other wires on the board.
@@ -456,8 +451,8 @@ cost of placing wires that will almost surely cross other wires on the board.
 The algorithm automatically starts out by connecting the top and bottom rails
 of the protoboard
 so that all rail rows are used to connect to power and ground, and no other
-nodes. This restriction was not enforced before, but it is a restriction that
-certainly makes debugging easier.
+nodes. This is a restriction that makes it easier to debug and amend the
+resulting layout.
 
 The algorithm also has a post-processing step that attempts to to improve the
 layout. The post-processing step makes three types of simple changes to the
@@ -475,8 +470,8 @@ Algorithm \ref{alg:combined} is that the algorithm that will be put
 in front of students will only be allowed to use wires of a select few lengths.
 The kits that students work with do not come with wires of all lengths,
 so we force the wiring step to use wires of only those allowed lengths. We also
-avoid using length-$1$ wires as they are very difficult to insert and remove from
-and hard to see on the physical protoboards.
+avoid using length-$1$ wires because they are difficult to insert and
+remove from physical protoboards and are also difficult to see.
 
 \subsection{Evaluation}
 
@@ -537,7 +532,7 @@ generated schematic.
 This scheme produces a total of $4425$ test schematics out of $1.2\cdot10^{27}$
 possibilities\footnote{These numbers were computed computationally as the
 variety of choices that could be made in the process makes it difficult to
-compute them combinatorially}.
+compute them combinatorially.}.
 When testing a particular algorithm on these test
 schematics, we run the algorithm on each test schematic $10$ times. Chapter
 \ref{ch:results} presents the data collected in this manner comparing the
@@ -545,8 +540,7 @@ various alternatives discussed in this Chapter.
 
 An important question we must answer is how we quantify the goodness (or badness)
 of a particular layout. Our approach takes a weighted sum of a particular set of
-attributes of a given layout, where the weights are chosen comparatively. We set
-the badness of a layout to be:
+attributes of a given layout. We define the badness of a layout to be:
 \begin{align*}
 \centering
 &1 \cdot \text{NUMBER\_OF\_WIRES} &+ \\
