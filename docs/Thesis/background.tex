@@ -3,16 +3,16 @@
 \chapter{Background}
 \label{ch:background}
 
-In this section we will discuss essential background information to this project.
-First we discuss the specific terminology used in this paper. Next we discuss
+In this chapter we discuss essential background information to this project.
+First, we discuss the specific terminology used in this paper. Next, we discuss
 previous work done that relates to this project.
 
 \section{Technical Background}
 
-As already mentioned, this project aims to produces a new teaching tool for
-6.01. As such, let us first discuss the scope of circuits in 6.01.
+As we are producing a new teaching tool for 6.01 in this project,
+let us first discuss the scope of circuits in 6.01.
 
-\subsection{What are our circuit components?}
+\subsection{Circuit Components}
 
 The rudimentary circuit components used in 6.01 are resistors, operational
 amplifiers (op-amps), and potentiometers (pots). In addition to these basic
@@ -37,7 +37,7 @@ robot connectors, and (8-pin) head connectors.
 \end{center}
 \end{figure}
 
-\subsection{What is a circuit schematic?}
+\subsection{Circuit Schematic}
 
 Throughout this paper, the term \textit{circuit schematic} will refer to a
 drawing or a sketch of a circuit containing its components and all the
@@ -53,7 +53,7 @@ sketch on a piece of paper in the process of designing a circuit. Figure
 \end{center}
 \end{figure}
 
-\subsection{What is a protoboard?}
+\subsection{Protoboard}
 \label{sec:what_is_protoboard}
 
 Protoboards are boards on which one can quickly build and test
@@ -65,7 +65,7 @@ the orientation depicted in Figure \ref{fig:physical_protoboard}, a protoboard
 has $4$ groups of rows: the first $2$ rows, the next $5$ rows, the next $5$
 rows, and finally the last $2$ rows. In the first and last groups, the dots on
 the protoboard are interconnected horizontally. In the middle
-two groups, the dots on the protoboard are interconnected vertically. This
+two groups, the dots are interconnected vertically. This
 interconnection scheme is depicted in Figure \ref{fig:physical_protoboard}.
 
 \begin{figure}
@@ -78,14 +78,14 @@ interconnected vertically.}
 \end{center}
 \end{figure}
 
-\subsection{What is a protoboard layout of a circuit schematic?}
+\subsection{Protoboard Layout}
 
 The protoboard layout of a given schematic is the placement of circuit pieces
 and wires on a protoboard that corresponds to the schematic. This is done by
 placing the appropriate pieces on the protoboard and then appropriately
 interconnecting them with wires as prescribed by the schematic. As an example,
 Figure \ref{fig:eg_s_to_pb} presents one possible protoboard layout
-corresponding to the example schematic shown in Figure \ref{fig:schematic}.
+corresponding to the schematic shown in Figure \ref{fig:schematic}.
 
 \begin{figure}
 \begin{center}
@@ -100,45 +100,42 @@ circuit piece that may be inserted into the protoboard. The one exception is tha
 op-amps come in pairs. That is, each op-amp circuit piece that is inserted in the
 protoboard actually contains two op-amp components within it. This raises an
 important design problem when laying out a schematic - the need to find a
-good way to group together the op-amps in a schematic to result in the ``best''
+good way to group together the op-amps in a schematic to result in a ``good''
 layout. To solve this problem, the designer must have some criteria for what
-makes a layout ``good.'' While there are no conclusive answers for this
-question, keeping in mind that a layout is good if it is (1) easy to build, (2)
-easy to debug, and (3) aesthetically pleasing, we could come up with the
+makes a layout ``good.'' While there are no conclusive answers to this
+question, keeping in mind that we want layouts that are easy to build,
+easy to debug, and aesthetically pleasing, we could come up with the
 following rules of thumb:
-
 \begin{itemize}
 \item The layout should not have any wires that cross circuit pieces.
-\item The layout should have no occlusions (i.e. crossing wires with identical
-orientations).
-\item The layout should have no crossing wires.
+\item The layout should have no crossing wires, especially occlusions (i.e.
+crossing wires with the same orientation).
 \item The layout should only have horizontal and vertical wires (i.e. no
 diagonal wires).
 \item The layout should have as few wires as possible.
 \item The total length of wires in the layout should be as small as possible.
 \end{itemize}
 
-Given the background information discussed thus far, the goal of our project is
-generating a ``good'' protoboard layout from circuit schematics automatically.
+Given the background information discussed thus far, the goal of this project is
+automatically generating a ``good'' protoboard layout from a circuit schematics.
 
 \section{Previous Work}
 
 Here we will discuss previous work that has been done relating to this project.
 First, as our project aims to augment the quality of 6.01, we look at the
-current infrastructure available for students. Next, we look at what work has
+currently available infrastructure. Next, we look at what work has
 been done relating to layout in general.
 
 \subsection{CMax}
 
-In a typical circuits lab in 6.01, students first design a circuit by drawing a
-schematic of the circuit on paper and discussing their design with a staff
-member. After they iteratively improve their design and are happy with it, they
-build the circuit on a simulation tool called Circuits Maximus (CMax)\cite{cmax}.
-With this
-tool, students can lay out their circuits on a simulated protoboard as if they
-were laying it out on a physical one. CMax allows students to simulate the
-circuit to make sure that it behaves as desired. It provides a very fast and
-safe way of debugging circuit layouts compared to debugging layouts on a
+In a typical circuits lab in 6.01, students first design their circuits by
+drawing schematics of the circuits on paper.
+After iteratively improving their designs based on discussions with staff
+members, they build their circuits on a simulation tool called Circuits Maximus
+(CMax)\cite{cmax}.
+With CMax, a student can lay out a circuit on a simulated protoboard, and test
+the circuit to make sure that it behaves as desired. CMax provides a very fast
+and safe way of debugging circuit layouts compared to debugging layouts on a
 physical protoboard. Once the students are satisfied with their
 observations from CMax, they build their circuits on physical protoboards and
 carry out the appropriate experiments. Figure \ref{fig:cmax_sample} presents a
@@ -156,7 +153,7 @@ Using CMax has reduced circuit debugging time for 6.01 students.
 Its introduction has made
 learning circuits significantly easier for many students, especially those that
 have little or no prior experience with circuits. In addition to making the lab
-exercises much more manageable, it provides students with a very handy way to
+exercises more manageable, it provides students with a handy way to
 build, analyze, and experiment with circuits at their own leisure outside of lab.
 
 While CMax is a fantastic tool, a tool that can automate the layout process
@@ -174,26 +171,20 @@ time-consuming. In these situations, students often end up with convoluted and
 unpleasant layouts that are very difficult to debug in the likely case of the
 circuit not behaving as expected. Not only are such layouts difficult to debug
 for the students themselves, but they are also often difficult for staff
-members to understand.
+members to understand. In the best case scenario, students should have to work
+out the right schematic diagram of the circuit of interest, but should not have
+to produce the corresponding protoboard layouts.
 
-In the best case scenario, students should not have to produce protoboard
-layouts for their schematic diagrams. Rather, they should work out the right
-schematic diagram of the circuit of interest. This project aims to let students
-draw and
-analyze schematic drawings of circuits and produce the corresponding protoboard
-layouts automatically. Given the protoboard layouts output by this tool,
-students can proceed to building the circuits on physical protoboards and
-carrying out the appropriate experiments.
-
-With this tool, a typical circuits lab would proceed as follows. First, as
-before,
-the students draw schematic diagrams of their circuits on paper. Once they have
+With the schematic entry tool this paper introduces, a typical 6.01 circuits lab
+would proceed as follows. First, as before, the students would draw schematic
+diagrams of their circuits on paper. Once they have
 schematic drawings they are happy with, they can directly draw their schematic
-drawings on the simulation tool. In fact, students may go straight to building
-the schematic drawings on the simulation tool, bypassing the experimentation on
+drawings on the schematic entry tool. In fact, students may proceed directly to
+building the schematic drawings on the tool, bypassing the
+experimentation on
 paper. Once they have a schematic drawn, they can analyze it with the tool,
 discuss it with staff members, and improve it easily and quickly with
-the simulation tool. When they are
+the tool. When they are
 satisfied with the behaviors of their schematic circuit, they can produce the
 corresponding protoboard layout automatically. The automatic generation of
 protoboard layouts would be
@@ -203,7 +194,8 @@ physical protoboard and carry out experiments with it.
 \subsection{Current work in automatic layout}
 
 In my explorations, I was not able to find any tools that completely
-automatically convert circuit schematics into protoboard layouts. However, there
+automatically translate circuit schematics into protoboard layouts.
+However, there
 do exists tools that perform partially- or fully-automatic Printed Circuit
 Board (PCB) layout. To my findings, most of these tools do not publish their
 algorithms and, rather, keep them proprietary. Hence, I was not able to build my

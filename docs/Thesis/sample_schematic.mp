@@ -215,7 +215,7 @@ enddef;
 
 beginfig(22)
 numeric x;
-x := 0.5; % op amp follower
+x := 0.75; % op amp follower
 numeric y;
 y := 0.5; % ground separation
 cktPot(ra, (0,0), (0,1), btex ~ etex, "w");
@@ -229,6 +229,10 @@ pair corner;
 corner := oa.c + (.5, height/2);
 cktWire(corner--corner+(width,0)--corner+(width,-height)--corner+(0,-height)--corner);
 label(btex Motor etex, (corner+(width/2,-height/2)) scaled cktS);
+%label.lft
+%label.rt
+%label.top
+%label.bot
 cktInvOpAmpN(ob, 180, (oa.c+(width+1, 0)));
 cktInvPot(rb, ob.b+(0.5,-0.5),ob.b+(0.5,0.5), btex ~ etex, "e");
 cktWire(ob.b--ob.b+(0.25,0));
@@ -245,6 +249,20 @@ label.rt(btex $+$ etex, (corner+(0,-height/2)) scaled cktS);
 label.lft(btex $-$ etex, (corner+(width,-height/2)) scaled cktS);
 label.lft(btex Control Pot etex, (-.25, .5) scaled cktS);
 label.rt(btex Motor Pot etex, (0.5[rb.a, rb.b] + (.25, 0)) scaled cktS);
+
+pair oap, oag;
+oap = 0.5[oa.a+(0.2,0.18), oa.c+(-.2,0)];
+oag = 0.5[oa.b+(0.2,-.18), oa.c+(-.2,0)];
+cktWire(oap--oap+(0,y/2));
+label.top(btex $+10V$ etex, (oap + (0,y/2)) scaled cktS);
+cktGround(oaground, oag, oag+(0,-y));
+
+pair obp, obg;
+obp = 0.5[ob.b+(-0.2,0.18), ob.c+(.2,0)];
+obg = 0.5[ob.a+(-0.2,-.18), ob.c+(.2,0)];
+cktWire(obp--obp+(0,y/2));
+label.top(btex $+10V$ etex, (obp + (0,y/2)) scaled cktS);
+cktGround(obground, obg, obg+(0,-y));
 
 endfig;
 
