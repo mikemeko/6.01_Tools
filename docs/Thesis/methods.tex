@@ -320,7 +320,7 @@ the cost of that child vertex should reflect that fact.
 An important consideration we need to make is how to organize the
 search. Recall that we have a set of nodes in the circuit of interest, and for
 each node we have a set of locations that need to be interconnected.
-We considered the following five different strategies to carry out the search:
+We considered the following six different strategies to carry out the search:
 
 \begin{enumerate}
 \item All pairs: For each node, collect a set of pairs of locations on the
@@ -350,9 +350,13 @@ arbitrarily.
 \item Per-pair (decreasing): Similar to per-pair (increasing), but order the
 searches in \emph{decreasing} order of Manhattan distance between the pairs of
 locations.
+\item Straight: As a back-up alternative, we consider using one (possibly
+diagonal) wire to connect
+each of the pairs of locations that must be connected. This approach requires no
+search and does not take layout quality into consideration.
 \end{enumerate}
 
-The choice of one of the five strategies presented above
+The strategy we choose among these six
 has a significant effect on the outcome of the wiring step.
 We will look at the difference in detail in Chapter \ref{ch:results}.
 
