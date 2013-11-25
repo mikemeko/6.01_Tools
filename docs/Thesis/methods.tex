@@ -3,16 +3,16 @@
 \chapter{Methods}
 \label{ch:methods}
 
-In this section, we will discuss our solution to the problem stated in Chapter
+In this chapter, we discuss our solution to the problem stated in Chapter
 \ref{ch:intro}, as well as various alternatives we considered along the way.
-First, we will
-briefly introduce the schematic entry GUI. Next, we will discuss in detail how
-we solved the protoboard layout problem and how we evaluated our solution.
+First, we briefly introduce the schematic entry GUI.
+Next, we discuss in detail how we solved the protoboard layout problem and how
+we evaluated our solution.
 
 \section{GUI}
 
 We designed the schematic entry GUI to have a rich set of features so as to make
-drawing schematics a very easy and intuitive task for students.
+drawing schematics an easy and intuitive task for students.
 Figure \ref{fig:gui_example} gives a version of the schematic shown in Figure
 \ref{fig:schematic} as drawn of the schematic entry tool. Appendix \ref{app:gui}
 discusses the features and capabilities of the schematic entry GUI in
@@ -81,7 +81,7 @@ even with the restrictions put forth above.
 We reduce this large number of possibilities by only allowing placements in
 which no
 two pieces share a column. This is not necessary in general, but the
-number of pieces necessary for a typical 6.01 circuit could likely be realized
+number of pieces present in a typical 6.01 circuit could likely be realized
 under these circumstances.
 
 Next, we specify that there be exactly two columns on the protoboard separating
@@ -91,8 +91,21 @@ were chosen to leave enough space for wiring. Given a set of pieces to be put on
 the protoboard, this specification reduces the
 problem of choosing a placement for the pieces to finding an \emph{order} of the
 pieces together with choosing their respective vertical locations and
-orientations. We consider a few alternatives to finding a placement under these
-simplifications.
+orientations. Figure \ref{fig:sample_placements} shows two alternative
+placements for the schematic shown in Figure \ref{fig:gui_example} that both
+respect the
+the stated placement specifications. We consider a few alternatives to finding a
+placement under these specifications.
+
+\begin{figure}
+\subfigure[Placement 1]{
+\includegraphics[width=\linewidth]{Images/sample_placement_1.png}}
+\subfigure[Placement 2]{
+\includegraphics[width=\linewidth]{Images/sample_placement_2.png}}
+\caption{Two possible placements for the schematic shown in Figure
+\ref{fig:gui_example}.}
+\label{fig:sample_placements}
+\end{figure}
 
 \subsubsection{Random Placement}
 
@@ -104,7 +117,7 @@ The advantage of this
 approach is that it gives us a placement very quickly without requiring much
 computation. On the other hand, we may end up placing two pieces that need to be
 connected to each other very far apart, which would make the wiring task more
-difficult. Hence, we ought to consider alternatives in which we take into
+difficult. We ought to consider alternatives in which we take into
 account the task of wiring. We should try to place the pieces so as to require
 as little work as possible during the wiring step.
 
@@ -149,9 +162,9 @@ is the better of the two.
 \begin{figure}[H]
 \centering
 \subfigure[Placement 1]{
-\fbox{\includegraphics[width=5cm]{Images/placement_example_1.png}}}
+\fbox{\includegraphics[width=4.5cm]{Images/placement_example_1.png}}}
 \subfigure[Placement 2]{
-\fbox{\includegraphics[width=5cm]{Images/placement_example_2.png}}}
+\fbox{\includegraphics[width=4.5cm]{Images/placement_example_2.png}}}
 \caption{Placements to demonstrate cost functions.}
 \label{fig:placement_costs}
 \end{figure}
@@ -174,7 +187,7 @@ To demonstrate this cost function, let us look at the two placements in Figure
 \ref{fig:placement_costs} once again. Each column in the placements is labeled
 with the cost associated with the column in the manner described above. The cost
 for Placement 1 is the sum of the squares of the costs for each column, which
-comes out to $65$. The cost for Placement 2, computed similarly, is $87$. Once
+evaluates to $65$. The cost for Placement 2, computed similarly, is $87$. Once
 again, this cost function indicates that Placement 1 is better.
 
 \subsubsection{Small Heuristic Cost}
@@ -220,10 +233,6 @@ Pop $q$ out of $P$ and push it onto $Q$\\
 \label{alg:small_cost_placement}
 \end{algorithm}
 
-Using one of the above methods, we can find a placement of circuit pieces on a
-protoboard. Our next task is wiring them together to produce a circuit
-equivalent to the circuit schematic of interest.
-
 \subsection{Part 2: Wiring}
 
 Once the placement task is done, the next problem is wiring.
@@ -236,9 +245,9 @@ may seem completely unrelated and difficult.
 
 \subsubsection{Using $A*$}
 
-The $A*$ algorithm can be used to search for a path from some starting vertex
-\footnote{The preferred terminology is ``a node in a graph'' but here we will
-use the term ``vertex'' since we already use ``node'' to refer to nodes in
+The $A*$ algorithm can be used to search for a path from some starting
+vertex\footnote{The preferred terminology is ``a node in a graph'' but here we
+will use the term ``vertex'' since we already use ``node'' to refer to nodes in
 circuits.} in
 a graph to some goal vertex \footnote{In fact, $A*$ guarantees an optimal path, a
 path that has the minimum possible cost from the starting vertex to a goal
@@ -249,16 +258,20 @@ for any state. Here, however, we will not worry about the admissibility of our
 heuristic as our main goal is designing the heuristic to prune as many states as
 possible.}. The algorithm works by keeping track of an agenda
 of vertices to consider
-in a priority queue where the value associated with each vertex in the priority
+in a priority queue, where the value associated with each vertex in the priority
 queue is the sum of the cost to get from the start vertex to the vertex at hand
 and the value of the heuristic
-computed at the state of the vertex. At each step of the algorithm, we pop
+computed at the state of the vertex, which is an estimate of the minimum
+cost to get from the vertex at hand to a goal vertex.
+At each step, the algorithm pops
 one vertex from the priority queue (the vertex with the minimum associated
 value). If the vertex happens to satisfy the goal of
-the search, we return the state for that vertex as the answer to the search
-problem. Otherwise, we add the children vertices of that vertex to the priority
-queue and continue. When adding children vertices, we take care not to reconsider
-states that we have already considered via a different path. We call the process
+the search, the algorithm returns the state for that vertex as the answer to
+the search
+problem. Otherwise, it adds the children vertices of that vertex to the priority
+queue and continues. When adding children vertices, the algorithm takes care not
+to reconsider
+states that it has already considered via a different path. We call the process
 of popping a vertex from the priority queue and treating it as described
 \emph{expanding} the vertex.
 In general, when using the $A*$ algorithm, we need to design four things:
@@ -297,9 +310,8 @@ starting vertex to a vertex of interest, depends on our definition of a good
 protoboard layout. In general, we want to penalize having
 long wires, many wires, or crossing wires. In our implementation, while we have
 a large penalty for two crossing wires of opposite orientations (i.e. vertical
-and horizontal), we do not allow occluding (i.e. crossing wires that have the
-same orientation) as
-this configuration is particularly difficult to physically build and debug.
+and horizontal), we do not allow occlusions as
+they are particularly difficult to physically build and debug.
 Finally, we want to favor making a desired interconnection between locations
 on the protoboard. That is, if placing one wire results in a layout in which
 one of the pairs of locations that need to be connected becomes connected, then
