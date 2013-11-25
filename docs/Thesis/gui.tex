@@ -5,7 +5,7 @@
 
 One of the aims of this project is making it easy for students to describe the
 circuit they have in mind to a computer. To that end, it is important that the
-schematic entry tool be intuitive and easy to use. In this section, I will
+schematic entry tool be intuitive and easy to use. In this section, we will
 describe the capabilities and features offered by the schematic entry Graphical
 User Interface. Figure \ref{fig:gui} presents the GUI containing a sample
 schematic. The figure depicts the four important sections of the GUI: the board,
@@ -22,15 +22,17 @@ the palette, the analysis section, and the cursor toggle section.
 \section{Palette}
 
 The palette (item $3$ in Figure \ref{fig:gui}) offers all of the circuit
-components that can constitute a 6.01 circuit. Clicking a circuit component on
-the palette spawns a new component of the same type on the board right above
-the palette. This component can then be used in the circuit construction. The
+components that can be included a 6.01 circuit. Clicking a circuit component on
+the palette spawns a new component of the same type on the board above
+the palette (the board is described in detail in Section \ref{sec:board}).
+This component can then be used in the circuit construction. The
 ``Robot'' and ``Head'' buttons on the palette spawn multiple parts at once
-corresponding to the multiple parts contained within each item. The robot
+corresponding to the multiple parts contained within the robot and head
+connectors, respectively. The robot
 connector contains pins for power and ground as well as for analog input pins
 and one analog output pin. The head is composed of a motor, a motor pot, and
-two photosensors. Figure \ref{fig:robot_head_parts} demonstrates these last two
-circuit components.
+two photosensors. Figure \ref{fig:robot_head_parts} shows these last two
+circuit components as they appear in the editor.
 
 \begin{figure}
 \begin{center}
@@ -41,22 +43,23 @@ circuit components.
 \end{figure}
 
 \section{Board}
+\label{sec:board}
 
 The board (item $1$ in Figure \ref{fig:gui}) is where the user can draw circuit
 schematics. The user may move a component on the board by clicking the component
 and dragging it to the desired place. When dragging, the GUI draws guide lines
-that extend to the extents of the board to help the user place the component
+that extend to the edges of the board to help the user place the component
 at the right place. The user has the option to select and move multiple items at
 once.The user may delete a component by clicking on it while
-pressing \keystroke{Ctrl}. The user may rotate a component by clicking on it
-while pressing \keystroke{Shift}. An important aspect of circuit schematics is
+pressing Ctrl. The user may rotate a component by clicking on it
+while pressing Shift. An important aspect of circuit schematics is
 interconnecting components with wires. Each circuit component in the GUI comes
-with a few connection points. The user my connect components by drawing wires
-that connect these connection points. The user may draw a wire by clicking on a
-connection point and dragging. A wire may be drawn to (1) another connection
-point, or (2) a wire already on the board, which snaps the new wire onto the
-existing wire, or (3) an empty location on the board, which would create a new
-connection point. A wire may also be drawn starting from an existing wire,
+with a few connection points. The user may draw a wire to connect
+components by clicking on a connection point on a component and dragging.
+A wire may be drawn to another connection
+point, or a wire already on the board (which snaps the new wire onto the
+existing wire), or an empty location on the board (which would create a new
+connection point). A wire may also be drawn starting from an existing wire,
 which creates a new connection point on the existing wire. The GUI allows the
 user to drag connection points. To achieve this, the GUI has two possible
 states for the cursor, the drawing states and the dragging state (mainly
@@ -66,7 +69,7 @@ can drag connection points just like other circuit components.
 When drawing wires,
 the GUI attempts to route the wires in a way that is aesthetically pleasing.
 That is, the wire is routed so as to avoid crossing wires and, more importantly,
-wires crossing components on the board. Note that doing this is not a trivial
+wires crossing components on the board. This routing is not a trivial
 task. In fact, this problem is very similar to the layout problem that this
 project aims to tackle. The solution to the wiring problem in the GUI also uses
 search.
@@ -79,7 +82,7 @@ analyze the drawn circuit schematic in two ways.
 \subsection{Simulation}
 
 The GUI lets the user simulate the circuit and test whether it behaves as
-expected. The simulation infrastructure is ported from CMax, and hence circuits
+expected. The simulation infrastructure is ported from CMax, so circuits
 are simulated exactly as they are simulated by CMax. If there are probes in the
 circuit, the simulator presents the voltage difference across the probes as an
 output. If there is a motor in the circuit, the simulator presents the motor's
@@ -152,22 +155,22 @@ Table \ref{tb:shortcuts} presents the shortcuts available in the GUI.
 Action & Shortcut \\
 \hline
 \hline
-\keystroke{Ctrl} + \keystroke{n} & New file \\
-\keystroke{Ctrl} + \keystroke{o} & Open file \\
-\keystroke{Ctrl} + \keystroke{s} & Save file \\
-\keystroke{Ctrl} + \keystroke{q} & Quit \\
-\keystroke{Ctrl} + \keystroke{z} & Undo \\
-\keystroke{Ctrl} + \keystroke{y} & Redo \\
-\keystroke{Ctrl} + \keystroke{w} & Close simulation windows \\
-\keystroke{g} & Generate layout \\
-\keystroke{s} & Run simulation \\
-\keystroke{Delete} & Delete selected items \\
-\keystroke{r} & Rotate selected item \\
-\keystroke{d} & Toggle cursor state \\
-\keystroke{$\leftarrow$} | \keystroke{h} & Move selected items left \\
-\keystroke{$\downarrow$} | \keystroke{j} & Move selected items down \\
-\keystroke{$\uparrow$} | \keystroke{k} & Move selected items up \\
-\keystroke{$\rightarrow$} | \keystroke{l} & Move selected items right \\
+Ctrl + n & New file \\
+Ctrl + o & Open file \\
+Ctrl + s & Save file \\
+Ctrl + q & Quit \\
+Ctrl + z & Undo \\
+Ctrl + y & Redo \\
+Ctrl + w & Close simulation windows \\
+g & Generate layout \\
+s & Run simulation \\
+Delete & Delete selected items \\
+r & Rotate selected item \\
+d & Toggle cursor state \\
+$\leftarrow$ | h & Move selected items left \\
+$\downarrow$ | j & Move selected items down \\
+$\uparrow$ | k & Move selected items up \\
+$\rightarrow$ | l & Move selected items right \\
 \hline
 \end{tabular}
 \end{singlespace}
