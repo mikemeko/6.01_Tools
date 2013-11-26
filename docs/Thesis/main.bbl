@@ -8,6 +8,8 @@ Introduction to \uppercase{EECS I}.
 
 \bibitem{cmax}
 6.01 Staff.
-\newblock Cmax.
+\newblock \uppercase{CM}ax.
+\newblock
+  \newline{http://sicp-s4.mit.edu/cat-soop/\_\_STATIC\_\_/6.01/cmax\_docs/cmax\_docs.html}.
 
 \end{thebibliography}
