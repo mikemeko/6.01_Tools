@@ -25,15 +25,35 @@ head attached. To connect a layout to a LEGO motor, a student would use a 6-pin
 connector, and to connect a layout to a robot or a robot head, a student
 use an 8-pin connector.
 
-All together, the circuit pieces that may be used in constructing protoboard
-layouts in 6.01 are resistors, op-amps, pots, (6-pin) motor connectors, (8-pin)
-robot connectors, and (8-pin) head connectors.
-
 \begin{figure}
 \begin{center}
 \includegraphics[width=\textwidth]{Images/robot.jpeg}
 \caption[6.01 robot]{One of the 6.01 robots, with a head attached.}
 \label{fig:robot}
+\end{center}
+\end{figure}
+
+All together, the circuit pieces that may be used in constructing protoboard
+layouts in 6.01 are resistors, op-amps, pots, (6-pin) motor connectors, (8-pin)
+robot connectors, and (8-pin) head connectors. Figure \ref{fig:components}
+displays these circuit pieces.
+
+\begin{figure}
+\begin{center}
+\subfigure[Resistors]{\includegraphics[width=5cm]{Images/resistors.jpg}}
+\hspace{3cm}
+\subfigure[Potentiometer]{\includegraphics[width=5cm]{Images/pot.jpg}}\\
+\subfigure[Operational Amplifier]{
+\includegraphics[width=5cm]{Images/op_amp.jpg}
+\includegraphics[width=4cm]{Images/op_amp_pin_out.jpg}
+\label{fig:op_amp_pin_out}}\\
+\subfigure[6-pin Motor Connector]{\includegraphics[width=5cm]{Images/6pin.jpg}}
+\hspace{3cm}
+\subfigure[8-pin Robot/Head Connector]{
+\includegraphics[width=5cm]{Images/8pin.jpg}}
+\caption[Circuit pieces]{All circuit pieces used in 6.01 that may be
+inserted into a protoboard.}
+\label{fig:components}
 \end{center}
 \end{figure}
 
@@ -99,7 +119,8 @@ Figure \ref{fig:schematic}.}
 
 For each of the circuit components we are interested in, there is a corresponding
 circuit piece that may be inserted into the protoboard. The one exception is that
-op-amps come in pairs. That is, each op-amp circuit piece that is inserted in the
+op-amps come in pairs. That is, as shown in Figure \ref{fig:op_amp_pin_out},
+each op-amp circuit piece that is inserted in the
 protoboard actually contains two op-amp components within it. This raises an
 important design problem when laying out a schematic - the need to find a
 good way to group together the op-amps in a schematic to result in a ``good''
