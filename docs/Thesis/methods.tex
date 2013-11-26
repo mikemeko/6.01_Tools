@@ -21,7 +21,9 @@ further detail.
 \begin{figure}
 \begin{center}
 \includegraphics[width=\textwidth]{Images/gui_example.png}
-\caption{Sample schematic drawn on the schematic entry tool.}
+\caption[Schematic entry example]{Sample schematic drawn on the schematic entry
+tool. This schematic describes the same circuit as the one described by the
+schematic shown in Figure \ref{fig:schematic}.}
 \label{fig:gui_example}
 \end{center}
 \end{figure}
@@ -62,8 +64,8 @@ work as possible when wiring the pieces together. Section
 \begin{figure}
 \begin{center}
 \includegraphics[width=\linewidth]{Images/piece_placement_options.png}
-\caption{Various acceptable ways of putting each of the circuit pieces on the
-protoboard.}
+\caption[Acceptable circuit piece placements]{Various acceptable ways of
+placing each of the circuit pieces on the protoboard.}
 \label{fig:piece_placement}
 \end{center}
 \end{figure}
@@ -93,17 +95,16 @@ problem of choosing a placement for the pieces to finding an \emph{order} of the
 pieces together with choosing their respective vertical locations and
 orientations. Figure \ref{fig:sample_placements} shows two alternative
 placements for the schematic shown in Figure \ref{fig:gui_example} that both
-respect the
-the stated placement specifications. We consider a few alternatives to finding a
-placement under these specifications.
+respect the stated placement specifications.
+We consider a few alternatives to finding a placement under these specifications.
 
 \begin{figure}
 \subfigure[Placement 1]{
 \includegraphics[width=\linewidth]{Images/sample_placement_1.png}}
 \subfigure[Placement 2]{
 \includegraphics[width=\linewidth]{Images/sample_placement_2.png}}
-\caption{Two possible placements for the schematic shown in Figure
-\ref{fig:gui_example}.}
+\caption[Placement examples]{Two possible placements for the schematic shown in
+Figure \ref{fig:gui_example}.}
 \label{fig:sample_placements}
 \end{figure}
 
@@ -159,16 +160,6 @@ Placement 1 is $(3) + (2 + 3) = 8$ while the distance based cost for Placement 2
 is $(7) + (2 + 3) = 12$. As desired, the cost function indicates that Placement 1
 is the better of the two.
 
-\begin{figure}[H]
-\centering
-\subfigure[Placement 1]{
-\fbox{\includegraphics[width=4.5cm]{Images/placement_example_1.png}}}
-\subfigure[Placement 2]{
-\fbox{\includegraphics[width=4.5cm]{Images/placement_example_2.png}}}
-\caption{Placements to demonstrate cost functions.}
-\label{fig:placement_costs}
-\end{figure}
-
 \paragraph{Blocking Based Cost}
 The most scarce resource on the protoboard are the rows. There are $10$ rows
 with which to work, and in producing a layout, we must fit all the wires within
@@ -189,6 +180,23 @@ with the cost associated with the column in the manner described above. The cost
 for Placement 1 is the sum of the squares of the costs for each column, which
 evaluates to $65$. The cost for Placement 2, computed similarly, is $87$. Once
 again, this cost function indicates that Placement 1 is better.
+
+\begin{figure}[H]
+\centering
+\subfigure[Placement 1]{
+\fbox{\includegraphics[width=4.5cm]{Images/placement_example_1.png}}}
+\subfigure[Placement 2]{
+\fbox{\includegraphics[width=4.5cm]{Images/placement_example_2.png}}}
+\caption[Placement cost function examples]{In both placements, there are two
+pairs of locations that need to be connected, denoted by either two circles or
+two rectangles. Using the distance based cost
+function, Placement 1 has a cost of
+$8$ and Placement 2 has a cost of $12$. Using the blocking based cost function,
+Placement 1 has a cost of $65$ and Placement 2 has a cost of $87$. The labels
+at each of the columns indicate the costs for the columns in the blocking cost
+sense.}
+\label{fig:placement_costs}
+\end{figure}
 
 \subsubsection{Small Heuristic Cost}
 
@@ -520,7 +528,8 @@ generated schematic.
 \begin{figure}[H]
 \begin{center}
 \includegraphics[width=\textwidth]{Images/auto_generation_bases.png}
-\caption{Bases for random schematic generation.}
+\caption[Random schematic generation bases]{Bases for the random schematic
+generation scheme.}
 \label{fig:random_gen_bases}
 \end{center}
 \end{figure}
@@ -528,7 +537,8 @@ generated schematic.
 \begin{figure}[H]
 \begin{center}
 \includegraphics[width=\textwidth]{Images/auto_generation_example.png}
-\caption{Sample randomly generated schematic.}
+\caption[Sample randomly generated schematic]{Sample randomly generated
+schematic.}
 \label{fig:example_random_schematic}
 \end{center}
 \end{figure}
