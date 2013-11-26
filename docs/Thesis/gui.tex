@@ -5,9 +5,9 @@
 
 One of the aims of this project is making it easy for students to describe the
 circuit they have in mind to a computer. To that end, it is important that the
-schematic entry tool be intuitive and easy to use. In this section, we will
-describe the capabilities and features offered by the schematic entry Graphical
-User Interface. Figure \ref{fig:gui} presents the GUI containing a sample
+schematic entry tool be intuitive and easy to use. In this section, we
+describe the capabilities and features offered by the schematic entry GUI.
+Figure \ref{fig:gui} presents the GUI containing a sample
 schematic. The figure depicts the four important sections of the GUI: the board,
 the palette, the analysis section, and the cursor toggle section.
 
@@ -32,7 +32,7 @@ connectors, respectively. The robot
 connector contains pins for power and ground as well as for analog input pins
 and one analog output pin. The head is composed of a motor, a motor pot, and
 two photosensors. Figure \ref{fig:robot_head_parts} shows these last two
-circuit components as they appear in the editor.
+circuit components as they would appear in the editor.
 
 \begin{figure}
 \begin{center}
@@ -62,7 +62,7 @@ existing wire), or an empty location on the board (which would create a new
 connection point). A wire may also be drawn starting from an existing wire,
 which creates a new connection point on the existing wire. The GUI allows the
 user to drag connection points. To achieve this, the GUI has two possible
-states for the cursor, the drawing states and the dragging state (mainly
+states for the cursor, the drawing state and the dragging state (mainly
 referring to wires). Item $2$ in Figure \ref{fig:gui} displays the panel that
 lets the user toggle between these two states. In the dragging state, the user
 can drag connection points just like other circuit components.
@@ -90,7 +90,8 @@ angle and motor's rotational velocity as functions of time. If there are any
 pots in the circuit, the user is expected to select a simulation file for each
 pot describing how the pot is manipulated as a function of time. Similarly,
 if the photosensors are a part of the circuit, the user is expected to select
-a simulation file for each photosensor set describing the lamps distance and
+a simulation file for each photosensor set describing the corresponding lamp's
+distance and
 angle from the head. These simulations help students (and staff) verify that
 they have a correctly functioning circuit before building it.
 
@@ -107,7 +108,7 @@ feature.
 
 \begin{figure}
 \begin{center}
-\includegraphics[width=\textwidth]{Images/gui_wire_highlight.png}
+\includegraphics[width=10cm]{Images/gui_wire_highlight.png}
 \caption{Wire highlighting example.}
 \label{fig:wire_highlight}
 \end{center}
