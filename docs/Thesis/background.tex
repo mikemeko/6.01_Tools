@@ -9,7 +9,7 @@ previous work done that relates to this project.
 
 \section{Technical Background}
 
-As we are producing a new teaching tool for 6.01 in this project,
+As this project introduces a new teaching tool for 6.01,
 let us first discuss the scope of circuits in 6.01.
 
 \subsection{Circuit Components}
@@ -22,7 +22,7 @@ depicted in Figure \ref{fig:robot}. The robots can be equipped with heads that
 contain three parts held together by a shaft: a LEGO motor, a potentiometer, and
 a plate containing two photosensors. The robot in Figure \ref{fig:robot} has a
 head attached. To connect a layout to a LEGO motor, a student would use a 6-pin
-connector, and to connect a layout to a robot or a robot head, a student
+connector, and to connect a layout to a robot or a robot head, a student would
 use an 8-pin connector.
 
 \begin{figure}
@@ -60,7 +60,7 @@ inserted into a protoboard.}
 \subsection{Circuit Schematic}
 
 Throughout this paper, the term \textit{circuit schematic} will refer to a
-drawing or a sketch of a circuit containing its components and all the
+drawing, or a sketch, of a circuit containing its components and all the
 interconnections between the components drawn as wires. This is what one would
 sketch on a piece of paper in the process of designing a circuit. Figure
 \ref{fig:schematic} presents an example of a circuit schematic.
@@ -77,7 +77,7 @@ controller circuit.}
 \subsection{Protoboard}
 \label{sec:what_is_protoboard}
 
-Protoboards are boards on which one can quickly build and test
+\textit{Protoboards} are boards on which one can quickly build and test
 small circuits. They present a $2$-dimensional array of interconnected dots
 in which circuit pieces and wires can be inserted. Figure
 \ref{fig:physical_protoboard} presents an example of an empty physical
@@ -101,7 +101,8 @@ In the middle two groups, the dots are interconnected vertically.}
 
 \subsection{Protoboard Layout}
 
-The protoboard layout of a given schematic is the placement of circuit pieces
+The \textit{protoboard layout} of a given schematic is the placement of
+circuit pieces
 and wires on a protoboard that corresponds to the schematic. This is done by
 placing the appropriate pieces on the protoboard and then appropriately
 interconnecting them with wires as prescribed by the schematic. As an example,
@@ -111,8 +112,8 @@ corresponding to the schematic shown in Figure \ref{fig:schematic}.
 \begin{figure}
 \begin{center}
 \includegraphics[width=\textwidth]{Images/sample_physical_layout.jpg}
-\caption[Sample protoboard layout]{Protoboard layout for the schematic shown in
-Figure \ref{fig:schematic}.}
+\caption[Sample protoboard layout]{One possible protoboard layout for the
+schematic shown in Figure \ref{fig:schematic}.}
 \label{fig:eg_s_to_pb}
 \end{center}
 \end{figure}
@@ -144,7 +145,7 @@ automatically generating a ``good'' protoboard layout from a circuit schematics.
 
 \section{Previous Work}
 
-Here we will discuss previous work that has been done relating to this project.
+Here we discuss previous work that has been done relating to this project.
 First, as our project aims to augment the quality of 6.01, we look at the
 currently available infrastructure. Next, we look at what work has
 been done relating to layout in general.
@@ -161,13 +162,13 @@ the circuit to make sure that it behaves as desired. CMax provides a very fast
 and safe way of debugging circuit layouts compared to debugging layouts on a
 physical protoboard. Once the students are satisfied with their
 observations from CMax, they build their circuits on physical protoboards and
-carry out the appropriate experiments. Figure \ref{fig:cmax_sample} presents a
-CMax layout of the schematic in Figure \ref{fig:schematic}.
+carry out the appropriate experiments. Figure \ref{fig:cmax_sample} presents one
+possible CMax layout for the schematic shown in Figure \ref{fig:schematic}.
 
 \begin{figure}
 \begin{center}
 \includegraphics[width=\textwidth]{Images/sample_circuit.png}
-\caption[CMax]{CMax layout for the schematic shown in Figure
+\caption[CMax]{One possible CMax layout for the schematic shown in Figure
 \ref{fig:schematic}.}
 \label{fig:cmax_sample}
 \end{center}
@@ -190,7 +191,7 @@ with CMax. The process of laying out a schematic does not really have very much
 instructive substance. This process is essentially solving a puzzle, and has
 almost nothing to do with the subject matter -- designing circuits. In fact,
 when the circuits get complicated and involve many pieces, translating a
-schematic diagram into a protoboard layout gets to be quite challenging and
+schematic diagram into a protoboard layout becomes quite challenging and
 time-consuming. In these situations, students often end up with convoluted and
 unpleasant layouts that are very difficult to debug in the likely case of the
 circuit not behaving as expected. Not only are such layouts difficult to debug
@@ -200,7 +201,7 @@ out the right schematic diagram of the circuit of interest, but should not have
 to produce the corresponding protoboard layouts.
 
 With the schematic entry tool this paper introduces, a typical 6.01 circuits lab
-would proceed as follows. First, as before, the students would draw schematic
+would proceed as follows. First, as before, students would draw schematic
 diagrams of their circuits on paper. Once they have
 schematic drawings they are happy with, they can directly draw their schematic
 drawings on the schematic entry tool. In fact, students may proceed directly to
@@ -221,7 +222,8 @@ In my explorations, I was not able to find any tools that completely
 automatically translate circuit schematics into protoboard layouts.
 However, there
 do exists tools that perform partially- or fully-automatic Printed Circuit
-Board (PCB) layout. To my findings, most of these tools do not publish their
+Board (PCB) layout. To my findings, the owners of these tools do not publish
+their
 algorithms and, rather, keep them proprietary. Hence, I was not able to build my
 work off of any existing products. In a sense, this project aims to build
 something new.

@@ -14,9 +14,9 @@ The proposed solution to this problem involves several simplifications and uses
 of heuristics. This is a result of the fact that the search space we are working
 with is very large. It is difficult to say exactly how large this search space
 is, but we can get an idea of its size. Let us just consider the number of ways
-we can put wires down on an empty protoboard (even in ways that may not make
+we can put down wires on an empty protoboard (even in ways that may not make
 sense
-from a circuit theory standpoint). Finding this number reduces to finding the
+from a circuit theoretic standpoint). Finding this number reduces to finding the
 number of ways $T(n)$ in which we can choose pairs out of $n$ items. Equation
 \ref{eq:telephone} givens an expression for $T(n)$\footnote{The sequence of
 numbers described by $T(n)$ is sometimes referred to as the telephone numbers
@@ -37,7 +37,7 @@ will be hopeless.
 
 \subsubsection{Resistors}
 
-For the sake of simplicity, and to significantly reduce the search space, we
+For the sake of simplicity, and to significantly reduce the search space size, we
 place resistors in the middle strip of the protoboard as shown in Figure
 \ref{fig:piece_placement}. This choice is critical,
 as the resistor pieces can generally be placed at numerous places on the
@@ -60,7 +60,9 @@ on the protoboard contains two op-amps within it. Equation
 different ways to package together $n$ op-amps. For example, if we have $2$
 op-amps, we can either use one op-amp package for each, or put them both in the
 same package, which we can do in one of two different ways. All together, there
-are $3$ different ways to package together $2$ op-amps.
+are $3$ different ways to package together $2$ op-amps\footnote{When using only
+one of the op-amps in an op-amp package, we assume that we use the one on the
+left as drawn in Figure \ref{fig:op_amp_pin_out}.}.
 Table \ref{tb:opamp} gives the number of different packagings possible for
 various $n$.
 
@@ -90,16 +92,17 @@ $n$ & Number of ways to package $n$ op-amps \\
 \end{tabular}
 \end{singlespace}
 \end{center}
-\label{tb:opamp}
 \caption[Op-amp packaging possibilities]{Number of ways of packaging together
 $n$ op-amps for various values of $n$.}
+\label{tb:opamp}
 \end{table}
 
 Our placement approach explores all possible ways
 of packaging the op-amps. We do this because the typical 6.01 circuit contains
 no more than $6$ op-amps, and so we are tasked with exploring at most $331$
 alternatives, which is not too computationally intensive. If the
-algorithm was meant to handle a larger number of op-amps (for example $10$), then
+algorithm were meant to handle a larger number of op-amps (for example $10$),
+then
 this approach would not work as the number of alternatives to consider would be
 far too large, and we would have to consider different strategies.
 
@@ -141,7 +144,8 @@ of the circuits increases, the amount of time spent by the wiring step also
 increases. As with the success rate trends as a function of circuit
 complexity, we observe that there are outliers at the far end of the figure due
 to a very small sample of the most complex circuits in the randomly generated
-schematic dataset. As circuit complexity increases, the variance in wiring time
+schematic dataset. As circuit complexity increases, the standard error of
+wiring time
 when using random placement also increases significantly. This is a result of
 the fact that random placement frequently fails on the most complex
 circuits, and so the sample size we have for successful runs is very small.
@@ -189,10 +193,11 @@ expected because the search task in all pairs wiring is more difficult than in
 the other alternatives. Notice that as the search tasks get less difficult from
 all pairs to per-node to per-pair wiring, the effect of the expanding limit
 decreases. The other four alternatives have very comparable success rates.
+Finally, we note that straight wiring, as expected, has a $100\%$ success rate.
 
 \subsubsection{Wiring Time}
 Figure \ref{fig:wiring_time_trend} compares wiring time across
-the five methods. Once again, we observe that the all pairs methods takes
+the six methods. Once again, we observe that the all pairs methods takes
 significantly more time than the other methods. We also observe from Figure
 \ref{fig:wiring_time_trend} that the wiring times for the two per-node methods
 are comparable, and that the wiring times for the two per-pair methods are also
@@ -201,14 +206,19 @@ per-pair wiring times. This trend is also expected as the per-node methods
 attempt to connect multiple pairs of locations at once, which generally requires
 searching through more alternatives than
 connecting each of the pairs of locations individually.
+Finally, we note that straight wiring, as expected, takes less time to complete
+than all of the other alternatives.
 
 \subsubsection{Layout Quality}
 Figures \ref{fig:wiring_quality_trend} and
 \ref{fig:wiring_badness_trend} compare the
-quality of the layouts produced by the five alternative wiring methods. First,
+quality of the layouts produced by the six alternative wiring methods. First,
 as we observed in the placement method comparison, we see that there is very
-little difference in terms of number of wires used and the total wire length.
-However, there are noticeable differences in the number of wire crosses. We see
+little difference in terms of number of wires used and the total wire length
+among the alternatives that utilize search to accomplish the wiring. We note
+that straight wiring uses uses fewer wires than all of the other alternatives
+as it uses exactly one wire per pair of locations.
+There are noticeable differences in the number of wire crosses. We see
 that the all pairs method generates layouts with much fewer wire crosses than
 the other methods. This is expected since the algorithm runs one search to
 connect all pairs of locations. Conversely, the per-pair (decreasing) and
@@ -220,10 +230,12 @@ We observe that the order in which we consider pairs of
 locations has a telling effect on how good the generated layouts will be.
 In essence,
 connecting the harder pairs of locations generally produces more wire crosses.
+Finally, as expected, we observe that straight wiring produces comparatively
+poor layouts.
 
 \subsubsection{Conclusion}
 While the all pairs method is the least successful
-method and generally takes the longest among the five,
+method and generally takes the longest among the six,
 it tends to produce the best layouts when it does succeed. On the other hand,
 the alternatives that break the problem down into smaller pieces succeed more
 often and finish more quickly, though they tend to produce worse results.
@@ -255,7 +267,8 @@ more successful. Figure \ref{fig:search_time_trend} supports this
 expectation.
 
 \subsubsection{Layout Quality}
-Figure \ref{fig:search_quality_trend} shows that the layouts generated by the
+Figures \ref{fig:search_quality_trend} and \ref{fig:search_badness_trend} show
+that the layouts generated by the
 algorithm when using Best First Search are worse than the layouts generated
 when using $A*$. Most importantly, the
 number of wire crosses in the layouts produced by Best First Search are markedly
@@ -285,10 +298,10 @@ consider both orders of doing the wiring, increasing order first and decreasing
 order second. We use per-pair wiring because it takes considerably
 less time than both per-node and all pairs wiring, and neither of the other
 wiring methods has a better success rate. We try increasing order first because
-it tends to generate layouts with fewer crossing wires then decreasing order.
+it tends to generate layouts with fewer crossing wires than the reverse order.
 
 Let us now consider the data we obtained for the combined algorithm. Firstly, we
-saw that the combined algorithm had a $100\%$ success rate, which is critical
+see that the combined algorithm had a $100\%$ success rate, which is critical
 when we consider the fact that students will be using a tool that almost never
 fails. This success rate is a result of the last part of Algorithm
 \ref{alg:combined} that uses single wires to connect pairs of locations that
@@ -325,7 +338,7 @@ they can be placed as if they were wires of a fixed set of lengths.
 This suggests we can think of resistors as wires,
 and thus can handle them in the wiring step of the algorithm instead of
 the placement step. As a result, the search that we do in the wiring step would
-now need to be
+need to be
 more elaborate. Not only would we need to keep track of pairs of locations on the
 protoboard that need to be connected, but we would also need to know whether to
 put a resistor between the two locations. In the latter case, we have the
@@ -333,7 +346,7 @@ restriction that one of the wires we use to connect the pair of locations needs
 to be of a length that can fit a resistor.
 
 While this idea appears very promising, its implementation is not trivial.
-First, if there is any node in our circuit that is only
+First, if there is any node in the circuit that is only
 connected to resistors (and no other circuit components), then that node will be
 unrepresented on the protoboard at the end of the placement step. One possible
 solution to this problem is to reserve an empty column on the
@@ -341,7 +354,7 @@ protoboard for the node between the resistors, which we can then use in the
 wiring step. A better solution may
 be discovering the best places for the node as we are placing down resistors in
 the wiring step, but this solution would make the search we carry out
-more complicated. Second, we will need a new kind of heuristic for our $A*$
+more complicated. Second, we will need a new kind of heuristic for the
 search that takes resistors into account. One possible solution is to highly
 penalize an absent resistor when computing the heuristic.
 Even with an amended heuristic, however, there
@@ -351,7 +364,8 @@ adjacent locations that must be connected by a resistor).
 \subsection{Building Layouts Similar to Previously Generated Layouts}
 
 One of the weaknesses of our tool is that it may generate different layouts for
-the same circuit schematic. This is not a result of an explicit randomization
+the same circuit schematic on different runs.
+This is not a result of an explicit randomization
 in our algorithm, but rather a side effect of some data structures we use such
 as Python sets and dictionaries. A similar problem is that a slight change in
 the circuit schematic may result in a completely different layout. It is,

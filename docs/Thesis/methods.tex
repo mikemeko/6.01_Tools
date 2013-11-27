@@ -59,7 +59,8 @@ two possible orientations. Op-amp pieces are unique in that each op-amp pieces
 contains two op-amps within it. Thus, we face the task of packaging the op-amps
 in the schematic in the ``best'' possible way, i.e. so as to require as little
 work as possible when wiring the pieces together. Section
-\ref{sec:justify_placement} more precisely discusses the number of possibilities.
+\ref{sec:justify_placement} more precisely discusses the number of different
+ways of packaging op-amps.
 
 \begin{figure}
 \begin{center}
@@ -70,18 +71,15 @@ placing each of the circuit pieces on the protoboard.}
 \end{center}
 \end{figure}
 
-There are many available options when choosing a placement of a set of circuit
-pieces on the protoboard.
-First we must choose among a possibly large number of ways
-to package together the op-amps in the circuit.
-For each possible packaging of
+There are many ways of choosing a placement for a set of circuit pieces.
+First, we must choose from a possibly large number of ways
+to package together the op-amps. For each possible packaging of the
 op-amps, we must consider various ways of placing the pieces on the protoboard,
 even with the restrictions put forth above.
 
 \subsubsection{Simplifications}
 
-We reduce this large number of possibilities by only allowing placements in
-which no
+We reduce the number of options by only allowing placements in which no
 two pieces share a column. This is not necessary in general, but the
 number of pieces present in a typical 6.01 circuit could likely be realized
 under these circumstances.
@@ -89,14 +87,14 @@ under these circumstances.
 Next, we specify that there be exactly two columns on the protoboard separating
 each consecutive pair of pieces, unless the pieces are both resistors, in which
 case there must be exactly one column separating them. These numbers of columns
-were chosen to leave enough space for wiring. Given a set of pieces to be put on
-the protoboard, this specification reduces the
+were chosen to leave enough space for wiring. Given a set of pieces to be placed
+on the protoboard, this specification reduces the
 problem of choosing a placement for the pieces to finding an \emph{order} of the
 pieces together with choosing their respective vertical locations and
 orientations. Figure \ref{fig:sample_placements} shows two alternative
 placements for the schematic shown in Figure \ref{fig:gui_example} that both
-respect the stated placement specifications.
-We consider a few alternatives to finding a placement under these specifications.
+respect the stated specifications.
+We consider a few alternatives to finding placements under these specifications.
 
 \begin{figure}
 \subfigure[Placement 1]{
@@ -111,16 +109,15 @@ Figure \ref{fig:gui_example}.}
 \subsubsection{Random Placement}
 
 One simple placement strategy is to choose a placement randomly.
-That is, we choose
-an op-amp packaging randomly; we choose an order of the pieces randomly; and we
+That is, to choose
+an op-amp packaging randomly; to choose an order of the pieces randomly; and to
 choose the vertical locations and orientations of the pieces randomly as well.
 The advantage of this
-approach is that it gives us a placement very quickly without requiring much
-computation. On the other hand, we may end up placing two pieces that need to be
+approach is that it produces a placement very quickly without requiring much
+computation. On the other hand, it may place two pieces that need to be
 connected to each other very far apart, which would make the wiring task more
-difficult. We ought to consider alternatives in which we take into
-account the task of wiring. We should try to place the pieces so as to require
-as little work as possible during the wiring step.
+difficult. We ought to consider alternatives that try to place the pieces so as
+to require as little work as possible during the wiring step.
 
 \subsubsection{Minimal Heuristic Cost}
 
@@ -133,14 +130,14 @@ heuristic cost functions we considered.
 \paragraph{Distance Based Cost}
 Given a circuit
 schematic and a corresponding placement of the circuit pieces on the protoboard,
-every pair of components in the schematic that is connected by a wire gives us
+every pair of components in the schematic that is connected by wires indicates
 a corresponding pair of
 locations on the protoboard that must be connected by wires. However, we can
 express this requirement a little bit more concisely. We must consider all
 of the nodes in the schematic, and find the circuit components in the schematic
-that are connected to the respective nodes. Now for each node in the circuit, we
-get a set of locations on the protoboard that must be interconnected. The
-first step in devising the distance based cost function is to have a way to
+that are connected to the respective nodes. For each node in the circuit, we
+get a set of locations on the protoboard that must be interconnected by wires.
+The first step in devising the distance based cost function is to have a way to
 estimate the cost of connecting two locations on the protoboard. A simple such
 cost function is the Manhattan distance between the two
 locations. Since we want to produce layouts that only contain
@@ -148,11 +145,11 @@ horizontal and vertical wires (i.e. no diagonal wires), the Manhattan distance
 cost is appropriate. Given this heuristic cost for connecting two locations with
 wires, we can define the cost for interconnecting the locations
 associated with a particular node to be the weight of the minimum spanning tree
-of the locations. Now we can define the cost of a placement to be the sum over
+of the locations. We can now define the cost of a placement to be the sum over
 all nodes in the circuit of the cost for interconnecting the locations for each
 node.
 
-We can demonstrate this cost function using the two placements shown in Figure
+We demonstrate this cost function using the two placements shown in Figure
 \ref{fig:placement_costs}. In the Figure, each placement has two connections
 that must be made, the first indicated by two circled locations and the second
 indicated by two locations outlined by rectangles. The distance based cost for
@@ -167,7 +164,7 @@ these $10$ rows. This gives us an idea on how to define how hard a placement
 will be to wire. Given a set of pieces, we can find a set of pairs of locations
 on the board that need to be connected as we did above.
 As noted in Section \ref{sec:what_is_protoboard} there are two groups of $5$
-rows on a protoboard. For each group of rows and each column in the group of
+rows on a protoboard. For each group of $5$ rows and each column in the group of
 rows, we can count how many pieces reside in that column, and how many wires may
 pass through the column (in connecting a given pair of locations assuming an
 empty protoboard). The heuristic should reflect columns that
@@ -203,7 +200,7 @@ sense.}
 Using one of the two cost functions discussed above, we can aim to find a
 placement with the minimal cost. However, this involves trying all possible
 orderings of the pieces with which we are working. For example, if we are trying
-to order $10$ pieces, we would need to look at $10! = 3628800$ possible
+to order $10$ pieces, we would need to look at $10! = 3,628,800$ possible
 orderings. Note that this is in addition to
 searching over all possible ways
 of packaging the op-amps together. It is clear to see that the search for a
@@ -233,7 +230,7 @@ Pop the first piece in $P$ and push it onto $Q$\\
 \While{$Q$ is not empty}{
 $p$ $\leftarrow$ $Q$.pop()\\
 Consider all vertical locations and orientations of $p$\\
-Place $p$ at an index in $R$ that minimizes the cost of $P$\\
+Place $p$ at an index in $R$ that minimizes the cost of $R$\\
 \ForEach{piece $q$ in $P$ connected to $p$}{
 Pop $q$ out of $P$ and push it onto $Q$\\
 }}}
@@ -244,8 +241,8 @@ Pop $q$ out of $P$ and push it onto $Q$\\
 \subsection{Part 2: Wiring}
 
 Once the placement task is done, the next problem is wiring.
-We approach this problem as a search problem and use the $A*$ search algorithm to
-solve it. In fact, the wiring step uses an infrastructure for the $A*$ search
+We approach this problem as a search problem and use the $A*$ Search algorithm to
+solve it. In fact, the wiring step uses an infrastructure for the $A*$ Search
 algorithm exactly as presented in 6.01. Hence, students in
 the class may appreciate an application of something they learned
 earlier in the course to produce a tool that they are using for something that
@@ -263,14 +260,14 @@ vertex, if we use a heuristic that is \emph{admissible}. A heuristic is said to
 be admissible if it does not overestimate the actual minimal cost to a goal
 vertex
 for any state. Here, however, we will not worry about the admissibility of our
-heuristic as our main goal is designing the heuristic to prune as many states as
-possible.}. The algorithm works by keeping track of an agenda
+heuristic as our main goal is designing the heuristic to prune out as many
+states as possible.}. The algorithm works by keeping track of an agenda
 of vertices to consider
 in a priority queue, where the value associated with each vertex in the priority
 queue is the sum of the cost to get from the start vertex to the vertex at hand
 and the value of the heuristic
-computed at the state of the vertex, which is an estimate of the minimum
-cost to get from the vertex at hand to a goal vertex.
+computed at the vertex, which is an estimate of the minimum
+cost to get from the vertex to a goal vertex.
 At each step, the algorithm pops
 one vertex from the priority queue (the vertex with the minimum associated
 value). If the vertex happens to satisfy the goal of
@@ -303,15 +300,13 @@ represent a protoboard layout that just has the circuit pieces with no
 wires as well as all the pairs of locations that must be connected.
 
 We obtain the neighbors of a vertex by taking the current protoboard layout and
-producing new ones in which we place exactly one wire at various locations. We
-choose the starting point of a wire to be any one of the free locations on the
+producing new ones in which we place exactly one new wire. We
+choose the starting point of the wire to be any one of the free locations on the
 protoboard that is already connected to one of the pieces, and we extend the
 wires in all possible vertical and horizontal directions up to some fixed wire
-length. Note that we need
-to take great care when placing wires in order not to short, or directly connect,
-two different nodes. We
-discard any vertices that arise from placing a wire that shorts two different
-nodes.
+length. Note that the process needs
+to take great care when placing new wires in order not to short, or directly
+connect, two different nodes.
 
 The way we define the cost of a vertex, i.e. the cost of getting from the
 starting vertex to a vertex of interest, depends on our definition of a good
@@ -340,7 +335,7 @@ locations for all of the nodes in the circuit, and have the starting vertex
 represent
 this set of pairs of locations. In this strategy, we run exactly $1$ search to
 solve the problem.
-\item Per-node (increasing): Treat each node separately. That is, iteratively
+\item Per-node (increasing): Treat each node individually. That is, iteratively
 connect the locations for each of the nodes until there are no more disconnected
 nodes in the circuit. In this strategy, we run a number of searches equal to the
 number of nodes in the circuit. Order the searches in
@@ -349,7 +344,7 @@ arbitrarily.
 \item Per-node (decreasing): Similar to per-node (increasing), but order the
 searches in \emph{decreasing} order of the number of locations per node.
 \item Per-pair (increasing): Treat each pair of locations that needs to be
-connected separately. That is, iteratively connect pairs of locations that need
+connected individually. That is, iteratively connect pairs of locations that need
 to be connected until there are no more disconnected pairs.
 In this strategy, we run a number of searches equal to the number of pairs of
 locations that must be connected. Order the searches in \emph{increasing} order
@@ -366,11 +361,11 @@ search and does not take layout quality into consideration.
 
 The strategy we choose among these six
 has a significant effect on the outcome of the wiring step.
-We will look at the difference in detail in Chapter \ref{ch:results}.
+We will look at the differences in detail in Chapter \ref{ch:results}.
 
 \subsubsection{Goal test}
 
-We test that a given vertex is a goal vertex by verifying that its
+We say that a given vertex is a goal vertex by verifying that its
 representation indicates no further pairs of locations to connect.
 
 \subsubsection{Search heuristic}
@@ -378,10 +373,11 @@ representation indicates no further pairs of locations to connect.
 In $A*$ search, choosing the right heuristic can often make the search much more
 efficient. Given a
 vertex, we can estimate its distance from a goal as follows. For each pair of
-locations $(\text{loc}_1, \text{loc}_2)$ that need to be connected, we could consider the
-pair's distance from the
+locations $(\text{loc}_1, \text{loc}_2)$ that need to be connected, we could
+consider the pair's distance from a
 goal to be the smallest Manhattan distance between any location connected to
-$\text{loc}_1$ and any other location connected to $\text{loc}_2$. To compute the heuristic
+$\text{loc}_1$ and any other location connected to $\text{loc}_2$.
+To compute the heuristic
 cost of a vertex, we simply add up this value for each of the pairs of locations
 that need to be connected. In Chapter \ref{ch:results} we will compare the
 performance of $A*$ with this heuristic versus carrying out Best First Search
@@ -394,15 +390,15 @@ the cost incurred on the path from the starting vertex.
 With the implementation of $A*$ discussed so far, the algorithm
 terminates if we either find a solution, or we
 exhaust the search space without finding a solution. In our search problem, the
-number of states is very large (Section \ref{sec:search_space_size} discusses
+search space size is very big (Section \ref{sec:search_space_size} discusses
 the search space size
 in more detail), so this implementation of $A*$ may sometimes run out
 of memory during the search. To mitigate this problem, we introduce a limit to
 the number of vertices the algorithm expands before giving up. That is, if the
 algorithm expands a certain fixed number of vertices and still has not found an
-answer, the algorithm gives up. For us, this limit is set to $300$ vertices.
+answer, it gives up. For us, this limit is set to $300$ vertices.
 In Chapter \ref{ch:results} we provide data that describes the effect of this
-choice.
+choice on each of the alternatives discussed above.
 
 \subsection{Combining the Methods}
 \label{sec:combined_alg}
@@ -458,7 +454,8 @@ The only way for the algorithm to fail is for there to be two nodes on the
 protoboard that need to be
 connected where all of the protoboard locations for at least one of the nodes are
 occupied, which is highly unlikely. This high success rate comes at the
-cost of placing wires that will almost surely cross other wires on the board.
+cost of placing possibly diagonal wires that will almost surely cross other
+wires, and possibly even circuit pieces, on the board.
 
 The algorithm automatically starts out by connecting the top and bottom rails
 of the protoboard
@@ -498,7 +495,7 @@ we tried to design the randomly generated schematics so that the range of
 complexity of these schematics mimics the range of complexity of circuits that
 students may build in 6.01.
 
-The random schematic generation goes as follows. We create $6$ basic parts
+The random schematic generation goes as follows. We created $6$ basic parts
 of schematics. These $6$ bases are:
 \begin{itemize}
 \item Three resistors arranged in a T-shaped configuration.
@@ -519,7 +516,7 @@ no need for more than one of each of these in 6.01 labs. The pot and follower
 op-amp base can appear at most twice as we never need more than two pots in 6.01
 circuits. The motor base can also appear at most twice as we never need more
 than two motors per circuit in 6.01 labs. The other two bases, T-resistor
-configuration and two resistors in series with a follower op-amp, can be
+configuration and two resistors in series together with a follower op-amp, can be
 repeated up to 6 times. For a given combination of bases, we generate a
 set of schematics in which we randomly choose to make connections between the
 bases. Figure \ref{fig:example_random_schematic} presents a sample randomly
@@ -550,7 +547,7 @@ compute them combinatorially.}.
 When testing a particular algorithm on these test
 schematics, we run the algorithm on each test schematic $10$ times. Chapter
 \ref{ch:results} presents the data collected in this manner comparing the
-various alternatives discussed in this Chapter.
+various alternatives discussed in this chapter.
 
 An important question we must answer is how we quantify the goodness (or badness)
 of a particular layout. Our approach takes a weighted sum of a particular set of
@@ -567,7 +564,7 @@ attributes of a given layout. We define the badness of a layout to be:
 We will use this metric to decide which of a given set of alternative
 layout generation strategies tends to produce better layouts.
 The weights in the metric were chosen to reflect how
-bad each of the attributes are relative to one another. This choice of weights,
+bad each of the attributes is relative to the others. This choice of weights,
 therefore, reflects the following reasonable set of statements. Recall that our
 goal is to produce layouts that are easy to build, easy to debug, and
 aesthetically pleasing.
@@ -576,10 +573,10 @@ aesthetically pleasing.
 length on the protoboard by $2$.
 \item Having two wires that cross is about as bad as increasing the total
 wire length on the protoboard by $5$.
-\item A diagonal wire is about as bad as two wires that cross.
-\item Having $10$ wires that cross is about as bad as having a wire that
-crosses a circuit piece.
-\item Having $10$ wires that cross circuit pieces is about as bad as having a
-wire occlusion. The penalty on wire occlusions is meant to indicate that we want
+\item A diagonal wire is about as bad as a pair of wires that cross.
+\item Having a wire that crosses a circuit piece is about as bad as having $10$
+pairs of wires that cross.
+\item Having a wire occlusion is about as bad as having $10$ wires that cross
+circuit pieces. The penalty on wire occlusions is meant to indicate that we want
 absolutely no wire occlusions in our layouts.
 \end{itemize}
