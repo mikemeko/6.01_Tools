@@ -218,6 +218,12 @@ pieces are placed close to it. Second, we place the pieces with the most nodes
 first since those are the ones that most likely have connections with many other
 pieces.
 
+The implementation of Algorithm \ref{alg:small_cost_placement} we use for the
+tool may produce different placements on multiple runs. This is a side
+effect of some of the data structures used to store objects -- Python sets and
+dictionaries. As a result, the layout algorithm may generate different layouts
+for the same circuit on different runs.
+
 \begin{algorithm}
 \KwData{A list $P$ of circuit pieces.}
 \KwResult{A list $R$ of circuit pieces representing a placement.}

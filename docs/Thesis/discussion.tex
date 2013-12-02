@@ -28,7 +28,8 @@ T(n) = \sum_{k = 0}^{\lfloor \frac{n}{2} \rfloor}{\frac{n!}{k! (n - 2k)! 2^k}}
 \end{equation}
 
 In this problem, we have that $n = 830$, the number of available locations on an
-empty protoboard. Evaluating $T$ at $n = 830$, we get approximately $2.8e1043$.
+empty protoboard. Evaluating $T$ at $n = 830$, we get approximately
+$2.8\times10^{1043}$.
 The largeness of this number indicates that doing any sort of exhaustive search
 will be hopeless.
 
@@ -362,18 +363,13 @@ are cases where the search may not find an answer (for instance a pair of
 adjacent locations that must be connected by a resistor).
 
 \subsection{Building Layouts Similar to Previously Generated Layouts}
-
-One of the weaknesses of our tool is that it may generate different layouts for
-the same circuit schematic on different runs.
-This is not a result of an explicit randomization
-in our algorithm, but rather a side effect of some data structures we use such
-as Python sets and dictionaries. A similar problem is that a slight change in
+One problem with the current tool is that a slight change in
 the circuit schematic may result in a completely different layout. It is,
 therefore, very important that students in 6.01 be confident that they designed
 the right circuit before taking the time to build their circuit.
 This is where the simulation
-capabilities of our tool come in to play. As an alternative solution to this
-problem, it may be very useful to have our
+capabilities of the tool come in to play. As an alternative solution to this
+problem, it may be useful to have the
 tool remember the last placement it used and try to produce a new placement as
 similar to the last one as possible.
 
@@ -383,5 +379,5 @@ The results we have gotten for the final algorithm are encouraging.
 It has a $100\%$ success rate and produces layouts that, by our metric, are very
 good. If this tool saves $1$ lab hour per student per semester (time the
 student would have spent producing layouts), then we are
-looking at a savings of about $200$ 6.01 lab hours per semester, which is
+looking at a savings of about $200$ 6.01 lab hours per semester, which is a
 fantastic success.
