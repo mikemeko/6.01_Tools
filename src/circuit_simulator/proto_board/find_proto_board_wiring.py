@@ -24,6 +24,7 @@ from constants import VALID_WIRE_LENGTHS
 from core.search.search import a_star
 from core.search.search import Search_Node
 from itertools import product
+from random import random
 from util import body_opp_section_rows
 from util import dist
 from util import is_body_loc
@@ -361,10 +362,13 @@ def _find_wiring_per_pair(loc_pairs, start_proto_board, order, best_first,
     print '\tdone.'
   return proto_board, all_num_expanded
 
-def find_terrible_wiring(loc_pairs, start_proto_board):
+def find_terrible_wiring(loc_pairs, start_proto_board, pick_good_wire=False):
   """
   Finds a terrible wiring without penalizing anything at all.
   To be used as a fall-back option.
+  |pick_good_wire|: for each pair of locations, we have a choice of what wire
+      to put. If this flag is True, a good choice is made based on some cost
+      metric.
   """
   proto_board = start_proto_board
   connect_loc_pairs = []
@@ -414,6 +418,7 @@ def find_terrible_wiring(loc_pairs, start_proto_board):
           proto_board.get_pieces())
       return (dist(l1, l2) + 10 * wire.diagonal() + 100 * num_wires_crossed +
           1000 * num_pieces_crossed)
-    l1, l2 = min(candidates, key=cost)
+    l1, l2 = min(candidates, key=cost if pick_good_wire else
+        lambda candidate: random())
     proto_board = proto_board.with_wire(Wire(l1, l2, node))
   return proto_board
