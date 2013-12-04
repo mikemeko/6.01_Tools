@@ -12,44 +12,44 @@ A level-1 auxiliary file: gui.aux
 A level-1 auxiliary file: biblio.aux
 The style file: plain.bst
 Database file #1: main.bib
-You've used 2 entries,
+You've used 4 entries,
             2118 wiz_defined-function locations,
-            519 strings with 4513 characters,
-and the built_in function-call counts, 380 in all, are:
-= -- 32
-> -- 8
+            525 strings with 4528 characters,
+and the built_in function-call counts, 692 in all, are:
+= -- 60
+> -- 10
 < -- 0
-+ -- 4
++ -- 6
 - -- 2
-* -- 11
-:= -- 58
-add.period$ -- 5
-call.type$ -- 2
-change.case$ -- 8
+* -- 19
+:= -- 90
+add.period$ -- 9
+call.type$ -- 4
+change.case$ -- 16
 chr.to.int$ -- 0
-cite$ -- 2
-duplicate$ -- 14
-empty$ -- 46
+cite$ -- 4
+duplicate$ -- 28
+empty$ -- 92
 format.name$ -- 2
-if$ -- 84
+if$ -- 162
 int.to.chr$ -- 0
-int.to.str$ -- 2
+int.to.str$ -- 4
 missing$ -- 0
-newline$ -- 13
+newline$ -- 21
 num.names$ -- 2
-pop$ -- 21
+pop$ -- 41
 preamble$ -- 2
-purify$ -- 6
+purify$ -- 12
 quote$ -- 0
-skip$ -- 12
+skip$ -- 26
 stack$ -- 0
-substring$ -- 10
-swap$ -- 2
+substring$ -- 20
+swap$ -- 4
 text.length$ -- 0
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 8
+type$ -- 16
 warning$ -- 0
 while$ -- 2
-width$ -- 3
-write$ -- 19
+width$ -- 5
+write$ -- 33

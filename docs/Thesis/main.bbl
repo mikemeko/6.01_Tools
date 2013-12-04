@@ -2,6 +2,14 @@
   \newcommand{\singleletter}[1]{#1} \newcommand{\switchargs}[2]{#2#1}
 \begin{thebibliography}{1}
 
+\bibitem{cadence}
+Cadence.
+\newblock http://www.cadence.com.
+
+\bibitem{eagle}
+Eagle.
+\newblock http://www.cadsoftusa.com.
+
 \bibitem{sixohone}
 Introduction to \uppercase{EECS I}.
 \newblock http://web.mit.edu/6.01.
@@ -9,7 +17,6 @@ Introduction to \uppercase{EECS I}.
 \bibitem{cmax}
 6.01 Staff.
 \newblock \uppercase{CM}ax.
-\newblock
-  \newline{http://sicp-s4.mit.edu/cat-soop/\_\_STATIC\_\_/6.01/cmax\_docs/cmax\_docs.html}.
+\newblock http://web.mit.edu/6.01/www/cmax.
 
 \end{thebibliography}
