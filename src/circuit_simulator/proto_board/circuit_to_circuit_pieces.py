@@ -19,6 +19,7 @@ from circuit_piece_placement import find_placement
 from circuit_piece_placement import set_locations
 from circuit_pieces import Head_Connector_Piece
 from circuit_pieces import Motor_Connector_Piece
+from circuit_pieces import N_Pin_Connector_Piece
 from circuit_pieces import Op_Amp_Piece
 from circuit_pieces import Place_Holder_Piece
 from circuit_pieces import Pot_Piece
@@ -34,6 +35,8 @@ from circuit_simulator.simulation.circuit import Resistor
 from circuit_simulator.simulation.circuit import Signalled_Pot
 from circuit_simulator.simulation.circuit import Robot_Connector
 from itertools import permutations
+from util import section_locs
+from util import valid_loc
 import random
 
 def all_1_2_partitions(n):
@@ -216,9 +219,37 @@ def get_piece_placement(circuit, resistors_as_components, cost_type,
   return best_placement, ([] if resistors_as_components else
       resistors)
 
-def get_random_piece_placement(circuit):
+def _possible_top_left_locs(piece):
+  if isinstance(piece, Op_Amp_Piece):
+    return [(6, c) for c in xrange(60)]
+  elif isinstance(piece, Resistor_Piece):
+    if piece.vertical:
+      return [(6, c) for c in xrange(63)]
+    else:
+      return [(r, c) for r in xrange(2, 12) for c in xrange(60)]
+  elif isinstance(piece, Pot_Piece):
+    return [(r, c) for r in [2, 3, 4, 7, 8, 9] for c in xrange(61)]
+  elif isinstance(piece, N_Pin_Connector_Piece):
+    return [(r, c) for r in (range(0, 5) + range(7, 12)) for c in xrange(
+        63 - piece.width)]
+  else:
+    raise Exception('Invalid piece: %s' % piece)
+
+def _random_top_left_loc(piece, current_pieces):
+  taken_locs = reduce(set.union, [p.all_locs() for p in current_pieces], set())
+  possible = _possible_top_left_locs(piece)
+  random.shuffle(possible)
+  for loc in possible:
+    piece.top_left_loc = loc
+    if not any(set(section_locs(l)) & taken_locs for l in filter(valid_loc,
+        piece.all_locs())):
+      return True
+  return False
+
+def get_random_piece_placement(circuit, space_nicely=False):
   """
   Produces a random placement for the given |circuit|.
+  |space_nicely|: if this flag is True, follow spacing as done by set_locations.
   """
   resistors = filter(lambda obj: obj.__class__ == Resistor, circuit.components)
   resistor_pieces = map(resistor_piece_from_resistor, resistors)
@@ -253,6 +284,18 @@ def get_random_piece_placement(circuit):
     add_piece = random.choice([piece, piece.inverted()])
     add_piece.top_left_row = random.choice(add_piece.possible_top_left_rows)
     placement.append(add_piece)
-  if set_locations(placement, resistors_as_components=False):
-    return placement
-  return None
+  if space_nicely:
+    if set_locations(placement, resistors_as_components=False):
+      return placement
+    return None
+  else:
+    random_placement = []
+    for piece in placement:
+      if isinstance(piece, Resistor_Piece):
+        piece = random.choice([piece, Resistor_Piece(piece.n_1, piece.n_2,
+            piece.r, False, piece.label)])
+      if _random_top_left_loc(piece, random_placement):
+        random_placement.append(piece)
+      else:
+        return None
+    return random_placement
