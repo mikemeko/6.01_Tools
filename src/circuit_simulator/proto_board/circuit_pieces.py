@@ -579,20 +579,27 @@ class N_Pin_Connector_Piece(Circuit_Piece):
     assert 1 <= i <= self.n, 'i must be between 1 and %d' % self.n
     self._assert_top_left_loc_set()
     r, c = self.top_left_loc
-    assert r in self.possible_top_left_rows, 'invalid top left row'
-    return (2, c + self.n + 1 - i) if r == 0 else (r, c + i)
+    return (2, c + self.n + 1 - i) if r < 6 else (r, c + i)
   def inverted(self):
     return self
   def draw_on(self, canvas, top_left):
     self._assert_top_left_loc_set()
     r, c = self.top_left_loc
-    assert r in self.possible_top_left_rows, 'invalid top left row'
     x, y = top_left
     # draw box
     width = (self.n + 2) * CONNECTOR_SIZE + (self.n + 1) * CONNECTOR_SPACING
-    offset_top = (r == 0) * (CONNECTOR_SIZE + 2 * CONNECTOR_SPACING)
-    offset_bottom = ((5 * CONNECTOR_SIZE + 4 * CONNECTOR_SPACING) if r == 0
-        else (6 * CONNECTOR_SIZE + 6 * CONNECTOR_SPACING))
+    if r in (0, 1):
+      offset_top = CONNECTOR_SIZE + 2 * CONNECTOR_SPACING
+      offset_bottom = 5 * CONNECTOR_SIZE + 4 * CONNECTOR_SPACING
+    elif r in (2, 3, 4):
+      offset_top = 3 * CONNECTOR_SIZE + 4 * CONNECTOR_SPACING
+      offset_bottom = 3 * CONNECTOR_SIZE + 2 * CONNECTOR_SPACING
+    elif r in (7, 8, 9, 10, 11):
+      offset_top = 0
+      offset_bottom = 6 * CONNECTOR_SIZE + 6 * CONNECTOR_SPACING
+    #offset_top = (r < 6) * (CONNECTOR_SIZE + 2 * CONNECTOR_SPACING)
+    #offset_bottom = ((5 * CONNECTOR_SIZE + 4 * CONNECTOR_SPACING) if r < 6
+    #    else (6 * CONNECTOR_SIZE + 6 * CONNECTOR_SPACING))
     padding = 4
     canvas.create_rectangle(x - padding, y - offset_top - padding,
         x + width + padding, y + offset_bottom + padding,
@@ -601,18 +608,21 @@ class N_Pin_Connector_Piece(Circuit_Piece):
     for i in xrange(1, self.n + 1):
       cr, cc = self.loc_for_pin(i)
       pin_x = x + (cc - c) * (CONNECTOR_SIZE + CONNECTOR_SPACING)
-      pin_y = y + (cr - r + 2 * (r == 0)) * (CONNECTOR_SIZE +
-          CONNECTOR_SPACING)
+      if r in (0, 1):
+        pin_y = y + 4 * (CONNECTOR_SIZE + CONNECTOR_SPACING)
+      elif r in (2, 3, 4):
+        pin_y = y + 2 * (CONNECTOR_SIZE + CONNECTOR_SPACING)
+      elif r in (7, 8, 9, 10, 11):
+        pin_y = y
       canvas.create_rectangle(pin_x, pin_y, pin_x + CONNECTOR_SIZE,
           pin_y + CONNECTOR_SIZE, fill='#777', outline='black')
-      canvas.create_text(pin_x + 3, pin_y + (-CONNECTOR_SIZE - 5 if r == 0 else
+      canvas.create_text(pin_x + 3, pin_y + (-CONNECTOR_SIZE - 5 if r < 6 else
           2 * CONNECTOR_SIZE + 5), text=str(i), fill='white')
     # display the connector's name
-    canvas.create_text(x + width / 2, y + (r != 0) * 4 * (CONNECTOR_SIZE +
-        CONNECTOR_SPACING), text=self.name, width=width, fill='white',
-        justify=CENTER)
+    canvas.create_text(x + width / 2, pin_y - (40 if r < 6 else -40),
+        text=self.name, width=width, fill='white', justify=CENTER)
     # cabel color box
-    by = y - offset_top if r == 0 else y + offset_bottom - 10
+    by = y - offset_top if r < 6 else y + offset_bottom - 10
     canvas.create_rectangle(x, by, x + 10, by + 10, fill=self.cabel_color)
   def outline_label(self, canvas, top_left, label):
     if label not in self.label:
@@ -620,8 +630,8 @@ class N_Pin_Connector_Piece(Circuit_Piece):
     r, c = self.top_left_loc
     x, y = top_left
     width = (self.n + 2) * CONNECTOR_SIZE + (self.n + 1) * CONNECTOR_SPACING
-    offset_top = (r == 0) * (CONNECTOR_SIZE + 2 * CONNECTOR_SPACING)
-    offset_bottom = ((5 * CONNECTOR_SIZE + 4 * CONNECTOR_SPACING) if r == 0
+    offset_top = (r < 6) * (CONNECTOR_SIZE + 2 * CONNECTOR_SPACING)
+    offset_bottom = ((5 * CONNECTOR_SIZE + 4 * CONNECTOR_SPACING) if r < 6
         else (6 * CONNECTOR_SIZE + 6 * CONNECTOR_SPACING))
     padding = 4
     return canvas.create_rectangle(x - padding - 2, y - offset_top - padding -
