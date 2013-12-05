@@ -28,7 +28,7 @@ T(n) = \sum_{k = 0}^{\lfloor \frac{n}{2} \rfloor}{\frac{n!}{k! (n - 2k)! 2^k}}
 \end{equation}
 
 In this problem, we have that $n = 830$, the number of available locations on an
-empty protoboard. Evaluating $T$ at $n = 830$, we get approximately
+empty protoboard. Evaluating $T$ at $n = 830$ yields approximately
 $2.8\times10^{1043}$.
 The largeness of this number indicates that doing any sort of exhaustive search
 will be hopeless.
@@ -39,7 +39,7 @@ will be hopeless.
 \subsubsection{Resistors}
 
 For the sake of simplicity, and to significantly reduce the search space size, we
-place resistors in the middle strip of the protoboard as shown in Figure
+place resistors only in the middle strip of the protoboard, as shown in Figure
 \ref{fig:piece_placement}. This choice is critical,
 as the resistor pieces can generally be placed at numerous places on the
 protoboard.
@@ -101,10 +101,9 @@ $n$ op-amps for various values of $n$.}
 Our placement approach explores all possible ways
 of packaging the op-amps. We do this because the typical 6.01 circuit contains
 no more than $6$ op-amps, and so we are tasked with exploring at most $331$
-alternatives, which is not too computationally intensive. If the
-algorithm were meant to handle a larger number of op-amps (for example $10$),
-then
-this approach would not work as the number of alternatives to consider would be
+alternatives, which is not too computationally intensive.
+On circuits with more than $6$ op-amps, this approach quickly becomes
+intractable, as the number of alternatives to consider would be
 far too large, and we would have to consider different strategies.
 
 \section{Explaining the Results}
@@ -116,7 +115,8 @@ analyze those data and give reasonings for why we obtained those results.
 \subsection{Comparing Placement Methods}
 
 \subsubsection{Success Rate}
-The blocking placement method ($89.0\%$ overall success rate)
+The blocking placement method ($89.0\%$ overall success rate across the $44250$
+runs)
 is slightly more successful than the distance placement method ($87.6\%$ overall
 success rate). While these alternative methods are not significantly different
 in terms of success rate, we note that both methods are significantly
@@ -138,10 +138,11 @@ algorithm happened to be consistently successful.
 We observe from
 Figure \ref{fig:placement_time_trend} that, once again, the two methods are
 very similar, with random placement being markedly worse than both.
-We see that the distance method generally takes slightly less
-time than the blocking method, but the difference between the two is
+We see that the distance method generally results in a layout for which the
+wiring takes less time than does the blocking method,
+but the difference between the two is
 almost negligible. As we would expect, we see that as the complexity
-of the circuits increases, the amount of time spent by the wiring step also
+of the circuits increases, the amount of time spent in the wiring step also
 increases. As with the success rate trends as a function of circuit
 complexity, we observe that there are outliers at the far end of the figure due
 to a very small sample of the most complex circuits in the randomly generated
@@ -158,18 +159,16 @@ numbers of wire crosses, and total wire lengths.
 Figure \ref{fig:placement_badness_trend} shows the trend of layout badness
 computed using our metric as a function of circuit complexity.
 We first observe that the
-number of wires used by the two methods are almost identical. When
-we look at the number of wire crosses in the layouts, we
-see that the blocking method consistently results in more wire crosses.
-Similarly,
-when we look at the total length of wires used in the layouts, the blocking
+number of wires used by the two methods are almost identical. We see that the
+blocking method consistently results in more wire crosses. When we consider
+total wire length, the blocking
 method exceeds the distance method consistently, with the difference getting
 higher as circuit complexity increases.
-This is somewhat expected because the blocking method does not directly aim to
-put pieces that need to be connected close together whereas the distance method
+This is expected because the blocking method does not directly aim to
+put pieces that need to be connected close together, whereas the distance method
 directly tries to minimize the total wire length that may be needed. In terms
 of the layout badness metric, we observe once again that the distance method
-is slightly better than the placement method for almost all circuit complexity
+is slightly better than the blocking method for almost all circuit complexity
 values. Finally, we observe that the random
 placement method, per our badness metric, produces much worse layouts than the
 other two methods when it does succeed.
@@ -228,9 +227,9 @@ result in the largest number of wire crosses. Note that
 the per-node (decreasing) method produces more wire crosses on average than the
 per-pair (increasing) method.
 We observe that the order in which we consider pairs of
-locations has a telling effect on how good the generated layouts will be.
-In essence,
-connecting the harder pairs of locations generally produces more wire crosses.
+locations has an effect on how good the generated layouts will be.
+In essence, connecting the harder pairs of locations first generally produces
+more wire crosses.
 Finally, as expected, we observe that straight wiring produces comparatively
 poor layouts.
 
@@ -255,9 +254,11 @@ data comparing the success rates of the two search algorithms.
 We observe that Best First Search is much more
 successful than $A*$. $98\%$ of the test circuits were solved at least $8$ times
 out of $10$ when we used Best First Search, versus $85\%$ when we used $A*$.
-This result is not surprising because when using Best First Search the algorithm
+This result is not surprising because, when using Best First Search,
+the algorithm
 looks for layouts that satisfy the connection requirements, ignoring the badness
-of the layouts it considers. Hence, Best First Search is less susceptible to the
+of the layouts it considers, whereas $A*$ searches for an ``optimal'' layout.
+Hence, Best First Search is less susceptible to the
 restriction on number of vertices to expand than is $A*$.
 
 \subsubsection{Wiring Time}
@@ -287,19 +288,23 @@ terminate, but the resulting layouts will generally be better.
 \subsection{Combined Algorithm}
 \label{sec:method_combination}
 
-In this section we discuss why Algorithm
-\ref{alg:combined} is structured the way it is, and we also
+In this section we discuss the structure of Algorithm
+\ref{alg:combined}, and we also
 discuss the data we obtained for the combined algorithm. Recall that the combined
-algorithm makes four attempts at generating a complete layout. We try both
+algorithm makes four attempts at generating a complete layout. The algorithm
+tries both
 placement methods, using the distance method first and the blocking method
-second. We
-try the distance method first because it tends to generate layouts with fewer
-crossing wires and smaller total wire length. We use per-pair wiring, and
+second. It
+tries the distance method first because the distance method tends to
+generate layouts with fewer
+crossing wires and smaller total wire length. The algorithm uses
+per-pair wiring, and
 consider both orders of doing the wiring, increasing order first and decreasing
-order second. We use per-pair wiring because it takes considerably
+order second. It uses per-pair wiring because per-pair wiring takes considerably
 less time than both per-node and all pairs wiring, and neither of the other
-wiring methods has a better success rate. We try increasing order first because
-it tends to generate layouts with fewer crossing wires than the reverse order.
+wiring methods has a better success rate. The algorithm tries increasing order
+first because increasing order tends to generate layouts with fewer crossing
+wires than the reverse order.
 
 Let us now consider the data we obtained for the combined algorithm. Firstly, we
 see that the combined algorithm had a $100\%$ success rate, which is critical
@@ -325,8 +330,7 @@ encouraging from a practical standpoint because $3$ minutes is not long
 for a student to have to wait for a layout to be generated.
 Finally, Figures \ref{fig:final_quality_trend} and \ref{fig:final_badness_trend}
 present trends of quality as a
-function of circuit complexity. Most importantly, we observe that the average
-number of wire crosses on the test layouts never exceeded $1$.
+function of circuit complexity.
 
 \section{Further Work}
 
@@ -355,7 +359,7 @@ protoboard for the node between the resistors, which we can then use in the
 wiring step. A better solution may
 be discovering the best places for the node as we are placing down resistors in
 the wiring step, but this solution would make the search we carry out
-more complicated. Second, we will need a new kind of heuristic for the
+more complicated. Second, we would need a new kind of heuristic for the
 search that takes resistors into account. One possible solution is to highly
 penalize an absent resistor when computing the heuristic.
 Even with an amended heuristic, however, there
@@ -375,9 +379,4 @@ similar to the last one as possible.
 
 \section{Remarks}
 
-The results we have gotten for the final algorithm are encouraging.
-It has a $100\%$ success rate and produces layouts that, by our metric, are very
-good. If this tool saves $1$ lab hour per student per semester (time the
-student would have spent producing layouts), then we are
-looking at a savings of about $200$ 6.01 lab hours per semester, which is a
-fantastic success.
+TODO
