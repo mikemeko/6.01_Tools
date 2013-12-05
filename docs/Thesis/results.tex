@@ -15,11 +15,10 @@ strategies, and the data will be discussed in detail in Chapter
 \subfigure{
 \Tree [{Random} {Distance} {Blocking} ].Placement
 }
-\hspace{1cm}
 \subfigure{
 \Tree [{All pairs}
-       [$\uparrow$ $\downarrow$ ].{Per-node}
-       [$\uparrow$ $\downarrow$ ].{Per-pair}
+       [Increasing Decreasing ].{Per-node}
+       [Increasing Decreasing ].{Per-pair}
        {Straight} ].Wiring
 }\\
 \subfigure{
@@ -31,23 +30,23 @@ to the algorithm.}
 \end{figure}
 
 As comparing all $3 \times 6 \times 2 = 36$ possible implementations of the
-algorithm is tedious, we
-will compare the alternatives for each aspect of the algorithm while holding
-other aspects fixed. Hence, we will carryout the following comparisons:
+algorithm is tedious,
+we analyzed the three different means for alternatives (placement, wiring, and
+search) separately. We carried out the following comparisons:
 
 \begin{enumerate}
-\item Placement: Distance vs. Blocking. Wiring method will be per-pair
-(decreasing), and we will use $A*$ Search.
+\item Placement: Distance vs. Blocking. The wiring method was per-pair
+(decreasing), and we used $A*$ Search.
 \item Wiring: All pairs vs. Per-node (decreasing) vs. Per-node (increasing) vs.
 Per-pair (decreasing) vs. Per-pair (increasing) vs. Straight.
-Placement method will be blocking, and we will use $A*$ Search.
-\item Search: $A*$ vs. Best First. Placement method will be blocking, and wiring
-method will be per-pair (decreasing).
+The placement method was blocking, and we used $A*$ Search.
+\item Search: $A*$ vs. Best First. The placement method was blocking, and the
+wiring method was per-pair (decreasing).
 \end{enumerate}
 
-The data to compare the alternatives is gathered as described in Chapter
-\ref{ch:methods}. We run the algorithm on $4425$ randomly generated schematics
-of varying complexities. The algorithm is run $10$ times on each schematic.
+The data to compare the alternatives were gathered as described in Chapter
+\ref{ch:methods}. We ran the algorithm on $4425$ randomly generated schematics
+of varying complexities. The algorithm was run $10$ times on each schematic.
 
 In comparing alternatives, we consider $3$ questions:
 \begin{enumerate}
@@ -57,13 +56,13 @@ In comparing alternatives, we consider $3$ questions:
 \end{enumerate}
 
 We are also interested in how each of these attributes (success rate, running
-time, and layout quality) vary with circuit complexity. To quantitatively
+time, and layout quality) varies with circuit complexity. To quantitatively
 describe the complexity of a circuit, we look at the number of pins in the
 circuit, where a pin is defined to be a connection point on a circuit
 component that is connected by wires to another connection point (on the same
 component or a different component). Figure
 \ref{fig:complexity_hist} presents a histogram of the number of pins in the
-schematics in dataset that will be used to do all comparisons in this chapter,
+schematics in dataset that was used to do all comparisons in this chapter,
 not including the data presented in Section \ref{sec:combined_algorithm}, for
 which we used a newly generated dataset of schematics to analyze the performance
 of the combined algorithm.
@@ -146,8 +145,11 @@ Blocking & $162$ & $38$ & $51$ & $57$ & $72$ & $85$ & $109$ & $106$ & $144$ & $2
 \end{singlespace}
 \end{center}
 \label{tb:placement_success}
-\caption[Placement method success rate comparison]{Placement method success rate
-comparison.}
+\caption[Placement method success rate comparison]{This is an alternative
+presentation of the data given in Figure \ref{fig:placement_success}. Each cell
+in the table gives the count (and percentage out of the $4425$)
+of schematics for which a
+particular method succeeded a given number times out of $10$ runs.}
 \end{table}
 
 \begin{figure}[H]
@@ -163,7 +165,7 @@ success rate trend comparison.}
 \begin{center}
 \includegraphics[width=\textwidth]{Images/placement_time_trend_comparison.eps}
 \caption[Placement method wiring time trend comparison]{Placement method wiring
-time trend comparison.}
+time trend comparison for successful runs.}
 \label{fig:placement_time_trend}
 \end{center}
 \end{figure}
@@ -301,7 +303,7 @@ trend comparison.}
 \begin{center}
 \includegraphics[width=\textwidth]{Images/wiring_time_trend_comparison.eps}
 \caption[Wiring method wiring time trend comparison]{Wiring method wiring time
-trend comparison.}
+trend comparison for successful runs.}
 \label{fig:wiring_time_trend}
 \end{center}
 \end{figure}
@@ -442,7 +444,7 @@ trend comparison.}
 \begin{center}
 \includegraphics[width=\textwidth]{Images/search_time_trend_comparison.eps}
 \caption[Search method wiring time trend comparison]{Search method wiring time
-trend comparison.}
+trend comparison for successful runs.}
 \label{fig:search_time_trend}
 \end{center}
 \end{figure}
@@ -488,7 +490,7 @@ as a function of circuit complexity.
 \includegraphics[width=\textwidth]{Images/exemplar_combined_algorithm.png}
 \caption[Combined algorithm exemplar]{Combined algorithm exemplar. Notice that
 the top rail rows (the first and second row) are forced to be used as power and
-ground nodes. Also notice that all vertical wires have been truncated.}
+ground nodes.}
 \end{center}
 \end{figure}
 
