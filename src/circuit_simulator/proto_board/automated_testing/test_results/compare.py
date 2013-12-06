@@ -80,6 +80,7 @@ def compare(files, methods):
   return
   """
 
+  """
   pylab.figure()
   for results in all_results:
     num_expanded = []
@@ -90,6 +91,7 @@ def compare(files, methods):
     pylab.hist(num_expanded, bins=20, alpha=0.5)
   pylab.xlabel('Maximum number of expanded states per run')
   pylab.ylabel('Count')
+  """
 
   # success plot
   pylab.figure()

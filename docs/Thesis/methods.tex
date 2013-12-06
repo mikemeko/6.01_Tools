@@ -86,8 +86,7 @@ number of pieces present in the most complex 6.01 circuit is small enough that
 any 6.01 circuit could likely be realized under this simplification.
 
 Next, we specify that there must be exactly two columns on the protoboard
-separating
-each consecutive pair of pieces, unless the pieces are both resistors, in which
+separating adjacent pieces, unless the pieces are both resistors, in which
 case there must be exactly one column separating them. These numbers of columns
 were chosen to leave enough space for wiring. Given a set of pieces to be placed
 on the protoboard, this simplification reduces the
@@ -307,8 +306,9 @@ goal vertex.
 
 Each graph vertex will represent a protoboard layout and a set of locations on
 the protoboard that have yet to be connected by wires. The starting vertex will
-represent a protoboard layout that has the circuit pieces (and possibly some
-wires), as well as all the pairs of locations that must be connected.
+represent a partial protoboard layout that has the circuit pieces (and possibly
+some wires), as well as all the pairs of locations that must be connected by
+wires to complete the layout.
 
 We obtain the neighbors of a vertex by taking the current protoboard layout and
 producing new ones in which we place exactly one new wire. We
@@ -482,7 +482,8 @@ The algorithm starts out by connecting the top and bottom rail
 rows of the protoboard
 so that all rail rows are used to connect to power and ground, and no other
 nodes. This is a restriction that makes it easier to debug and amend the
-resulting layout.
+resulting layout. Without this restriction, some rail rows might be used for
+nodes that are neither power nor ground, and this may confuse some students.
 
 The algorithm also has a post-processing step that attempts to to improve the
 layout. The post-processing step makes three types of simple changes to the
