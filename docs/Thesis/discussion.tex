@@ -118,8 +118,8 @@ analyze those data and give reasonings for why we obtained those results.
 The blocking placement method ($89.0\%$ overall success rate across the $44250$
 runs)
 is slightly more successful than the distance placement method ($87.6\%$ overall
-success rate). While these alternative methods are not significantly different
-in terms of success rate, we note that both methods are significantly
+success rate). While these alternative methods are not markedly different
+in terms of success rate, we note that both methods are
 more successful than the random placement alternative ($43.5\%$ overall success
 rate).
 As a function of circuit
@@ -143,12 +143,9 @@ wiring takes less time than does the blocking method,
 but the difference between the two is
 almost negligible. As we would expect, we see that as the complexity
 of the circuits increases, the amount of time spent in the wiring step also
-increases. As with the success rate trends as a function of circuit
-complexity, we observe that there are outliers at the far end of the figure due
-to a very small sample of the most complex circuits in the randomly generated
-schematic dataset. As circuit complexity increases, the standard error of
+increases. As circuit complexity increases, the standard error of
 wiring time
-when using random placement also increases significantly. This is a result of
+when using random placement also increases. This is a result of
 the fact that random placement frequently fails on the most complex
 circuits, and so the sample size we have for successful runs is very small.
 
@@ -176,7 +173,7 @@ other two methods when it does succeed.
 \subsubsection{Conclusion}
 It is difficult to conclusively pick the best placement method from these
 results. What we can determine is that the distance based method and the
-blocking based method are both significantly better than random placement.
+blocking based method are both better than random placement.
 
 \subsection{Comparing Wiring Methods}
 
@@ -186,7 +183,7 @@ Figures \ref{fig:wiring_success} and \ref{fig:wiring_success_trend}, and Table
 success rate than all of
 the other alternatives, especially as circuit complexity increases. The reason
 why the all pairs method has a smaller success rate is in
-large part due to the maximum allowed number of vertices to expand in $A*$. The
+large part due to the limit on expanded vertices in $A*$. The
 figures in Section \ref{sec:expand_limit} depict that this limit affects
 the all pairs wiring method much more than it does the others. This result is
 expected because the search task in all pairs wiring is more difficult than in
@@ -198,7 +195,7 @@ Finally, we note that straight wiring, as expected, has a $100\%$ success rate.
 \subsubsection{Wiring Time}
 Figure \ref{fig:wiring_time_trend} compares wiring time across
 the six methods. Once again, we observe that the all pairs methods takes
-significantly more time than the other methods. We also observe from Figure
+more time than the other methods. We also observe from Figure
 \ref{fig:wiring_time_trend} that the wiring times for the two per-node methods
 are comparable, and that the wiring times for the two per-pair methods are also
 comparable, but that the per-node wiring times are generally bigger than the

@@ -120,12 +120,12 @@ connected to each other very far apart, which could make the wiring task more
 difficult. We ought to consider alternatives that try to place the pieces so as
 to require as little work as possible during the wiring step.
 
-\subsubsection{Minimal Heuristic Cost}
+\subsubsection{Small Heuristic Cost}
 
 The key idea is that if two pieces are meant to be connected together by wires,
 then they should be placed close to each other on the protoboard. We can
 capture this idea by assigning heuristic costs to the placements and choosing
-a placement that produces the minimal heuristic cost. To that end, there are two
+a placement that has a small heuristic cost. To that end, there are two
 heuristic cost functions we considered.
 
 \paragraph{Distance Based Cost}
@@ -197,8 +197,6 @@ on each of the $5$-columns indicate the costs for the $5$-columns under the
 blocking cost model.}
 \label{fig:placement_costs}
 \end{figure}
-
-\subsubsection{Small Heuristic Cost}
 
 Using one of the two cost functions discussed above, we can aim to find a
 placement with the minimal cost. However, this involves trying all possible
@@ -303,6 +301,7 @@ goal vertex.
 \end{enumerate}
 
 \subsubsection{Vertices}
+\label{sec:vertices}
 
 Each graph vertex will represent a protoboard layout and a set of locations on
 the protoboard that have yet to be connected by wires. The starting vertex will
@@ -336,7 +335,30 @@ they are particularly difficult to physically build and debug.
 Finally, we want to favor making a desired interconnection between locations
 on the protoboard. That is, if placing one wire results in a layout in which
 one of the pairs of locations that need to be connected becomes connected, then
-the cost of that child vertex should reflect that fact.
+the cost of that child vertex should reflect that fact. More precisely, in an
+attempt to connect locations $\text{loc}_1$ and $\text{loc}_2$, a wire placed extending from
+$\text{loc}_1'$ to $\text{loc}_{\text{mid}}$, where $\text{loc}_1'$ is a
+location connected (internally or by wires) to
+$\text{loc}_1$ and
+$\text{loc}_{\text{mid}}$ is a free location, the additional cost
+incurred by adding the wire is computed as:
+\begin{table}[H]
+\centering
+\begin{tabular}{ccllr}
+-100 &$\times$ & ($\text{loc}_1$ and $\text{loc}_2$ now connected) &+ &($1$)\\
+1 &$\times$ & ($d$($\text{loc}_1'$, $\text{loc}_{\text{mid}}$) + $d$($\text{loc}_{\text{mid}}$, $\text{loc}_2$) - $d$($\text{loc}_1$, $\text{loc}_2$)) &+ &($2$)\\
+100 &$\times$ & (number of crossed wires) &+ &($3$)\\
+10. & & & &($4$)
+\end{tabular}
+\end{table}
+Line ($1$) decreases the cost by $100$ if a new connection is
+made. Line ($2$) penalizes long wires, taking into account how much closer (or
+farther) the new wire got us to connecting locations $\text{loc}_1$ and
+$\text{loc}_2$.
+Line ($3$) adds a cost of $100$ for each new pair
+of crossing wires. Line ($4$) adds $10$ to the total cost to penalize having
+too many wires. We produced this cost metric experimentally by thoroughly
+testing various ideas on a selected set of circuit schematics.
 
 An important consideration we need to make is how to organize the
 search. Recall that we have a set of nodes in the circuit of interest, and for
@@ -567,10 +589,7 @@ schematic.}
 \end{center}
 \end{figure}
 
-This scheme produces a total of $4425$ test schematics out of $1.2\times10^{27}$
-possibilities\footnote{These numbers were calculated computationally as the
-variety of choices that could be made in the process makes it difficult to
-compute them combinatorially.}.
+Our scheme produces a total of $4425$ test schematics.
 When testing a particular algorithm on these test
 schematics, we run the algorithm on each test schematic $10$ times. Chapter
 \ref{ch:results} presents the data collected in this manner and compares the
@@ -606,6 +625,12 @@ wire length on the protoboard by $5$.
 \item Having a wire that crosses a circuit piece is about as bad as having $10$
 pairs of wires that cross.
 \item Having a wire occlusion is about as bad as having $10$ wires that cross
-circuit pieces. The penalty on wire occlusions is meant to indicate that we want
-absolutely no wire occlusions in our layouts.
+circuit pieces.
 \end{itemize}
+
+Note well that the badness metric described here is different from the cost
+metric used in the wiring search as described in Section \ref{sec:vertices}.
+This badness metric is used to evaluate layouts produced by the algorithm,
+which may use $A*$ search in which the costs of vertices are computed, not using
+this badness cost metric, but the cost metric described in Section
+\ref{sec:vertices}.
