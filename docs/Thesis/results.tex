@@ -35,7 +35,7 @@ we analyzed the three different means for alternatives (placement, wiring, and
 search) separately. We carried out the following comparisons:
 
 \begin{enumerate}
-\item Placement: Distance vs. Blocking. The wiring method was per-pair
+\item Placement: Blocking vs. Distance vs. Random. The wiring method was per-pair
 (decreasing), and we used $A*$ Search.
 \item Wiring: All pairs vs. Per-node (decreasing) vs. Per-node (increasing) vs.
 Per-pair (decreasing) vs. Per-pair (increasing) vs. Straight.
@@ -56,8 +56,8 @@ In comparing alternatives, we consider $3$ questions:
 \end{enumerate}
 
 We are also interested in how each of these attributes (success rate, running
-time, and layout quality) varies with circuit complexity. To quantitatively
-describe the complexity of a circuit, we look at the number of pins in the
+time, and layout quality) varies with circuit complexity. To quantify
+the complexity of a circuit, we look at the number of pins in the
 circuit, where a pin is defined to be a connection point on a circuit
 component that is connected by wires to another connection point (on the same
 component or a different component). Figure
@@ -96,6 +96,30 @@ layouts.}
 \label{fig:exemplar_schematic}
 \end{center}
 \end{figure}
+
+\section{Random Layout}
+
+Before embarking upon the comparisons, we give an exemplar of a protoboard
+layout generated completely at random. Here, we choose an op-amp packaging
+randomly, and we place each circuit piece randomly,
+only taking care not to place two pieces that share a $5$-column, and
+not obeying any other restrictions. This method of random placement, is,
+therefore, different from the one described in Section
+\ref{sec:random_placement}. We then use Straight wiring. Figure
+\ref{fig:completely_random} presents a layout generated for the schematic
+shown in Figure \ref{fig:exemplar_schematic}. This completely random layout
+method is compared against the final algorithm in Section
+\ref{sec:combined_algorithm}.
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[width=\textwidth]{Images/exemplar_completely_random.png}
+\caption[Random layout exemplar]{Exemplar for the completely random method.}
+\label{fig:completely_random}
+\end{center}
+\end{figure}
+
+We now look at the comparison data.
 
 \section{Comparing Placement Methods}
 \label{sec:compare_placement}
@@ -246,7 +270,7 @@ using blocking placement.}
 
 \begin{figure}[H]
 \begin{center}
-\includegraphics[width=\textwidth]{Images/wiring_success_comparison.eps}
+\includegraphics[width=15cm]{Images/wiring_success_comparison.eps}
 \caption[Wiring method success rate comparison]{Wiring method success rate
 comparison.}
 \label{fig:wiring_success}
@@ -291,11 +315,11 @@ comparison.}
 \begin{figure}[H]
 \centering
 \subfigure[All pairs]{
-\includegraphics[width=7cm]{Images/wiring_all_success_trend.eps}}
+\includegraphics[width=8cm]{Images/wiring_all_success_trend.eps}}
 \subfigure[Per-node]{
-\includegraphics[width=7cm]{Images/wiring_node_success_trend.eps}}
+\includegraphics[width=8cm]{Images/wiring_node_success_trend.eps}}
 \subfigure[Per-pair]{
-\includegraphics[width=7cm]{Images/wiring_pair_success_trend.eps}}
+\includegraphics[width=8cm]{Images/wiring_pair_success_trend.eps}}
 \caption[Wiring method success rate trend comparison]{Wiring method success rate
 trend comparison.}
 \label{fig:wiring_success_trend}
@@ -305,7 +329,8 @@ trend comparison.}
 \begin{center}
 \includegraphics[width=\textwidth]{Images/wiring_time_trend_comparison.eps}
 \caption[Wiring method wiring time trend comparison]{Wiring method wiring time
-trend comparison for successful runs.}
+trend comparison for successful runs. Note that the line for Straight wiring is
+not visible because it is so close to $0$ for all values of circuit complexity.}
 \label{fig:wiring_time_trend}
 \end{center}
 \end{figure}
@@ -321,65 +346,20 @@ quality trend comparison.}
 
 \begin{figure}[H]
 \begin{center}
+\includegraphics[width=\textwidth]{Images/wiring_quality_trend_comparison_no_straight.eps}
+\caption[Wiring method layout quality trend comparison (without Straight wiring)]
+{Wiring method layout quality trend comparison, not including the Straight
+wiring method.}
+\label{fig:wiring_quality_trend}
+\end{center}
+\end{figure}
+
+\begin{figure}[H]
+\begin{center}
 \includegraphics[width=\textwidth]{Images/wiring_badness_trend_comparison.eps}
 \caption[Wiring method layout badness trend comparison]{Wiring method layout
 badness trend comparison.}
 \label{fig:wiring_badness_trend}
-\end{center}
-\end{figure}
-
-\section{Limit on Number of Expanded Vertices}
-\label{sec:expand_limit}
-
-For each of the $5$ wiring methods that utilize search, we have run tests on
-$4425$
-schematics. We have tested each method $10$ times on each schematic. Hence, we
-have $44250$ data points for each of the wiring methods. Here we provide
-histograms that show the maximum number of expanded vertices in the $A*$ Search
-among the $44250$ runs for each of the $5$ methods.
-
-\begin{figure}[H]
-\begin{center}
-\includegraphics[width=\textwidth]{Images/max_expanded_all_pairs.eps}
-\caption[Number of vertices expanded by all pairs]{Histogram of number of
-vertices expanded by all pairs wiring.}
-\label{fig:max_expanded_all_pairs}
-\end{center}
-\end{figure}
-
-\begin{figure}[H]
-\begin{center}
-\includegraphics[width=\textwidth]{Images/max_expanded_per_node_increasing.eps}
-\caption[Number of vertices expanded by per-node (increasing)]{Histogram of
-maximum number of vertices expanded by per-node (increasing) wiring.}
-\label{fig:max_expanded_per_node_increasing}
-\end{center}
-\end{figure}
-
-\begin{figure}[H]
-\begin{center}
-\includegraphics[width=\textwidth]{Images/max_expanded_per_node_decreasing.eps}
-\caption[Number of vertices expanded by per-node (decreasing)]{Histogram of
-maximum number of vertices expanded by per-node (decreasing) wiring.}
-\label{fig:max_expanded_per_node_decreasing}
-\end{center}
-\end{figure}
-
-\begin{figure}[H]
-\begin{center}
-\includegraphics[width=\textwidth]{Images/max_expanded_per_pair_increasing.eps}
-\caption[Number of vertices expanded by per-pair (increasing)]{Histogram of
-maximum number of vertices expanded by per-pair (increasing) wiring.}
-\label{fig:max_expanded_per_pair_increasing}
-\end{center}
-\end{figure}
-
-\begin{figure}[H]
-\begin{center}
-\includegraphics[width=\textwidth]{Images/max_expanded_per_pair_decreasing.eps}
-\caption[Number of vertices expanded by per-pair (decreasing)]{Histogram of
-maximum number of vertices expanded by per-pair (decreasing) wiring.}
-\label{fig:max_expanded_per_pair_decreasing}
 \end{center}
 \end{figure}
 
@@ -506,9 +486,19 @@ ground nodes.}
 
 \begin{figure}[H]
 \begin{center}
+\includegraphics[width=\textwidth]{Images/final_algorithm_success_rate_trend.eps}
+\caption[Combined algorithm success trend]{Combined algorithm success rate
+compared to random layout success rate as a function of circuit complexity.}
+\label{fig:final_success}
+\end{center}
+\end{figure}
+
+\begin{figure}[H]
+\begin{center}
 \includegraphics[width=\textwidth]{Images/final_algorithm_time_trend.eps}
 \caption[Combined algorithm time trend]{Combined algorithm total CPU time trend
-as a function of circuit complexity.}
+as a function of circuit complexity. Note that the line for Random Layout is
+not visible because it is so close to $0$ for all values of circuit complexity.}
 \label{fig:final_time_trend}
 \end{center}
 \end{figure}
@@ -517,7 +507,9 @@ as a function of circuit complexity.}
 \begin{center}
 \includegraphics[width=\textwidth]{Images/final_algorithm_quality_trend.eps}
 \caption[Combined algorithm layout quality trend]{Combined algorithm layout
-quality trend.}
+quality trend. Note that the line for number of wire crosses for the Final
+Algorithm is not visible because it is so much closer to $0$ than the number
+of wire crosses for Random Layout for all values of circuit complexity.}
 \label{fig:final_quality_trend}
 \end{center}
 \end{figure}

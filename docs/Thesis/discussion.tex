@@ -183,14 +183,41 @@ Figures \ref{fig:wiring_success} and \ref{fig:wiring_success_trend}, and Table
 success rate than all of
 the other alternatives, especially as circuit complexity increases. The reason
 why the all pairs method has a smaller success rate is in
-large part due to the limit on expanded vertices in $A*$. The
-figures in Section \ref{sec:expand_limit} depict that this limit affects
+large part due to the limit on expanded vertices in $A*$.
+Figure \ref{fig:max_expanded} depicts histograms of the maximum number of
+states expanded in a search for each of the $4425 \times 10 = 44250$ test runs.
+In the case of all pairs wiring, the histogram is simply of the number of
+states expanded in the search for each of the test runs. In the other methods,
+multiple searches may be carried out per run, and we chose to look at the most
+expensive search in our analysis to understand the worst-case performance of
+the alternative methods. The figures depict that the limit on expanded
+vertices affects
 the all pairs wiring method much more than it does the others. This result is
 expected because the search task in all pairs wiring is more difficult than in
 the other alternatives. Notice that as the search tasks get less difficult from
-all pairs to per-node to per-pair wiring, the effect of the expanding limit
-decreases. The other four alternatives have very comparable success rates.
+all pairs to per-node to per-pair wiring, the effect of the limit
+decreases. Hence, the other four alternatives have very comparable success rates.
 Finally, we note that straight wiring, as expected, has a $100\%$ success rate.
+
+\begin{figure}[H]
+\begin{center}
+\subfigure[All pairs]{
+\includegraphics[width=7cm]{Images/max_expanded_all_pairs.eps}}\\
+\subfigure[Per node (increasing)]{
+\includegraphics[width=7cm]{Images/max_expanded_per_node_increasing.eps}}
+\subfigure[Per node (decreasing)]{
+\includegraphics[width=7cm]{Images/max_expanded_per_node_decreasing.eps}}
+\subfigure[Per pair (increasing)]{
+\includegraphics[width=7cm]{Images/max_expanded_per_pair_increasing.eps}}
+\subfigure[Per pair (decreasing)]{
+\includegraphics[width=7cm]{Images/max_expanded_per_pair_decreasing.eps}}
+\caption[Expanded vertices histograms]{Histograms of maximum number of vertices
+expanded in $A*$ per test run.
+In the case of all pairs wiring, this value is simply the number of vertices
+expanded in the search.}
+\label{fig:max_expanded}
+\end{center}
+\end{figure}
 
 \subsubsection{Wiring Time}
 Figure \ref{fig:wiring_time_trend} compares wiring time across
@@ -376,4 +403,16 @@ similar to the last one as possible.
 
 \section{Remarks}
 
-TODO
+This paper introduced a circuit schematic entry tool for 6.01 capable of
+automatically generating protoboard layouts. The final algorithm presented in
+this paper is able to generate layouts with a $100\%$ success rate on our test
+dataset, and produces markedly better layouts than randomly generated ones based
+on our metric of layout badness. These results are encouraging as they suggest
+that the tool may be a good addition to 6.01 as a compliment, or perhaps
+replacement, for CMax. If, as
+we intended, the tool's performance on the test schematics is any indication of
+its performance on schematics that 6.01 students may design, then the tool
+achieves the goal of avoiding the tedium of protoboard layout in 6.01 labs.
+Additionally, the schematic entry tool, which is also capable of circuit
+analysis at the same level as CMax, would make circuits schematics the main
+mode of communication in 6.01 labs (instead of protoboard layouts).

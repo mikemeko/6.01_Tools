@@ -92,7 +92,7 @@ The group of rows labeled $A$ through $E$ in Figure \ref{fig:physical_protoboard
 can be better thought of as $63$ columns of 5 dots. Each of these groups of $5$
 dots are connected internally. The same property holds for the columns within
 rows $F$ through $J$. Henceforth, we will refer to an internally connected
-group of $5$ dots on the protoboard as a $5$-column.
+group of $5$ dots on the protoboard as a \emph{$5$-column}.
 
 \begin{figure}
 \begin{center}
@@ -203,8 +203,8 @@ with CMax. When the circuits get complicated and involve many pieces,
 translating a
 schematic diagram into a protoboard layout becomes quite challenging and
 time-consuming. In these situations, students often end up with convoluted
-layouts that are difficult to debug in the case of the
-circuit not behaving as expected. Not only are such layouts difficult for the
+layouts that are difficult to debug if the circuit does not behave as expected.
+Not only are such layouts difficult for the
 students to debug, but they are also often difficult for staff
 members to understand. In the best case scenario, students should have to work
 out the right schematic diagram for the circuit they are designing,
@@ -225,6 +225,31 @@ corresponding protoboard layout automatically. The automatic generation of
 protoboard layouts would be
 the most important advantage of this tool. They would then build the layout on a
 physical protoboard and carry out experiments with it.
+
+Avoiding the tedium of protoboard layout generation is not the only advantage of
+the schematic entry tool. With it, we can make circuit schematics the only mode
+of communication between students and staff members. Outside of lab, we
+communicate about circuits almost entirely by using circuit schematics. For
+instance, looking at the lecture and course notes given in the Spring, 2011
+version of 6.01\cite{ocw601}, we observe that almost all references to circuits
+are given with schematic drawings. This is because schematic drawings of
+circuits are particularly easy to understand. In the current 6.01 labs,
+communication about circuits is done by using both circuit schematics (in the
+experimentation stages) and protoboard layouts (in the building and testing
+stages). Using protoboard layouts as a way for students to describe their
+circuits is suboptimal because layouts require much more time and attention
+to understand than do schematics. The schematic entry tool has the advantage of
+making circuits schematics the only mode of exchanging ideas about circuits in
+6.01 labs. With the tool, there will be much less need for a student or staff
+member to try to understand the details of a layout.
+
+Additionally, students can
+keep a permanent copy of their schematics for future reference. Students
+currently draw schematics on paper, and often lose track of their drawing. Some
+students draw multiple schematics for a task, and forget which schematic
+they ended up using. Others misplace their schematic drawings. With the
+schematic entry tool, as long as students save their schematic drawings,
+they should always be able to refer back to them.
 
 \subsection{Current Work in Automatic Layout}
 \label{sec:prev_layout}

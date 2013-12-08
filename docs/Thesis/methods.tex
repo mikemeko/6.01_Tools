@@ -108,6 +108,7 @@ Figure \ref{fig:gui_example}.}
 \end{figure}
 
 \subsubsection{Random Placement}
+\label{sec:random_placement}
 
 One simple placement strategy is to choose a placement randomly.
 That is, to choose
@@ -348,9 +349,11 @@ incurred by adding the wire is computed as:
 -100 &$\times$ & ($\text{loc}_1$ and $\text{loc}_2$ now connected) &+ &($1$)\\
 1 &$\times$ & ($d$($\text{loc}_1'$, $\text{loc}_{\text{mid}}$) + $d$($\text{loc}_{\text{mid}}$, $\text{loc}_2$) - $d$($\text{loc}_1$, $\text{loc}_2$)) &+ &($2$)\\
 100 &$\times$ & (number of crossed wires) &+ &($3$)\\
-10. & & & &($4$)
+10, & & & &($4$)
 \end{tabular}
 \end{table}
+\noindent where $d$($\text{loc}_i$, $\text{loc}_j$) is the Manhattan distance
+on the protoboard from $\text{loc}_i$ to $\text{loc}_j$.
 Line ($1$) decreases the cost by $100$ if a new connection is
 made. Line ($2$) penalizes long wires, taking into account how much closer (or
 farther) the new wire got us to connecting locations $\text{loc}_1$ and
@@ -575,7 +578,13 @@ generated schematic.
 \begin{center}
 \includegraphics[width=\textwidth]{Images/auto_generation_bases.png}
 \caption[Random schematic generation bases]{Bases for the random schematic
-generation scheme.}
+generation scheme:
+(a) three resistors arranged in a T-shaped configuration;
+(b) two resistors in series connected to a follower op-amp configuration;
+(c) pot connected to a follower op-amp configuration;
+(d) motor;
+(e) robot head; and
+(f) robot.}
 \label{fig:random_gen_bases}
 \end{center}
 \end{figure}

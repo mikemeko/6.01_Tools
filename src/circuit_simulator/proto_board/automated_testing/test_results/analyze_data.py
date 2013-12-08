@@ -44,8 +44,9 @@ class Test_Result:
     self.solved = line[g.next()] == 'True'
     self.placement_time = get_float(line[g.next()])
     self.wiring_time = get_float(line[g.next()])
-    self.total_time = self.placement_time + self.wiring_time if (
-        self.placement_time and self.wiring_time) else None
+    self.total_time = (self.placement_time + self.wiring_time if
+        self.placement_time is not None and self.wiring_time is not None else
+        None)
     self.num_expanded = get_int_list(line[g.next()])
     if self.num_expanded is None:
       self.num_expanded = [0]
