@@ -354,7 +354,8 @@ encouraging from a practical standpoint because $3$ minutes is not long
 for a student to have to wait for a layout to be generated.
 Finally, Figures \ref{fig:final_quality_trend} and \ref{fig:final_badness_trend}
 present trends of quality as a
-function of circuit complexity.
+function of circuit complexity. It is clear that our algorithm produces
+much better layouts than the random layout strategy.
 
 \section{Further Work}
 
@@ -425,10 +426,12 @@ so either these of alternatives may be a desirable feature.
 This paper introduced a circuit schematic entry tool for 6.01 capable of
 automatically generating protoboard layouts. The final algorithm presented in
 this paper is able to generate layouts with a $100\%$ success rate on our test
-dataset, and produces markedly better layouts than randomly generated ones based
-on our metric of layout badness. These results are encouraging as they suggest
-that the tool may be a good addition to 6.01 as a compliment, or perhaps
-replacement, for CMax. If, as
+dataset of $4425$ circuit schematics, and produces markedly better layouts than
+randomly generated ones based
+on our metric of layout badness. The algorithm was able to generate the layouts
+for each of the schematics in the test dataset in less than $3$ minutes.
+These results are encouraging as they suggest
+that the tool may be a good addition to 6.01, as a compliment for CMax. If, as
 we intended, the tool's performance on the test schematics is any indication of
 its performance on schematics that 6.01 students may design, then the tool
 achieves the goal of avoiding the tedium of protoboard layout in 6.01 labs.
