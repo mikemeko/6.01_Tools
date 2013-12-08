@@ -401,6 +401,25 @@ problem, it may be useful to have the
 tool remember the last placement it used and try to produce a new placement as
 similar to the last one as possible.
 
+\subsection{Alternative Backups for Final Algorithm}
+The final algorithm presented in Section \ref{sec:combined_alg} has a final step
+to connect any disconnected nodes by using one additional wire per pair of
+locations that remains to be connected. This is used as a backup for cases
+when $A*$ search fails to make a desired connection. We have seen that this
+back up plan works well in that the final algorithm has a $100\%$ success rate.
+However, this is not the only possible backup plan. An alternative may be to
+return to the user the partially completed layout and also indicate which nodes
+remain disconnected. The user may then attempt to complete the layout, and may
+be successful in finding options that the $A*$ search could not find.
+Alternatively, when the algorithm is stuck on a particular pair of locations, it
+may present the partial layout to the user, and ask the user to override some of
+the decisions made by the algorithm while still preserving the connections, but
+in a manner that might make subsequent steps of the wiring process easier. Both
+of these alternatives would require feedback from the user, and are, therefore,
+a very different style of backup from the one we implemented. Nonetheless, some
+users may want to have at least some control over the layout process,
+so either these of alternatives may be a desirable feature.
+
 \section{Remarks}
 
 This paper introduced a circuit schematic entry tool for 6.01 capable of
