@@ -14,18 +14,18 @@ let us first discuss the scope of circuits in 6.01.
 
 \subsection{Circuit Components}
 
-The rudimentary circuit components used in 6.01 are resistors, operational
-amplifiers (op-amps), and potentiometers (pots). In addition to these basic
-parts, students may build circuits to control LEGO motors or to control
+The rudimentary circuit components used in 6.01 are resistors, potentiometers
+(pots), and operational amplifiers (op-amps). In addition to these basic
+parts, students build circuits to control LEGO motors or to control
 aspects of robots designed specifically for 6.01. One of the 6.01 robots is
 depicted in Figure \ref{fig:robot}. The robots can be equipped with heads that
-contain three parts held together by a shaft: a LEGO motor, a potentiometer, and
+contain three parts held together by a shaft: a potentiometer, a LEGO motor, and
 a circuit card containing two photosensors. The robot in Figure \ref{fig:robot}
 has a
 head attached. To connect a layout to a LEGO motor, a student would use a 6-pin
 connector, and to connect a layout to a robot or a robot head, a student would
-use an 8-pin connector. Figure \ref{fig:components} displays all of the circuit
-pieces a 6.01 student may use to build a protoboard layout.
+use an 8-pin connector. Figure \ref{fig:components} displays all of the
+pieces a 6.01 student may use to build a circuit.
 
 \begin{figure}
 \begin{center}
@@ -56,8 +56,8 @@ inserted into a protoboard.}
 
 \subsection{Circuit Schematic}
 
-Throughout this paper, the term \textit{circuit schematic} will refer to a
-drawing, or a sketch, of a circuit containing its components and all the
+Throughout this paper, the term \textit{circuit schematic} refers to a
+drawing, or a sketch, of a circuit containing its components and all of the
 interconnections between the components drawn as wires. This is what one would
 sketch on a piece of paper in the process of designing a circuit. Figure
 \ref{fig:schematic} presents an example of a circuit schematic.
@@ -77,20 +77,19 @@ controller circuit.}
 \textit{Protoboards} are boards on which one can quickly build and test
 small circuits. They present a $2$-dimensional array of interconnected dots
 in which circuit pieces and wires can be inserted. Figure
-\ref{fig:physical_protoboard} presents an example of an empty
-protoboard.
+\ref{fig:physical_protoboard} shows an empty protoboard.
 In the orientation depicted in Figure \ref{fig:physical_protoboard}, the first
 two rows and the last two rows of dots (each pair having one row labeled with a
 $+$ and the other row labeled with a $-$) are internally interconnected
 horizontally. That
-is, for each of these four rows, any two dots in the same row are connected
-internally.
+is, for these four rows, any two dots in the same row are connected internally.
 These rows are often referred to as the \emph{rails} and are often used for the
 power and ground nodes, the $+$ rows being used for power, and the $-$ rows for
 ground.
 The group of rows labeled $A$ through $E$ in Figure \ref{fig:physical_protoboard}
 can be better thought of as $63$ columns of 5 dots. Each of these groups of $5$
-dots are connected internally. The same property holds for the columns within
+vertically aligned dots is connected internally.
+The same property holds for the columns within
 rows $F$ through $J$. Henceforth, we will refer to an internally connected
 group of $5$ dots on the protoboard as a \emph{$5$-column}.
 
@@ -107,7 +106,7 @@ groups of $5$-columns, the dots are interconnected vertically.}
 \subsection{Protoboard Layout}
 \label{sec:pb_layout}
 
-A \textit{protoboard layout} of a given schematic is a placement of
+A \textit{protoboard layout} of a given schematic is an arrangement of
 circuit pieces
 and wires on a protoboard that corresponds to the schematic. A protoboard layout
 is constructed by
@@ -125,15 +124,9 @@ schematic shown in Figure \ref{fig:schematic}.}
 \end{center}
 \end{figure}
 
-For each of the circuit components we are interested in, there is a corresponding
-circuit piece that may be inserted into the protoboard. The one exception is that
-op-amps come in pairs. That is, as shown in Figure \ref{fig:op_amp_pin_out},
-each op-amp circuit piece that is inserted in the
-protoboard actually contains two op-amp components within it. This raises an
-important design problem when laying out a schematic -- the need to find a
-good way to group together the op-amps in a schematic to result in a ``good''
-layout. To find the right packaging of op-amps and, furthermore, produce a
-good layout all together, we need to first understand what makes a layout good.
+There may be many different protoboard layouts of a given circuit
+schematic. It is often easy to produce just a layout, but it is often difficult
+to produce a ``good'' layout.
 There are no conclusive ways to tell whether a layout is good, but, keeping in
 mind that we want layouts that are easy to build,
 easy to debug, and aesthetically pleasing, we could come up with the
@@ -160,16 +153,17 @@ been done relating to layout in general.
 
 \subsection{CMax}
 
-In a typical circuits lab in 6.01, students first design their circuits by
-drawing schematics of the circuits on paper.
+In a typical circuits lab in 6.01, students design their circuits by
+drawing schematics of on paper.
 After iteratively improving their designs based on discussions with staff
 members, they lay out their circuits on a simulation tool called Circuits Maximus
 (CMax)\cite{cmax}. Note, therefore, that students currently lay out their
 circuits themselves.
 With CMax, a student can lay out a circuit on a simulated protoboard, and test
-the circuit to make sure that it behaves as desired. CMax provides a fast
-and safe way of debugging circuit layouts compared to debugging layouts on a
-physical protoboard. Once the students are satisfied with their
+the circuit to make sure that it behaves as desired.
+CMax provides a fast
+and safe way of debugging circuit layouts, especially compared to debugging
+layouts on a physical protoboard. Once the students are satisfied with their
 observations from CMax, they build their circuits on physical protoboards and
 carry out the appropriate experiments. Figure \ref{fig:cmax_sample} presents one
 possible protoboard layout, as depicted in CMax, of the schematic shown in
@@ -186,17 +180,17 @@ Figure \ref{fig:schematic}.
 
 Using CMax has reduced circuit debugging time for 6.01 students.
 Its introduction has made
-learning circuits significantly easier for many students, especially those that
+learning circuits easier for many students, especially those that
 have little or no prior experience with circuits. In addition to making the lab
 exercises more manageable, it provides students with a way to
 build, analyze, and experiment with circuits at their own leisure outside of lab.
 
 A potential weakness of circuits labs in 6.01 as they are currently given is
-that student have to produces the protoboard layouts themselves.
+that student have to produce the protoboard layouts themselves.
 While generating protoboard layouts
 of circuit schematics may have instructive substance, a student's time is better
 spent thinking about designing circuits in the first place.
-Currently students design circuits by drawing schematic diagrams on paper.
+Currently, students design circuits by drawing schematic diagrams on paper.
 Once they are happy with
 their schematic diagrams, they proceed to laying out the corresponding circuits
 with CMax. When the circuits get complicated and involve many pieces,
@@ -208,8 +202,7 @@ Not only are such layouts difficult for the
 students to debug, but they are also often difficult for staff
 members to understand. In the best case scenario, students should have to work
 out the right schematic diagram for the circuit they are designing,
-but should not have
-to produce the corresponding protoboard layouts.
+but should not have to produce a corresponding protoboard layout.
 
 With the schematic entry tool this paper introduces, a typical 6.01 circuits lab
 would proceed as follows. First, as before, students would draw schematic
@@ -221,8 +214,8 @@ experimentation on
 paper. Once they have a schematic drawn, they would analyze it with the tool,
 discuss it with staff members, and improve it with the tool. Note that
 the schematic entry tool would make it easier for staff members to understand
-students' circuits as circuit schematics can be understood more quickly than
-can protoboard layouts. When the students are
+students' circuits as parsing circuit schematics is much easier than parsing
+protoboard layouts. When the students are
 satisfied with the behaviors of their schematic circuit, they would produce the
 corresponding protoboard layout automatically. The automatic generation of
 protoboard layouts would be
@@ -236,7 +229,8 @@ communicate about circuits almost entirely by using circuit schematics. For
 instance, looking at the lecture and course notes given in the Spring, 2011
 version of 6.01\cite{ocw601}, we observe that almost all references to circuits
 are given with schematic drawings. This is because schematic drawings of
-circuits are particularly easy to understand. In the current 6.01 labs,
+circuits are particularly easy to understand. The way 6.01 labs are currently
+given,
 communication about circuits is done by using both circuit schematics (in the
 experimentation stages) and protoboard layouts (in the building and testing
 stages). Using protoboard layouts as a way for students to describe their
@@ -244,15 +238,18 @@ circuits is suboptimal because layouts require much more time and attention
 to understand than do schematics. The schematic entry tool has the advantage of
 making circuits schematics the only mode of exchanging ideas about circuits in
 6.01 labs. With the tool, there will be much less need for a student or staff
-member to try to understand the details of a layout.
+member to try to understand the details of a layout. The tool's features that
+relate the schematic to the generated layout make it easier to understand the
+details of the layout, if needed.
 
 Additionally, students can
 keep a permanent copy of their schematics for future reference. Students
 currently draw schematics on paper, and often lose track of their drawing. Some
 students draw multiple schematics for a task, and forget which schematic
-they ended up using. Others misplace their schematic drawings. With the
-schematic entry tool, as long as students save their schematic drawings,
-they should always be able to refer back to them.
+corresponds to the final version of their circuit.
+Others misplace their schematic drawings. With the
+schematic entry tool, as long as students remember to save their schematic
+drawings, they should always be able to refer back to them.
 
 \subsection{Current Work in Automatic Layout}
 \label{sec:prev_layout}
