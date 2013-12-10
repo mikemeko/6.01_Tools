@@ -6,8 +6,8 @@
 In this chapter, we discuss our solution to the problem stated in Chapter
 \ref{ch:intro}, as well as various alternatives we considered along the way.
 First, we briefly introduce the schematic entry GUI.
-Next, we discuss in detail how we solved the protoboard layout problem and how
-we evaluated our solution.
+Next, we discuss in detail how we solved the automatic protoboard layout
+problem and how we evaluated our solution.
 
 \section{GUI}
 
@@ -33,21 +33,21 @@ schematic shown in Figure \ref{fig:schematic}.}
 In broad terms, we solved the layout problem by formulating it as a graph search
 problem. Given a schematic of a circuit, we start from an empty
 protoboard, and search through the space of all possible protoboard layouts to
-find a good protoboard layout, as described in Section
-\ref{sec:pb_layout}, corresponding to the schematic at hand. Importantly, we
+find a good protoboard layout for the schematic at hand. Importantly, we
 utilize various simplifications and heuristics to prune out many states in the
 search space.
 
 We broke down the problem into two parts. The first task is finding a placement
-of all the circuit pieces on the protoboard. The second task is wiring them up
-appropriately.
+of all the circuit pieces on the protoboard. The second task is putting down
+wires to appropriately connect the pieces.
 
 \subsection{Part 1: Placement}
 \label{sec:placement}
 
 Let us first consider how to place a set of circuit pieces on the protoboard for
-a given circuit schematic. Any given circuit may contain resistors, op-amps,
-pots, motors, head connector parts, or robot connector parts. For each of these
+a given circuit schematic. Any given circuit may contain resistors, pots,
+op-amps, motors, robot parts, or head connector connector parts.
+For each of these
 components, we must put down a corresponding piece on the protoboard. As each
 piece may be placed on the protoboard in one of many different ways, we first
 decided on a fixed set of allowed placements for each of the pieces. Figure
@@ -56,7 +56,8 @@ Resistors are placed in the middle strip of the protoboard.
 Pots have two possible vertical positions as well as two possible orientations.
 The connector pieces have two possible vertical positions each.
 Op-amp pieces are also placed in the middle strip of the protoboard, but with
-two possible orientations. Op-amp pieces are unique in that each op-amp piece
+two possible orientations. Op-amp pieces are unique in that, as shown in Figure
+\ref{fig:op_amp_pin_out}, each op-amp piece
 contains two op-amps within it. Thus, we face the task of packaging the op-amps
 in the schematic in the ``best'' possible way, i.e. so as to require as little
 work as possible when wiring the pieces together.
@@ -76,26 +77,26 @@ to package together the op-amps. Section \ref{sec:justify_placement} more
 precisely discusses the number of different ways of packaging op-amps.
 For each possible packaging of the
 op-amps, we must consider various ways of placing the pieces on the protoboard,
-even with the restrictions put forth above.
+even with the restrictions on the ways that the pieces can be placed.
 
 \subsubsection{Simplifications}
 
 We reduce the number of options by only allowing placements in which no
 two pieces share a $5$-column. This is not necessary in general, but the
-number of pieces present in the most complex 6.01 circuit is small enough that
+number of pieces in the most complex 6.01 circuit is small enough that
 any 6.01 circuit could likely be realized under this simplification.
-
 Next, we specify that there must be exactly two columns on the protoboard
 separating adjacent pieces, unless the pieces are both resistors, in which
 case there must be exactly one column separating them. These numbers of columns
 were chosen to leave enough space for wiring. Given a set of pieces to be placed
-on the protoboard, this simplification reduces the
+on the protoboard, these simplifications reduce the
 problem of choosing a placement for the pieces to finding an \emph{order} of the
 pieces together with choosing their respective vertical locations and
 orientations. Figure \ref{fig:sample_placements} shows two alternative
 placements for the schematic shown in Figure \ref{fig:gui_example} that both
-respect the conditions put forth in the simplifications thus far.
-We consider a few alternatives to finding placements respecting these conditions.
+respect the conditions put forth in the simplifications.
+We consider a few alternatives to automatically finding placements respecting
+these conditions.
 
 \begin{figure}
 \subfigure[Placement 1]{
@@ -134,9 +135,9 @@ Given a circuit
 schematic and a corresponding placement of the circuit pieces on the protoboard,
 every pair of components in the schematic that is connected by wires indicates
 a corresponding pair of
-locations on the protoboard that must be connected by wires. However, we can
+locations on the protoboard that must be connected by wires. We can
 express this requirement a little bit more concisely. We must consider all
-of the nodes in the schematic, and find the circuit components in the schematic
+of the nodes in the circuit, and find the circuit components in the schematic
 that are connected to the respective nodes. For each node in the circuit, we
 get a set of locations on the protoboard that must be interconnected by wires.
 The first step in devising the distance based cost function is to have a way to
@@ -153,7 +154,8 @@ node.
 
 We demonstrate this cost function using the two placements shown in Figure
 \ref{fig:placement_costs}. In the Figure, each placement has two connections
-that must be made, the first indicated by two circled locations and the second
+that must be made, the first indicated by two locations outlined by circles, and
+the second
 indicated by two locations outlined by rectangles. The distance based cost for
 Placement 1 is $(3) + (2 + 3) = 8$ while the distance based cost for Placement 2
 is $(7) + (2 + 3) = 12$. Hence, the cost function indicates that Placement 1
@@ -176,7 +178,7 @@ strongly penalize heavily blocked $5$-columns.
 
 To demonstrate this cost function, let us look at the two placements in Figure
 \ref{fig:placement_costs} once again. Each of the $5$-columns on both
-protoboards is labeled with its cost computed as described above.
+protoboards is labeled with its cost, computed as described above.
 The cost for Placement 1 is the sum of the squares of the costs for each
 $5$-column, which
 evaluates to $65$. The cost for Placement 2, computed similarly, is $87$. Once
@@ -213,8 +215,8 @@ cost.
 Algorithm \ref{alg:small_cost_placement} presents a polynomial-time procedure
 that orders a
 given list of pieces in a way that results in a small cost. The algorithm places
-one of the pieces at a time, starting from an empty placement. It relies
-on two ideas. First, once a piece has been placed, all the pieces that are
+one of the pieces at a time, starting from an empty placement. It employs
+two ideas. First, once a piece has been placed, all the pieces that are
 connected to it will be placed soon after so that it is more likely that those
 pieces are placed close to it. Second, we place the pieces with the most nodes
 first since those are the ones that most likely have connections with many other
@@ -230,17 +232,17 @@ for the same circuit on different runs.
 \KwData{A list $P$ of circuit pieces.}
 \KwResult{A list $R$ of circuit pieces representing a placement.}
 \BlankLine
-Sort $P$ in decreasing number of nodes on the respective pieces\\
-$Q$ $\leftarrow$ empty Queue\\
-$R$ $\leftarrow$ empty List\\
+Sort $P$ in decreasing number of nodes on the respective pieces.\\
+$Q$ $\leftarrow$ empty Queue.\\
+$R$ $\leftarrow$ empty List.\\
 \While{$P$ is not empty}{
-Pop the first piece in $P$ and push it onto $Q$\\
+Pop the first piece out of $P$ and push it onto $Q$.\\
 \While{$Q$ is not empty}{
-$p$ $\leftarrow$ $Q$.pop()\\
-Consider all vertical locations and orientations of $p$\\
-Place $p$ at an index in $R$ that minimizes the cost of $R$\\
+$p$ $\leftarrow$ $Q$.pop().\\
+Consider all vertical locations and orientations of $p$.\\
+Insert $p$ at an index in $R$ that minimizes the cost of $R$.\\
 \ForEach{piece $q$ in $P$ connected to $p$}{
-Pop $q$ out of $P$ and push it onto $Q$\\
+Pop $q$ out of $P$ and push it onto $Q$.\\
 }}}
 \caption{Producing a circuit piece placement with small heuristic cost.}
 \label{alg:small_cost_placement}
@@ -333,9 +335,9 @@ long wires, many wires, or crossing wires. In our implementation, while we have
 a large penalty for two crossing wires of opposite orientations (i.e. vertical
 and horizontal), we do not allow occlusions as
 they are particularly difficult to physically build and debug.
-Finally, we want to favor making a desired interconnection between locations
+In addition, we favor making a desired interconnection between locations
 on the protoboard. That is, if placing one wire results in a layout in which
-one of the pairs of locations that need to be connected becomes connected, then
+one of the pairs of locations that needs to be connected becomes connected, then
 the cost of that child vertex should reflect that fact. More precisely, in an
 attempt to connect locations $\text{loc}_1$ and $\text{loc}_2$, a wire placed extending from
 $\text{loc}_1'$ to $\text{loc}_{\text{mid}}$, where $\text{loc}_1'$ is a
@@ -356,7 +358,7 @@ incurred by adding the wire is computed as:
 on the protoboard from $\text{loc}_i$ to $\text{loc}_j$.
 Line ($1$) decreases the cost by $100$ if a new connection is
 made. Line ($2$) penalizes long wires, taking into account how much closer (or
-farther) the new wire got us to connecting locations $\text{loc}_1$ and
+farther) the new wire gets us to connecting locations $\text{loc}_1$ and
 $\text{loc}_2$.
 Line ($3$) adds a cost of $100$ for each new pair
 of crossing wires. Line ($4$) adds $10$ to the total cost to penalize having
@@ -369,13 +371,8 @@ each node we have a set of locations that need to be interconnected.
 We considered the following six different strategies to carry out the search:
 
 \begin{enumerate}
-\item All pairs: For each node, collect a set of pairs of locations on the
-protoboard
-corresponding to a minimum spanning tree of the locations for that node, so that
-if all pairs of locations in this spanning tree are connected, then the
-locations for the node will be interconnected. Collect all such pairs of
-locations for all of the nodes in the circuit, and have the starting vertex
-represent
+\item All pairs: Collect all pairs of protoboard locations that need to be
+connected for all nodes in the circuit, and have the starting vertex represent
 this set of pairs of locations. In this strategy, we run exactly $1$ search to
 solve the problem.
 \item Per-node (increasing): Treat each node individually. That is, iteratively
@@ -404,7 +401,7 @@ search and does not take layout quality into consideration.
 
 The strategy we choose among these six
 has a significant effect on the outcome of the wiring step.
-We will discuss the differences in detail in Chapter \ref{ch:results}.
+We discuss the differences in detail in Chapter \ref{ch:results}.
 
 \subsubsection{Goal test}
 
@@ -416,27 +413,28 @@ representation indicates no further pairs of locations to connect.
 In $A*$ search, choosing the right heuristic can often make the search much more
 efficient. Given a
 vertex, we can estimate its distance from a goal as follows. For each pair of
-locations $(\text{loc}_1, \text{loc}_2)$ that need to be connected, we could
+locations $(\text{loc}_1, \text{loc}_2)$ that needs to be connected, we could
 consider the pair's distance from a
 goal to be the smallest Manhattan distance between any location connected to
 $\text{loc}_1$ and any other location connected to $\text{loc}_2$.
 To compute the heuristic
-cost of a vertex, we simply add up this value for each of the pairs of locations
-that need to be connected. In Chapter \ref{ch:results}, we will compare the
+cost of a vertex, we simply sum this value over all pairs of locations
+that need to be connected. In Chapter \ref{ch:results}, we compare the
 performance of $A*$ with this heuristic versus carrying out Best First Search
 with this heuristic. In Best First Search, as opposed to in $A*$, vertices are
-considered in order of decreasing heuristic value, without consideration for
+considered in order of increasing heuristic value, without consideration for
 the cost incurred on the path from the starting vertex.
 
 \subsubsection{Limiting the number of expanded vertices}
 
-With the implementation of $A*$ discussed so far, the algorithm
+In the implementation of $A*$ discussed so far, the algorithm
 terminates if we either find a solution, or we
 exhaust the search space without finding a solution. In our search problem, the
 search space size is very big (Section \ref{sec:search_space_size} discusses
 the search space size
 in more detail), so this implementation of $A*$ may sometimes run out
-of memory during the search. To mitigate this problem, we introduce a limit to
+of memory before returning an answer.
+To mitigate this problem, we introduce a limit to
 the number of vertices the algorithm expands before giving up. That is, if the
 algorithm expands a certain fixed number of vertices and still has not found an
 answer, it gives up. We set this limit to $300$ vertices.
@@ -453,7 +451,7 @@ put the final algorithm in front of students, we would like to avoid failure.
 The algorithm should be able to generate a layout for any schematic.
 Generating a layout
 with a few diagonal or crossing wires is better than silently failing and leaving
-the student empty handed. Here, we will discuss how we combine the methods
+the student empty handed. Here, we discuss how we combine the methods
 described so far into one layout algorithm. The motivation for this combination
 is discussed in Chapter \ref{ch:discussion}, based on the data we obtained
 for the alternatives described thus far.
@@ -536,9 +534,9 @@ remove from physical protoboards and are also difficult to see.
 
 \subsection{Evaluation}
 
-Here we present how we evaluated our solution to the layout problem
+Here we present how we evaluated our solution to the automatic layout problem
 to test how well it would serve students in 6.01.
-We tested the layout tool on numerous schematics and
+We ran the layout algorithm on numerous schematics and
 analyzed its performance on generating layouts from those schematics.
 As manually generating
 numerous test schematics is tedious and time-consuming, we devised a method
@@ -606,7 +604,7 @@ various alternatives discussed in this chapter.
 
 An important question we must answer is how we quantify the goodness (or badness)
 of a particular layout. Our approach takes a weighted sum of a particular set of
-attributes of a given layout. We define the badness of a layout to be:
+features of a given layout. We define the badness of a layout to be:
 \begin{table}[H]
 \centering
 \begin{tabular}{ccll}
@@ -621,7 +619,7 @@ attributes of a given layout. We define the badness of a layout to be:
 We use this metric to decide which of a given set of alternative
 layout generation strategies tends to produce better layouts.
 The weights in the metric were chosen to reflect how
-bad each of the attributes is relative to the others. This choice of weights,
+bad each of the features is relative to the others. This choice of weights,
 therefore, reflects the following reasonable set of statements. Recall that our
 goal is to produce layouts that are easy to build, easy to debug, and
 aesthetically pleasing.
