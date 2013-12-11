@@ -32,17 +32,17 @@ the palette (the board is described in detail in Section \ref{sec:board}).
 This component can then be used in the circuit construction. The
 ``Robot'' and ``Head'' buttons on the palette spawn multiple parts at once
 corresponding to the multiple parts contained within the robot and head
-connectors, respectively. The robot
-connector contains pins for power and ground as well as for analog input pins
-and one analog output pin. The head is composed of a motor, a motor pot, and
-two photosensors. Figure \ref{fig:robot_head_parts} shows these last two
+connectors, respectively. The robot connector is composed of connection points
+for power and ground, four analog input ports, and one analog output port.
+The head is composed of a motor, a motor pot, and
+two photosensors. Figure \ref{fig:robot_head_parts} shows these
 circuit components as they would appear in the editor.
 
 \begin{figure}
 \begin{center}
 \includegraphics[scale=0.75]{Images/robot_head_parts.png}
 \caption[Grouped components]{The robot connector and head connector are
-presented as grouped components in the GUI.}
+spawned as grouped components in the GUI.}
 \label{fig:robot_head_parts}
 \end{center}
 \end{figure}
@@ -55,7 +55,7 @@ schematics. The user may move a component on the board by clicking the component
 and dragging it to the desired place. When dragging, the GUI draws guide lines
 that extend to the edges of the board to help the user place the component
 at the right place. The user has the option to select and move multiple items at
-once.The user may delete a component by clicking on it while
+once. The user may delete a component by clicking on it while
 pressing Ctrl. The user may rotate a component by clicking on it
 while pressing Shift. An important aspect of circuit schematics is
 interconnecting components with wires. Each circuit component in the GUI comes
@@ -105,27 +105,28 @@ they have a correctly functioning circuit before building it.
 \subsection{Layout}
 
 The GUI also lets the user generate a layout for the circuit schematic, which is
-the main object of this project. Very importantly, the GUI makes it very easy to
+the main object of this project. Very importantly, the GUI makes it easy to
 relate the schematic with the layout. When the user hovers over a component in
 either window, the GUI highlights the corresponding component in the other
-window. When the user hovers over a wire in one window, the GUI highlights all
+window. Similarly, when the user hovers over a wire in one window, the GUI
+highlights all
 of the wires in both windows that correspond to the same node. Figures
-\ref{fig:wire_highlight} and \ref{fig:component_highlight} demonstrate this
-feature.
-
-\begin{figure}
-\begin{center}
-\includegraphics[width=10cm]{Images/gui_wire_highlight.png}
-\caption[GUI wire highlighting example]{Wire highlighting example.}
-\label{fig:wire_highlight}
-\end{center}
-\end{figure}
+\ref{fig:component_highlight} and \ref{fig:wire_highlight} demonstrate these
+features.
 
 \begin{figure}
 \begin{center}
 \includegraphics[width=\textwidth]{Images/gui_component_highlight.png}
 \caption[GUI component highlighting example]{Component highlighting example.}
 \label{fig:component_highlight}
+\end{center}
+\end{figure}
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=10cm]{Images/gui_wire_highlight.png}
+\caption[GUI wire highlighting example]{Wire highlighting example.}
+\label{fig:wire_highlight}
 \end{center}
 \end{figure}
 
@@ -149,7 +150,7 @@ the cursor becomes
 a pencil if the user can draw a wire starting at the cursor's current position.
 The cursor also changes to indicate when the user is about to rotate or delete
 a component. If the tool is busy either running a simulation or generating a
-layout, the cursor shows that the tool is busy.
+layout, the cursor changes to a busy signal.
 \end{enumerate}
 
 \section{Shortcuts}
@@ -183,6 +184,6 @@ $\rightarrow$ | l & Move selected item(s) right \\
 \end{tabular}
 \end{singlespace}
 \end{center}
+\caption[GUI shortcuts]{GUI shortcuts.}
 \label{tb:shortcuts}
-\caption[GUI shortcuts]{Shortcuts.}
 \end{table}
