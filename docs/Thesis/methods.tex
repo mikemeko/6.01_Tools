@@ -151,7 +151,6 @@ associated with a particular node to be the weight of the minimum spanning tree
 of the locations. We can now define the cost of a placement to be the sum over
 all nodes in the circuit of the cost for interconnecting the locations for each
 node.
-
 We demonstrate this cost function using the two placements shown in Figure
 \ref{fig:placement_costs}. In the Figure, each placement has two connections
 that must be made, the first indicated by two locations outlined by circles, and
@@ -175,7 +174,6 @@ in that $5$-column. The final heuristic cost for the placement is computed
 as the sum of the squares of the costs for each of the $63 \times 2 = 126$
 $5$-columns on the protoboard. We compute the sum of the \emph{squares} to
 strongly penalize heavily blocked $5$-columns.
-
 To demonstrate this cost function, let us look at the two placements in Figure
 \ref{fig:placement_costs} once again. Each of the $5$-columns on both
 protoboards is labeled with its cost, computed as described above.
@@ -185,7 +183,7 @@ evaluates to $65$. The cost for Placement 2, computed similarly, is $87$. Once
 again, this cost function indicates that Placement 1 is a better placement of
 the pieces.
 
-\begin{figure}[H]
+\begin{figure}
 \centering
 \subfigure[Placement 1]{
 \fbox{\includegraphics[width=4.5cm]{Images/placement_example_1.png}}}
@@ -572,7 +570,7 @@ set of schematics in which we randomly make connections between the
 bases. Figure \ref{fig:example_random_schematic} presents a sample randomly
 generated schematic.
 
-\begin{figure}[H]
+\begin{figure}
 \begin{center}
 \includegraphics[width=\textwidth]{Images/auto_generation_bases.png}
 \caption[Random schematic generation bases]{Bases for the random schematic
@@ -587,7 +585,7 @@ generation scheme:
 \end{center}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}
 \begin{center}
 \includegraphics[width=\textwidth]{Images/auto_generation_example.png}
 \caption[Sample randomly generated schematic]{Sample randomly generated
