@@ -4,8 +4,8 @@
 \label{ch:discussion}
 
 In this chapter we provide justifications for the choices made in solving the
-protoboard layout problem, as well as detailed analysis of the data presented in
-Chapter \ref{ch:results}.
+automatic protoboard layout problem, as well as detailed analysis of the data
+presented in Chapter \ref{ch:results}.
 
 \section{Search Space Size}
 \label{sec:search_space_size}
@@ -40,10 +40,9 @@ will be hopeless.
 
 For the sake of simplicity, and to significantly reduce the search space size, we
 place resistors only in the middle strip of the protoboard, as shown in Figure
-\ref{fig:piece_placement}. This choice is critical,
-as the resistor pieces can generally be placed at numerous places on the
-protoboard.
-With this restriction, there are $63$ slots available for one resistor. Without
+\ref{fig:piece_placement}.
+With this restriction, there are $63$ slots available on an empty protoboard for
+one resistor. Without
 this restriction, there are a total of $763$ slots available. The restriction is
 good when we consider the reduction in the search space size. On the other hand,
 this restriction is bad as it imposes a restriction on the size of the
@@ -109,7 +108,7 @@ far too large, and we would have to consider different strategies.
 \section{Explaining the Results}
 
 Chapter \ref{ch:results} presented quantitative data to compare alternative
-strategies for solving the protoboard layout problem. Here, we
+strategies for solving the automatic protoboard layout problem. Here, we
 analyze those data and give reasonings for why we obtained those results.
 
 \subsection{Comparing Placement Methods}
@@ -147,7 +146,8 @@ increases. As circuit complexity increases, the standard error of
 wiring time
 when using random placement also increases. This is a result of
 the fact that random placement frequently fails on the most complex
-circuits, and so the sample size we have for successful runs is very small.
+circuits, and so the sample size we have for successful runs becomes very small
+for high circuit complexity.
 
 \subsubsection{Layout Quality}
 Figure
@@ -155,8 +155,8 @@ Figure
 numbers of wire crosses, and total wire lengths.
 Figure \ref{fig:placement_badness_trend} shows the trend of layout badness
 computed using our metric as a function of circuit complexity.
-We first observe that the
-number of wires used by the two methods are almost identical. We see that the
+We first observe that the numbers of wires used by the blocking and distance
+based methods are almost identical. We see that the
 blocking method consistently results in more wire crosses. When we consider
 total wire length, the blocking
 method exceeds the distance method consistently, with the difference getting
@@ -178,8 +178,27 @@ blocking based method are both better than random placement.
 \subsection{Comparing Wiring Methods}
 
 \subsubsection{Success Rate}
+\begin{figure}
+\begin{center}
+\subfigure[All pairs]{
+\includegraphics[width=7cm]{Images/max_expanded_all_pairs.eps}}\\
+\subfigure[Per node (increasing)]{
+\includegraphics[width=7cm]{Images/max_expanded_per_node_increasing.eps}}
+\subfigure[Per node (decreasing)]{
+\includegraphics[width=7cm]{Images/max_expanded_per_node_decreasing.eps}}
+\subfigure[Per pair (increasing)]{
+\includegraphics[width=7cm]{Images/max_expanded_per_pair_increasing.eps}}
+\subfigure[Per pair (decreasing)]{
+\includegraphics[width=7cm]{Images/max_expanded_per_pair_decreasing.eps}}
+\caption[Expanded vertices histograms]{Histograms of maximum number of vertices
+expanded in $A*$ per test run.
+In the case of all pairs wiring, this value is simply the number of vertices
+expanded in the search.}
+\label{fig:max_expanded}
+\end{center}
+\end{figure}
 Figures \ref{fig:wiring_success} and \ref{fig:wiring_success_trend}, and Table
-\ref{tb:wiring_success} show that the all pairs wiring method has a much smaller
+\ref{tb:wiring_success} show that the all pairs wiring method has a smaller
 success rate than all of
 the other alternatives, especially as circuit complexity increases. The reason
 why the all pairs method has a smaller success rate is in
@@ -199,26 +218,6 @@ all pairs to per-node to per-pair wiring, the effect of the limit
 decreases. Hence, the other four alternatives have very comparable success rates.
 Finally, we note that straight wiring, as expected, has a $100\%$ success rate.
 
-\begin{figure}[H]
-\begin{center}
-\subfigure[All pairs]{
-\includegraphics[width=7cm]{Images/max_expanded_all_pairs.eps}}\\
-\subfigure[Per node (increasing)]{
-\includegraphics[width=7cm]{Images/max_expanded_per_node_increasing.eps}}
-\subfigure[Per node (decreasing)]{
-\includegraphics[width=7cm]{Images/max_expanded_per_node_decreasing.eps}}
-\subfigure[Per pair (increasing)]{
-\includegraphics[width=7cm]{Images/max_expanded_per_pair_increasing.eps}}
-\subfigure[Per pair (decreasing)]{
-\includegraphics[width=7cm]{Images/max_expanded_per_pair_decreasing.eps}}
-\caption[Expanded vertices histograms]{Histograms of maximum number of vertices
-expanded in $A*$ per test run.
-In the case of all pairs wiring, this value is simply the number of vertices
-expanded in the search.}
-\label{fig:max_expanded}
-\end{center}
-\end{figure}
-
 \subsubsection{Wiring Time}
 Figure \ref{fig:wiring_time_trend} compares wiring time across
 the six methods. Once again, we observe that the all pairs methods takes
@@ -234,28 +233,34 @@ Finally, we note that straight wiring, as expected, takes less time to complete
 than all of the other alternatives.
 
 \subsubsection{Layout Quality}
-Figures \ref{fig:wiring_quality_trend} and
-\ref{fig:wiring_badness_trend} compare the
+Figures \ref{fig:wiring_quality_trend},
+\ref{fig:wiring_quality_trend_no_straight}, and \ref{fig:wiring_badness_trend}
+compare the
 quality of the layouts produced by the six alternative wiring methods. First,
-as we observed in the placement method comparison, we see that there is very
+we see that there is very
 little difference in terms of number of wires used and the total wire length
 among the alternatives that utilize search to accomplish the wiring. We note
 that straight wiring uses uses fewer wires than all of the other alternatives
 as it uses exactly one wire per pair of locations.
-There are noticeable differences in the number of wire crosses. We see
-that the all pairs method generates layouts with much fewer wire crosses than
+However, the total wire length used by the straight wiring method is much greater
+than that used by the others as the straight wiring method does not at all take
+layout quality into consideration.
+There are noticeable differences in the number of wire crosses. First,
+as expected, straight
+wiring produces many more wire crosses than the other alternatives. Next, we see
+that the all pairs method generates layouts with fewer wire crosses than
 the other methods. This is expected since the algorithm runs one search to
 connect all pairs of locations. Conversely, the per-pair (decreasing) and
 per-node (decreasing) methods
 result in the largest number of wire crosses. Note that
 the per-node (decreasing) method produces more wire crosses on average than the
 per-pair (increasing) method.
-We observe that the order in which we consider pairs of
-locations has an effect on how good the generated layouts will be.
+We observe that the order in which we consider the wiring tasks
+has an effect on how good the generated layouts will be.
 In essence, connecting the harder pairs of locations first generally produces
 more wire crosses.
 Finally, as expected, we observe that straight wiring produces comparatively
-poor layouts.
+poor layouts per our layout badness metric.
 
 \subsubsection{Conclusion}
 While the all pairs method is the least successful
@@ -265,9 +270,8 @@ the alternatives that break the problem down into smaller pieces succeed more
 often and finish more quickly, though they tend to produce worse results.
 Furthermore,
 the more finely we break down the problem, the faster the overall algorithm runs.
-Lastly, ordering subproblems from hardest to easiest has the effect of making the
-overall wiring step faster, but produces worse results than the reverse
-order and does not result in a markedly better success rate.
+Lastly, ordering subproblems from hardest to easiest produces worse results than
+the reverse order.
 
 \subsection{Comparing Search Methods}
 
@@ -275,7 +279,7 @@ order and does not result in a markedly better success rate.
 Figures \ref{fig:search_success} and
 \ref{fig:search_success_trend} and Table \ref{tb:search_success} present
 data comparing the success rates of the two search algorithms.
-We observe that Best First Search is much more
+We observe that Best First Search is more
 successful than $A*$. $98\%$ of the test circuits were solved at least $8$ times
 out of $10$ when we used Best First Search, versus $85\%$ when we used $A*$.
 This result is not surprising because, when using Best First Search,
@@ -355,9 +359,10 @@ for a student to have to wait for a layout to be generated.
 Finally, Figures \ref{fig:final_quality_trend} and \ref{fig:final_badness_trend}
 present trends of quality as a
 function of circuit complexity. It is clear that our algorithm produces
-much better layouts than the random layout strategy.
+much better layouts than the random layout strategy presented in Section
+\ref{sec:random_layout}.
 
-\section{Further Work}
+\newpage\section{Further Work}
 
 \subsection{Treating Resistors as Wires}
 
@@ -379,7 +384,7 @@ While this idea appears very promising, its implementation is not trivial.
 First, if there is any node in the circuit that is only
 connected to resistors (and no other circuit components), then that node will be
 unrepresented on the protoboard at the end of the placement step. One possible
-solution to this problem is to reserve an empty column on the
+solution to this problem is to reserve an empty $5$-column on the
 protoboard for the node between the resistors, which we can then use in the
 wiring step. A better solution may
 be discovering the best places for the node as we are placing down resistors in
@@ -389,7 +394,9 @@ search that takes resistors into account. One possible solution is to highly
 penalize an absent resistor when computing the heuristic.
 Even with an amended heuristic, however, there
 are cases where the search may not find an answer (for instance a pair of
-adjacent locations that must be connected by a resistor).
+adjacent locations that must be connected by a resistor). The backup plan at the
+end of Algorithm \ref{alg:combined} would also need to be changed to take
+resistors into account.
 
 \subsection{Building Layouts Similar to Previously Generated Layouts}
 One problem with the current tool is that a slight change in
@@ -403,8 +410,8 @@ tool remember the last placement it used and try to produce a new placement as
 similar to the last one as possible.
 
 \subsection{Alternative Backups for Final Algorithm}
-The final algorithm presented in Section \ref{sec:combined_alg} has a final step
-to connect any disconnected nodes by using one additional wire per pair of
+The combined algorithm presented in Section \ref{sec:combined_alg} has a final
+step to connect any disconnected nodes by using one additional wire per pair of
 locations that remains to be connected. This is used as a backup for cases
 when $A*$ search fails to make a desired connection. We have seen that this
 back up plan works well in that the final algorithm has a $100\%$ success rate.
@@ -419,7 +426,7 @@ in a manner that might make subsequent steps of the wiring process easier. Both
 of these alternatives would require feedback from the user, and are, therefore,
 a very different style of backup from the one we implemented. Nonetheless, some
 users may want to have at least some control over the layout process,
-so either these of alternatives may be a desirable feature.
+so either of these alternatives may be a desirable feature.
 
 \section{Remarks}
 
@@ -431,7 +438,7 @@ randomly generated ones based
 on our metric of layout badness. The algorithm was able to generate the layouts
 for each of the schematics in the test dataset in less than $3$ minutes.
 These results are encouraging as they suggest
-that the tool may be a good addition to 6.01, as a compliment for CMax. If, as
+that the tool may be a good addition to 6.01, as a complement to CMax. If, as
 we intended, the tool's performance on the test schematics is any indication of
 its performance on schematics that 6.01 students may design, then the tool
 achieves the goal of avoiding the tedium of protoboard layout in 6.01 labs.
