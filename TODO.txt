@@ -1,6 +1,5 @@
 All things TODO
 Michael Mekonnen
-Last updated: 8/31/13
 
 ================================================================================
 FORMAT:
